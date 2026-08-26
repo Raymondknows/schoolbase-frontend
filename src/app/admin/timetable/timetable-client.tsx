@@ -996,35 +996,24 @@ function LessonEditor({
               {existingEntries.length}
             </span>
           </div>
-          <div className="mt-3 max-h-40 space-y-2 overflow-y-auto">
-            {existingEntries.length ? (
-              existingEntries.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between gap-3 rounded-md border border-border bg-surface px-3 py-2 text-xs"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate font-semibold text-foreground">
-                      {item.subject?.name || "Lesson"}{" "}
-                      <span className="font-normal text-muted">
-                        · {item.class?.name || "Class"}
-                      </span>
-                    </p>
-                    <p className="mt-0.5 truncate text-muted">
-                      {days[item.period.dayOfWeek - 1]} · {item.period.name} ·{" "}
-                      {item.teacher?.name || "Teacher"}
-                      {item.room ? ` · ${item.room}` : ""}
-                    </p>
-                  </div>
-                  <Check size={14} className="shrink-0 text-emerald-600" />
-                </div>
-              ))
-            ) : (
-              <p className="py-4 text-center text-xs text-muted">
-                No lessons have been added yet.
-              </p>
-            )}
-          </div>
+          {existingEntries.length ? (
+            <select
+              defaultValue=""
+              className="mt-3 w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-brand"
+              aria-label="Review existing lessons"
+            >
+              <option value="">Review existing lessons</option>
+              {existingEntries.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.subject?.name || "Lesson"} · {item.class?.name || "Class"} · {days[item.period.dayOfWeek - 1]} {item.period.name} · {item.teacher?.name || "Teacher"}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <p className="mt-3 text-center text-xs text-muted">
+              No lessons have been added yet.
+            </p>
+          )}
         </div>
         <div className="mx-6 mt-6 grid gap-4 sm:grid-cols-2">
           <Field label="Day and period">
