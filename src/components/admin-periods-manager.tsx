@@ -71,7 +71,7 @@ export default function AdminPeriodsManager({
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ periods: draftPeriods.map(({ dayOfWeek, name, startsAt, endsAt, sortOrder }) => ({ dayOfWeek, name, startsAt, endsAt, sortOrder })) }),
+        body: JSON.stringify({ periods: draftPeriods.map(({ id, dayOfWeek, name, startsAt, endsAt, sortOrder }) => ({ id, dayOfWeek, name, startsAt, endsAt, sortOrder })) }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Could not save periods");
