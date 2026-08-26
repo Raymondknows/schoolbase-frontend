@@ -56,6 +56,86 @@ export function playOpenTone() {
   }
 }
 
+export type BellTone = "traditional" | "deep" | "mechanical" | "carillon" | "siren" | "police" | "urgent" | "classic" | "double" | "school" | "soft" | "marimba" | "alert";
+export type BellRingMode = "count" | "continuous";
+let bellPatternTimeouts: number[] = [];
+let activeBellContexts: AudioContext[] = [];
+
+type BellProfile = { sequence: Array<[number, number, number]>; partials: Array<[number, number]>; gain: number; waveform: OscillatorType; sweep?: [number, number] };
+
+const bellProfiles: Record<BellTone, BellProfile> = {
+  traditional: { sequence: [[392, 0, 1.1], [330, 0.18, 1.35]], partials: [[1, 1], [2.01, 0.42], [2.98, 0.2], [4.1, 0.1]], gain: 0.16, waveform: "sine" },
+  deep: { sequence: [[262, 0, 1.35], [196, 0.2, 1.5]], partials: [[1, 1], [2, 0.5], [3.01, 0.24], [4.2, 0.12]], gain: 0.2, waveform: "sine" },
+  mechanical: { sequence: [[740, 0, 0.25], [554, 0.05, 0.32], [740, 0.38, 0.25], [554, 0.43, 0.32]], partials: [[1, 1], [2.4, 0.28], [4, 0.12]], gain: 0.17, waveform: "square" },
+  carillon: { sequence: [[523, 0, 0.45], [659, 0.3, 0.52], [784, 0.64, 0.68], [1046, 0.98, 1.05]], partials: [[1, 1], [2, 0.38], [3, 0.18], [4.07, 0.1]], gain: 0.14, waveform: "sine" },
+  siren: { sequence: [[760, 0, 0.48], [520, 0.52, 0.48], [760, 1.04, 0.48], [520, 1.56, 0.68]], partials: [[1, 1], [2, 0.45], [3.02, 0.22], [4.1, 0.1]], gain: 0.19, waveform: "square" },
+  police: { sequence: [[1, 0, 0.62], [1, 0.66, 0.62], [1, 1.32, 0.62]], partials: [[1, 1], [2, 0.3], [3, 0.14]], gain: 0.2, waveform: "sawtooth", sweep: [620, 1120] },
+  urgent: { sequence: [[880, 0, 0.26], [660, 0.3, 0.26], [880, 0.6, 0.26], [660, 0.9, 0.4]], partials: [[1, 1], [2, 0.34], [3, 0.16]], gain: 0.18, waveform: "triangle" },
+  classic: { sequence: [[880, 0, 0.32], [660, 0.08, 0.42]], partials: [[1, 1], [2, 0.3]], gain: 0.11, waveform: "sine" },
+  double: { sequence: [[1046, 0, 0.16], [1318, 0.18, 0.2], [1046, 0.38, 0.16], [1318, 0.56, 0.3]], partials: [[1, 1], [2, 0.25]], gain: 0.11, waveform: "sine" },
+  school: { sequence: [[784, 0, 0.24], [988, 0.28, 0.24], [1174, 0.56, 0.36]], partials: [[1, 1], [2, 0.25]], gain: 0.11, waveform: "sine" },
+  soft: { sequence: [[659, 0, 0.28], [784, 0.12, 0.34], [988, 0.24, 0.46]], partials: [[1, 1], [2, 0.2]], gain: 0.09, waveform: "sine" },
+  marimba: { sequence: [[523, 0, 0.18], [659, 0.2, 0.18], [784, 0.4, 0.22], [1046, 0.64, 0.4]], partials: [[1, 1], [2, 0.18]], gain: 0.11, waveform: "triangle" },
+  alert: { sequence: [[1200, 0, 0.13], [900, 0.16, 0.13], [1200, 0.32, 0.13], [900, 0.48, 0.22]], partials: [[1, 1], [2, 0.2]], gain: 0.12, waveform: "square" },
+};
+
+export function playBellTone(tone: BellTone = "classic") {
+  try {
+    const ctx = createAudioContext();
+    if (!ctx) return;
+    activeBellContexts.push(ctx);
+    const profile = bellProfiles[tone] || bellProfiles.traditional;
+    const schedule = () => {
+      const start = ctx.currentTime;
+      profile.sequence.forEach(([frequency, delay, duration], sequenceIndex) => {
+        profile.partials.forEach(([ratio, volume]) => {
+          const oscillator = ctx.createOscillator();
+          const gain = ctx.createGain();
+          oscillator.type = profile.waveform;
+          const sweepStart = profile.sweep ? profile.sweep[sequenceIndex % 2] : frequency;
+          const sweepEnd = profile.sweep ? profile.sweep[sequenceIndex % 2 ? 0 : 1] : frequency;
+          oscillator.frequency.setValueAtTime(sweepStart * ratio, start + delay);
+          oscillator.frequency.linearRampToValueAtTime(sweepEnd * ratio, start + delay + duration);
+          gain.gain.setValueAtTime(0.0001, start + delay);
+          gain.gain.exponentialRampToValueAtTime(profile.gain * volume, start + delay + 0.015);
+          gain.gain.exponentialRampToValueAtTime(0.0001, start + delay + duration);
+          oscillator.connect(gain);
+          gain.connect(ctx.destination);
+          oscillator.start(start + delay);
+          oscillator.stop(start + delay + duration + 0.04);
+        });
+      });
+      const profileDuration = Math.max(...profile.sequence.map(([, delay, duration]) => delay + duration));
+      setTimeout(() => {
+        activeBellContexts = activeBellContexts.filter((activeContext) => activeContext !== ctx);
+        ctx.close().catch(() => {});
+      }, (profileDuration + 0.3) * 1000);
+    };
+    if (ctx.state === "suspended") ctx.resume().then(schedule).catch(() => {});
+    else schedule();
+  } catch (error) {
+    // Audio is optional and may be unavailable in the browser.
+  }
+}
+
+export function playBellPattern(tone: BellTone, ringMode: BellRingMode, ringCount: number, shouldPlay: () => boolean = () => true) {
+  stopBellPattern();
+  const count = ringMode === "continuous" ? 10 : Math.max(1, Math.min(5, ringCount));
+  for (let index = 0; index < count; index += 1) {
+    const timeout = window.setTimeout(() => {
+      if (shouldPlay()) playBellTone(tone);
+    }, index * 3000);
+    bellPatternTimeouts.push(timeout);
+  }
+}
+
+export function stopBellPattern() {
+  bellPatternTimeouts.forEach((timeout) => window.clearTimeout(timeout));
+  bellPatternTimeouts = [];
+  activeBellContexts.forEach((ctx) => ctx.close().catch(() => {}));
+  activeBellContexts = [];
+}
+
 let supportAlertToneState:
   | {
       ctx: AudioContext;

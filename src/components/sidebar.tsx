@@ -36,6 +36,7 @@ import {
   Megaphone,
   Send,
   Sparkles,
+  CalendarDays,
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/ui/icons";
 
@@ -76,6 +77,7 @@ const icons: Record<string, ComponentType<{ className?: string }>> = {
   Megaphone,
   Send,
   Sparkles,
+  CalendarDays,
 };
 
 export default function Sidebar({
@@ -177,6 +179,11 @@ export default function Sidebar({
                   </div>
                 ) : icons[icon] ? createElement(icons[icon], { className: "h-4 w-4" }) : null}
                 {label}
+                {href === "/admin/timetable" ? (
+                  <span className="ml-auto rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
+                    New
+                  </span>
+                ) : null}
               </Link>
             </div>
           );

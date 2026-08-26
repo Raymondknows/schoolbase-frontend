@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { ThemeSwitcher } from "@/components/platform-admin/theme-switcher";
 import { playCloseTone, playOpenTone } from "@/lib/sounds";
 import { applyTheme, detectSystemTheme, resolveStoredTheme, ThemeMode } from "@/lib/theme";
+import TeacherClassAlert from "@/components/teacher-class-alert";
+import BellScheduler from "@/components/bell-scheduler";
 
 export type NavItem = {
   href: string;
@@ -906,6 +908,8 @@ export default function SharedLayout({
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
+      {logoHref === "/teacher" ? <TeacherClassAlert /> : null}
+      {logoHref === "/admin" ? <BellScheduler /> : null}
       {/* Desktop Sidebar */}
       <Sidebar
         navItems={navItems}

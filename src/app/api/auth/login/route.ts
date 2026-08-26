@@ -24,8 +24,8 @@ export async function POST(request: NextRequest) {
     console.log('=== LOGIN API ROUTE ===');
     
     // Canonical login proxy route for the frontend login page.
-    // This preserves pending signup verification responses from the backend.
-    const response = await fetch(`${BACKEND_URL}/api/auth/school-login`, {
+    // Keep this aligned with the backend alias /api/auth/login so the live API matches the local flow.
+    const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include', // Allow backend to set cookies

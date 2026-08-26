@@ -7,6 +7,12 @@ import { getBackendUrl } from './backend-url';
 
 export type SchoolPhase = 'EARLY_YEARS' | 'PRIMARY' | 'SECONDARY';
 
+export const TEACHER_TIMETABLE_NAV_ITEM = {
+  href: '/teacher/timetable',
+  label: 'Timetable',
+  icon: 'CalendarDays',
+};
+
 export interface TeacherProfile {
   id: string;
   name: string;
@@ -202,6 +208,7 @@ export function getTeacherNavigation(phase: SchoolPhase) {
     { href: '/teacher/students', label: 'Students', icon: 'Users' },
     { href: '/teacher/subjects', label: 'Subjects', icon: 'BookOpen' },
     { href: '/teacher/attendance', label: 'Attendance', icon: 'ClipboardList' },
+    { href: '/teacher/timetable', label: 'Timetable', icon: 'CalendarDays' },
     { href: '/teacher/announcements', label: 'Announcements', icon: 'Megaphone' },
     { href: '/teacher/profile', label: 'Profile', icon: 'UserCircle' },
     { href: '/teacher/school', label: 'School', icon: 'Building2' },
@@ -243,6 +250,7 @@ export function getTeacherMobileNav(phase: SchoolPhase) {
       { href: '/teacher/subjects', label: '📚 Subjects' },
       { href: '/teacher/children', label: '👶 Children' },
       { href: '/teacher/attendance', label: '✅ Attendance' },
+      { href: '/teacher/timetable', label: '🗓️ Timetable' },
       { href: '/teacher/results', label: '📊 Results' },
       { href: '/teacher/announcements', label: '📢 Announcements' },
       { href: '/teacher/profile', label: '👤 Profile' },
@@ -254,6 +262,7 @@ export function getTeacherMobileNav(phase: SchoolPhase) {
       { href: '/teacher/subjects', label: '📚 Subjects' },
       { href: '/teacher/class', label: '🏫 Class' },
       { href: '/teacher/attendance', label: '✅ Attendance' },
+      { href: '/teacher/timetable', label: '🗓️ Timetable' },
       { href: '/teacher/results', label: '📊 Results' },
       { href: '/teacher/profile', label: '👤 Profile' },
       { href: '/teacher/school', label: '🏢 School' },
@@ -264,6 +273,7 @@ export function getTeacherMobileNav(phase: SchoolPhase) {
       { href: '/teacher/subjects', label: '📚 Subjects' },
       { href: '/teacher/results', label: '📝 Results' },
       { href: '/teacher/attendance', label: '✅ Attendance' },
+      { href: '/teacher/timetable', label: '🗓️ Timetable' },
       { href: '/teacher/profile', label: '👤 Profile' },
       { href: '/teacher/school', label: '🏢 School' },
     ],
