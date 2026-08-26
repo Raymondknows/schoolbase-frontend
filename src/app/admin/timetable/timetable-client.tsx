@@ -638,48 +638,53 @@ function WeekBoard({
                   item.sortOrder === period.sortOrder &&
                   item.dayOfWeek === index + 1,
               );
-              const entry = dayPeriod
-                ? config.entries.find((item) => item.periodId === dayPeriod.id)
-                : undefined;
+              const entries = dayPeriod
+                ? config.entries.filter((item) => item.periodId === dayPeriod.id)
+                : [];
               return (
                 <div
                   key={`${period.sortOrder}-${index}`}
                   className="border-l border-border p-2"
                 >
-                  {entry && (
-                    <div
-                      className="group relative h-full border-l-4 bg-brand-light/30 p-3"
-                      style={{ borderColor: accents[index] }}
-                    >
-                      <div className="pr-12 text-sm font-bold text-foreground">
-                        {entry.subject?.name || "Lesson"}
-                      </div>
-                      <div className="mt-1 text-xs font-medium text-muted">
-                        {entry.class?.name || "Class"}
-                        {entry.class?.arm ? ` · ${entry.class.arm}` : ""}
-                      </div>
-                      <div className="mt-3 text-[11px] text-muted">
-                        {entry.teacher?.name || "Teacher"}
-                        {entry.room ? ` · ${entry.room}` : ""}
-                      </div>
-                      {editable && (
-                        <div className="absolute right-2 top-2 hidden gap-1 group-hover:flex">
-                          <button
-                            onClick={() => onEdit(entry)}
-                            aria-label="Edit lesson"
-                            className="rounded bg-surface p-1.5 text-brand shadow-sm hover:bg-brand-light"
-                          >
-                            <Edit3 size={13} />
-                          </button>
-                          <button
-                            onClick={() => onDelete(entry)}
-                            aria-label="Delete lesson"
-                            className="rounded bg-surface p-1.5 text-error shadow-sm hover:bg-[#fff5f5]"
-                          >
-                            <Trash2 size={13} />
-                          </button>
+                  {entries.length > 0 && (
+                    <div className="max-h-[190px] space-y-1 overflow-y-auto pr-1">
+                      {entries.map((entry) => (
+                        <div
+                          key={entry.id}
+                          className="group relative border-l-4 bg-brand-light/30 px-2.5 py-2"
+                          style={{ borderColor: accents[index] }}
+                        >
+                          <div className="pr-8 text-sm font-bold text-foreground">
+                            {entry.subject?.name || "Lesson"}
+                          </div>
+                          <div className="mt-0.5 text-xs font-medium leading-4 text-muted">
+                            {entry.class?.name || "Class"}
+                            {entry.class?.arm ? ` · ${entry.class.arm}` : ""}
+                          </div>
+                          <div className="mt-1 text-[11px] leading-4 text-muted">
+                            {entry.teacher?.name || "Teacher"}
+                            {entry.room ? ` · ${entry.room}` : ""}
+                          </div>
+                          {editable && (
+                            <div className="absolute right-1.5 top-1.5 hidden gap-1 group-hover:flex">
+                              <button
+                                onClick={() => onEdit(entry)}
+                                aria-label={`Edit ${entry.subject?.name || "lesson"}`}
+                                className="rounded bg-surface p-1.5 text-brand shadow-sm hover:bg-brand-light"
+                              >
+                                <Edit3 size={13} />
+                              </button>
+                              <button
+                                onClick={() => onDelete(entry)}
+                                aria-label={`Delete ${entry.subject?.name || "lesson"}`}
+                                className="rounded bg-surface p-1.5 text-error shadow-sm hover:bg-[#fff5f5]"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          )}
                         </div>
-                      )}
+                      ))}
                     </div>
                   )}
                 </div>
