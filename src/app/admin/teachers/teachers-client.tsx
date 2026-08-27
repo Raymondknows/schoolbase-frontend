@@ -81,6 +81,16 @@ const TEACHER_GUIDE = {
   videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
 };
 
+function getTeacherInitials(name: string) {
+  return name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join("") || "T";
+}
+
 export default function TeachersPageClient({
   classes,
   subjects,
@@ -115,6 +125,34 @@ export default function TeachersPageClient({
   const [deletingTeacherName, setDeletingTeacherName] = useState("");
   const [deleteAnimateState, setDeleteAnimateState] = useState<"enter" | "exit">("enter");
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const renderTeacherAvatar = (teacher: any) => {
+    const imageUrl = [
+      teacher.avatarUrl,
+      teacher.profileImageUrl,
+      teacher.profileImage,
+      teacher.imageUrl,
+      teacher.image,
+      typeof teacher.avatar === "string" ? teacher.avatar : null,
+    ].find((value) => typeof value === "string" && value.trim());
+    const initials = getTeacherInitials(teacher.name ?? "Teacher");
+
+    return (
+      <span className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand/10 text-xs font-semibold text-brand">
+        <span aria-hidden="true">{initials}</span>
+        {imageUrl && (
+          <img
+            src={imageUrl}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+            onError={(event) => {
+              event.currentTarget.style.display = "none";
+            }}
+          />
+        )}
+      </span>
+    );
+  };
 
   useEffect(() => {
     if (isSearchOpen && searchInputRef.current) {
@@ -264,7 +302,12 @@ export default function TeachersPageClient({
             {filteredTeachers.length > 0 ? (
               filteredTeachers.map((teacher, index) => (
                 <tr key={teacher.id ?? `teacher-${index}`} className="border-t border-border hover:bg-background/50 transition-colors">
-                  <td className="px-4 py-2 font-medium text-foreground">{teacher.name}</td>
+                  <td className="px-4 py-2 font-medium text-foreground">
+                    <div className="flex items-center gap-3">
+                      {renderTeacherAvatar(teacher)}
+                      <span>{teacher.name}</span>
+                    </div>
+                  </td>
                   <td className="px-4 py-2 text-muted">{teacher.email}</td>
                   <td className="px-4 py-2 text-sm text-muted">
                     { (teacher.teacherClasses?.length ?? 0) > 0 ? (
@@ -318,8 +361,9 @@ export default function TeachersPageClient({
                 className="block w-full text-left rounded-lg border border-border bg-surface px-3 py-2 hover:bg-background/50 transition-colors"
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{teacher.name}</p>
+                  <div className="flex min-w-0 items-center gap-3">
+                    {renderTeacherAvatar(teacher)}
+                    <p className="truncate text-sm font-medium">{teacher.name}</p>
                   </div>
                   <div className="flex-shrink-0 text-right ml-2">
                     <p className="text-xs text-muted">
