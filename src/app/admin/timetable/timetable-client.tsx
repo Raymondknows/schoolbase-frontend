@@ -56,7 +56,11 @@ type Config = {
   periods: Period[];
   entries: Entry[];
 };
-type SelectorData = { id: string; name: string; email?: string };
+type SelectorData = { id: string; name: string; email?: string; arm?: string | null };
+
+function classLabel(item: Pick<SelectorData, "name" | "arm">) {
+  return `${item.name}${item.arm?.trim() ? ` ${item.arm.trim()}` : ""}`;
+}
 
 function api(path: string, options?: RequestInit) {
   const endpoint = path.startsWith("/admin/timetable")
@@ -1010,7 +1014,7 @@ function LessonEditor({
               <option value="">Review existing lessons</option>
               {existingEntries.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {item.subject?.name || "Lesson"} · {item.class?.name || "Class"} · {days[item.period.dayOfWeek - 1]} {item.period.name} · {item.teacher?.name || "Teacher"}
+                  {item.subject?.name || "Lesson"} · {item.class ? classLabel(item.class) : "Class"} · {days[item.period.dayOfWeek - 1]} {item.period.name} · {item.teacher?.name || "Teacher"}
                 </option>
               ))}
             </select>
@@ -1053,7 +1057,7 @@ function LessonEditor({
               <option value="">Select class</option>
               {classes.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {item.name}
+                  {classLabel(item)}
                 </option>
               ))}
             </select>

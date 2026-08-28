@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { playCloseTone, playOpenTone } from "@/lib/sounds";
 
-type Option = { id: string; name: string; email?: string };
+type Option = { id: string; name: string; email?: string; arm?: string | null };
 type Period = {
   id: string;
   dayOfWeek: number;
@@ -38,6 +38,10 @@ const defaultLesson = {
   periodId: "",
   room: "",
 };
+
+function classLabel(item: Option) {
+  return `${item.name}${item.arm?.trim() ? ` ${item.arm.trim()}` : ""}`;
+}
 
 export default function TimetableSetupWizard({
   academicYears,
@@ -301,7 +305,7 @@ export default function TimetableSetupWizard({
                   <option value="">Select class</option>
                   {classes.map((item) => (
                     <option key={item.id} value={item.id}>
-                      {item.name}
+                      {classLabel(item)}
                     </option>
                   ))}
                 </select>
@@ -382,6 +386,9 @@ export default function TimetableSetupWizard({
                     (entry) => entry.id === item.periodId,
                   );
                   const day = period ? days[period.dayOfWeek - 1] : "";
+                  const selectedClass = classes.find(
+                    (entry) => entry.id === item.classId,
+                  );
                   return (
                     <div
                       key={`${item.periodId}-${item.classId}-${index}`}
@@ -396,10 +403,9 @@ export default function TimetableSetupWizard({
                           }{" "}
                           <span className="font-normal text-muted">
                             ·{" "}
-                            {
-                              classes.find((entry) => entry.id === item.classId)
-                                ?.name
-                            }
+                            {selectedClass
+                              ? classLabel(selectedClass)
+                              : undefined}
                           </span>
                         </p>
                         <p className="mt-1 text-xs text-muted">
