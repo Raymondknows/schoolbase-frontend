@@ -53,6 +53,8 @@ type Config = {
   id: string;
   name: string;
   status: string;
+  academicYear?: { name: string };
+  term?: { name: string; startsOn?: string | null; endsOn?: string | null } | null;
   periods: Period[];
   entries: Entry[];
 };
@@ -60,6 +62,15 @@ type SelectorData = { id: string; name: string; email?: string; arm?: string | n
 
 function classLabel(item: Pick<SelectorData, "name" | "arm">) {
   return `${item.name}${item.arm?.trim() ? ` ${item.arm.trim()}` : ""}`;
+}
+
+function formatPrintDate(value?: string | null) {
+  if (!value) return "Date not set";
+  return new Intl.DateTimeFormat("en", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
 }
 
 function api(path: string, options?: RequestInit) {
@@ -292,7 +303,77 @@ export default function TimetableClient() {
 
   return (
     <main className="min-h-screen pb-12">
+      <style>{`
+        @media print {
+          @page {
+            size: landscape;
+            margin: 10mm;
+          }
+
+          body {
+            background: white !important;
+          }
+
+          body * {
+            visibility: hidden !important;
+          }
+
+          .timetable-print-target,
+          .timetable-print-target * {
+            visibility: visible !important;
+          }
+
+          .timetable-print-target {
+            position: absolute !important;
+            top: 28mm !important;
+            left: 0 !important;
+            width: 100% !important;
+            overflow: visible !important;
+            border: 0 !important;
+            box-shadow: none !important;
+          }
+
+          .timetable-print-target > div {
+            width: 100% !important;
+            min-width: 0 !important;
+          }
+
+          .timetable-print-target button {
+            display: none !important;
+          }
+
+          .timetable-print-header {
+            display: block !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            visibility: visible !important;
+            border-bottom: 1px solid #d5dbe1 !important;
+            padding-bottom: 5mm !important;
+          }
+
+          .timetable-print-header * {
+            visibility: visible !important;
+          }
+        }
+      `}</style>
       <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+        {config && (
+          <div className="timetable-print-header hidden">
+            <div className="text-xl font-bold text-black">{config.name}</div>
+            <div className="mt-1 text-sm text-black">
+              {config.academicYear?.name || "Academic year"}
+              {config.term?.name ? ` · ${config.term.name}` : ""}
+              {config.term?.startsOn || config.term?.endsOn
+                ? ` · ${formatPrintDate(config.term.startsOn)} - ${formatPrintDate(config.term.endsOn)}`
+                : ""}
+            </div>
+            <div className="mt-1 text-xs text-gray-600">
+              Printed {formatPrintDate(new Date().toISOString())}
+            </div>
+          </div>
+        )}
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <div className="flex items-center gap-2 text-sm font-medium text-brand">
@@ -615,7 +696,7 @@ function WeekBoard({
   onDelete: (entry: Entry) => void;
 }) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-border bg-surface shadow-sm">
+    <div className="timetable-print-target overflow-x-auto rounded-lg border border-border bg-surface shadow-sm">
       <div className="min-w-[880px]">
         <div className="grid grid-cols-[132px_repeat(5,1fr)] border-b border-border bg-[#f6f8fa] text-xs font-bold uppercase tracking-[.1em] text-muted">
           <div className="p-4">Period</div>
@@ -712,7 +793,7 @@ function ListView({
   onDelete: (entry: Entry) => void;
 }) {
   return (
-    <div className="divide-y divide-border rounded-lg border border-border bg-surface shadow-sm">
+    <div className="timetable-print-target divide-y divide-border rounded-lg border border-border bg-surface shadow-sm">
       {entries.map((entry) => (
         <div
           key={entry.id}
