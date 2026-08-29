@@ -20,145 +20,165 @@ interface EmailLog {
 }
 
 const EMAIL_TYPES = [
-  { value: "PRODUCT_UPDATE", label: "Product update / feature announcement" },
-  { value: "PRICE_UPDATE", label: "Price update / plan change" },
-  { value: "SUBSCRIPTION_THANK_YOU", label: "Subscription thank-you email" },
-  { value: "SUPPORT_UPDATE", label: "Support case update" },
-  { value: "ONBOARDING_GUIDANCE", label: "Onboarding guidance for new schools" },
-  { value: "BEST_PRACTICE_TIP", label: "Best-practice tips for using SchoolBase" },
-  { value: "MANUAL_ANNOUNCEMENT", label: "Custom announcement / manual follow-up" },
-  { value: "POLICY_UPDATE", label: "Compliance / policy update" },
-  { value: "ACCOUNT_SECURITY", label: "Account security notice" },
+  { value: "PRODUCT_UPDATE", label: "Product update" },
+  { value: "PRICE_UPDATE", label: "Pricing update" },
+  { value: "SUBSCRIPTION_THANK_YOU", label: "Welcome & thank-you" },
+  { value: "SUPPORT_UPDATE", label: "Support update" },
+  { value: "ONBOARDING_GUIDANCE", label: "Onboarding" },
+  { value: "BEST_PRACTICE_TIP", label: "Best-practice guidance" },
+  { value: "MANUAL_ANNOUNCEMENT", label: "Announcement" },
+  { value: "POLICY_UPDATE", label: "Compliance update" },
+  { value: "ACCOUNT_SECURITY", label: "Security notice" },
 ];
 
-const PLATFORM_FEATURES = "Admissions, Student Records, Attendance, Fees, Payments, Results, Report Cards, Staff Management, and WhatsApp Communication";
+const PLATFORM_FEATURES = "Admissions, Student Records, Attendance, Fees, Payments, Timetable & Lesson Planning, Results, Report Cards, Staff Management, Parent Portal, School Website, and WhatsApp Communication";
 
 const EMAIL_TEMPLATES: Record<string, { subject: string; body: string }> = {
   PRODUCT_UPDATE: {
-    subject: "Product news: faster workflows and better parent engagement in SchoolBase",
+    subject: "SchoolBase product update: smarter operations, stronger engagement, and more control",
     body: `Hello,
 
-We’re excited to share a new SchoolBase release that makes it easier to manage Admissions, Student Records, Attendance, Fees, Payments, Results, Report Cards, Staff Management, and WhatsApp Communication from one platform.
+We’re pleased to share a new SchoolBase update designed to help your school run more efficiently, communicate more effectively, and manage operations with greater visibility.
 
-What’s included:
-• A faster admin dashboard for attendance, fees, and report cards.
-• Streamlined student records and admissions workflows.
-• Better WhatsApp communication tools for parents and staff.
+This release strengthens the full SchoolBase experience across Admissions, Student Records, Attendance, Fees, Payments, Timetable & Lesson Planning, Results, Report Cards, Staff Management, Parent Portal, School Website, and WhatsApp Communication.
 
-Open SchoolBase to try the improved experience.`,
+What’s new and improved:
+• A more streamlined admin dashboard for attendance, fees, reports, and key school operations.
+• Improved tools for timetable planning, lesson coordination, and academic scheduling.
+• Faster communication workflows for parent updates, notices, and payment reminders.
+• Better visibility into student performance and school-wide reporting across teams.
+• Stronger support for modern school operations with improved usability and data consistency.
+
+This update is part of our ongoing commitment to helping schools improve productivity, reduce manual work, and create a more professional experience for parents, students, and staff.
+
+We encourage you to explore the latest improvements in SchoolBase and contact us if you would like tailored guidance on maximizing the platform for your school.`,
   },
   PRICE_UPDATE: {
-    subject: "Important update: SchoolBase pricing and plan improvements",
+    subject: "Important SchoolBase pricing update: more value, more flexibility, and better support",
     body: `Hello,
 
-We’re notifying you about an upcoming SchoolBase pricing update that brings clearer value and more flexibility to your school.
+We’re writing to share an important update to our SchoolBase pricing structure. This revision reflects the value of the platform’s continued growth and the broader set of tools now available to schools, including Admissions, Student Records, Attendance, Fees, Payments, Timetable & Lesson Planning, Results, Report Cards, Staff Management, Parent Portal, School Website, and WhatsApp Communication.
 
 Key points:
-• Improved pricing structure aligned with Admissions, Student Records, Attendance, Fees, Payments, Results, Report Cards, Staff Management, and WhatsApp Communication usage.
-• New plan options designed to support growing schools and simplify budgeting.
-• Continued investment in reliability, support, and the tools your team uses every day.
+• A clearer pricing model designed to better match the scale and needs of schools growing over time.
+• Continued investment in the features schools depend on every day, from scheduling to communication and reporting.
+• Greater flexibility for schools that want broader operational support and digital transformation.
 
-This change is intended to help your school capture more value from SchoolBase while keeping costs predictable.
+This update is intended to ensure your school continues to receive strong value from a platform that supports efficient management, parent communication, performance tracking, and digital school operations.
 
-If you have questions or want a price review for your current plan, reply directly to this email.`,
+If you would like a tailored review of how this change affects your current plan, or if you want guidance on the best package for your school, please reply to this email and we will be happy to assist.`,
   },
   SUBSCRIPTION_THANK_YOU: {
-    subject: "Thank you for choosing SchoolBase — your school is now set up to thrive",
+    subject: "Thank you for choosing SchoolBase — your school is ready for smarter operations",
     body: `Hello,
 
-Thank you for subscribing to SchoolBase. We’re truly delighted to support your school and help your team work with greater confidence every day.
+Thank you for choosing SchoolBase. We are truly pleased to support your school and help your team work with more clarity, confidence, and efficiency every day.
 
-With your subscription, your school now has access to the tools that make school operations smoother and more professional, including Admissions, Student Records, Attendance, Fees, Payments, Results, Report Cards, Staff Management, and WhatsApp Communication.
+Your subscription gives your school access to a comprehensive digital platform covering Admissions, Student Records, Attendance, Fees, Payments, Timetable & Lesson Planning, Results, Report Cards, Staff Management, Parent Portal, School Website, and WhatsApp Communication.
 
 What this means for your school:
-• Faster, more organized daily operations for administrators and staff.
-• Easier communication with parents through the parent portal and WhatsApp.
-• Better visibility into fees, attendance, and academic performance.
-• A stronger, more modern experience for your entire school community.
-
-Payment acknowledgement:
-• We have received your payment successfully.
-• This email serves as your confirmation and acknowledgement of the completed transaction.
+• Faster and more organized daily administration for staff and leadership.
+• Better coordination of class schedules, teacher responsibilities, and student records.
+• Improved communication with parents through the portal and WhatsApp channels.
+• Stronger financial visibility through fee monitoring and payment tracking.
+• More accurate reporting and result management for teachers and school leaders.
+• A more professional digital presence through your school website and modern parent experience.
 
 What to do next:
-• Log in to SchoolBase and review your dashboard.
-• Register your teachers and confirm your class structure.
-• Publish fee schedules and share the parent portal with families.
-• Start using WhatsApp communication to keep everyone informed.
+• Log in to SchoolBase and review your school dashboard.
+• Confirm your school profile, departments, and staff information.
+• Add classes, students, and timetable data.
+• Publish fee schedules and activate parent access.
+• Start using WhatsApp communication and reporting features to keep everyone informed.
 
-We’re excited to see your school grow with SchoolBase. If you ever need help, please reach out to us at info@schoolbase.live, visit our support page, or contact us on WhatsApp at +2349031368963.
+We are excited to partner with your school as you build a more efficient and modern school experience. If you need any support at any stage, please reach out to us at info@schoolbase.live or contact us on WhatsApp at +2349031368963.
 
-Thank you again for choosing SchoolBase — we’re proud to be part of your journey.`,
+Thank you again for choosing SchoolBase — we are proud to be part of your school’s growth and success.`,
   },
   SUPPORT_UPDATE: {
-    subject: "Support update: your SchoolBase request is being handled",
+    subject: "SchoolBase support update: we are actively handling your request",
     body: `Hello,
 
-This is an update on your SchoolBase support request. Our team is reviewing the issue and will respond with a clear next step shortly.
+This is an update on your SchoolBase support request. Our team is currently reviewing the matter and will provide the next step shortly so your school can continue operating smoothly.
 
-We are tracking your request against the full SchoolBase experience, including ${PLATFORM_FEATURES}, so you can continue operating smoothly while we resolve it.
+We are tracking your request within the broader SchoolBase platform experience, including ${PLATFORM_FEATURES}, so that we can resolve the issue efficiently and with full context.
 
-If there are any additional details, reply directly to this email.`,
+Our team is committed to keeping your school’s operations moving while we work through the details. If there are any additional information or documents you would like to share, please reply directly to this email and we will continue from there.`,
   },
   ONBOARDING_GUIDANCE: {
-    subject: "Onboarding guidance: get your school live with SchoolBase",
+    subject: "Welcome to SchoolBase — we’re excited to have your school on board",
     body: `Hello,
 
-Welcome to SchoolBase. We’re here to help your school complete setup and start using Admissions, Student Records, Attendance, Fees, Payments, Results, Report Cards, Staff Management, and WhatsApp Communication.
+Welcome to SchoolBase. We’re excited to have your school on board and look forward to supporting you as you get started.
+
+Our goal is to help you complete your setup and begin using SchoolBase effectively for your day-to-day school operations, including Admissions, Student Records, Attendance, Fees, Payments, Timetable & Lesson Planning, Results, Report Cards, Staff Management, Parent Portal, School Website, and WhatsApp Communication.
 
 Key next steps:
 • Confirm your school profile and contact information.
-• Add teachers, classes, and students.
-• Publish fee schedules and share the parent portal login.
+• Add your teachers, classes, and students.
+• Set up and publish your fee schedules.
+• Create your timetable and lesson structure.
+• Share the relevant parent portal login information.
 • Activate WhatsApp communication for parents and staff updates.
 
-Reply to this email if you want us to book a short onboarding call for your team.`,
+If you need help with any part of the setup, please reach out to me via WhatsApp at 07047138179. We’ll be happy to guide you through the process and help your school get started smoothly.
+
+We look forward to helping your school get the most out of SchoolBase.`,
   },
   BEST_PRACTICE_TIP: {
-    subject: "Best practice tips: keep parents informed and collect fees faster",
+    subject: "Best-practice guidance: improve school operations with SchoolBase",
     body: `Hello,
 
-Here are three best practices for schools using SchoolBase across Admissions, Student Records, Attendance, Fees, Payments, Results, Report Cards, Staff Management, and WhatsApp Communication:
+To help your school get the most out of SchoolBase, here are a few practical ways to use the platform more effectively across Admissions, Student Records, Attendance, Fees, Payments, Timetable & Lesson Planning, Results, Report Cards, Staff Management, Parent Portal, School Website, and WhatsApp Communication.
 
-1) Send parent notifications early for term dates, fees, and events via portal and WhatsApp.
-2) Use automated fee reminders and payment tracking to reduce late payments.
-3) Review attendance and results reports each day to support student interventions.
+1) Keep your timetable and lesson plans current to reduce scheduling confusion and increase staff alignment.
+2) Send automated fee reminders and parent notices early to reduce delays and improve communication.
+3) Review attendance, report cards, and results regularly to support faster intervention where needed.
+4) Use the parent portal and WhatsApp tools consistently to keep families informed and connected.
+5) Make regular use of dashboards and reports so leaders can monitor performance in real time.
 
-These actions drive better communication, stronger finances, and better outcomes.`,
+These steps help schools strengthen communication, improve accountability, and create a more efficient and professional experience for everyone involved.`,
   },
   MANUAL_ANNOUNCEMENT: {
-    subject: "Important announcement from SchoolBase operations",
+    subject: "Important SchoolBase announcement: key update for your school operations",
     body: `Hello,
 
-We have an important update for your school. This message covers core SchoolBase capabilities including Admissions, Student Records, Attendance, Fees, Payments, Results, Report Cards, Staff Management, and WhatsApp Communication.
+We have an important update for your school as part of our ongoing commitment to improving the SchoolBase experience.
 
-[Add announcement details here]
+This message covers core platform capabilities including Admissions, Student Records, Attendance, Fees, Payments, Timetable & Lesson Planning, Results, Report Cards, Staff Management, Parent Portal, School Website, and WhatsApp Communication.
 
-Please review and share this with your administrative team. If you need support implementing this change, reply to this email.`,
+[Add your announcement details here]
+
+We encourage your administrative team to review this update carefully and align internal processes where needed. If you need guidance on how this change affects daily operations, please reply to this email and our team will support you.`,
   },
   POLICY_UPDATE: {
-    subject: "Compliance update: new SchoolBase policy and data requirements",
+    subject: "SchoolBase policy update: important information for your school",
     body: `Hello,
 
-We’re writing to share an important compliance update for SchoolBase schools.
+We’re writing to share an important compliance and policy update for SchoolBase schools.
+
+This update affects how schools manage student information, staff access, reporting, communication, and operational records across the platform, including Admissions, Student Records, Attendance, Fees, Payments, Timetable & Lesson Planning, Results, Report Cards, Staff Management, Parent Portal, School Website, and WhatsApp Communication.
 
 Please note the following changes:
-• Updated data handling and privacy requirements for student records and staff accounts.
-• New controls for access across admissions, fees, and results.
-• Revised reporting requirements for audits and WhatsApp communication logs.
+• Updated data-handling and privacy expectations for student and staff information.
+• Stronger controls for access, approvals, and audit-friendly record keeping.
+• Updated reporting expectations to support efficient school operations and accountability.
 
-If you have any questions, our compliance team is available to assist.`,
+If you have any questions or would like help understanding the implications for your school, our team is available to assist and guide you through the update.`,
   },
   ACCOUNT_SECURITY: {
-    subject: "Security notice: protect your SchoolBase accounts",
+    subject: "Security notice: protect your SchoolBase accounts and school data",
     body: `Hello,
 
-Your security is our top priority. Please review these recommended actions for all SchoolBase modules, including Admissions, Student Records, Attendance, Fees, Payments, Results, Report Cards, Staff Management, and WhatsApp Communication:
-• Use strong, unique passwords for SchoolBase admin accounts.
-• Enable two-factor authentication if available.
-• Report any unexpected login activity immediately.
+Your school’s security and data protection remain a top priority at SchoolBase. We encourage all administrators to take a few simple but important steps to protect accounts and maintain secure operations across the platform.
 
-If you need help securing your account, reply to this email and our team will assist.`,
+We recommend reviewing the following areas across SchoolBase modules, including Admissions, Student Records, Attendance, Fees, Payments, Timetable & Lesson Planning, Results, Report Cards, Staff Management, Parent Portal, School Website, and WhatsApp Communication:
+• Use strong, unique passwords for all SchoolBase administrator accounts.
+• Enable and maintain secure access controls for key staff members.
+• Review login activity and unusual account behaviour promptly.
+• Keep communication access limited to authorized personnel.
+
+If you need support securing your account or reviewing the appropriate access settings for your school, please reply to this email and our team will be happy to assist.`,
   },
 };
 
@@ -195,15 +215,15 @@ function InfoTooltip({ content }: { content: string }) {
 }
 
 const DEFAULT_SUBJECTS: Record<string, string> = {
-  PRODUCT_UPDATE: "SchoolBase product update: new feature available",
-  SUPPORT_UPDATE: "Support case update from SchoolBase",
-  ONBOARDING_GUIDANCE: "Onboarding guidance for your SchoolBase setup",
-  BEST_PRACTICE_TIP: "Best practice tips for using SchoolBase",
-  MANUAL_ANNOUNCEMENT: "Important SchoolBase update from our team",
-  PRICE_UPDATE: "Important price update for SchoolBase",
-  SUBSCRIPTION_THANK_YOU: "Thank you for choosing SchoolBase",
-  POLICY_UPDATE: "Important compliance and policy update",
-  ACCOUNT_SECURITY: "Important account security notice",
+  PRODUCT_UPDATE: "SchoolBase product update: smarter operations, stronger engagement, and more control",
+  SUPPORT_UPDATE: "SchoolBase support update: we are actively handling your request",
+  ONBOARDING_GUIDANCE: "Welcome to SchoolBase — we’re excited to have your school on board",
+  BEST_PRACTICE_TIP: "Best-practice guidance: improve school operations with SchoolBase",
+  MANUAL_ANNOUNCEMENT: "Important SchoolBase announcement: key update for your school operations",
+  PRICE_UPDATE: "Important SchoolBase pricing update: more value, more flexibility, and better support",
+  SUBSCRIPTION_THANK_YOU: "Thank you for choosing SchoolBase — your school is ready for smarter operations",
+  POLICY_UPDATE: "SchoolBase policy update: important information for your school",
+  ACCOUNT_SECURITY: "Security notice: protect your SchoolBase accounts and school data",
 };
 
 interface School {
@@ -228,11 +248,17 @@ interface EmailLog {
 interface Props {
   initialSchools: School[];
   initialEmailLogs: EmailLog[];
+  composeOpen: boolean;
+  onOpenComposer: () => void;
+  onCloseComposer: () => void;
 }
 
 export default function EmailCenterClient({
   initialSchools,
   initialEmailLogs,
+  composeOpen,
+  onOpenComposer,
+  onCloseComposer,
 }: Props) {
   const [selectedTarget, setSelectedTarget] = useState<"school" | "segment">(
     "school"
@@ -263,6 +289,17 @@ export default function EmailCenterClient({
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [selectedLog, setSelectedLog] = useState<EmailLog | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [pendingSendPayload, setPendingSendPayload] = useState<null | {
+    targetType: "school" | "segment";
+    selectedSchoolId?: string;
+    selectedSegment?: string;
+    emailType: string;
+    subject: string;
+    body: string;
+  }>(null);
 
   useEffect(() => {
     const template = EMAIL_TEMPLATES[selectedEmailType];
@@ -277,21 +314,27 @@ export default function EmailCenterClient({
     [initialSchools, selectedSchoolId]
   );
 
+  const targetCount = useMemo(() => {
+    if (selectedTarget === "school") return 1;
+    const segment = SEGMENTS.find((option) => option.value === selectedSegment);
+    return segment && segment.value === "all" ? initialSchools.length : Math.max(1, Math.min(initialSchools.length, 12));
+  }, [initialSchools.length, selectedSegment, selectedTarget]);
+
   const fetchEmailLogs = async (page = currentPage, pageSize = itemsPerPage) => {
     try {
       const params = new URLSearchParams({
         page: String(page),
         limit: String(pageSize),
       });
-      
+
       if (selectedEmailType && selectedEmailType !== "ALL") {
-        params.append('emailType', selectedEmailType);
+        params.append("emailType", selectedEmailType);
       }
 
       const response = await fetch(`/schoolbase-admin/api/email-logs?${params}`, {
-        credentials: 'include',
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -305,13 +348,12 @@ export default function EmailCenterClient({
       setTotalCount(data.pagination?.total || 0);
       setCurrentPage(page);
     } catch (err) {
-      console.error('Error fetching email logs:', err);
+      console.error("Error fetching email logs:", err);
       setEmailLogs([]);
       setTotalCount(0);
     }
   };
 
-  // Email logs are loaded as initialEmailLogs from server, fetch from API when available
   useEffect(() => {
     fetchEmailLogs(currentPage, itemsPerPage);
   }, [selectedEmailType, currentPage, itemsPerPage]);
@@ -334,302 +376,333 @@ export default function EmailCenterClient({
     setCurrentPage(1);
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const openComposer = () => {
+    playOpenTone();
+    onOpenComposer();
+  };
+
+  const closeComposer = () => {
+    playCloseTone();
+    onCloseComposer();
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (!subject.trim()) {
+      setStatusModal({
+        open: true,
+        type: "error",
+        title: "Validation required",
+        message: "Please enter an email subject.",
+      });
+      return;
+    }
+
+    if (!body.trim()) {
+      setStatusModal({
+        open: true,
+        type: "error",
+        title: "Validation required",
+        message: "Please enter an email message.",
+      });
+      return;
+    }
+
+    if (selectedTarget === "school" && !selectedSchoolId) {
+      setStatusModal({
+        open: true,
+        type: "error",
+        title: "Validation required",
+        message: "Please select a school.",
+      });
+      return;
+    }
+
+    setPendingSendPayload({
+      targetType: selectedTarget,
+      selectedSchoolId: selectedTarget === "school" ? selectedSchoolId : undefined,
+      selectedSegment: selectedTarget === "segment" ? selectedSegment : undefined,
+      emailType: selectedEmailType,
+      subject: subject.trim(),
+      body: body.trim(),
+    });
+
+    onCloseComposer();
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmSend = async () => {
+    if (!pendingSendPayload) return;
+
+    setConfirmOpen(false);
     setSending(true);
 
     try {
-      if (!subject.trim()) {
-        throw new Error("Please enter an email subject.");
-      }
-      if (!body.trim()) {
-        throw new Error("Please enter an email message.");
-      }
-      if (selectedTarget === "school" && !selectedSchoolId) {
-        throw new Error("Please select a school.");
-      }
-
-      const emailData = {
-        targetType: selectedTarget as 'school' | 'segment',
-        selectedSchoolId: selectedTarget === 'school' ? selectedSchoolId : undefined,
-        selectedSegment: selectedTarget === 'segment' ? selectedSegment : undefined,
-        emailType: selectedEmailType,
-        subject,
-        body,
-      };
-
-      const result = await sendPlatformCommunicationEmailAction(emailData);
-
+      const result = await sendPlatformCommunicationEmailAction(pendingSendPayload);
       const message = `Sent ${result.sentCount} email(s). ${result.skippedCount} skipped.`;
-      setStatusModal({
-        open: true,
-        type: "success",
-        title: "Email Sent",
-        message,
-        details:
-          selectedTarget === "school"
-            ? `The message was sent to ${selectedSchool?.name ?? "the selected school"}.`
-            : `The message was sent to the selected ${selectedSegment} segment.`,
-      });
+      setSuccessMessage(message);
+      setSuccessOpen(true);
       await refreshEmailLogs();
     } catch (err) {
       setStatusModal({
         open: true,
         type: "error",
-        title: "Send Failed",
+        title: "Send failed",
         message: err instanceof Error ? err.message : "Failed to send platform email.",
       });
     } finally {
       setSending(false);
+      setPendingSendPayload(null);
     }
   };
 
   return (
-    <div className="space-y-3 sm:space-y-5">
-      <div className="grid gap-3 sm:gap-5 lg:grid-cols-[1.5fr_1fr]">
-        <section className="rounded-2xl bg-surface p-3 shadow-sm sm:p-5">
-          <div className="mb-4 flex items-start justify-between gap-4 sm:mb-5">
+    <div className="space-y-5">
+      <div className="grid gap-5 lg:grid-cols-[1.5fr_1fr]">
+        <section className="rounded-2xl border border-border bg-surface p-4 shadow-[0_8px_20px_rgba(15,23,42,0.02)] sm:p-6">
+          <div className="mb-5 flex items-center justify-between gap-4">
             <div>
-              <div className="mb-2 inline-flex items-center rounded-full bg-brand/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-brand">
-                Compose
-              </div>
-              <h2 className="text-lg font-semibold text-foreground">Send platform communication</h2>
-              <p className="mt-1.5 text-sm text-muted">
-                Choose a school or a school segment, then send announcements, product news, updates, or security notices.
-              </p>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-foreground">Email type</label>
-                <select
-                  value={selectedEmailType}
-                  onChange={(event) => setSelectedEmailType(event.target.value)}
-                  name="emailType"
-                  className="w-full rounded-xl border border-border/80 bg-background px-3.5 py-2.5 text-sm text-foreground outline-none transition focus:border-brand"
-                >
-                  {EMAIL_TYPES.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-foreground">Send to</label>
-                <div className="grid gap-2 rounded-2xl bg-background p-2">
-                  <label className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm cursor-pointer transition hover:bg-slate-50">
-                    <input
-                      type="radio"
-                      name="target"
-                      value="school"
-                      checked={selectedTarget === "school"}
-                      onChange={() => setSelectedTarget("school")}
-                      className="h-4 w-4 accent-brand"
-                    />
-                    Single school
-                  </label>
-                  <label className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm cursor-pointer transition hover:bg-slate-50">
-                    <input
-                      type="radio"
-                      name="target"
-                      value="segment"
-                      checked={selectedTarget === "segment"}
-                      onChange={() => setSelectedTarget("segment")}
-                      className="h-4 w-4 accent-brand"
-                    />
-                    School segment
-                  </label>
-                </div>
-              </div>
+              <span className="inline-flex rounded-full bg-brand/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-brand">Overview</span>
+              <h2 className="mt-3 text-xl font-semibold text-foreground">Email summary</h2>
             </div>
 
-            {selectedTarget === "school" ? (
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-foreground">Select school</label>
-                <select
-                  name="schoolId"
-                  value={selectedSchoolId}
-                  onChange={(event) => setSelectedSchoolId(event.target.value)}
-                  className="w-full rounded-xl border border-border/80 bg-background px-3.5 py-2.5 text-sm text-foreground outline-none transition focus:border-brand"
-                >
-                  {initialSchools.map((school) => (
-                    <option key={school.id} value={school.id}>
-                      {school.name} {school.email ? `(${school.email})` : ""}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-foreground">Select segment</label>
-                <select
-                  name="segment"
-                  value={selectedSegment}
-                  onChange={(event) => setSelectedSegment(event.target.value)}
-                  className="w-full rounded-xl border border-border/80 bg-background px-3.5 py-2.5 text-sm text-foreground outline-none transition focus:border-brand"
-                >
-                  {SEGMENTS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-foreground">Subject</label>
-              <input
-                type="text"
-                name="subject"
-                value={subject}
-                onChange={(event) => setSubject(event.target.value)}
-                placeholder={defaultSubject}
-                className="w-full rounded-xl border border-border/80 bg-background px-3.5 py-2.5 text-sm text-foreground outline-none transition focus:border-brand"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-semibold text-foreground">Message</label>
-                <InfoTooltip content="The selected template already includes a greeting and signing text, so you can focus on the main message content." />
-              </div>
-              <textarea
-                name="body"
-                value={body}
-                onChange={(event) => setBody(event.target.value)}
-                rows={10}
-                placeholder={`Write your ${emailTypeLabel.toLowerCase()} message here.`}
-                className="w-full rounded-xl border border-border/80 bg-background px-3.5 py-2.5 text-sm text-foreground outline-none transition focus:border-brand"
-              />
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-2">
-                <InfoTooltip
-                  content={
-                    selectedTarget === "school"
-                      ? "The email will be sent to the selected school admin email address."
-                      : "The email will be sent to the admin user of each school in the selected segment."
-                  }
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={sending}
-                className="inline-flex items-center justify-center rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {sending ? "Sending…" : "Send email"}
-              </button>
-            </div>
-
-          </form>
-        </section>
-
-        <section className="rounded-2xl bg-surface p-3 shadow-sm sm:p-5">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold text-foreground">Email details</h2>
-            <InfoTooltip content="Use this panel for platform announcements, product news, support updates, onboarding guidance, compliance alerts, and security notices. SchoolBase will send these messages to the primary school admin email address for each selected school." />
-          </div>
-          <div className="mt-3 space-y-3 text-sm text-muted">
-            <div className="rounded-2xl bg-background p-3">
-              <p className="text-sm font-semibold text-foreground">Recommended use</p>
-              <ul className="mt-2 space-y-2 pl-4 text-sm text-muted list-disc">
-                <li>Product updates and feature announcements</li>
-                <li>Support case updates and follow-ups</li>
-                <li>Onboarding guidance for new schools</li>
-                <li>Best-practice tips for using SchoolBase</li>
-                <li>Manual announcements or operational messages</li>
-                <li>Compliance, policy, and account security alerts</li>
-              </ul>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <section className="rounded-2xl bg-surface p-3 shadow-sm sm:p-5">
-        <div className="mb-4 flex items-center justify-between gap-4 sm:mb-5">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold text-foreground">Recent email activity</h2>
-              <InfoTooltip content="This section shows the most recently sent platform communication emails and their current status." />
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
-              onClick={refreshEmailLogs}
-              className="rounded-2xl border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition hover:border-brand hover:text-brand"
+              onClick={openComposer}
+              className="rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground transition hover:bg-surface"
             >
-              Refresh logs
+              Edit
             </button>
-            <div className="flex items-center gap-2 rounded-2xl border border-border bg-background px-3 py-2 text-sm text-foreground">
-              <label htmlFor="pageSize" className="text-sm text-muted">
-                Rows per page:
-              </label>
-              <select
-                id="pageSize"
-                value={itemsPerPage}
-                onChange={handlePageSizeChange}
-                className="rounded-2xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition focus:border-brand"
-              >
-                {[10, 20, 50, 100].map((size) => (
-                  <option key={size} value={size}>
-                    {size}
-                  </option>
-                ))}
-              </select>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="rounded-xl border border-border bg-background p-4">
+              <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted">Target</p>
+              <p className="mt-3 text-base font-bold text-foreground">{selectedTarget === "school" ? selectedSchool?.name || "School" : SEGMENTS.find((option) => option.value === selectedSegment)?.label || "Segment"}</p>
+            </div>
+            <div className="rounded-xl border border-border bg-background p-4">
+              <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted">Audience</p>
+              <p className="mt-3 text-2xl font-bold text-foreground">{targetCount}</p>
+            </div>
+            <div className="rounded-xl border border-border bg-background p-4">
+              <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted">Template</p>
+              <p className="mt-3 line-clamp-2 text-sm font-semibold text-foreground">{EMAIL_TYPES.find((option) => option.value === selectedEmailType)?.label || "Custom email"}</p>
             </div>
           </div>
-        </div>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-border text-sm">
-            <thead className="bg-background text-left text-xs uppercase tracking-[0.15em] text-muted">
-              <tr>
-                <th className="px-4 py-3">When</th>
-                <th className="px-4 py-3">School</th>
-                <th className="px-4 py-3">Type</th>
-                <th className="px-4 py-3">Subject</th>
-                <th className="px-4 py-3">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {emailLogs.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-4 py-6 text-center text-sm text-muted">
-                    No email activity yet.
-                  </td>
-                </tr>
-              ) : (
-                emailLogs.map((log) => (
-                  <tr
-                    key={log.id}
-                    className="cursor-pointer hover:bg-brand/5 transition-colors"
-                    onClick={() => setSelectedLog(log)}
-                  >
-                    <td className="px-4 py-4 text-sm text-muted">{new Date(log.sentAt).toLocaleString()}</td>
-                    <td className="px-4 py-4 text-sm text-foreground">{log.schoolName ?? "Platform"}</td>
-                    <td className="px-4 py-4 text-sm text-muted">{log.emailType}</td>
-                    <td className="px-4 py-4 text-sm text-foreground">{log.subject}</td>
-                    <td className="px-4 py-4 text-sm font-semibold text-foreground">{log.status}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+          <div className="mt-5 rounded-xl border border-border bg-background p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted">Latest activity</p>
+                <h3 className="mt-2 text-base font-semibold text-foreground">{emailLogs[0]?.status || "Ready to send"}</h3>
+              </div>
+              <span className="rounded-full bg-brand/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-brand">
+                {emailLogs[0]?.emailType ? "Live" : "Ready"}
+              </span>
+            </div>
+            {emailLogs[0] && (
+              <p className="mt-3 text-sm text-muted">
+                Last sent: {new Date(emailLogs[0].sentAt).toLocaleString()} · {emailLogs[0].subject}
+              </p>
+            )}
+          </div>
+        </section>
+
+        <aside className="min-w-0 rounded-2xl border border-border bg-brand/5 p-4 text-sm text-foreground shadow-[0_8px_20px_rgba(15,23,42,0.02)] sm:p-5">
+          <div className="flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">i</div>
+            <p className="text-sm font-semibold text-foreground">Helpful guidance</p>
+          </div>
+          <ul className="mt-3 space-y-2 text-sm text-muted">
+            <li>• Keep messages concise and audience appropriate.</li>
+            <li>• Use the selected template to maintain consistent tone.</li>
+            <li>• Review the school or segment before sending.</li>
+            <li>• Logs are preserved for follow-up and auditing.</li>
+          </ul>
+        </aside>
+      </div>
+
+      {composeOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-3 sm:p-4">
+          <style>{`
+            @keyframes email_modal_enter { from { transform: translateY(18px) scale(.98); opacity: 0 } to { transform: translateY(0) scale(1); opacity: 1 } }
+          `}</style>
+
+          <div
+            className="max-h-[82vh] w-full max-w-3xl overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
+            style={{ animation: "email_modal_enter 300ms cubic-bezier(.2,.9,.2,1)" }}
+          >
+            <div className="border-b border-border/70 bg-brand/10 px-4 py-3 sm:px-5 sm:py-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand">Email composer</p>
+                  <h2 className="mt-1 text-lg font-bold text-foreground sm:text-xl">Send platform communication</h2>
+                  <p className="mt-1 text-xs text-muted">Choose the audience and message content, then confirm before sending.</p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={closeComposer}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-background text-foreground transition hover:bg-surface"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="max-h-[calc(82vh-110px)] overflow-y-auto space-y-2 p-3 sm:p-4">
+              <div className="grid gap-2.5 lg:grid-cols-[1.2fr_0.8fr]">
+                <div className="space-y-2.5">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Template</label>
+                    <select
+                      value={selectedEmailType}
+                      onChange={(event) => setSelectedEmailType(event.target.value)}
+                      className="w-full rounded-lg border border-border/80 bg-background px-2.5 py-2 text-xs text-foreground outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"
+                    >
+                      {EMAIL_TYPES.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Send to</label>
+                    <div className="grid grid-cols-1 gap-2 rounded-xl bg-background p-1.5 sm:grid-cols-2">
+                      <label className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs cursor-pointer transition hover:bg-slate-50">
+                        <input
+                          type="radio"
+                          name="target"
+                          value="school"
+                          checked={selectedTarget === "school"}
+                          onChange={() => setSelectedTarget("school")}
+                          className="h-3.5 w-3.5 accent-brand"
+                        />
+                        Single school
+                      </label>
+                      <label className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs cursor-pointer transition hover:bg-slate-50">
+                        <input
+                          type="radio"
+                          name="target"
+                          value="segment"
+                          checked={selectedTarget === "segment"}
+                          onChange={() => setSelectedTarget("segment")}
+                          className="h-3.5 w-3.5 accent-brand"
+                        />
+                        School segment
+                      </label>
+                    </div>
+                  </div>
+
+                  {selectedTarget === "school" ? (
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Select school</label>
+                      <select
+                        value={selectedSchoolId}
+                        onChange={(event) => setSelectedSchoolId(event.target.value)}
+                        className="w-full rounded-lg border border-border/80 bg-background px-2.5 py-2 text-xs outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"
+                      >
+                        {initialSchools.map((school) => (
+                          <option key={school.id} value={school.id}>{school.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Select segment</label>
+                      <select
+                        value={selectedSegment}
+                        onChange={(event) => setSelectedSegment(event.target.value)}
+                        className="w-full rounded-lg border border-border/80 bg-background px-2.5 py-2 text-xs outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"
+                      >
+                        {SEGMENTS.map((option) => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Subject</label>
+                    <input
+                      type="text"
+                      value={subject}
+                      onChange={(event) => setSubject(event.target.value)}
+                      placeholder={defaultSubject}
+                      className="w-full rounded-lg border border-border/80 bg-background px-2.5 py-2 text-xs outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"
+                    />
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-border bg-background p-3">
+                  <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Quick notes</h3>
+                  <ul className="mt-2 space-y-1 text-[11px] text-muted">
+                    <li>• Keep the subject short and clear.</li>
+                    <li>• Use the selected template to keep your tone consistent.</li>
+                    <li>• Review the audience before sending.</li>
+                    <li>• Email logs remain available for audit and follow-up.</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Message</label>
+                <textarea
+                  value={body}
+                  onChange={(event) => setBody(event.target.value)}
+                  rows={10}
+                  placeholder={`Write your ${emailTypeLabel.toLowerCase()} message here.`}
+                  className="w-full rounded-lg border border-border/80 bg-background px-2.5 py-2 text-xs leading-5 outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"
+                />
+              </div>
+
+              <div className="flex flex-col-reverse gap-2 border-t border-border pt-3 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={closeComposer}
+                  className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface"
+                >
+                  Close
+                </button>
+                <button
+                  type="submit"
+                  disabled={sending}
+                  className="inline-flex items-center justify-center rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {sending ? "Sending…" : "Send email"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-        <Pagination
-          currentPage={currentPage}
-          totalPages={Math.max(1, Math.ceil(totalCount / itemsPerPage))}
-          onPageChange={setCurrentPage}
-          className="mt-4"
-        />
-      </section>
+      )}
+
+      <ErrorModal
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title="Confirm email send"
+        message={
+          selectedTarget === "school"
+            ? `This message will be sent to ${selectedSchool?.name || "the selected school"}.`
+            : `This message will be sent to the ${SEGMENTS.find((option) => option.value === selectedSegment)?.label || "selected"} segment.`
+        }
+        type="success"
+        confirmLabel="Send now"
+        onSuccessAction={handleConfirmSend}
+      />
+
+      <ErrorModal
+        isOpen={successOpen}
+        onClose={() => {
+          setSuccessOpen(false);
+          setSuccessMessage("");
+        }}
+        title="Email sent"
+        message={successMessage}
+        type="success"
+        confirmLabel="Done"
+      />
 
       <ErrorModal
         isOpen={statusModal.open}
@@ -689,4 +762,51 @@ export default function EmailCenterClient({
       )}
     </div>
   );
+}
+
+function playOpenTone() {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const now = ctx.currentTime;
+    const playTone = (freq: number, duration: number, gain: number, delay = 0) => {
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, now + delay);
+      gainNode.gain.setValueAtTime(0.0001, now + delay);
+      gainNode.gain.exponentialRampToValueAtTime(gain, now + delay + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, now + delay + duration);
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      osc.start(now + delay);
+      osc.stop(now + delay + duration);
+    };
+
+    playTone(760, 0.14, 0.05, 0);
+    playTone(1120, 0.14, 0.05, 0.07);
+    setTimeout(() => ctx.close(), 700);
+  } catch {
+    // ignore unsupported browser audio
+  }
+}
+
+function playCloseTone() {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = "sine";
+    o.frequency.value = 420;
+    g.gain.value = 0.0001;
+    o.connect(g);
+    g.connect(ctx.destination);
+    const now = ctx.currentTime;
+    g.gain.linearRampToValueAtTime(0.04, now + 0.01);
+    o.start(now);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+    o.stop(now + 0.24);
+    setTimeout(() => ctx.close(), 500);
+  } catch {
+    // ignore unsupported browser audio
+  }
 }

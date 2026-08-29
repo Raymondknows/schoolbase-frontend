@@ -313,7 +313,7 @@ export default function PlatformOverviewPage() {
           <button
             type="button"
             onClick={() => setIsPanelOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0A66C2] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0952a4] cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand/90 cursor-pointer"
           >
             <ShieldCheck className="h-4 w-4" />
             Open admin panel
@@ -453,7 +453,7 @@ export default function PlatformOverviewPage() {
           type="button"
           onClick={sendSetupReminders}
           disabled={reminding}
-          className="cursor-pointer w-full inline-flex items-center justify-center px-4 py-3 bg-[#0A66C2] text-white rounded-lg hover:bg-[#0952a4] transition-colors font-medium shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+          className="cursor-pointer w-full inline-flex items-center justify-center px-4 py-3 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Bell className="h-4 w-4 mr-2" />
           Send setup reminders

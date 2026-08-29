@@ -42,6 +42,8 @@ export default function VideosClient({
     type: "success",
     message: "",
   });
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -68,12 +70,35 @@ export default function VideosClient({
     loadVideos();
   }, []);
 
+  useEffect(() => {
+    if (showForm) {
+      playOpenTone();
+    }
+  }, [showForm]);
+
+  useEffect(() => {
+    if (!statusModal.open) return;
+
+    if (statusModal.type === "success") {
+      playSuccessTone();
+    } else {
+      playErrorTone();
+    }
+  }, [statusModal.open, statusModal.type]);
+
+  const categoryOptions = ["All", ...new Set(videos.map((video) => video.category))];
+  const filteredVideos = videos.filter((video) => {
+    const categoryMatch = activeCategory === "All" || video.category === activeCategory;
+    const featuredMatch = !showFeaturedOnly || video.featured;
+    return categoryMatch && featuredMatch;
+  });
+
   if (pageLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
+      <div className="flex min-h-[320px] items-center justify-center rounded-[28px] border border-border/80 bg-gradient-to-br from-surface via-background to-brand/5 shadow-[0_20px_60px_rgba(10,102,194,0.08)]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand mx-auto"></div>
-          <p className="mt-3 text-muted">Loading video library...</p>
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-brand/30 border-t-brand"></div>
+          <p className="mt-4 text-sm font-medium text-muted">Loading video library...</p>
         </div>
       </div>
     );
@@ -108,7 +133,6 @@ export default function VideosClient({
     e.preventDefault();
     setLoading(true);
 
-    // Trim and validate inputs
     const trimmedTitle = formData.title.trim();
     const trimmedUrl = formData.videoUrl.trim();
     const trimmedDescription = formData.description.trim();
@@ -119,7 +143,6 @@ export default function VideosClient({
       return;
     }
 
-    // Validate URL format
     if (!isValidVideoUrl(trimmedUrl)) {
       setStatusModal({ open: true, type: "error", title: "Invalid video URL", message: "Please enter a valid video URL (YouTube, Vimeo, or Loom)." });
       setLoading(false);
@@ -152,7 +175,7 @@ export default function VideosClient({
           ...dataToSubmit,
           createdAt: new Date(),
         };
-        setVideos([newVideo, ...videos]);
+        setVideos((prevVideos) => [newVideo, ...prevVideos]);
       }
 
       handleReset();
@@ -172,7 +195,6 @@ export default function VideosClient({
 
   const isValidVideoUrl = (url: string): boolean => {
     try {
-      // Check if URL is valid and from supported platforms
       return (
         url.includes("youtube.com") ||
         url.includes("youtu.be") ||
@@ -206,7 +228,7 @@ export default function VideosClient({
   };
 
   const copyShareLink = (videoId: string) => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const shareUrl = `${window.location.origin}/video-tutorials/${videoId}`;
       navigator.clipboard.writeText(shareUrl);
       setStatusModal({ open: true, type: "success", title: "Link copied", message: "The share link was copied to your clipboard." });
@@ -215,12 +237,13 @@ export default function VideosClient({
 
   const totalVideos = videos.length;
   const featuredVideos = videos.filter((video) => video.featured).length;
+  const categoryCount = new Set(videos.map((video) => video.category)).size;
   const deleteVideo = confirmDeleteVideoId
     ? videos.find((video) => video.id === confirmDeleteVideoId)
     : null;
 
   return (
-    <div className="relative w-full space-y-2 px-0 sm:px-0 sm:space-y-4">
+    <div className="relative w-full space-y-4">
       <ErrorModal
         isOpen={statusModal.open}
         onClose={() => setStatusModal((prev) => ({ ...prev, open: false }))}
@@ -229,253 +252,303 @@ export default function VideosClient({
         type={statusModal.type}
         confirmLabel={statusModal.type === "success" ? "Okay" : "Try again"}
       />
+
       {showForm && (
-        <div className="w-full rounded-2xl border border-border/70 bg-surface p-3 shadow-sm sm:p-4">
-          <div className="mb-3 flex flex-col gap-3 sm:mb-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-            <div className="flex items-center gap-2 text-foreground">
-              <Plus className="h-5 w-5 text-brand" />
-              <h2 className="text-lg font-semibold sm:text-xl">
-                {editingId ? "Edit Video" : "Add New Video"}
-              </h2>
-            </div>
-            <Button
-              onClick={() => {
-                handleReset();
-                onHideForm();
-              }}
-              variant="outline"
-              className="w-full sm:w-auto"
-            >
-              Cancel
-            </Button>
-          </div>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
+          <style>{`
+            @keyframes video_modal_enter { from { transform: translateY(16px) scale(.98); opacity: 0 } to { transform: translateY(0) scale(1); opacity: 1 } }
+          `}</style>
 
-          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 w-full">
-            <div className="w-full">
-              <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
-                Video Title *
-              </label>
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted"
-                placeholder="e.g., How to Issue Fee Invoices"
-                disabled={loading}
-              />
-            </div>
+          <div
+            className="w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
+            style={{ animation: "video_modal_enter 300ms cubic-bezier(.2,.9,.2,1)" }}
+          >
+            <div className="border-b border-border/70 bg-brand/10 px-6 py-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand">Content</p>
+                  <h2 className="mt-1 text-2xl font-bold text-foreground">
+                    {editingId ? "Edit video" : "Add new video"}
+                  </h2>
+                  <p className="mt-1 text-sm text-muted">
+                    {editingId
+                      ? "Update the video details and visibility settings."
+                      : "Create a new tutorial for your team or school audience."}
+                  </p>
+                </div>
 
-            <div className="w-full">
-              <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
-                Description
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted h-20 resize-none"
-                placeholder="Brief description of what this tutorial teaches"
-                disabled={loading}
-              />
-            </div>
-
-            <div className="w-full">
-              <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
-                Video URL (Loom/YouTube/Vimeo) *
-              </label>
-              <input
-                type="url"
-                value={formData.videoUrl}
-                onChange={(e) =>
-                  setFormData({ ...formData, videoUrl: e.target.value })
-                }
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted truncate"
-                placeholder="https://loom.com/share/... or https://youtu.be/..."
-                disabled={loading}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full">
-              <div className="w-full">
-                <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
-                  Category
-                </label>
-                <select
-                  value={formData.category}
-                  onChange={(e) =>
-                    setFormData({ ...formData, category: e.target.value })
-                  }
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs sm:text-sm text-foreground"
-                  disabled={loading}
+                <button
+                  type="button"
+                  onClick={() => {
+                    playCloseTone();
+                    handleReset();
+                    onHideForm();
+                  }}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-background text-foreground transition hover:bg-surface"
                 >
-                  <option>Getting Started</option>
-                  <option>Admission</option>
-                  <option>Attendance</option>
-                  <option>Classes</option>
-                  <option>Subjects</option>
-                  <option>Teachers</option>
-                  <option>Fees</option>
-                  <option>Results</option>
-                  <option>Support</option>
-                  <option>Settings</option>
-                  <option>Parent Communication</option>
-                  <option>WhatsApp</option>
-                  <option>Reports</option>
-                </select>
+                  ✕
+                </button>
               </div>
+            </div>
 
-              <div className="flex items-center sm:items-end">
-                <label className="flex items-center gap-2 cursor-pointer">
+            <form onSubmit={handleSubmit} className="space-y-4 p-5 sm:p-6">
+              <div className="grid gap-4 lg:grid-cols-2">
+                <div className="lg:col-span-2">
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                    Video Title
+                  </label>
                   <input
-                    type="checkbox"
-                    checked={formData.featured}
-                    onChange={(e) =>
-                      setFormData({ ...formData, featured: e.target.checked })
-                    }
-                    className="rounded border-border"
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted outline-none transition focus:border-brand focus:ring-3 focus:ring-brand/10"
+                    placeholder="e.g., How to issue fee invoices"
                     disabled={loading}
                   />
-                  <span className="text-xs sm:text-sm font-medium text-foreground">
-                    Featured ⭐
-                  </span>
-                </label>
-              </div>
-            </div>
+                </div>
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full sm:w-auto"
-            >
-              {loading
-                ? "Saving..."
-                : editingId
-                  ? "Update Video"
-                  : "Create Video"}
-            </Button>
-          </form>
+                <div className="lg:col-span-2">
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                    Description
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="h-24 w-full resize-none rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted outline-none transition focus:border-brand focus:ring-3 focus:ring-brand/10"
+                    placeholder="Brief description of what this tutorial teaches"
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className="lg:col-span-2">
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                    Video URL
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.videoUrl}
+                    onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                    className="w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted outline-none transition focus:border-brand focus:ring-3 focus:ring-brand/10"
+                    placeholder="https://loom.com/share/... or https://youtu.be/..."
+                    disabled={loading}
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                    Category
+                  </label>
+                  <select
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground outline-none transition focus:border-brand focus:ring-3 focus:ring-brand/10"
+                    disabled={loading}
+                  >
+                    <option>Getting Started</option>
+                    <option>Admission</option>
+                    <option>Attendance</option>
+                    <option>Classes</option>
+                    <option>Subjects</option>
+                    <option>Teachers</option>
+                    <option>Fees</option>
+                    <option>Results</option>
+                    <option>Support</option>
+                    <option>Settings</option>
+                    <option>Parent Communication</option>
+                    <option>WhatsApp</option>
+                    <option>Reports</option>
+                  </select>
+                </div>
+
+                <div className="flex items-end">
+                  <label className="flex w-full cursor-pointer items-center justify-between rounded-lg border border-border bg-background px-3.5 py-3 shadow-sm transition hover:border-brand/40">
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">Highlight</div>
+                      <div className="mt-1 text-sm font-medium text-foreground">Feature on homepage</div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={formData.featured}
+                      onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                      className="h-4 w-4 rounded border-border text-brand focus:ring-brand"
+                      disabled={loading}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 border-t border-border pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    playCloseTone();
+                    handleReset();
+                    onHideForm();
+                  }}
+                  className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface"
+                >
+                  Cancel
+                </button>
+                <Button type="submit" disabled={loading} className="w-full sm:w-auto">
+                  {loading ? "Saving..." : editingId ? "Update Video" : "Create Video"}
+                </Button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
-      {/* Videos List */}
-      <div className="w-full rounded-2xl border border-border/70 bg-surface p-3 shadow-sm sm:p-4">
-        <div className="mb-4 grid gap-4 md:mb-6 md:grid-cols-[1fr_auto] md:items-center">
+      <div className="rounded-lg border border-border bg-surface p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-4 border-b border-border pb-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="text-lg sm:text-xl font-semibold text-foreground">
-              Video Library
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm text-muted">
-              A polished collection of tutorials for your team and schools, with quick actions for editing, sharing, and managing each item.
-            </p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand">Overview</p>
+            <h2 className="mt-2 text-xl font-semibold text-foreground">Video Library</h2>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl border border-border bg-background p-3 text-sm sm:p-4">
-              <p className="text-muted uppercase tracking-[0.2em] text-[10px]">Total videos</p>
-              <p className="mt-2 text-2xl font-semibold text-foreground">{totalVideos}</p>
-            </div>
-            <div className="rounded-2xl border border-border bg-background p-4 text-sm">
-              <p className="text-muted uppercase tracking-[0.2em] text-[10px]">Featured</p>
-              <p className="mt-2 text-2xl font-semibold text-foreground">{featuredVideos}</p>
-            </div>
+
+          <div className="flex flex-wrap gap-2 text-xs text-muted">
+            <span className="rounded-md border border-border bg-background px-2.5 py-1.5">{totalVideos} total</span>
+            <span className="rounded-md border border-border bg-background px-2.5 py-1.5">{featuredVideos} featured</span>
+            <span className="rounded-md border border-border bg-background px-2.5 py-1.5">{categoryCount} categories</span>
           </div>
         </div>
 
-        {videos.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border bg-background px-4 py-10 text-center sm:py-12">
-            <p className="text-muted">No videos yet. Add a tutorial to get started.</p>
+        <div className="pt-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap gap-2">
+              {categoryOptions.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => setActiveCategory(category)}
+                  className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                    activeCategory === category
+                      ? "bg-brand text-white"
+                      : "bg-background text-muted ring-1 ring-border hover:text-foreground"
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowFeaturedOnly((prev) => !prev)}
+              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                showFeaturedOnly
+                  ? "bg-amber-100 text-amber-700 ring-1 ring-amber-200"
+                  : "bg-background text-muted ring-1 ring-border hover:text-foreground"
+              }`}
+            >
+              Featured only
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {filteredVideos.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-border bg-background px-4 py-12 text-center">
+            <p className="text-base font-medium text-foreground">No videos match this view.</p>
+            <p className="mt-2 text-sm text-muted">Try another category or add a new tutorial.</p>
           </div>
         ) : (
-          <div className="grid gap-4">
-            {videos.map((video) => (
-              <div
-                key={video.id}
-                className="rounded-2xl border border-border bg-surface p-3 shadow-sm transition hover:shadow-md sm:p-4"
-              >
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="mb-3 flex flex-wrap items-center gap-2">
-                      <h3 className="font-semibold text-foreground text-base sm:text-lg truncate">
-                        {video.title}
-                      </h3>
-                      <span className="rounded-full bg-muted/20 px-3 py-1 text-xs font-semibold text-muted">
-                        {video.category}
+          filteredVideos.map((video) => (
+            <div
+              key={video.id}
+              className="rounded-lg border border-border bg-background p-3 shadow-sm transition-colors hover:border-brand/30 sm:p-4"
+            >
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="min-w-0 flex-1">
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <h3 className="truncate text-base font-semibold text-foreground sm:text-lg">{video.title}</h3>
+                    <span className="rounded-full bg-surface px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted ring-1 ring-border">
+                      {video.category}
+                    </span>
+                    {video.featured && (
+                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-700 ring-1 ring-amber-200">
+                        Featured
                       </span>
-                      {video.featured && (
-                        <span className="rounded-full bg-warning/10 px-3 py-1 text-xs font-semibold text-warning">
-                          Featured
-                        </span>
-                      )}
-                    </div>
-                    <p className="mb-3 text-sm text-muted line-clamp-3">
-                      {video.description || "No description provided."}
-                    </p>
-                    <div className="flex flex-wrap gap-2 text-xs text-muted">
-                      <span>Created {new Date(video.createdAt).toLocaleDateString()}</span>
-                      <span className="hidden sm:inline">•</span>
-                      <span className="break-all">{typeof window !== 'undefined' ? `${window.location.origin}/video-tutorials/${video.id}` : `/video-tutorials/${video.id}`}</span>
-                    </div>
+                    )}
                   </div>
 
-                    <div className="flex flex-wrap items-center justify-start gap-2 sm:justify-end">
-                    <button
-                      type="button"
-                      onClick={() => copyShareLink(video.id)}
-                      aria-label="Copy link"
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-foreground transition hover:bg-surface"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleEdit(video)}
-                      aria-label="Edit video"
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-brand/10 text-brand border border-border transition hover:bg-brand/20"
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(video.id)}
-                      aria-label="Delete video"
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-error/10 text-error border border-error/20 transition hover:bg-error/20"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                  <p className="text-sm leading-6 text-muted">
+                    {video.description || "No description provided."}
+                  </p>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted">
+                    <span className="rounded-full bg-surface px-2 py-1 ring-1 ring-border">Created {new Date(video.createdAt).toLocaleDateString()}</span>
+                    <span className="break-all rounded-full bg-surface px-2 py-1 ring-1 ring-border">
+                      {typeof window !== "undefined" ? `${window.location.origin}/video-tutorials/${video.id}` : `/video-tutorials/${video.id}`}
+                    </span>
                   </div>
                 </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => copyShareLink(video.id)}
+                    aria-label="Copy link"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface text-foreground transition hover:border-brand/40 hover:text-brand"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleEdit(video)}
+                    aria-label="Edit video"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-brand/20 bg-brand/10 text-brand transition hover:bg-brand/20"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(video.id)}
+                    aria-label="Delete video"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-error/20 bg-error/10 text-error transition hover:bg-error/20"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))
         )}
       </div>
+
       {confirmDeleteVideoId && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-3xl border border-border bg-surface p-6 shadow-sm">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-foreground">Delete video</h3>
-              <p className="mt-2 text-sm text-muted">
-                Are you sure you want to delete{' '}
-                <span className="font-semibold text-foreground">
-                  {deleteVideo?.title || "this video"}
-                </span>
-                ? This action cannot be undone.
-              </p>
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-lg border border-border bg-surface p-5 shadow-lg">
+            <div className="mb-4 flex items-start gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-error/10 text-error">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-foreground">Delete video</h3>
+                <p className="mt-2 text-sm leading-6 text-muted">
+                  Are you sure you want to delete <span className="font-semibold text-foreground">{deleteVideo?.title || "this video"}</span>? This action cannot be undone.
+                </p>
+              </div>
             </div>
+
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
               <button
                 type="button"
-                onClick={() => setConfirmDeleteVideoId(null)}
-                className="inline-flex w-full justify-center rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition hover:bg-background sm:w-auto"
+                onClick={() => {
+                  playCloseTone();
+                  setConfirmDeleteVideoId(null);
+                }}
+                className="inline-flex w-full justify-center rounded-md border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface sm:w-auto"
               >
                 Cancel
               </button>
               <button
                 type="button"
-                onClick={confirmDelete}
-                className="inline-flex w-full justify-center rounded-lg bg-error px-4 py-2 text-sm font-medium text-white transition hover:bg-error/90 sm:w-auto"
+                onClick={async () => {
+                  playOpenTone();
+                  await confirmDelete();
+                }}
+                className="inline-flex w-full justify-center rounded-md bg-error px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-error/90 sm:w-auto"
               >
                 Delete
               </button>
@@ -485,4 +558,99 @@ export default function VideosClient({
       )}
     </div>
   );
+}
+
+function playOpenTone() {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const now = ctx.currentTime;
+    const playTone = (freq: number, duration: number, gain: number, delay = 0) => {
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, now + delay);
+      gainNode.gain.setValueAtTime(0.0001, now + delay);
+      gainNode.gain.exponentialRampToValueAtTime(gain, now + delay + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, now + delay + duration);
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      osc.start(now + delay);
+      osc.stop(now + delay + duration);
+    };
+
+    playTone(760, 0.14, 0.05, 0);
+    playTone(1120, 0.14, 0.05, 0.07);
+    setTimeout(() => ctx.close(), 700);
+  } catch {
+    // ignore unsupported browser audio
+  }
+}
+
+function playCloseTone() {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = "sine";
+    o.frequency.value = 420;
+    g.gain.value = 0.0001;
+    o.connect(g);
+    g.connect(ctx.destination);
+    const now = ctx.currentTime;
+    g.gain.linearRampToValueAtTime(0.04, now + 0.01);
+    o.start(now);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+    o.stop(now + 0.24);
+    setTimeout(() => ctx.close(), 500);
+  } catch {
+    // ignore unsupported browser audio
+  }
+}
+
+function playSuccessTone() {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const now = ctx.currentTime;
+    const playTone = (freq: number, duration: number, gain: number, delay = 0) => {
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(freq, now + delay);
+      gainNode.gain.setValueAtTime(0.0001, now + delay);
+      gainNode.gain.exponentialRampToValueAtTime(gain, now + delay + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, now + delay + duration);
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      osc.start(now + delay);
+      osc.stop(now + delay + duration);
+    };
+
+    playTone(660, 0.12, 0.05, 0);
+    playTone(820, 0.12, 0.05, 0.08);
+    playTone(980, 0.16, 0.05, 0.16);
+    setTimeout(() => ctx.close(), 700);
+  } catch {
+    // ignore unsupported browser audio
+  }
+}
+
+function playErrorTone() {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(220, now);
+    gainNode.gain.setValueAtTime(0.0001, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.04, now + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+    osc.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.24);
+    setTimeout(() => ctx.close(), 500);
+  } catch {
+    // ignore unsupported browser audio
+  }
 }

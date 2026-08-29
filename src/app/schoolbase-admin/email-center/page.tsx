@@ -16,6 +16,7 @@ interface School {
 
 export default function EmailCenterPage() {
   const [schools, setSchools] = useState<School[]>([]);
+  const [composeOpen, setComposeOpen] = useState(false);
 
   useEffect(() => {
     async function fetchSchools() {
@@ -47,19 +48,32 @@ export default function EmailCenterPage() {
       subtitle="Send professional updates, reminders, and announcements to schools."
       actions={
         <>
-          <Link href="/schoolbase-admin/setup-reminders" className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground shadow-sm transition hover:bg-surface">
+          <Link href="/schoolbase-admin/setup-reminders" className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-surface">
             <BellRing className="h-4 w-4" />
             Setup reminders
           </Link>
-          <Link href="/schoolbase-admin/support" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0A66C2] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0952a4]">
+          <Link href="/schoolbase-admin/support" className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-surface">
             <LifeBuoy className="h-4 w-4" />
             Support inbox
           </Link>
+          <button
+            type="button"
+            onClick={() => setComposeOpen(true)}
+            className="inline-flex items-center justify-center rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand/90"
+          >
+            Compose email
+          </button>
         </>
       }
     >
       <div className="space-y-3 sm:space-y-4">
-        <EmailCenterClient initialSchools={schools} initialEmailLogs={[]} />
+        <EmailCenterClient
+          initialSchools={schools}
+          initialEmailLogs={[]}
+          composeOpen={composeOpen}
+          onOpenComposer={() => setComposeOpen(true)}
+          onCloseComposer={() => setComposeOpen(false)}
+        />
       </div>
     </AdminPageShell>
   );

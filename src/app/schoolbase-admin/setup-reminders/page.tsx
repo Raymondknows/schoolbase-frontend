@@ -12,11 +12,11 @@ export default function SetupRemindersPage() {
       subtitle="Schools that haven't completed their setup process"
       actions={
         <>
-          <Link href="/schoolbase-admin/email-center" className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground shadow-sm transition hover:bg-surface">
+          <Link href="/schoolbase-admin/email-center" className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-surface">
             <BellRing className="h-4 w-4" />
             Send reminder
           </Link>
-          <Link href="/schoolbase-admin/schools?status=TRIAL" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0A66C2] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0952a4]">
+          <Link href="/schoolbase-admin/schools?status=TRIAL" className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand/90">
             <GraduationCap className="h-4 w-4" />
             View trial schools
           </Link>

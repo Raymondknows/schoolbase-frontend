@@ -12,17 +12,20 @@ export default function VideoLibraryPage() {
   return (
     <AdminPageShell
       title="Video Library"
-      subtitle="Training and educational videos for schools"
+      subtitle="Training, onboarding, and practical how-to videos for your school operations"
       actions={
         <>
-          <Link href="/schoolbase-admin/support" className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground shadow-sm transition hover:bg-surface">
+          <Link
+            href="/schoolbase-admin/support"
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background/80 px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface"
+          >
             <LifeBuoy className="h-4 w-4" />
             Support help
           </Link>
           <button
             type="button"
             onClick={() => setShowUploadForm(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0A66C2] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0952a4]"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand/90"
           >
             <Upload className="h-4 w-4" />
             Upload video
@@ -30,7 +33,7 @@ export default function VideoLibraryPage() {
         </>
       }
     >
-      <div className="px-2 py-3 sm:px-4 sm:py-5 lg:px-6 lg:py-6 space-y-4">
+      <div className="space-y-5 px-0 py-1 sm:px-1 lg:px-2">
         <VideosClient
           initialVideos={[]}
           showForm={showUploadForm}
