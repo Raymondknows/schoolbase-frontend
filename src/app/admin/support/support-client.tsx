@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -88,6 +88,7 @@ export default function SupportClient({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const messageListRef = useRef<HTMLDivElement | null>(null);
 
   const refreshRequests = useCallback(async (showLoading = false) => {
     if (showLoading) {
@@ -321,8 +322,8 @@ export default function SupportClient({
         confirmLabel="OK"
       />
 
-      <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="border border-border bg-surface p-4 lg:max-h-[70vh] lg:overflow-y-auto lg:overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)] lg:items-stretch">
+        <aside className="border border-border bg-surface p-4 lg:max-h-[76vh] lg:overflow-y-auto lg:overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold text-foreground">Tickets</h3>
@@ -374,10 +375,10 @@ export default function SupportClient({
           </div>
         </aside>
 
-        <section className="border border-border bg-surface p-6">
+        <section className="border border-border bg-surface p-3 sm:p-4">
           {selectedRequest ? (
-            <div className="space-y-6">
-              <div className="flex flex-col gap-4 border-b border-border pb-5 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex h-[72vh] min-h-[540px] flex-col">
+              <div className="flex flex-col gap-2 border-b border-border pb-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="text-lg font-semibold text-foreground">{selectedRequest.subject}</h2>
@@ -388,7 +389,7 @@ export default function SupportClient({
                       {selectedRequest.status.replace("_", " ")}
                     </span>
                   </div>
-                  <p className="mt-2 text-sm text-muted">
+                  <p className="mt-1 text-sm text-muted">
                     {selectedRequest.school ? (
                       <>
                         From {selectedRequest.school.name} • {selectedRequest.school.country}
@@ -403,15 +404,22 @@ export default function SupportClient({
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-foreground">Conversation</h3>
-                  <span className="text-xs text-muted">
-                    {selectedRequest.messages?.length ? selectedRequest.messages.length : 1} {selectedRequest.messages?.length === 1 ? "message" : "messages"}
-                  </span>
+              <div className="mt-3 flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-background">
+                <div className="flex items-center justify-center border-b border-border bg-surface px-3 py-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (messageListRef.current) {
+                        messageListRef.current.scrollTo({ top: 0, behavior: "smooth" });
+                      }
+                    }}
+                    className="text-[11px] font-semibold uppercase tracking-[.12em] text-brand transition hover:text-brand-hover"
+                  >
+                    Load older messages
+                  </button>
                 </div>
 
-                <div className="space-y-2">
+                <div ref={messageListRef} className="flex-1 space-y-2 overflow-y-auto px-3 py-3">
                   {selectedRequest.messages?.length ? (
                     selectedRequest.messages.map((message) => {
                       const isSchoolMessage = message.senderRole === "SCHOOL";
@@ -423,12 +431,12 @@ export default function SupportClient({
 
                       return (
                         <div key={message.id} className={`flex ${isSchoolMessage ? "justify-end" : "justify-start"}`}>
-                          <div className={`max-w-[85%] rounded-lg border px-4 py-3 ${isSchoolMessage ? "border-brand/30 bg-brand/10" : "border-border bg-background text-foreground"}`}>
+                          <div className={`max-w-[85%] rounded-lg border px-3 py-2 ${isSchoolMessage ? "border-brand/30 bg-brand/10" : "border-border bg-background text-foreground"}`}>
                             <div className="flex items-center justify-between gap-3 text-xs text-muted">
                               <span className={`font-semibold ${isSchoolMessage ? "text-brand" : "text-foreground"}`}>{senderName}</span>
                               <span>{formatDate(message.createdAt)}</span>
                             </div>
-                            <p className={`mt-2 text-sm whitespace-pre-line ${isSchoolMessage ? "text-brand" : "text-foreground"}`}>{message.body}</p>
+                            <p className={`mt-1.5 text-sm whitespace-pre-line ${isSchoolMessage ? "text-brand" : "text-foreground"}`}>{message.body}</p>
                           </div>
                         </div>
                       );
@@ -441,8 +449,8 @@ export default function SupportClient({
                 </div>
               </div>
 
-              <div className="rounded-lg border border-border bg-background p-4">
-                <label className="mb-2 block text-sm font-medium text-foreground">Reply to support</label>
+              <div className="mt-3 rounded-lg border border-border bg-background p-3">
+                <label className="mb-1.5 block text-sm font-medium text-foreground">Reply to support</label>
                 <textarea
                   value={replyDrafts[selectedRequest.id] ?? ""}
                   onChange={(event) => setReplyDrafts((current) => ({ ...current, [selectedRequest.id]: event.target.value }))}
@@ -458,7 +466,7 @@ export default function SupportClient({
                   message={replySuccess ?? "Reply sent successfully."}
                   confirmLabel="OK"
                 />
-                <div className="mt-3 flex gap-2">
+                <div className="mt-2 flex gap-2">
                   <Button
                     type="button"
                     disabled={replyBusy}
