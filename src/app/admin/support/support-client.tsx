@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErrorModal } from "@/components/ui/error-modal";
 import { getBackendUrl } from "@/lib/backend-url";
@@ -258,7 +259,7 @@ export default function SupportClient({
 
   if (loading) {
     return (
-      <div className="flex min-h-[240px] items-center justify-center rounded-3xl border border-border bg-surface p-6">
+      <div className="flex min-h-[240px] items-center justify-center border border-border bg-surface p-6">
         <div className="text-center">
           <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-brand"></div>
           <p className="mt-3 text-sm text-muted">Loading support requests...</p>
@@ -269,22 +270,27 @@ export default function SupportClient({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 border-b border-border pb-6 lg:flex-row lg:items-center lg:justify-between">
-        <div className="max-w-xl">
-          <h1 className="text-2xl font-bold text-foreground">Support Requests</h1>
-          <p className="mt-1 text-sm text-muted">Manage support tickets from parents and staff.</p>
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand/10">
+            <HelpCircle className="h-5 w-5 text-brand" />
+          </div>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[.12em] text-muted">Support center</p>
+            <h1 className="text-3xl font-bold text-foreground">Support Requests</h1>
+          </div>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search tickets..."
-            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 sm:w-64"
+            className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 sm:w-64"
           />
           <select
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.target.value)}
-            className="rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none"
+            className="rounded-lg border border-border bg-background px-4 py-2 text-sm outline-none"
           >
             <option value="ALL">All statuses</option>
             <option value="OPEN">Open</option>
@@ -294,6 +300,7 @@ export default function SupportClient({
           </select>
           <Button
             type="button"
+            className="inline-flex h-10 items-center gap-2 px-4 py-2 text-sm bg-brand hover:bg-brand-hover text-white font-semibold rounded-lg"
             onClick={() => {
               setError(null);
               setSuccess(null);
@@ -315,7 +322,7 @@ export default function SupportClient({
       />
 
       <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="rounded-3xl border border-border bg-surface p-4 shadow-sm lg:max-h-[70vh] lg:overflow-y-auto lg:overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <aside className="border border-border bg-surface p-4 lg:max-h-[70vh] lg:overflow-y-auto lg:overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold text-foreground">Tickets</h3>
@@ -325,7 +332,7 @@ export default function SupportClient({
 
           <div className="space-y-2">
             {sorted.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-border bg-background p-4 text-sm text-muted">
+              <div className="rounded-lg border border-dashed border-border bg-background p-4 text-sm text-muted">
                 No support requests match your search.
               </div>
             ) : (
@@ -340,7 +347,7 @@ export default function SupportClient({
                       setReplyError(null);
                       setReplySuccess(null);
                     }}
-                    className={`w-full rounded-2xl border p-3 text-left transition ${isActive ? "border-brand bg-brand/5 shadow-sm" : "border-border bg-background hover:border-brand/40 hover:bg-brand/5"}`}
+                    className={`w-full rounded-lg border p-3 text-left transition ${isActive ? "border-brand bg-brand/5" : "border-border bg-background hover:border-brand/40 hover:bg-brand/5"}`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
@@ -367,7 +374,7 @@ export default function SupportClient({
           </div>
         </aside>
 
-        <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
+        <section className="border border-border bg-surface p-6">
           {selectedRequest ? (
             <div className="space-y-6">
               <div className="flex flex-col gap-4 border-b border-border pb-5 sm:flex-row sm:items-start sm:justify-between">
@@ -416,33 +423,33 @@ export default function SupportClient({
 
                       return (
                         <div key={message.id} className={`flex ${isSchoolMessage ? "justify-end" : "justify-start"}`}>
-                          <div className={`max-w-[85%] rounded-3xl border px-4 py-3 shadow-sm ${isSchoolMessage ? "border-[#0A66C2]/30 bg-[#0A66C2]/10 text-[#0A66C2]" : "border-border bg-background text-foreground"}`}>
+                          <div className={`max-w-[85%] rounded-lg border px-4 py-3 ${isSchoolMessage ? "border-brand/30 bg-brand/10" : "border-border bg-background text-foreground"}`}>
                             <div className="flex items-center justify-between gap-3 text-xs text-muted">
-                              <span className="font-semibold text-[#0A66C2]">{senderName}</span>
+                              <span className={`font-semibold ${isSchoolMessage ? "text-brand" : "text-foreground"}`}>{senderName}</span>
                               <span>{formatDate(message.createdAt)}</span>
                             </div>
-                            <p className={`mt-2 text-sm whitespace-pre-line ${isSchoolMessage ? "text-[#0A66C2]" : "text-foreground"}`}>{message.body}</p>
+                            <p className={`mt-2 text-sm whitespace-pre-line ${isSchoolMessage ? "text-brand" : "text-foreground"}`}>{message.body}</p>
                           </div>
                         </div>
                       );
                     })
                   ) : (
-                    <div className="rounded-2xl border border-dashed border-border bg-background px-3 py-4 text-sm text-muted">
+                    <div className="rounded-lg border border-dashed border-border bg-background px-3 py-4 text-sm text-muted">
                       {selectedRequest.message}
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-border bg-background p-4">
+              <div className="rounded-lg border border-border bg-background p-4">
                 <label className="mb-2 block text-sm font-medium text-foreground">Reply to support</label>
                 <textarea
                   value={replyDrafts[selectedRequest.id] ?? ""}
                   onChange={(event) => setReplyDrafts((current) => ({ ...current, [selectedRequest.id]: event.target.value }))}
-                  className="min-h-[120px] w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+                  className="min-h-[120px] w-full rounded-lg border border-border bg-background px-4 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
                   placeholder="Write a reply to the support team..."
                 />
-                {replyError ? <div className="mt-2 rounded-2xl bg-rose-50 p-3 text-sm text-rose-700">{replyError}</div> : null}
+                {replyError ? <div className="mt-2 rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{replyError}</div> : null}
                 <ErrorModal
                   isOpen={Boolean(replySuccess)}
                   onClose={() => setReplySuccess(null)}
@@ -518,7 +525,7 @@ export default function SupportClient({
               </div>
             </div>
           ) : (
-            <div className="flex h-full min-h-[320px] items-center justify-center rounded-3xl border border-dashed border-border bg-background p-6 text-center text-sm text-muted">
+            <div className="flex h-full min-h-[320px] items-center justify-center border border-dashed border-border bg-background p-6 text-center text-sm text-muted">
               Select a ticket from the left to view the conversation and reply.
             </div>
           )}
@@ -526,17 +533,17 @@ export default function SupportClient({
       </div>
 
       {showCreateModal ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setShowCreateModal(false)}>
-          <div className="w-full max-w-2xl rounded-3xl border border-border bg-surface p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
-            <div className="flex items-start justify-between gap-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-4" onClick={() => setShowCreateModal(false)}>
+          <div className="w-full max-w-2xl border border-border bg-surface p-6" onClick={(event) => event.stopPropagation()}>
+            <div className="flex items-start justify-between gap-4 border-b border-border pb-4">
               <div>
-                <h2 className="text-xl font-semibold text-foreground">Create support request</h2>
-                <p className="mt-1 text-sm text-muted">Send a new support ticket for help with your school workflow.</p>
+                <p className="text-[11px] font-bold uppercase tracking-[.12em] text-muted">New support request</p>
+                <h2 className="text-2xl font-semibold text-foreground mt-1">Create support request</h2>
               </div>
               <button
                 type="button"
                 onClick={() => setShowCreateModal(false)}
-                className="rounded-full border border-border bg-background p-2 text-muted transition hover:text-foreground"
+                className="rounded-lg border border-border bg-background p-2 text-muted transition hover:bg-surface hover:text-foreground"
                 aria-label="Close create support request"
               >
                 ✕
@@ -549,7 +556,7 @@ export default function SupportClient({
                 <input
                   value={subject}
                   onChange={(event) => setSubject(event.target.value)}
-                  className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+                  className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
                   placeholder="Example: Payment setup issue"
                 />
               </div>
@@ -558,7 +565,7 @@ export default function SupportClient({
                 <select
                   value={priority}
                   onChange={(event) => setPriority(event.target.value)}
-                  className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none"
+                  className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm outline-none"
                 >
                   <option value="LOW">Low</option>
                   <option value="MEDIUM">Medium</option>
@@ -571,16 +578,16 @@ export default function SupportClient({
                 <textarea
                   value={message}
                   onChange={(event) => setMessage(event.target.value)}
-                  className="min-h-[140px] w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+                  className="min-h-[140px] w-full rounded-lg border border-border bg-background px-4 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
                   placeholder="Please explain the issue in detail."
                 />
               </div>
-              {error ? <div className="rounded-2xl bg-rose-50 p-3 text-sm text-rose-700">{error}</div> : null}
-              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                <Button type="button" variant="secondary" onClick={() => setShowCreateModal(false)}>
+              {error ? <div className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</div> : null}
+              <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
+                <Button type="button" className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground hover:bg-surface" onClick={() => setShowCreateModal(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={busy}>
+                <Button type="submit" disabled={busy} className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-hover">
                   {busy ? "Sending..." : "Submit support request"}
                 </Button>
               </div>
