@@ -5,9 +5,9 @@ import { getBackendUrl } from "@/lib/backend-url";
 import { ErrorModal } from "@/components/ui/error-modal";
 import AdminSkeleton from "@/components/ui/skeleton";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, Bell, Clock, Mail, MessageCircle } from "lucide-react";
+import { Bell, Clock, HelpCircle, Mail, MessageCircle } from "lucide-react";
 
 export type PlatformSupportRequestRow = {
   id: string;
@@ -88,6 +88,7 @@ export default function SupportRequestsClient({
     message: "",
   });
   const [loading, setLoading] = useState(true);
+  const messageListRef = useRef<HTMLDivElement | null>(null);
 
   const refreshRequests = useCallback(async (showLoading = false) => {
     if (showLoading) {
@@ -370,7 +371,7 @@ export default function SupportRequestsClient({
   }
 
   return (
-    <div className="space-y-2.5 sm:space-y-4">
+    <div className="space-y-6">
       <ErrorModal
         isOpen={statusModal.open}
         onClose={() => setStatusModal((prev) => ({ ...prev, open: false }))}
@@ -379,74 +380,29 @@ export default function SupportRequestsClient({
         type={statusModal.type}
         confirmLabel={statusModal.type === "success" ? "Okay" : "Try again"}
       />
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {[
-          {
-            label: "Total tickets",
-            value: requests.length,
-            sub: "All support requests",
-            icon: MessageCircle,
-            iconClass: "bg-slate-100 text-slate-700",
-            href: "/schoolbase-admin/support",
-          },
-          {
-            label: "Open",
-            value: openCount,
-            sub: "Need response",
-            icon: Bell,
-            iconClass: "bg-emerald-100 text-emerald-700",
-            href: "/schoolbase-admin/support?status=OPEN",
-          },
-          {
-            label: "In progress",
-            value: inProgressCount,
-            sub: "Being handled",
-            icon: Clock,
-            iconClass: "bg-sky-100 text-sky-700",
-            href: "/schoolbase-admin/support?status=IN_PROGRESS",
-          },
-          {
-            label: "Unread",
-            value: unreadCount,
-            sub: "Unseen requests",
-            icon: Mail,
-            iconClass: "bg-orange-100 text-orange-700",
-            href: "/schoolbase-admin/support",
-          },
-        ].map((card) => {
-          const Icon = card.icon;
-          return (
-            <Link
-              key={card.label}
-              href={card.href}
-              className="group rounded-lg border border-border bg-surface p-5 shadow-sm transition hover:border-brand/50 hover:shadow-md"
-            >
-              <div className="flex items-start gap-3">
-                <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${card.iconClass}`}>
-                  <Icon className="h-5 w-5" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">{card.label}</p>
-                  <p className="mt-3 text-3xl font-semibold text-foreground">{card.value}</p>
-                </div>
-              </div>
-              <p className="mt-4 text-xs text-muted">{card.sub}</p>
-            </Link>
-          );
-        })}
-      </div>
-      <div className="space-y-3">
-        <div className="grid gap-3 sm:grid-cols-[minmax(0,0.4fr)_220px]">
+
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand/10">
+            <HelpCircle className="h-5 w-5 text-brand" />
+          </div>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[.12em] text-muted">Support center</p>
+            <h1 className="text-3xl font-bold text-foreground">SchoolBase support</h1>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 sm:flex-row">
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search tickets..."
-            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+            className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 sm:w-64"
           />
           <select
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.target.value)}
-            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none"
+            className="rounded-lg border border-border bg-background px-4 py-2 text-sm outline-none"
           >
             <option value="ALL">All statuses</option>
             <option value="OPEN">Open</option>
@@ -457,9 +413,52 @@ export default function SupportRequestsClient({
         </div>
       </div>
 
-      <div className="grid gap-2.5 sm:gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="rounded-2xl border border-border/70 bg-surface p-2.5 shadow-sm sm:p-3 lg:max-h-[78vh] lg:min-h-[540px] lg:overflow-y-auto lg:overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          <div className="mb-3 flex items-center justify-between py-1">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {[
+          {
+            label: "Total tickets",
+            value: requests.length,
+            detail: "All support requests",
+            icon: MessageCircle,
+          },
+          {
+            label: "Open",
+            value: openCount,
+            detail: "Need response",
+            icon: Bell,
+          },
+          {
+            label: "In progress",
+            value: inProgressCount,
+            detail: "Being handled",
+            icon: Clock,
+          },
+          {
+            label: "Unread",
+            value: unreadCount,
+            detail: "Unseen requests",
+            icon: Mail,
+          },
+        ].map((card) => {
+          const Icon = card.icon;
+          return (
+            <div key={card.label} className="border border-border bg-surface p-5">
+              <div className="mb-4 flex items-center gap-2 text-brand">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand/10">
+                  <Icon className="h-4 w-4 text-brand" />
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">{card.label}</span>
+              </div>
+              <div className="text-3xl font-semibold text-foreground">{card.value}</div>
+              <div className="mt-1 text-xs text-muted">{card.detail}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)] xl:items-stretch">
+        <aside className="border border-border bg-surface p-4 xl:max-h-[74vh] xl:overflow-y-auto xl:overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="mb-4 flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold text-foreground">Tickets</h3>
               <p className="text-xs text-muted">{filtered.length} visible • {unreadCount} unread</p>
@@ -468,7 +467,7 @@ export default function SupportRequestsClient({
 
           <div className="space-y-2">
             {filtered.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-border bg-background p-4 text-sm text-muted">
+              <div className="rounded-lg border border-dashed border-border bg-background p-4 text-sm text-muted">
                 No support requests match your search.
               </div>
             ) : (
@@ -484,7 +483,7 @@ export default function SupportRequestsClient({
                       setReplyStatus(nextStatus);
                       setStatusModal((prev) => ({ ...prev, open: false }));
                     }}
-                    className={`w-full rounded-2xl border p-2.5 text-left transition sm:p-3 ${isActive ? "border-brand bg-brand/5 shadow-sm" : "border-border bg-background hover:border-brand/40 hover:bg-brand/5"}`}
+                    className={`w-full rounded-lg border p-3 text-left transition ${isActive ? "border-brand bg-brand/5" : "border-border bg-background hover:border-brand/40 hover:bg-brand/5"}`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
@@ -511,10 +510,10 @@ export default function SupportRequestsClient({
           </div>
         </aside>
 
-        <section className="rounded-2xl border border-border/70 bg-surface p-2.5 shadow-sm sm:p-4">
+        <section className="border border-border bg-surface p-6">
           {selectedRequest ? (
-            <div className="space-y-4">
-              <div className="flex flex-col gap-2.5 border-b border-border pb-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3 sm:pb-4">
+            <div className="flex h-[72vh] min-h-[540px] flex-col">
+              <div className="flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="text-lg font-semibold text-foreground">{selectedRequest.subject}</h2>
@@ -525,7 +524,7 @@ export default function SupportRequestsClient({
                       {selectedRequest.status.replace("_", " ")}
                     </span>
                   </div>
-                  <p className="mt-2 text-sm text-muted">
+                  <p className="mt-1.5 text-sm text-muted">
                     {selectedRequest.school ? (
                       <>
                         From {selectedRequest.school.name} • {selectedRequest.school.country}
@@ -545,110 +544,114 @@ export default function SupportRequestsClient({
                 </div>
               </div>
 
-              <div className="space-y-2.5 border-t border-border pt-3">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <h3 className="text-sm font-semibold text-foreground">Conversation</h3>
-                  <span className="text-xs text-muted">
-                    {selectedRequest.messages.length} {selectedRequest.messages.length === 1 ? "message" : "messages"}
-                  </span>
+              <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-background">
+                <div className="flex items-center justify-center border-b border-border bg-surface px-3 py-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (messageListRef.current) {
+                        messageListRef.current.scrollTo({ top: 0, behavior: "smooth" });
+                      }
+                    }}
+                    className="text-[11px] font-semibold uppercase tracking-[.12em] text-brand transition hover:text-brand-hover"
+                  >
+                    Load older messages
+                  </button>
                 </div>
 
-                <div className="space-y-2">
+                <div ref={messageListRef} className="flex-1 space-y-2 overflow-y-auto px-3 py-3">
                   {selectedRequest.messages.length > 0 ? (
                     selectedRequest.messages.map((message) => {
                       const isSchoolMessage = message.senderRole === "SCHOOL";
-                      const normalizedSenderName = typeof message.senderName === "string"
-                        ? message.senderName.trim()
-                        : "";
+                      const normalizedSenderName = typeof message.senderName === "string" ? message.senderName.trim() : "";
                       const senderName = isSchoolMessage
                         ? (selectedRequest.school?.name || normalizedSenderName || "School")
                         : (normalizedSenderName || "SchoolBase Support");
                       const badgeLabel = isSchoolMessage ? "School" : "Support";
-                      const badgeClasses = isSchoolMessage
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-brand/10 text-brand";
+                      const badgeClasses = isSchoolMessage ? "bg-emerald-100 text-emerald-700" : "bg-brand/10 text-brand";
 
                       return (
                         <div key={message.id} className={`flex ${isSchoolMessage ? "justify-start" : "justify-end"}`}>
-                          <div className={`max-w-[85%] rounded-3xl border px-3 py-2.5 sm:px-4 ${isSchoolMessage ? "border-[#0A66C2]/30 bg-[#0A66C2]/10 text-[#0A66C2]" : "border-brand/20 bg-background/80 text-foreground"}`}>
-                            <div className="flex flex-col gap-2 text-[11px] text-muted sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+                          <div className={`max-w-[85%] rounded-lg border px-3 py-2 ${isSchoolMessage ? "border-brand/30 bg-brand/10" : "border-border bg-background text-foreground"}`}>
+                            <div className="flex items-center justify-between gap-3 text-[11px] text-muted">
                               <div className="flex items-center gap-2">
-                                <span className={`inline-flex rounded-full px-2 py-1 text-[10px] font-semibold ${badgeClasses}`}>
-                                  {badgeLabel}
-                                </span>
-                                <span className={`${isSchoolMessage ? "text-[#0A66C2]" : "text-foreground"} font-semibold`}>{senderName}</span>
+                                <span className={`inline-flex rounded-full px-2 py-1 text-[10px] font-semibold ${badgeClasses}`}>{badgeLabel}</span>
+                                <span className={`${isSchoolMessage ? "text-brand" : "text-foreground"} font-semibold`}>{senderName}</span>
                               </div>
                               <span>{formatDate(message.createdAt)}</span>
                             </div>
-                            <p className={`mt-1 text-sm leading-6 whitespace-pre-line ${isSchoolMessage ? "text-[#0A66C2]" : "text-foreground"}`}>{message.body}</p>
+                            <p className={`mt-1.5 text-sm whitespace-pre-line ${isSchoolMessage ? "text-brand" : "text-foreground"}`}>{message.body}</p>
                           </div>
                         </div>
                       );
                     })
                   ) : (
-                    <div className="rounded-2xl border border-dashed border-border bg-background px-3 py-4 text-sm text-muted">
+                    <div className="rounded-lg border border-dashed border-border bg-background px-3 py-4 text-sm text-muted">
                       No messages yet.
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-[220px_minmax(0,1fr)]">
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-foreground">Set status</label>
-                  <select
-                    value={replyStatus}
-                    onChange={(event) => {
-                      const nextStatus = event.target.value;
-                      setReplyStatus(nextStatus);
-                      if (selectedRequest) {
-                        setReplyStatuses((current) => ({ ...current, [selectedRequest.id]: nextStatus }));
-                        void persistRequestUpdate(nextStatus, replyDrafts[selectedRequest.id] ?? "");
-                      }
-                    }}
-                    className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none"
-                  >
-                    <option value="IN_PROGRESS">In progress</option>
-                    <option value="RESOLVED">Resolved</option>
-                    <option value="CLOSED">Closed</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-foreground">Reply message</label>
-                  <div className="mb-2 flex flex-wrap gap-2">
-                    {quickReplies.map((template) => (
-                      <button
-                        key={template.label}
-                        type="button"
-                        onClick={() => setReplyDrafts((current) => ({ ...current, [selectedRequest.id]: `${current[selectedRequest.id] ?? ""}${current[selectedRequest.id] ? "\n\n" : ""}${template.text}`.trim() }))}
-                        className="rounded-full border border-border bg-background px-3 py-1 text-xs text-muted transition hover:border-brand hover:text-brand"
-                      >
-                        {template.label}
-                      </button>
-                    ))}
+              <div className="mt-4 rounded-lg border border-border bg-background p-3">
+                <div className="grid gap-3 md:grid-cols-[220px_minmax(0,1fr)]">
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-foreground">Set status</label>
+                    <select
+                      value={replyStatus}
+                      onChange={(event) => {
+                        const nextStatus = event.target.value;
+                        setReplyStatus(nextStatus);
+                        if (selectedRequest) {
+                          setReplyStatuses((current) => ({ ...current, [selectedRequest.id]: nextStatus }));
+                          void persistRequestUpdate(nextStatus, replyDrafts[selectedRequest.id] ?? "");
+                        }
+                      }}
+                      className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm outline-none"
+                    >
+                      <option value="IN_PROGRESS">In progress</option>
+                      <option value="RESOLVED">Resolved</option>
+                      <option value="CLOSED">Closed</option>
+                    </select>
                   </div>
-                  <textarea
-                    value={replyDrafts[selectedRequest.id] ?? ""}
-                    onChange={(event) => setReplyDrafts((current) => ({ ...current, [selectedRequest.id]: event.target.value }))}
-                    className="min-h-[160px] w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
-                    placeholder="Write your support reply here..."
-                  />
-                </div>
-              </div>
 
-              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={handleReply}
-                  className="w-full sm:w-auto rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {busy ? "Sending reply..." : "Send reply"}
-                </button>
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-foreground">Reply message</label>
+                    <div className="mb-2 flex flex-wrap gap-2">
+                      {quickReplies.map((template) => (
+                        <button
+                          key={template.label}
+                          type="button"
+                          onClick={() => setReplyDrafts((current) => ({ ...current, [selectedRequest.id]: `${current[selectedRequest.id] ?? ""}${current[selectedRequest.id] ? "\n\n" : ""}${template.text}`.trim() }))}
+                          className="rounded-full border border-border bg-background px-3 py-1 text-xs text-muted transition hover:border-brand hover:text-brand"
+                        >
+                          {template.label}
+                        </button>
+                      ))}
+                    </div>
+                    <textarea
+                      value={replyDrafts[selectedRequest.id] ?? ""}
+                      onChange={(event) => setReplyDrafts((current) => ({ ...current, [selectedRequest.id]: event.target.value }))}
+                      className="min-h-[120px] w-full rounded-lg border border-border bg-background px-4 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+                      placeholder="Write your support reply here..."
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-3 flex gap-2">
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={handleReply}
+                    className="inline-flex h-10 items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {busy ? "Sending reply..." : "Send reply"}
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
-            <div className="flex h-full min-h-[320px] items-center justify-center rounded-2xl border border-dashed border-border bg-background p-3 text-center text-sm text-muted sm:p-5">
+            <div className="flex h-full min-h-[320px] items-center justify-center border border-dashed border-border bg-background p-6 text-center text-sm text-muted">
               Select a ticket from the left to view the conversation and reply.
             </div>
           )}
