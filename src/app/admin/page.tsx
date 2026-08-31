@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { CreditCard, Users, Layers, TrendingUp, ArrowUpRight, Clock, ChevronLeft, ChevronRight, DollarSign, BookOpen, MessageSquare, Plus, CheckCircle2 } from "lucide-react";
+import { CreditCard, Users, Layers, TrendingUp, ArrowUpRight, Clock, ChevronLeft, ChevronRight, DollarSign, BookOpen, MessageSquare, Plus, CheckCircle2, LayoutDashboard } from "lucide-react";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import AdminSkeleton from "@/components/ui/skeleton";
 import { formatMoney } from "@/lib/format";
@@ -10,38 +10,48 @@ import { getBackendUrl } from "@/lib/backend-url";
 import SubscriptionModal from "@/components/subscription-modal";
 import { useRouter, useSearchParams } from "next/navigation";
 
+const whatsAppWiggleStyle = `
+  @keyframes whatsapp-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.9; }
+  }
+  .whatsapp-pulse {
+    animation: whatsapp-pulse 2s ease-in-out infinite;
+  }
+`;
+
 const dashboardSectionThemes = [
   {
-    shell: "border-border bg-surface",
-    iconWrap: "bg-blue-50",
-    iconColor: "text-blue-700",
-    badge: "border-blue-100 bg-blue-50 text-blue-700",
-    link: "text-blue-700 hover:text-blue-800",
-    row: "border-l-4 border-l-blue-400 bg-blue-50/50",
+    shell: "border border-border bg-surface",
+    iconWrap: "bg-brand/10",
+    iconColor: "text-brand",
+    badge: "border border-border bg-background text-muted",
+    link: "text-brand hover:text-brand/80",
+    row: "border-l-4 border-l-brand/80 bg-brand-light/20",
   },
   {
-    shell: "border-border bg-surface",
-    iconWrap: "bg-blue-50",
-    iconColor: "text-blue-700",
-    badge: "border-blue-100 bg-blue-50 text-blue-700",
-    link: "text-blue-700 hover:text-blue-800",
-    row: "border-l-4 border-l-blue-400 bg-blue-50/50",
+    shell: "border border-border bg-surface",
+    iconWrap: "bg-brand/10",
+    iconColor: "text-brand",
+    badge: "border border-border bg-background text-muted",
+    link: "text-brand hover:text-brand/80",
+    row: "border-l-4 border-l-brand/80 bg-brand-light/20",
   },
   {
-    shell: "border-border bg-surface",
-    iconWrap: "bg-blue-100",
-    iconColor: "text-blue-700",
-    badge: "border-blue-200 bg-blue-100 text-blue-700",
-    link: "text-blue-700 hover:text-blue-800",
-    row: "border-l-4 border-l-blue-500 bg-blue-100/70",
+    shell: "border border-border bg-surface",
+    iconWrap: "bg-brand/10",
+    iconColor: "text-brand",
+    badge: "border border-border bg-background text-muted",
+    link: "text-brand hover:text-brand/80",
+    row: "border-l-4 border-l-brand/80 bg-brand-light/20",
   },
   {
-    shell: "border-border bg-surface",
-    iconWrap: "bg-blue-100",
-    iconColor: "text-blue-700",
-    badge: "border-blue-200 bg-blue-100 text-blue-700",
-    link: "text-blue-700 hover:text-blue-800",
-    row: "border-l-4 border-l-blue-500 bg-blue-100/70",
+    shell: "border border-border bg-surface",
+    iconWrap: "bg-brand/10",
+    iconColor: "text-brand",
+    badge: "border border-border bg-background text-muted",
+    link: "text-brand hover:text-brand/80",
+    row: "border-l-4 border-l-brand/80 bg-brand-light/20",
   },
 ] as const;
 
@@ -383,8 +393,6 @@ export default function AdminDashboardPage() {
       sub: `${dashboardData?.attentionCount || 0} invoices need attention`,
       href: "/admin/fees",
       icon: CreditCard,
-      color: "bg-blue-100",
-      iconColor: "text-blue-600",
     },
     {
       label: "Active pupils",
@@ -392,8 +400,6 @@ export default function AdminDashboardPage() {
       sub: `${dashboardData?.classCount || 0} classes`,
       href: "/admin/students",
       icon: Users,
-      color: "bg-purple-100",
-      iconColor: "text-purple-600",
     },
     {
       label: "Classes",
@@ -401,8 +407,6 @@ export default function AdminDashboardPage() {
       sub: "Manage grade groups and sections",
       href: "/admin/classes",
       icon: Layers,
-      color: "bg-amber-100",
-      iconColor: "text-amber-600",
     },
     {
       label: "Recent payments",
@@ -410,16 +414,19 @@ export default function AdminDashboardPage() {
       sub: "Latest transactions",
       href: "/admin/fees",
       icon: TrendingUp,
-      color: "bg-emerald-100",
-      iconColor: "text-emerald-600",
     },
   ];
 
   return (
-    <div>
-      <div className="mb-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+    <>
+      <style>{whatsAppWiggleStyle}</style>
+      <div className="space-y-6">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">
+          <div className="flex items-center gap-2 text-sm font-medium text-brand">
+            <LayoutDashboard size={17} /> School overview
+          </div>
+          <h1 className="mt-2 text-3xl font-bold text-foreground">
             Good morning, {schoolName || 'Dashboard'}
           </h1>
           <p className="mt-1 text-muted">
@@ -427,124 +434,64 @@ export default function AdminDashboardPage() {
           </p>
         </div>
 
-        {whatsAppConnected !== null && (
-          <div className="inline-flex items-center gap-3 rounded-full border px-4 py-2 shadow-sm transition-colors">
-            <span className={`inline-flex h-9 w-9 items-center justify-center rounded-full ${whatsAppConnected ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+        <div className="ml-auto flex items-center gap-2">
+          {whatsAppConnected !== null && (
+            <button
+              title={whatsAppConnected ? 'WhatsApp connected — Ready to send school messages' : 'WhatsApp disconnected — Reconnect via settings'}
+              className={`inline-flex h-11 w-11 items-center justify-center rounded-full transition-all shadow-sm whatsapp-pulse ${whatsAppConnected ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200 hover:shadow-md' : 'bg-amber-100 text-amber-600 hover:bg-amber-200 hover:shadow-md'}`}
+            >
               <WhatsAppIcon className="h-5 w-5" />
-            </span>
-            <div className="flex flex-col">
-              <span className={`text-sm font-semibold ${whatsAppConnected ? 'text-foreground' : 'text-foreground'}`}>
-                {whatsAppConnected ? 'WhatsApp connected' : 'WhatsApp disconnected'}
-              </span>
-              <span className="text-xs text-muted">
-                {whatsAppConnected
-                  ? 'Ready to send school messages.'
-                  : 'Reconnect via settings.'}
-              </span>
-            </div>
-            <span className={`inline-flex h-6 min-w-[2.25rem] items-center justify-center rounded-full px-2 text-xs font-semibold ${whatsAppConnected ? 'bg-emerald-600 text-white' : 'bg-amber-600 text-white'}`}>
-              {whatsAppConnected ? 'On' : 'Off'}
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Stats Cards */}
-      <div className="mb-6 pt-8">
-        <div className="mb-6 hidden sm:block">
-        <div className="relative flex items-center gap-4">
-          {/* Left Navigation Arrow */}
-          <button
-            onClick={() => setCardScroll(Math.max(0, cardScroll - 1))}
-            disabled={cardScroll === 0}
-            className="flex-shrink-0 rounded-full p-2 bg-brand text-white shadow-lg transition-all hover:bg-brand/90 hover:shadow-xl disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-
-          {/* Cards Container */}
-          <div className="grid grid-cols-4 gap-3 flex-1">
-            {stats.map((stat, idx) => {
-              const IconComponent = stat.icon;
-              return (
-                <Link key={idx} href={stat.href}>
-                  <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md h-full cursor-pointer hover:border-brand/50 flex flex-col">
-                    <div className="flex items-start gap-3">
-                      <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg ${stat.color} shadow-sm`}>
-                        <IconComponent className={`h-4 w-4 ${stat.iconColor}`} />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-xs text-muted">{stat.label}</p>
-                        <p className="mt-1 text-lg font-bold text-foreground">{stat.value}</p>
-                      </div>
-                      <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-                    </div>
-                    <p className="mt-2 text-[11px] text-muted">{stat.sub}</p>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* Right Navigation Arrow */}
-          <button
-            onClick={() => setCardScroll(Math.min(1, cardScroll + 1))}
-            disabled={cardScroll >= 1}
-            className="flex-shrink-0 rounded-full p-2 bg-brand text-white shadow-lg transition-all hover:bg-brand/90 hover:shadow-xl disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </button>
+            </button>
+          )}
+          <Link href="/admin/getting-started" className="inline-flex items-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover">
+            Start guide
+          </Link>
         </div>
       </div>
 
-      {/* Stats Cards - Mobile (Stacked Vertically) */}
-      <div className="sm:hidden mb-10">
-        {stats.map((stat, idx) => {
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => {
           const IconComponent = stat.icon;
           return (
-            <Link key={idx} href={stat.href} className="block mb-3">
-              <div className="group rounded-lg border border-border bg-surface p-5 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50 flex items-start gap-4">
-                <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${stat.color} shadow-sm`}>
-                  <IconComponent className={`h-5 w-5 ${stat.iconColor}`} />
+            <Link key={stat.label} href={stat.href} className="group block">
+              <div className="border border-border bg-surface p-5 transition-colors hover:bg-brand-light/40">
+                <div className="mb-4 flex items-center gap-2 text-brand">
+                  <IconComponent className="h-4 w-4 text-brand" />
+                  <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">
+                    {stat.label}
+                  </span>
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm text-muted font-medium">{stat.label}</p>
-                  <p className="mt-1.5 text-xl font-bold text-foreground">{stat.value}</p>
-                  <p className="mt-1 text-xs text-muted">{stat.sub}</p>
-                </div>
-                <ArrowUpRight className="h-4 w-4 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0 mt-1" />
+                <div className="text-3xl font-semibold text-foreground">{stat.value}</div>
+                <div className="mt-1 text-xs text-muted">{stat.sub}</div>
               </div>
             </Link>
           );
         })}
-      </div>
-      </div>
-
+      </section>
 
       {/* Quick Actions */}
-      <div className="mb-10">
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-foreground">Quick Actions</h3>
-          <Link href="/admin/getting-started" className="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/10 px-3 py-2 text-sm font-semibold text-brand hover:bg-brand/20">
+      <div className="mb-8">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex items-center gap-2 text-sm font-medium text-brand">
             <CheckCircle2 className="h-4 w-4" />
-            Start guide
-          </Link>
+            Quick actions
+          </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <Link href="/admin/fees" className="w-full inline-flex cursor-pointer items-center justify-center px-4 py-3 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors font-medium shadow-sm hover:shadow-md">
-            <CreditCard className="h-4 w-4 mr-2" />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Link href="/admin/fees" className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-hover">
+            <CreditCard className="h-4 w-4" />
             Fees
           </Link>
-          <Link href="/admin/students" className="w-full inline-flex cursor-pointer items-center justify-center px-4 py-3 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors font-medium shadow-sm hover:shadow-md">
-            <Users className="h-4 w-4 mr-2" />
+          <Link href="/admin/students" className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-hover">
+            <Users className="h-4 w-4" />
             Students
           </Link>
-          <Link href="/admin/teachers" className="w-full inline-flex cursor-pointer items-center justify-center px-4 py-3 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors font-medium shadow-sm hover:shadow-md">
-            <BookOpen className="h-4 w-4 mr-2" />
+          <Link href="/admin/teachers" className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-hover">
+            <BookOpen className="h-4 w-4" />
             Teachers
           </Link>
-          <Link href="/admin/website" className="w-full inline-flex cursor-pointer items-center justify-center px-4 py-3 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors font-medium shadow-sm hover:shadow-md">
-            <MessageSquare className="h-4 w-4 mr-2" />
+          <Link href="/admin/website" className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-hover">
+            <MessageSquare className="h-4 w-4" />
             Announcements
           </Link>
         </div>
@@ -553,8 +500,8 @@ export default function AdminDashboardPage() {
       {/* Grid of sections - Responsive: 1 col mobile, 2 col tablet, 2 col desktop */}
       <section className="grid gap-6 grid-cols-1 lg:grid-cols-2">
         {/* Recent Payments */}
-        <div className={`rounded-xl border p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col ${dashboardSectionThemes[1].shell}`}>
-          <div className="flex items-center justify-between gap-3 mb-4">
+        <div className={`rounded-lg border p-6 shadow-sm transition-shadow flex flex-col ${dashboardSectionThemes[1].shell}`}>
+          <div className="mb-4 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className={`flex h-10 w-10 items-center justify-center rounded-full ${dashboardSectionThemes[1].iconWrap}`}>
                 <DollarSign className={`h-5 w-5 ${dashboardSectionThemes[1].iconColor}`} />
@@ -584,8 +531,8 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Latest Students */}
-        <div className={`rounded-xl border p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col ${dashboardSectionThemes[2].shell}`}>
-          <div className="flex items-center justify-between gap-3 mb-4">
+        <div className={`rounded-lg border p-6 shadow-sm transition-shadow flex flex-col ${dashboardSectionThemes[2].shell}`}>
+          <div className="mb-4 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className={`flex h-10 w-10 items-center justify-center rounded-full ${dashboardSectionThemes[2].iconWrap}`}>
                 <Users className={`h-5 w-5 ${dashboardSectionThemes[2].iconColor}`} />
@@ -620,8 +567,8 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Latest Teachers */}
-        <div className={`rounded-xl border p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col ${dashboardSectionThemes[0].shell}`}>
-          <div className="flex items-center justify-between gap-3 mb-4">
+        <div className={`rounded-lg border p-6 shadow-sm transition-shadow flex flex-col ${dashboardSectionThemes[0].shell}`}>
+          <div className="mb-4 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className={`flex h-10 w-10 items-center justify-center rounded-full ${dashboardSectionThemes[0].iconWrap}`}>
                 <BookOpen className={`h-5 w-5 ${dashboardSectionThemes[0].iconColor}`} />
@@ -650,8 +597,8 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Latest Announcements */}
-        <div className={`rounded-xl border p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col ${dashboardSectionThemes[3].shell}`}>
-          <div className="flex items-center justify-between gap-3 mb-4">
+        <div className={`rounded-lg border p-6 shadow-sm transition-shadow flex flex-col ${dashboardSectionThemes[3].shell}`}>
+          <div className="mb-4 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className={`flex h-10 w-10 items-center justify-center rounded-full ${dashboardSectionThemes[3].iconWrap}`}>
                 <MessageSquare className={`h-5 w-5 ${dashboardSectionThemes[3].iconColor}`} />
@@ -684,6 +631,7 @@ export default function AdminDashboardPage() {
           </Link>
         </div>
       </section>
-    </div>
+      </div>
+    </>
   );
 }

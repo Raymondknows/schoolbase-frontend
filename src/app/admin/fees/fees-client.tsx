@@ -37,8 +37,19 @@ import {
   ReceiptText,
   SendHorizonal,
   ScrollText,
+  CreditCard,
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/ui/icons";
+
+const whatsAppPulseStyle = `
+  @keyframes whatsapp-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.9; }
+  }
+  .whatsapp-pulse {
+    animation: whatsapp-pulse 2s ease-in-out infinite;
+  }
+`;
 
 const STATUS_CONFIG = {
   DRAFT: { label: "Draft", color: "bg-gray-100 text-gray-800" },
@@ -383,6 +394,7 @@ export default function FeesPageClient({
 
   return (
     <>
+      <style>{whatsAppPulseStyle}</style>
       {/* Payment Modal */}
       {selectedInvoice ? (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 px-4 py-8 overflow-y-auto">
@@ -615,149 +627,79 @@ export default function FeesPageClient({
       {/* Main Page */}
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between lg:gap-6">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Fees & Invoices</h1>
-          <p className="mt-1 text-muted">Manage student invoices and track fee payments by phase, term, and class</p>
-        </div>
-
-        {whatsAppConnected !== null && (
-          <div className="inline-flex items-center gap-3 rounded-full border px-4 py-2 shadow-sm transition-colors">
-            <span className={`inline-flex h-9 w-9 items-center justify-center rounded-full ${whatsAppConnected ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-              <WhatsAppIcon className="h-5 w-5" />
-            </span>
-            <div className="flex flex-col">
-              <span className="text-sm font-semibold text-foreground">
-                {whatsAppConnected ? 'WhatsApp connected' : 'WhatsApp disconnected'}
-              </span>
-              <span className="text-xs text-muted">
-                {whatsAppConnected ? 'Ready to send reminders.' : 'Reconnect via settings.'}
-              </span>
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <div className="flex items-center gap-2 text-sm font-medium text-brand">
+              <CreditCard size={17} /> Fee management
             </div>
-            <span className={`inline-flex h-6 min-w-[2.25rem] items-center justify-center rounded-full px-2 text-xs font-semibold ${whatsAppConnected ? 'bg-emerald-600 text-white' : 'bg-amber-600 text-white'}`}>
-              {whatsAppConnected ? 'On' : 'Off'}
-            </span>
+            <h1 className="mt-2 text-3xl font-bold text-foreground">
+              Fees & Invoices
+            </h1>
+            <p className="mt-1 text-muted">
+              Manage student invoices and track fee payments by phase, term, and class
+            </p>
           </div>
-        )}
-      </div>
+
+          <div className="ml-auto flex items-center gap-2">
+            {whatsAppConnected !== null && (
+              <button
+                title={whatsAppConnected ? 'WhatsApp connected — Ready to send reminders' : 'WhatsApp disconnected — Reconnect via settings'}
+                className={`inline-flex h-11 w-11 items-center justify-center rounded-full transition-all shadow-sm whatsapp-pulse ${whatsAppConnected ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200 hover:shadow-md' : 'bg-amber-100 text-amber-600 hover:bg-amber-200 hover:shadow-md'}`}
+              >
+                <WhatsAppIcon className="h-5 w-5" />
+              </button>
+            )}
+          </div>
+        </div>
 
         {/* Summary Cards */}
-        <div className="hidden sm:grid grid-cols-4 gap-3">
-          <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md h-full cursor-pointer hover:border-brand/50 flex flex-col">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 shadow-sm">
-                <TrendingUp className="h-4 w-4 text-blue-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted">Total Due</p>
-                <p className="mt-1 text-lg font-bold text-foreground">{formatStatMoney(summaryStats.totalDue)}</p>
-              </div>
-              <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="border border-border bg-surface p-5 transition-colors hover:bg-brand-light/40">
+            <div className="mb-4 flex items-center gap-2 text-brand">
+              <TrendingUp className="h-4 w-4 text-brand" />
+              <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">
+                Total Due
+              </span>
             </div>
-            <p className="mt-2 text-[11px] text-muted">{summaryStats.count} invoice{summaryStats.count !== 1 ? "s" : ""}</p>
+            <div className="text-3xl font-semibold text-foreground">{formatStatMoney(summaryStats.totalDue)}</div>
+            <div className="mt-1 text-xs text-muted">{summaryStats.count} invoice{summaryStats.count !== 1 ? "s" : ""}</div>
           </div>
 
-          <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md h-full cursor-pointer hover:border-brand/50 flex flex-col">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-100 shadow-sm">
-                <CheckCircle className="h-4 w-4 text-emerald-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted">Paid</p>
-                <p className="mt-1 text-lg font-bold text-foreground">{formatStatMoney(summaryStats.totalPaid)}</p>
-              </div>
-              <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
+          <div className="border border-border bg-surface p-5 transition-colors hover:bg-brand-light/40">
+            <div className="mb-4 flex items-center gap-2 text-brand">
+              <CheckCircle className="h-4 w-4 text-brand" />
+              <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">
+                Paid
+              </span>
             </div>
-            <p className="mt-2 text-[11px] text-muted">{summaryStats.byStatus.PAID} fully paid</p>
+            <div className="text-3xl font-semibold text-foreground">{formatStatMoney(summaryStats.totalPaid)}</div>
+            <div className="mt-1 text-xs text-muted">{summaryStats.byStatus.PAID} fully paid</div>
           </div>
 
-          <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md h-full cursor-pointer hover:border-brand/50 flex flex-col">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-amber-100 shadow-sm">
-                <AlertCircle className="h-4 w-4 text-amber-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted">Outstanding</p>
-                <p className="mt-1 text-lg font-bold text-foreground">{formatStatMoney(summaryStats.outstanding)}</p>
-              </div>
-              <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
+          <div className="border border-border bg-surface p-5 transition-colors hover:bg-brand-light/40">
+            <div className="mb-4 flex items-center gap-2 text-brand">
+              <AlertCircle className="h-4 w-4 text-brand" />
+              <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">
+                Outstanding
+              </span>
             </div>
-            <p className="mt-2 text-[11px] text-muted">{summaryStats.byStatus.OVERDUE} overdue</p>
+            <div className="text-3xl font-semibold text-foreground">{formatStatMoney(summaryStats.outstanding)}</div>
+            <div className="mt-1 text-xs text-muted">{summaryStats.byStatus.OVERDUE} overdue</div>
           </div>
 
-          <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md h-full cursor-pointer hover:border-brand/50 flex flex-col">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-purple-100 shadow-sm">
-                <Clock className="h-4 w-4 text-purple-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted">Part Paid</p>
-                <p className="mt-1 text-lg font-bold text-foreground">{summaryStats.byStatus.PART_PAID}</p>
-              </div>
-              <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
+          <div className="border border-border bg-surface p-5 transition-colors hover:bg-brand-light/40">
+            <div className="mb-4 flex items-center gap-2 text-brand">
+              <Clock className="h-4 w-4 text-brand" />
+              <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">
+                Part Paid
+              </span>
             </div>
-            <p className="mt-2 text-[11px] text-muted">Partial payments recorded</p>
+            <div className="text-3xl font-semibold text-foreground">{summaryStats.byStatus.PART_PAID}</div>
+            <div className="mt-1 text-xs text-muted">Partial payments recorded</div>
           </div>
-        </div>
+        </section>
 
-        {/* Mobile Summary Cards */}
-        <div className="sm:hidden space-y-3">
-          <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 shadow-sm">
-                <TrendingUp className="h-4 w-4 text-blue-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted">Total Due</p>
-                <p className="mt-1 text-lg font-bold text-foreground">{formatStatMoney(summaryStats.totalDue)}</p>
-              </div>
-              <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-            </div>
-            <p className="mt-2 text-[11px] text-muted">{summaryStats.count} invoice{summaryStats.count !== 1 ? "s" : ""}</p>
-          </div>
-
-          <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-100 shadow-sm">
-                <CheckCircle className="h-4 w-4 text-emerald-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted">Paid</p>
-                <p className="mt-1 text-lg font-bold text-foreground">{formatStatMoney(summaryStats.totalPaid)}</p>
-              </div>
-              <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-            </div>
-            <p className="mt-2 text-[11px] text-muted">{summaryStats.byStatus.PAID} fully paid</p>
-          </div>
-
-          <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-amber-100 shadow-sm">
-                <AlertCircle className="h-4 w-4 text-amber-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted">Outstanding</p>
-                <p className="mt-1 text-lg font-bold text-foreground">{formatStatMoney(summaryStats.outstanding)}</p>
-              </div>
-              <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-            </div>
-            <p className="mt-2 text-[11px] text-muted">{summaryStats.byStatus.OVERDUE} overdue</p>
-          </div>
-
-          <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-purple-100 shadow-sm">
-                <Clock className="h-4 w-4 text-purple-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted">Part Paid</p>
-                <p className="mt-1 text-lg font-bold text-foreground">{summaryStats.byStatus.PART_PAID}</p>
-              </div>
-              <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-            </div>
-            <p className="mt-2 text-[11px] text-muted">Partial payments recorded</p>
-          </div>
-        </div>
+        {/* Mobile Summary Cards hidden, using single grid layout above */}
 
         {/* Actions & Search Bar */}
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
@@ -778,10 +720,10 @@ export default function FeesPageClient({
               type="button"
               variant="primary"
               onClick={() => setIsSearchOpen((open) => !open)}
-              className="h-9 rounded-md border border-[#0A66C2] bg-[#0A66C2] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0858a8]"
+              className="inline-flex items-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
             >
               <Search className="h-4 w-4" />
-              {isSearchOpen ? "Close Search" : "Search Fees"}
+              {isSearchOpen ? "Close" : "Search"}
             </Button>
             <form onSubmit={handleIssueBillsSubmit} className="flex flex-col sm:flex-row sm:items-center gap-2">
               <div className="flex items-center gap-2 rounded-md border border-[#0A66C2] bg-background px-2.5 py-1.5 text-sm text-foreground shadow-sm w-full sm:w-auto">
@@ -819,7 +761,7 @@ export default function FeesPageClient({
                 type="submit"
                 disabled={issuingBills}
                 variant="primary"
-                className="w-full sm:w-auto h-9 rounded-md border border-[#0A66C2] bg-[#0A66C2] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0858a8]"
+                className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
               >
                 <ReceiptText className="h-4 w-4" />
                 {issuingBills ? "Issuing..." : "Issue Bills"}
@@ -831,7 +773,7 @@ export default function FeesPageClient({
                 type="submit"
                 disabled={sendingReminders}
                 variant="primary"
-                className="h-9 rounded-md border border-[#0A66C2] bg-[#0A66C2] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0858a8]"
+                className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
               >
                 <SendHorizonal className="h-4 w-4" />
                 {sendingReminders ? "Sending..." : "Send Reminders"}
@@ -841,7 +783,7 @@ export default function FeesPageClient({
             <Button
               href="/admin/fees/schedules"
               variant="primary"
-              className="h-9 rounded-md border border-[#0A66C2] bg-[#0A66C2] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0858a8]"
+              className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
             >
               <ScrollText className="h-4 w-4" />
               Fee Schedules

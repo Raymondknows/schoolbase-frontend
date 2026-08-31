@@ -12,7 +12,7 @@ import { ErrorModal } from "@/components/ui/error-modal";
 import { UserGuide } from "@/components/ui/user-guide";
 import SubscriptionModal from "@/components/subscription-modal";
 import AdminSkeleton from "@/components/ui/skeleton";
-import { BookOpen, Users, Plus, Edit2, TrendingUp, LayoutGrid, ArrowUpRight, Search, School, AlertCircle, Trash2 } from "lucide-react";
+import { BookOpen, Users, Plus, Edit2, Search, School, AlertCircle, Trash2, LayoutGrid } from "lucide-react";
 
 const CLASS_GUIDE = {
   title: "Classes Management",
@@ -366,9 +366,40 @@ export default function ClassesPageClient({ classes: initialClasses }: { classes
       {!loading && (
         <div className="space-y-6">
           {/* Header */}
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Classes</h1>
-            <p className="mt-1 text-muted">Manage school classes, phases, and student assignments</p>
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+            <div>
+              <div className="flex items-center gap-2 text-sm font-medium text-brand">
+                <LayoutGrid size={17} /> School Structure
+              </div>
+              <h1 className="mt-2 text-3xl font-bold text-foreground">Classes</h1>
+              <p className="mt-1 text-muted">Manage school classes, phases, and student assignments</p>
+            </div>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <div className={`overflow-hidden transition-all duration-300 ease-out ${isSearchOpen ? "w-72 opacity-100" : "w-0 opacity-0"}`}>
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="Search classes..."
+                  className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground placeholder-muted outline-none transition focus:border-brand"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsSearchOpen((open) => !open)}
+                className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"
+              >
+                <Search size={16} /> Search
+              </button>
+              <button
+                type="button"
+                onClick={() => openModal()}
+                className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover"
+              >
+                <Plus size={17} /> Add class
+              </button>
+            </div>
           </div>
 
           {error && (
@@ -377,128 +408,33 @@ export default function ClassesPageClient({ classes: initialClasses }: { classes
             </div>
           )}
 
-          {/* Summary Cards */}
-          <div className="hidden sm:grid grid-cols-3 gap-4">
-            <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md h-full cursor-pointer hover:border-brand/50 flex flex-col">
-              <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 shadow-sm">
-                  <LayoutGrid className="h-4 w-4 text-blue-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-xs text-muted">Total Classes</p>
-                  <p className="mt-1 text-lg font-bold text-foreground">{classes.length}</p>
-                </div>
-                <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-              </div>
-              <p className="mt-2 text-[11px] text-muted">Classes created</p>
-            </div>
-
-            <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md h-full cursor-pointer hover:border-brand/50 flex flex-col">
-              <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-purple-100 shadow-sm">
-                  <Users className="h-4 w-4 text-purple-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-xs text-muted">Total Students</p>
-                  <p className="mt-1 text-lg font-bold text-foreground">{classes.reduce((sum, c) => sum + (c._count?.pupils ?? 0), 0)}</p>
-                </div>
-                <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-              </div>
-              <p className="mt-2 text-[11px] text-muted">Enrolled across classes</p>
-            </div>
-
-            <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md h-full cursor-pointer hover:border-brand/50 flex flex-col">
-              <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-amber-100 shadow-sm">
-                  <BookOpen className="h-4 w-4 text-amber-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-xs text-muted">Total Subjects</p>
-                  <p className="mt-1 text-lg font-bold text-foreground">{classes.reduce((sum, c) => sum + (c._count?.subjectClasses ?? 0), 0)}</p>
-                </div>
-                <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-              </div>
-              <p className="mt-2 text-[11px] text-muted">Assigned to classes</p>
-            </div>
-          </div>
-
-          {/* Mobile Summary Cards */}
-          <div className="sm:hidden space-y-3">
-            <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50">
-              <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 shadow-sm">
-                  <LayoutGrid className="h-4 w-4 text-blue-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-xs text-muted">Total Classes</p>
-                  <p className="mt-1 text-lg font-bold text-foreground">{classes.length}</p>
-                </div>
-                <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-              </div>
-              <p className="mt-2 text-[11px] text-muted">Classes created</p>
-            </div>
-
-            <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50">
-              <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-purple-100 shadow-sm">
-                  <Users className="h-4 w-4 text-purple-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-xs text-muted">Total Students</p>
-                  <p className="mt-1 text-lg font-bold text-foreground">{classes.reduce((sum, c) => sum + (c._count?.pupils ?? 0), 0)}</p>
-                </div>
-                <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-              </div>
-              <p className="mt-2 text-[11px] text-muted">Enrolled across classes</p>
-            </div>
-
-            <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50">
-              <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-amber-100 shadow-sm">
-                  <BookOpen className="h-4 w-4 text-amber-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-xs text-muted">Total Subjects</p>
-                  <p className="mt-1 text-lg font-bold text-foreground">{classes.reduce((sum, c) => sum + (c._count?.subjectClasses ?? 0), 0)}</p>
-                </div>
-                <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-              </div>
-              <p className="mt-2 text-[11px] text-muted">Assigned to classes</p>
-            </div>
-          </div>
-
-          {/* Search & Filter */}
-          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-            <div className="flex flex-wrap gap-2 items-center">
-              {/* Animated Search Panel - slides out on same line */}
-              <div className={`overflow-hidden transition-all duration-300 ease-out flex-shrink-0 ${isSearchOpen ? "w-72 opacity-100 translate-x-0" : "w-0 opacity-0 translate-x-full"}`}>
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder="Search classes by name, arm, or phase..."
-                  className="w-full rounded-lg border-2 border-[#0A66C2] bg-background px-4 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
-                />
-              </div>
-              <Button
-                type="button"
-                variant="primary"
-                onClick={() => setIsSearchOpen((open) => !open)}
-                className="h-9 rounded-md border border-[#0A66C2] bg-[#0A66C2] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0858a8]"
-              >
-                <Search className="h-4 w-4" />
-                {isSearchOpen ? "Close Search" : "Search Classes"}
-              </Button>
-              <Button
-                onClick={() => openModal()}
-                className="h-9 rounded-md border border-[#0A66C2] bg-[#0A66C2] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0858a8]"
-              >
-                <School className="h-4 w-4" />
-                Add class
-              </Button>
-            </div>
-          </div>
+          {/* Summary Stats Grid */}
+          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <ClassStat
+              icon={<BookOpen size={18} />}
+              label="Total Classes"
+              value={String(classes.length)}
+              detail="Classes created"
+            />
+            <ClassStat
+              icon={<Users size={18} />}
+              label="Total Students"
+              value={String(classes.reduce((sum, c) => sum + (c._count?.pupils ?? 0), 0))}
+              detail="Enrolled across classes"
+            />
+            <ClassStat
+              icon={<School size={18} />}
+              label="Total Subjects"
+              value={String(classes.reduce((sum, c) => sum + (c._count?.subjectClasses ?? 0), 0))}
+              detail="Assigned to classes"
+            />
+            <ClassStat
+              icon={<LayoutGrid size={18} />}
+              label="School Phases"
+              value={String(new Set(classes.map((c) => c.phase)).size)}
+              detail="Active phases"
+            />
+          </section>
 
           {/* Phase Filters */}
           <div className="mb-6 flex flex-wrap gap-2">
@@ -829,6 +765,31 @@ export default function ClassesPageClient({ classes: initialClasses }: { classes
         confirmLabel="Okay"
       />
     </>
+  );
+}
+
+function ClassStat({
+  icon,
+  label,
+  value,
+  detail,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="border border-border bg-surface p-5">
+      <div className="mb-4 flex items-center gap-2 text-brand">
+        {icon}
+        <span className="text-xs font-bold uppercase tracking-[.12em] text-muted">
+          {label}
+        </span>
+      </div>
+      <div className="text-3xl font-semibold text-foreground">{value}</div>
+      <div className="mt-1 text-xs text-muted">{detail}</div>
+    </div>
   );
 }
 
