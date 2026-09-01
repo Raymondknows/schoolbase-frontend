@@ -7,6 +7,16 @@ import { Button } from "@/components/ui/button";
 import { ErrorModal } from "@/components/ui/error-modal";
 import { getBackendUrl } from "@/lib/backend-url";
 
+export type SupportAttachmentRow = {
+  id: string;
+  fileName: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  url: string;
+  createdAt: string;
+};
+
 export type SupportRequestRow = {
   id: string;
   subject: string;
@@ -23,7 +33,9 @@ export type SupportRequestRow = {
     senderEmail?: string | null;
     body: string;
     createdAt: string;
+    attachments?: SupportAttachmentRow[];
   }>;
+  attachments?: SupportAttachmentRow[];
   school: {
     id: string;
     name: string;
@@ -66,6 +78,21 @@ function formatDate(date?: string) {
   return new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
+function formatFileSize(size: number) {
+  if (!Number.isFinite(size) || size <= 0) return "0 B";
+  if (size < 1024) return `${size} B`;
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function isImageAttachment(url?: string, mimeType?: string) {
+  return Boolean((mimeType && mimeType.startsWith("image/")) || (url && /\.(png|jpe?g|webp|gif|bmp|svg)$/i.test(url)));
+}
+
+function attachmentUrl(url: string) {
+  return /^https?:\/\//i.test(url) ? url : `${getBackendUrl()}${url.startsWith("/") ? "" : "/"}${url}`;
+}
+
 export default function SupportClient({
   initialRequests,
 }: {
@@ -84,6 +111,9 @@ export default function SupportClient({
   const [replyError, setReplyError] = useState<string | null>(null);
   const [replySuccess, setReplySuccess] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
+  const [pendingReplyAttachments, setPendingReplyAttachments] = useState<Record<string, SupportAttachmentRow[]>>({});
+  const [pendingCreateAttachments, setPendingCreateAttachments] = useState<SupportAttachmentRow[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -201,12 +231,41 @@ export default function SupportClient({
     ? sorted.find((request) => request.id === expandedRequestId) ?? null
     : null;
 
+  const uploadSupportFiles = useCallback(async (files: FileList | File[]) => {
+    if (!files || files.length === 0) return [];
+
+    const formData = new FormData();
+    Array.from(files).forEach((file) => formData.append("files", file));
+
+    setUploadingFiles(true);
+    try {
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/admin/support/upload`, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result?.error || "Unable to upload attachments.");
+      }
+
+      return Array.isArray(result.attachments) ? result.attachments : [];
+    } catch (error) {
+      setReplyError(error instanceof Error ? error.message : "Unable to upload attachments.");
+      return [];
+    } finally {
+      setUploadingFiles(false);
+    }
+  }, []);
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
     setSuccess(null);
-    if (!subject.trim() || !message.trim()) {
-      setError("Subject and message are required.");
+    if (!subject.trim() || (!message.trim() && pendingCreateAttachments.length === 0)) {
+      setError("Add a message or attach a file before submitting.");
       return;
     }
 
@@ -218,7 +277,7 @@ export default function SupportClient({
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject, message, priority }),
+        body: JSON.stringify({ subject, message, priority, attachments: pendingCreateAttachments }),
       });
 
       const contentType = response.headers.get("content-type") || "";
@@ -249,6 +308,7 @@ export default function SupportClient({
       setRequests((current) => [result.supportRequest, ...current]);
       setSubject("");
       setMessage("");
+      setPendingCreateAttachments([]);
       setShowCreateModal(false);
       setSuccess("Support request created successfully.");
     } catch (err) {
@@ -428,6 +488,7 @@ export default function SupportClient({
                           ? message.senderName
                           : "Your school")
                         : (message.senderName || "SchoolBase Support");
+                      const attachments = message.attachments ?? [];
 
                       return (
                         <div key={message.id} className={`flex ${isSchoolMessage ? "justify-end" : "justify-start"}`}>
@@ -437,6 +498,22 @@ export default function SupportClient({
                               <span>{formatDate(message.createdAt)}</span>
                             </div>
                             <p className={`mt-1.5 text-sm whitespace-pre-line ${isSchoolMessage ? "text-brand" : "text-foreground"}`}>{message.body}</p>
+                            {attachments.length > 0 ? (
+                              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                                {attachments.map((attachment) => (
+                                  <a key={attachment.id} href={attachmentUrl(attachment.url)} target="_blank" rel="noreferrer" className="overflow-hidden rounded-lg border border-border bg-white/80">
+                                    {isImageAttachment(attachment.url, attachment.mimeType) ? (
+                                      <img src={attachmentUrl(attachment.url)} alt={attachment.originalName || attachment.fileName} className="h-28 w-full object-cover" />
+                                    ) : (
+                                      <div className="flex items-center justify-between gap-2 p-2 text-xs text-muted">
+                                        <span className="truncate">{attachment.originalName || attachment.fileName}</span>
+                                        <span>{formatFileSize(attachment.size)}</span>
+                                      </div>
+                                    )}
+                                  </a>
+                                ))}
+                              </div>
+                            ) : null}
                           </div>
                         </div>
                       );
@@ -457,6 +534,57 @@ export default function SupportClient({
                   className="min-h-[120px] w-full rounded-lg border border-border bg-background px-4 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
                   placeholder="Write a reply to the support team..."
                 />
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium text-muted hover:text-foreground">
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt"
+                      className="hidden"
+                      onChange={async (event) => {
+                        const files = event.target.files;
+                        if (!files || files.length === 0) return;
+                        const uploaded = await uploadSupportFiles(files);
+                        if (uploaded.length > 0) {
+                          setPendingReplyAttachments((current) => ({
+                            ...current,
+                            [selectedRequest.id]: [...(current[selectedRequest.id] ?? []), ...uploaded],
+                          }));
+                        }
+                        event.target.value = "";
+                      }}
+                    />
+                    Add photo or file
+                  </label>
+                  {uploadingFiles ? <span className="text-xs text-muted">Uploading...</span> : null}
+                </div>
+                {(pendingReplyAttachments[selectedRequest.id] ?? []).length > 0 ? (
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                    {(pendingReplyAttachments[selectedRequest.id] ?? []).map((attachment) => (
+                      <div key={attachment.id} className="flex items-center gap-3 rounded-lg border border-border bg-surface p-2">
+                        {isImageAttachment(attachment.url, attachment.mimeType) ? (
+                          <img src={attachmentUrl(attachment.url)} alt={attachment.originalName || attachment.fileName} className="h-12 w-12 rounded-md object-cover" />
+                        ) : (
+                          <div className="flex h-12 w-12 items-center justify-center rounded-md bg-brand/10 text-[10px] font-semibold text-brand">FILE</div>
+                        )}
+                        <div className="min-w-0 flex-1 text-left">
+                          <p className="truncate text-xs font-medium text-foreground">{attachment.originalName || attachment.fileName}</p>
+                          <p className="text-[10px] text-muted">{formatFileSize(attachment.size)}</p>
+                        </div>
+                        <button
+                          type="button"
+                          className="text-[10px] text-muted hover:text-foreground"
+                          onClick={() => setPendingReplyAttachments((current) => ({
+                            ...current,
+                            [selectedRequest.id]: (current[selectedRequest.id] ?? []).filter((item) => item.id !== attachment.id),
+                          }))}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
                 {replyError ? <div className="mt-2 rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{replyError}</div> : null}
                 <ErrorModal
                   isOpen={Boolean(replySuccess)}
@@ -474,8 +602,8 @@ export default function SupportClient({
                       setReplyError(null);
                       setReplySuccess(null);
                       const currentDraft = replyDrafts[selectedRequest.id] ?? "";
-                      if (!currentDraft.trim()) {
-                        setReplyError("Reply cannot be empty.");
+                      if (!currentDraft.trim() && (pendingReplyAttachments[selectedRequest.id] ?? []).length === 0) {
+                        setReplyError("Write a reply or attach a file before sending.");
                         return;
                       }
                       setReplyBusy(true);
@@ -485,7 +613,11 @@ export default function SupportClient({
                           method: "PATCH",
                           credentials: "include",
                           headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ requestId: selectedRequest.id, response: currentDraft }),
+                          body: JSON.stringify({
+                            requestId: selectedRequest.id,
+                            response: currentDraft,
+                            attachments: pendingReplyAttachments[selectedRequest.id] ?? [],
+                          }),
                         });
 
                         const contentType = res.headers.get("content-type") || "";
@@ -519,6 +651,10 @@ export default function SupportClient({
                           delete next[selectedRequest.id];
                           return next;
                         });
+                        setPendingReplyAttachments((current) => ({
+                          ...current,
+                          [selectedRequest.id]: [],
+                        }));
                         setExpandedRequestId(selectedRequest.id);
                       } catch (err) {
                         setReplyError(err instanceof Error ? err.message : "Unable to send reply.");
@@ -589,6 +725,53 @@ export default function SupportClient({
                   className="min-h-[140px] w-full rounded-lg border border-border bg-background px-4 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
                   placeholder="Please explain the issue in detail."
                 />
+              </div>
+              <div>
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <label className="inline-flex cursor-pointer items-center rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium text-muted hover:text-foreground">
+                    <input
+                      type="file"
+                      accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt"
+                      multiple
+                      className="hidden"
+                      onChange={async (event) => {
+                        const files = event.target.files;
+                        if (!files || files.length === 0) return;
+                        const uploaded = await uploadSupportFiles(files);
+                        if (uploaded.length > 0) {
+                          setPendingCreateAttachments((current) => [...current, ...uploaded]);
+                        }
+                        event.target.value = "";
+                      }}
+                    />
+                    Upload image or file
+                  </label>
+                  {uploadingFiles ? <span className="text-xs text-muted">Uploading...</span> : null}
+                </div>
+                {pendingCreateAttachments.length > 0 ? (
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {pendingCreateAttachments.map((attachment) => (
+                      <div key={attachment.id} className="flex items-center gap-3 rounded-lg border border-border bg-surface p-2">
+                        {isImageAttachment(attachment.url, attachment.mimeType) ? (
+                          <img src={attachmentUrl(attachment.url)} alt={attachment.originalName || attachment.fileName} className="h-12 w-12 rounded-md object-cover" />
+                        ) : (
+                          <div className="flex h-12 w-12 items-center justify-center rounded-md bg-brand/10 text-[10px] font-semibold text-brand">FILE</div>
+                        )}
+                        <div className="min-w-0 flex-1 text-left">
+                          <p className="truncate text-xs font-medium text-foreground">{attachment.originalName || attachment.fileName}</p>
+                          <p className="text-[10px] text-muted">{formatFileSize(attachment.size)}</p>
+                        </div>
+                        <button
+                          type="button"
+                          className="text-[10px] text-muted hover:text-foreground"
+                          onClick={() => setPendingCreateAttachments((current) => current.filter((item) => item.id !== attachment.id))}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
               </div>
               {error ? <div className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</div> : null}
               <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
