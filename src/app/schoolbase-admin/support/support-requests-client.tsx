@@ -131,7 +131,8 @@ function formatFileSize(size: number) {
 }
 
 function attachmentUrl(url: string) {
-  return /^https?:\/\//i.test(url) ? url : `${getBackendUrl()}${url.startsWith("/") ? "" : "/"}${url}`;
+  const normalizedUrl = url.replace(/^http:\/\/(api\.schoolbase\.live)/i, "https://$1");
+  return /^https?:\/\//i.test(normalizedUrl) ? normalizedUrl : `${getBackendUrl()}${normalizedUrl.startsWith("/") ? "" : "/"}${normalizedUrl}`;
 }
 
 export default function SupportRequestsClient({
@@ -173,6 +174,8 @@ export default function SupportRequestsClient({
   });
   const [loading, setLoading] = useState(true);
   const messageListRef = useRef<HTMLDivElement | null>(null);
+  const knownRequestsRef = useRef<Record<string, { updatedAt: string; messageIds: string[] }>>({});
+  const hasLoadedRequestsRef = useRef(false);
 
   const refreshRequests = useCallback(async (showLoading = false) => {
     if (showLoading) {
@@ -192,7 +195,41 @@ export default function SupportRequestsClient({
 
       const data = await res.json();
       if (data?.supportRequests) {
-        setRequests(data.supportRequests);
+        const incomingRequests = data.supportRequests as PlatformSupportRequestRow[];
+        if (hasLoadedRequestsRef.current) {
+          const incomingReply = incomingRequests
+            .flatMap((request) => {
+              const previous = knownRequestsRef.current[request.id];
+              const newSchoolMessage = request.messages
+                .filter((message) => message.senderRole === "SCHOOL" && !previous?.messageIds.includes(message.id))
+                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+              return newSchoolMessage ? [{ request, message: newSchoolMessage }] : [];
+            })[0];
+
+          if (incomingReply) {
+            setReadRequestIds((current) => current.filter((id) => id !== incomingReply.request.id));
+            if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+              new Notification("New school support reply", {
+                body: `${incomingReply.request.school?.name || "A school"} replied to “${incomingReply.request.subject}”.`,
+              });
+            }
+            setStatusModal({
+              open: true,
+              type: "success",
+              title: "New school reply",
+              message: `${incomingReply.request.school?.name || "A school"} replied to “${incomingReply.request.subject}”.`,
+            });
+          }
+        }
+
+        knownRequestsRef.current = Object.fromEntries(
+          incomingRequests.map((request) => [request.id, {
+            updatedAt: request.updatedAt,
+            messageIds: request.messages.map((message) => message.id),
+          }]),
+        );
+        hasLoadedRequestsRef.current = true;
+        setRequests(incomingRequests);
       }
     } catch (err) {
       console.error("Error loading support requests:", err);
@@ -288,7 +325,8 @@ export default function SupportRequestsClient({
 
   const filtered = useMemo(
     () =>
-      requests.filter((request) => {
+      [...requests]
+        .filter((request) => {
         const text = [
           request.subject,
           request.message,
@@ -304,8 +342,13 @@ export default function SupportRequestsClient({
         const matchesStatus = statusFilter === "ALL" || request.status === statusFilter;
         const matchesPriority = priorityFilter === "ALL" || request.priority === priorityFilter;
         const matchesUnreadOnly = !showUnreadOnly || !readRequestIds.includes(request.id);
-        return matchesSearch && matchesStatus && matchesPriority && matchesUnreadOnly;
-      }),
+          return matchesSearch && matchesStatus && matchesPriority && matchesUnreadOnly;
+        })
+        .sort((a, b) => {
+          const activityA = new Date(a.updatedAt || a.createdAt).getTime();
+          const activityB = new Date(b.updatedAt || b.createdAt).getTime();
+          return activityB - activityA;
+        }),
     [requests, search, statusFilter, priorityFilter, showUnreadOnly, readRequestIds],
   );
 

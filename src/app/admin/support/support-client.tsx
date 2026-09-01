@@ -90,7 +90,8 @@ function isImageAttachment(url?: string, mimeType?: string) {
 }
 
 function attachmentUrl(url: string) {
-  return /^https?:\/\//i.test(url) ? url : `${getBackendUrl()}${url.startsWith("/") ? "" : "/"}${url}`;
+  const normalizedUrl = url.replace(/^http:\/\/(api\.schoolbase\.live)/i, "https://$1");
+  return /^https?:\/\//i.test(normalizedUrl) ? normalizedUrl : `${getBackendUrl()}${normalizedUrl.startsWith("/") ? "" : "/"}${normalizedUrl}`;
 }
 
 export default function SupportClient({
