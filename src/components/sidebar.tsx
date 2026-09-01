@@ -37,6 +37,7 @@ import {
   Send,
   Sparkles,
   CalendarDays,
+  CheckSquare,
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/ui/icons";
 
@@ -78,6 +79,7 @@ const icons: Record<string, ComponentType<{ className?: string }>> = {
   Send,
   Sparkles,
   CalendarDays,
+  CheckSquare,
 };
 
 export default function Sidebar({

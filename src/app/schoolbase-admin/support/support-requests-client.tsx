@@ -799,7 +799,7 @@ export default function SupportRequestsClient({
       </section>
 
       <div className="grid min-h-0 gap-6 xl:grid-cols-[320px_minmax(0,1fr)] xl:items-stretch">
-        <aside className="border border-border bg-surface p-4 xl:max-h-[74vh] xl:overflow-y-auto xl:overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <aside className="max-h-[30vh] overflow-y-auto border border-border bg-surface p-3 sm:p-4 xl:max-h-[74vh] xl:overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold text-foreground">Tickets</h3>
@@ -854,10 +854,10 @@ export default function SupportRequestsClient({
           </div>
         </aside>
 
-        <section className="min-h-0 overflow-hidden border border-border bg-surface p-3 sm:p-4">
+        <section className="min-h-0 overflow-hidden border border-border bg-surface p-2 sm:p-4">
           {selectedRequest ? (
-            <div className="flex h-[72vh] min-h-[540px] max-h-[72vh] min-w-0 flex-col gap-4">
-              <div className="flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex min-h-0 min-w-0 flex-col gap-3 sm:gap-4 xl:h-[72vh] xl:max-h-[72vh]">
+              <div className="flex flex-col gap-2 border-b border-border pb-3 sm:flex-row sm:items-start sm:justify-between sm:pb-4">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="text-lg font-semibold text-foreground">{selectedRequest.subject}</h2>
@@ -891,8 +891,8 @@ export default function SupportRequestsClient({
                 </div>
               </div>
 
-              <div className="grid min-h-0 min-w-0 flex-1 gap-4 xl:grid-cols-[minmax(0,1.5fr)_260px]">
-                <div className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-background">
+              <div className="grid min-h-0 min-w-0 flex-1 gap-3 xl:grid-cols-[minmax(0,1.5fr)_260px] xl:gap-4">
+                <div className="flex h-[62svh] min-h-[460px] min-w-0 flex-col overflow-hidden rounded-lg border border-border bg-background sm:h-[66svh] sm:min-h-[500px] xl:h-auto xl:min-h-0">
                   <div className="flex items-center justify-center border-b border-border bg-surface px-3 py-1.5">
                     <button
                       type="button"
@@ -907,7 +907,7 @@ export default function SupportRequestsClient({
                     </button>
                   </div>
 
-                  <div ref={messageListRef} className="flex-1 space-y-2 overflow-y-auto px-3 py-3">
+                  <div ref={messageListRef} className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-2.5 py-3 sm:px-3">
                     {selectedRequest.messages.length > 0 ? (
                       selectedRequest.messages.map((message) => {
                         const isSchoolMessage = message.senderRole === "SCHOOL";
