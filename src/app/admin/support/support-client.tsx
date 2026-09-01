@@ -2,7 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { HelpCircle } from "lucide-react";
+import { ChevronDown, HelpCircle, Search, LifeBuoy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErrorModal } from "@/components/ui/error-modal";
 import { getBackendUrl } from "@/lib/backend-url";
@@ -94,6 +94,59 @@ function attachmentUrl(url: string) {
   return /^https?:\/\//i.test(normalizedUrl) ? normalizedUrl : `${getBackendUrl()}${normalizedUrl.startsWith("/") ? "" : "/"}${normalizedUrl}`;
 }
 
+const SUPPORT_FAQS = [
+  {
+    category: "Getting started",
+    question: "How do I register a new student?",
+    answer: "Open Students, select Add student, complete the learner profile, choose the class, and save. If the class is missing, create it first under Classes, then return to the student form.",
+  },
+  {
+    category: "Getting started",
+    question: "What should we set up first after creating our school?",
+    answer: "Complete the setup in this order: school profile and logo, academic year, enabled phases, classes, subjects, teachers, fee schedules, and payment settings. The setup checklist highlights the remaining items.",
+  },
+  {
+    category: "Students",
+    question: "Can I import many students at once?",
+    answer: "Yes. Use the student import workflow and download the provided CSV template first. Keep the column headings unchanged, validate the file, review the preview, and then confirm the import.",
+  },
+  {
+    category: "Timetable",
+    question: "How do I create and publish a timetable?",
+    answer: "Open Timetable, create or select a timetable for the academic year and term, configure school periods, add lessons, resolve conflicts, and publish when the board is ready.",
+  },
+  {
+    category: "Fees and payments",
+    question: "Why is a payment or invoice not showing?",
+    answer: "Confirm the student is active and assigned to the correct class, check that the fee schedule applies to the current academic year and term, and verify the payment status in Fees or Payments.",
+  },
+  {
+    category: "Results",
+    question: "What should I check before publishing results?",
+    answer: "Confirm the assessment is attached to the correct class, term, subject, and academic year. Review missing scores, grading scales, and the preview before publishing results to families.",
+  },
+  {
+    category: "Admissions",
+    question: "How do I process an admission application?",
+    answer: "Open Admissions, review the applicant details, update the application status, select the intended class where required, and use the applicant communication actions for next steps.",
+  },
+  {
+    category: "Communication",
+    question: "How can we notify parents or staff?",
+    answer: "Use Announcements, Email Center, or the configured WhatsApp communication tools. Always review recipients and message content before sending bulk communications.",
+  },
+  {
+    category: "Troubleshooting",
+    question: "What information should I include when reporting a technical issue?",
+    answer: "Include the affected module, user role, school, steps to reproduce, the expected result, the actual result, and a screenshot or short recording. This helps support investigate the issue faster.",
+  },
+  {
+    category: "Account and access",
+    question: "What should I do if a staff member cannot log in?",
+    answer: "Confirm the email address and role, check whether the account belongs to the correct school, and use the password reset flow. Never share a password in a support ticket.",
+  },
+] as const;
+
 export default function SupportClient({
   initialRequests,
 }: {
@@ -116,6 +169,10 @@ export default function SupportClient({
   const [pendingReplyAttachments, setPendingReplyAttachments] = useState<Record<string, SupportAttachmentRow[]>>({});
   const [pendingCreateAttachments, setPendingCreateAttachments] = useState<SupportAttachmentRow[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showFaqPanel, setShowFaqPanel] = useState(false);
+  const [faqSearch, setFaqSearch] = useState("");
+  const [faqCategory, setFaqCategory] = useState("All topics");
+  const [openFaq, setOpenFaq] = useState<string | null>(SUPPORT_FAQS[0].question);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -232,6 +289,12 @@ export default function SupportClient({
     ? sorted.find((request) => request.id === expandedRequestId) ?? null
     : null;
 
+  const faqCategories = ["All topics", ...Array.from(new Set(SUPPORT_FAQS.map((faq) => faq.category)))];
+  const visibleFaqs = SUPPORT_FAQS.filter((faq) => {
+    const haystack = `${faq.question} ${faq.answer} ${faq.category}`.toLowerCase();
+    return (faqCategory === "All topics" || faq.category === faqCategory) && (!faqSearch.trim() || haystack.includes(faqSearch.trim().toLowerCase()));
+  });
+
   const uploadSupportFiles = useCallback(async (files: FileList | File[]) => {
     if (!files || files.length === 0) return [];
 
@@ -342,7 +405,7 @@ export default function SupportClient({
             <h1 className="text-3xl font-bold text-foreground">Support Requests</h1>
           </div>
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
@@ -370,6 +433,15 @@ export default function SupportClient({
             }}
           >
             Create support request
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            className="inline-flex h-10 items-center gap-2 px-4 py-2 text-sm font-semibold"
+            onClick={() => setShowFaqPanel(true)}
+          >
+            <LifeBuoy className="h-4 w-4" />
+            Help center
           </Button>
         </div>
       </div>
@@ -785,6 +857,22 @@ export default function SupportClient({
               </div>
             </form>
           </div>
+        </div>
+      ) : null}
+
+      {showFaqPanel ? (
+        <div className="fixed inset-0 z-50 bg-slate-950/35" onClick={() => setShowFaqPanel(false)}>
+          <aside className="absolute right-0 top-0 flex h-full w-full max-w-xl flex-col border-l border-border bg-surface shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <div className="flex items-start justify-between border-b border-border px-5 py-4">
+              <div className="flex items-start gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand/10"><LifeBuoy className="h-5 w-5 text-brand" /></div><div><p className="text-[11px] font-bold uppercase tracking-[.12em] text-muted">Self-service support</p><h2 className="mt-1 text-xl font-semibold text-foreground">SchoolBase help center</h2><p className="mt-1 text-sm text-muted">Quick answers for common school workflows.</p></div></div>
+              <button type="button" onClick={() => setShowFaqPanel(false)} className="rounded-lg p-2 text-muted hover:bg-background hover:text-foreground" aria-label="Close help center">✕</button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-5">
+              <div className="flex flex-col gap-2 sm:flex-row"><div className="relative flex-1"><Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted" /><input value={faqSearch} onChange={(event) => setFaqSearch(event.target.value)} placeholder="Search help articles" className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm outline-none focus:border-brand" /></div><select value={faqCategory} onChange={(event) => setFaqCategory(event.target.value)} className="rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand"><option>All topics</option>{faqCategories.slice(1).map((category) => <option key={category}>{category}</option>)}</select></div>
+              <div className="mt-4 divide-y divide-border overflow-hidden rounded-lg border border-border">{visibleFaqs.length > 0 ? visibleFaqs.map((faq) => { const isOpen = openFaq === faq.question; return <div key={faq.question} className="bg-background"><button type="button" onClick={() => setOpenFaq(isOpen ? null : faq.question)} className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left hover:bg-surface"><span><span className="block text-[10px] font-bold uppercase tracking-[.12em] text-brand">{faq.category}</span><span className="mt-1 block text-sm font-semibold text-foreground">{faq.question}</span></span><ChevronDown className={`h-4 w-4 shrink-0 text-muted transition-transform ${isOpen ? "rotate-180" : ""}`} /></button>{isOpen ? <div className="px-4 pb-4 text-sm leading-6 text-muted">{faq.answer}</div> : null}</div>; }) : <div className="p-6 text-center text-sm text-muted">No help articles match your search.</div>}</div>
+              <div className="mt-5 border-t border-border pt-4"><p className="text-sm text-muted">Still need help? Include the affected area and a screenshot when creating a request.</p><Button type="button" onClick={() => { setShowFaqPanel(false); setShowCreateModal(true); }} className="mt-3 inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-hover"><HelpCircle className="h-4 w-4" /> Ask support</Button></div>
+            </div>
+          </aside>
         </div>
       ) : null}
     </div>
