@@ -82,9 +82,20 @@ export default function SharedWorkspaceClient({ mode = "floating" }: Props) {
     if (mode === "floating") {
       try {
         const stored = window.localStorage.getItem(positionKey);
-        if (stored) setPosition(JSON.parse(stored));
+        if (stored) {
+          const saved = JSON.parse(stored);
+          const width = Math.min(window.innerWidth * 0.94, 520);
+          setPosition({
+            x: Math.max(12, Math.min(window.innerWidth - width - 12, Number(saved.x) || 12)),
+            y: Math.max(12, Math.min(window.innerHeight - 64, Number(saved.y) || 96)),
+          });
+        } else {
+          const width = Math.min(window.innerWidth * 0.94, 520);
+          setPosition({ x: Math.max(12, window.innerWidth - width - 12), y: 96 });
+        }
       } catch {
-        // Keep default position when stored coordinates are invalid.
+        const width = Math.min(window.innerWidth * 0.94, 520);
+        setPosition({ x: Math.max(12, window.innerWidth - width - 12), y: 96 });
       }
     }
     const intervalId = window.setInterval(() => void loadData(), 15000);
@@ -109,7 +120,7 @@ export default function SharedWorkspaceClient({ mode = "floating" }: Props) {
         x: Math.max(
           12,
           Math.min(
-            window.innerWidth - 540,
+            window.innerWidth - Math.min(window.innerWidth * 0.94, 520) - 12,
             event.clientX - dragRef.current.offsetX,
           ),
         ),
@@ -425,6 +436,7 @@ export default function SharedWorkspaceClient({ mode = "floating" }: Props) {
     );
 
   const beginDrag = (event: React.PointerEvent) => {
+    event.currentTarget.setPointerCapture?.(event.pointerId);
     movedRef.current = false;
     dragRef.current = {
       offsetX: event.clientX - position.x,
@@ -441,7 +453,7 @@ export default function SharedWorkspaceClient({ mode = "floating" }: Props) {
     >
       <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-2xl">
         <div
-          className="flex cursor-move items-center justify-between border-b border-border bg-slate-950 px-4 py-3 text-white"
+          className="flex cursor-move touch-none items-center justify-between border-b border-border bg-slate-950 px-4 py-3 text-white"
           onPointerDown={beginDrag}
         >
           <div className="flex items-center gap-2">
@@ -498,7 +510,7 @@ export default function SharedWorkspaceClient({ mode = "floating" }: Props) {
         }
         setOpen(true);
       }}
-      className="fixed z-[70] inline-flex cursor-move items-center gap-2 rounded-full border border-border bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-xl"
+      className="fixed z-[70] inline-flex cursor-move touch-none items-center gap-2 rounded-full border border-border bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-xl"
       style={{ left: position.x, top: position.y }}
     >
       <Grip className="h-4 w-4 text-slate-300" />
