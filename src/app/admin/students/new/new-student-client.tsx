@@ -228,8 +228,19 @@ export default function NewStudentClient() {
     setErrorModalOpen(false);
   };
 
+  const whatsAppPulseStyle = `
+    @keyframes whatsapp-pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.9; }
+    }
+    .whatsapp-pulse {
+      animation: whatsapp-pulse 2s ease-in-out infinite;
+    }
+  `;
+
   return (
     <div className="mx-auto max-w-[1400px] px-2 sm:px-4 md:px-6 pb-16 pt-0">
+      <style>{whatsAppPulseStyle}</style>
       <div className="hidden lg:block sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-sm py-1.5">
         <div className="mx-auto flex max-w-[1400px] items-center gap-2 px-2 sm:px-0">
           <div className="flex-1">
@@ -239,22 +250,12 @@ export default function NewStudentClient() {
 
           <div className="ml-auto flex items-center gap-3">
             {whatsAppConnected !== null && (
-              <div className="inline-flex items-center gap-3 rounded-full border px-4 py-2 shadow-sm transition-colors">
-                <span className={`inline-flex h-9 w-9 items-center justify-center rounded-full ${whatsAppConnected ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                  <WhatsAppIcon className="h-5 w-5" />
-                </span>
-                <div className="flex flex-col">
-                  <span className={`text-sm font-semibold ${whatsAppConnected ? 'text-foreground' : 'text-foreground'}`}>
-                    {whatsAppConnected ? 'WhatsApp connected' : 'WhatsApp disconnected'}
-                  </span>
-                  <span className="text-xs text-muted">
-                    {whatsAppConnected ? 'Ready to send school messages.' : 'Reconnect via settings.'}
-                  </span>
-                </div>
-                <span className={`inline-flex h-6 min-w-[2.25rem] items-center justify-center rounded-full px-2 text-xs font-semibold ${whatsAppConnected ? 'bg-emerald-600 text-white' : 'bg-amber-600 text-white'}`}>
-                  {whatsAppConnected ? 'On' : 'Off'}
-                </span>
-              </div>
+              <button
+                title={whatsAppConnected ? 'WhatsApp connected — Ready to send school messages' : 'WhatsApp disconnected — Reconnect via settings'}
+                className={`inline-flex h-11 w-11 items-center justify-center rounded-full transition-all shadow-sm whatsapp-pulse ${whatsAppConnected ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200 hover:shadow-md' : 'bg-amber-100 text-amber-600 hover:bg-amber-200 hover:shadow-md'}`}
+              >
+                <WhatsAppIcon className="h-5 w-5" />
+              </button>
             )}
             <Button variant="secondary" href="/admin/students">
               Back to student list

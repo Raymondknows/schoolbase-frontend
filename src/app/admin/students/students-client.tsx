@@ -80,6 +80,16 @@ const HELP_GUIDE: PageHelpGuide = {
   ],
 };
 
+const whatsAppPulseStyle = `
+  @keyframes whatsapp-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.9; }
+  }
+  .whatsapp-pulse {
+    animation: whatsapp-pulse 2s ease-in-out infinite;
+  }
+`;
+
 export default function StudentsPageClient({ pupils, classes }: { pupils: any[]; classes: any[] }) {
   const router = useRouter();
   const [activePhase, setActivePhase] = useState("ALL");
@@ -491,6 +501,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
 
   return (
     <>
+      <style>{whatsAppPulseStyle}</style>
       <div>
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -501,22 +512,12 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
           </div>
           <div className="flex flex-wrap gap-2 sm:justify-end sm:items-center">
             {whatsAppConnected !== null && (
-              <div className="inline-flex items-center gap-3 rounded-full border px-4 py-2 shadow-sm transition-colors mr-2">
-                <span className={`inline-flex h-9 w-9 items-center justify-center rounded-full ${whatsAppConnected ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                  <WhatsAppIcon className="h-5 w-5" />
-                </span>
-                <div className="flex flex-col">
-                  <span className={`text-sm font-semibold ${whatsAppConnected ? 'text-foreground' : 'text-foreground'}`}>
-                    {whatsAppConnected ? 'WhatsApp connected' : 'WhatsApp disconnected'}
-                  </span>
-                  <span className="text-xs text-muted">
-                    {whatsAppConnected ? 'Ready to send school messages.' : 'Reconnect via settings.'}
-                  </span>
-                </div>
-                <span className={`inline-flex h-6 min-w-[2.25rem] items-center justify-center rounded-full px-2 text-xs font-semibold ${whatsAppConnected ? 'bg-emerald-600 text-white' : 'bg-amber-600 text-white'}`}>
-                  {whatsAppConnected ? 'On' : 'Off'}
-                </span>
-              </div>
+              <button
+                title={whatsAppConnected ? 'WhatsApp connected — Ready to send school messages' : 'WhatsApp disconnected — Reconnect via settings'}
+                className={`inline-flex h-11 w-11 items-center justify-center rounded-full transition-all shadow-sm whatsapp-pulse ${whatsAppConnected ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200 hover:shadow-md' : 'bg-amber-100 text-amber-600 hover:bg-amber-200 hover:shadow-md'}`}
+              >
+                <WhatsAppIcon className="h-5 w-5" />
+              </button>
             )}
             {/* Animated Search Panel - slides out on same line */}
             <div className={`overflow-hidden transition-all duration-300 ease-out flex-shrink-0 ${isSearchOpen ? "w-72 opacity-100 translate-x-0" : "w-0 opacity-0 -translate-x-full"}`}>

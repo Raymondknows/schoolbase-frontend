@@ -150,7 +150,7 @@ export default function SupportRequestsClient({
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [ticketNotes, setTicketNotes] = useState<Record<string, string>>({});
   const [notesByRequest, setNotesByRequest] = useState<Record<string, SupportNote[]>>({});
-  const [noteDraft, setNoteDraft] = useState("");
+  const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
   const [notesBusy, setNotesBusy] = useState(false);
   const [agents, setAgents] = useState<SupportAgent[]>([]);
   const [tasks, setTasks] = useState<SupportTask[]>([]);
@@ -454,6 +454,7 @@ export default function SupportRequestsClient({
 
   useEffect(() => {
     if (!selectedRequest) return;
+
     const loadNotes = async () => {
       try {
         const response = await fetch(`${getBackendUrl()}/schoolbase-admin/api/support/requests/${selectedRequest.id}/notes`, {
@@ -468,8 +469,15 @@ export default function SupportRequestsClient({
         console.error("Error loading internal notes:", error);
       }
     };
+
     void loadNotes();
-    setNoteDraft("");
+
+    setNoteDrafts((current) => {
+      if (current[selectedRequest.id] !== undefined) {
+        return current;
+      }
+      return { ...current, [selectedRequest.id]: "" };
+    });
   }, [selectedRequest]);
 
   useEffect(() => {
@@ -613,14 +621,18 @@ export default function SupportRequestsClient({
   };
 
   const saveInternalNote = async () => {
-    if (!selectedRequest || !noteDraft.trim()) return;
+    if (!selectedRequest) return;
+
+    const draft = (noteDrafts[selectedRequest.id] ?? "").trim();
+    if (!draft) return;
+
     setNotesBusy(true);
     try {
       const response = await fetch(`${getBackendUrl()}/schoolbase-admin/api/support/requests/${selectedRequest.id}/notes`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body: noteDraft }),
+        body: JSON.stringify({ body: draft }),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || "Unable to save note");
@@ -628,7 +640,7 @@ export default function SupportRequestsClient({
         ...current,
         [selectedRequest.id]: [...(current[selectedRequest.id] ?? []), result.note],
       }));
-      setNoteDraft("");
+      setNoteDrafts((current) => ({ ...current, [selectedRequest.id]: "" }));
     } catch (error) {
       setStatusModal({ open: true, type: "error", title: "Note not saved", message: error instanceof Error ? error.message : "Unable to save note" });
     } finally {
@@ -1099,7 +1111,7 @@ export default function SupportRequestsClient({
 
       {showNotesModal && selectedRequest ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4" onClick={() => setShowNotesModal(false)}>
-          <div className="flex max-h-[82vh] w-full max-w-xl flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-2xl" onClick={(event) => event.stopPropagation()}><div className="flex items-start justify-between border-b border-border px-5 py-4"><div><p className="text-[10px] font-bold uppercase tracking-[.14em] text-muted">Private collaboration</p><h2 className="mt-1 text-xl font-semibold text-foreground">Internal notes</h2><p className="mt-1 text-sm text-muted">Visible to SchoolBase support agents only.</p></div><button type="button" onClick={() => setShowNotesModal(false)} className="rounded-lg p-2 text-muted hover:bg-background hover:text-foreground" aria-label="Close internal notes"><X className="h-5 w-5" /></button></div><div className="overflow-y-auto p-5"><div className="space-y-2">{(notesByRequest[selectedRequest.id] ?? []).map((note) => <div key={note.id} className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950"><p className="whitespace-pre-line">{note.body}</p><p className="mt-2 text-[10px] text-amber-700">{note.author?.name || "Support agent"} · {formatDate(note.createdAt)}</p></div>)}{(notesByRequest[selectedRequest.id] ?? []).length === 0 ? <p className="rounded-lg border border-dashed border-border p-5 text-center text-sm text-muted">No internal notes yet.</p> : null}</div><textarea value={noteDraft} onChange={(event) => setNoteDraft(event.target.value)} placeholder="Add a shared note for the support team..." className="mt-4 min-h-[120px] w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand" /><div className="mt-3 flex justify-end"><button type="button" disabled={notesBusy || !noteDraft.trim()} onClick={() => void saveInternalNote()} className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{notesBusy ? "Saving..." : "Save note"}</button></div></div></div>
+          <div className="flex max-h-[82vh] w-full max-w-xl flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-2xl" onClick={(event) => event.stopPropagation()}><div className="flex items-start justify-between border-b border-border px-5 py-4"><div><p className="text-[10px] font-bold uppercase tracking-[.14em] text-muted">Private collaboration</p><h2 className="mt-1 text-xl font-semibold text-foreground">Internal notes</h2><p className="mt-1 text-sm text-muted">Visible to SchoolBase support agents only.</p></div><button type="button" onClick={() => setShowNotesModal(false)} className="rounded-lg p-2 text-muted hover:bg-background hover:text-foreground" aria-label="Close internal notes"><X className="h-5 w-5" /></button></div><div className="overflow-y-auto p-5"><div className="space-y-2">{(notesByRequest[selectedRequest.id] ?? []).map((note) => <div key={note.id} className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950"><p className="whitespace-pre-line">{note.body}</p><p className="mt-2 text-[10px] text-amber-700">{note.author?.name || "Support agent"} · {formatDate(note.createdAt)}</p></div>)}{(notesByRequest[selectedRequest.id] ?? []).length === 0 ? <p className="rounded-lg border border-dashed border-border p-5 text-center text-sm text-muted">No internal notes yet.</p> : null}</div><textarea value={noteDrafts[selectedRequest.id] ?? ""} onChange={(event) => setNoteDrafts((current) => ({ ...current, [selectedRequest.id]: event.target.value }))} placeholder="Add a shared note for the support team..." className="mt-4 min-h-[120px] w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand" /><div className="mt-3 flex justify-end"><button type="button" disabled={notesBusy || !(noteDrafts[selectedRequest.id] ?? "").trim()} onClick={() => void saveInternalNote()} className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{notesBusy ? "Saving..." : "Save note"}</button></div></div></div>
         </div>
       ) : null}
     </div>
