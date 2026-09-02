@@ -22,7 +22,7 @@ interface EmailLog {
 const EMAIL_TYPES = [
   { value: "PRODUCT_UPDATE", label: "Product update" },
   { value: "PRICE_UPDATE", label: "Pricing update" },
-  { value: "SUBSCRIPTION_THANK_YOU", label: "Welcome & thank-you" },
+  { value: "SUBSCRIPTION_THANK_YOU", label: "Payment Confirmation" },
   { value: "SUPPORT_UPDATE", label: "Support update" },
   { value: "ONBOARDING_GUIDANCE", label: "Onboarding" },
   { value: "BEST_PRACTICE_TIP", label: "Best-practice guidance" },
@@ -121,7 +121,7 @@ Key next steps:
 • Share the relevant parent portal login information.
 • Activate WhatsApp communication for parents and staff updates.
 
-If you need help with any part of the setup, please reach out to me via WhatsApp at 07047138179. We’ll be happy to guide you through the process and help your school get started smoothly.
+If you need help with any part of the setup, please reach out to me via WhatsApp at +234 703 961 3940. We’ll be happy to guide you through the process and help your school get started smoothly.
 
 We look forward to helping your school get the most out of SchoolBase.`,
   },
