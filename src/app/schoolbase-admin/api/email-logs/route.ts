@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
     const page = searchParams.get("page") || "1";
     const limit = searchParams.get("limit") || "10";
     const emailType = searchParams.get("emailType") || "";
+    const campaignOnly = searchParams.get("campaignOnly") || "";
 
     const backendUrl = getBackendUrl();
     const url = new URL(`${backendUrl}/schoolbase-admin/api/email-logs`);
@@ -14,6 +15,9 @@ export async function GET(request: NextRequest) {
     url.searchParams.set("limit", limit);
     if (emailType) {
       url.searchParams.set("emailType", emailType);
+    }
+    if (campaignOnly) {
+      url.searchParams.set("campaignOnly", campaignOnly);
     }
 
     const response = await fetch(url.toString(), {

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Bell, CheckCircle2, Mail, Zap } from "lucide-react";
+import { Bell, CheckCircle2, ChevronRight, ClipboardList, Clock3, Mail, Send, Zap } from "lucide-react";
 import { sendSetupCompletionRemindersAction, sendSetupCompletionReminder } from "@/app/schoolbase-admin/actions";
 import { ErrorModal } from "@/components/ui/error-modal";
 import { Pagination } from "@/components/ui/pagination";
@@ -49,6 +49,7 @@ export default function SetupRemindersClient({
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [emailLogPage, setEmailLogPage] = useState(1);
   const [emailLogItemsPerPage, setEmailLogItemsPerPage] = useState(10);
+  const [openPanels, setOpenPanels] = useState({ setupStatus: true, emailLogs: true });
   const [pageLoading, setPageLoading] = useState(true);
   const [statusModal, setStatusModal] = useState<{ open: boolean; type: "success" | "error"; title?: string; message: string }>({
     open: false,
@@ -250,6 +251,10 @@ export default function SetupRemindersClient({
     setCurrentPage(1);
   };
 
+  const togglePanel = (panel: keyof typeof openPanels) => {
+    setOpenPanels((current) => ({ ...current, [panel]: !current[panel] }));
+  };
+
   return (
     <div className="space-y-6">
       <ErrorModal
@@ -261,8 +266,7 @@ export default function SetupRemindersClient({
         confirmLabel={statusModal.type === "success" ? "Okay" : "Try again"}
       />
 
-      {/* Stats Cards */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
           {
             label: "Total schools",
@@ -302,10 +306,10 @@ export default function SetupRemindersClient({
             <Link
               key={card.label}
               href={card.href}
-              className="group rounded-lg border border-border bg-surface p-5 shadow-sm transition hover:border-brand/50 hover:shadow-md"
+              className="group border border-border bg-surface p-5 transition hover:border-brand/50 hover:shadow-sm"
             >
               <div className="flex items-start gap-3">
-                <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${card.iconClass}`}>
+                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${card.iconClass}`}>
                   <Icon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
@@ -319,35 +323,43 @@ export default function SetupRemindersClient({
         })}
       </div>
 
-      {/* Schools Table Section */}
-      <div className="rounded-3xl border border-border bg-surface p-6 shadow-sm shadow-slate-200/50">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">
-              School setup status
-            </h2>
-            <p className="mt-1 text-sm text-muted">
-              Track setup progress and send reminders to incomplete schools
-            </p>
-          </div>
+      <section className="border border-border bg-surface p-4 shadow-sm sm:p-6">
+        <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <button
+            type="button"
+            onClick={() => togglePanel("setupStatus")}
+            className="flex items-start gap-2 text-left"
+            aria-expanded={openPanels.setupStatus}
+            aria-controls="school-setup-status-panel"
+          >
+            <ChevronRight className={`mt-1 h-5 w-5 shrink-0 text-muted transition-transform duration-200 ${openPanels.setupStatus ? "rotate-90 text-foreground" : ""}`} />
+            <span>
+              <span className="flex items-center gap-2 text-brand"><ClipboardList size={18} /><span className="text-xs font-bold uppercase tracking-[.12em]">Onboarding operations</span></span>
+              <span className="mt-2 block text-xl font-semibold text-foreground">School setup status</span>
+              <span className="mt-1 block text-sm text-muted">
+                Track setup progress and send reminders to incomplete schools
+              </span>
+            </span>
+          </button>
           <div className="flex flex-wrap gap-3">
             <button
               onClick={handleFilterToggle}
-              className="rounded-2xl border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition hover:border-brand hover:text-brand"
+              className="rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"
             >
               {filter === "all" ? "Show Incomplete" : "Show All"}
             </button>
             <button
               onClick={handleBulkSend}
               disabled={sending || incompleteSchools.length === 0}
-              className="rounded-2xl border border-brand bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:border-brand/80 hover:bg-brand/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {sending ? "Sending..." : "Send to All Incomplete"}
+              <Send size={16} /> {sending ? "Sending..." : "Send to All Incomplete"}
             </button>
           </div>
-          </div>
+        </div>
 
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
+        {openPanels.setupStatus && <div id="school-setup-status-panel">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
           <p className="text-sm text-muted">
             Showing {pageLoading ? "..." : (paginatedSchools.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0)}–
             {pageLoading ? "..." : Math.min(currentPage * itemsPerPage, displaySchools.length)} of {pageLoading ? "..." : displaySchools.length} schools
@@ -366,11 +378,11 @@ export default function SetupRemindersClient({
               ))}
             </select>
           </label>
-        </div>
+          </div>
 
-        <div className="overflow-x-auto">
+          <div className="overflow-x-auto">
           <table className="w-full divide-y divide-border text-sm">
-            <thead className="bg-background text-left text-xs uppercase tracking-[0.15em] text-muted">
+            <thead className="bg-[#f6f8fa] text-left text-xs font-bold uppercase tracking-[.1em] text-muted">
               <tr>
                 <th className="px-4 py-3 font-semibold">School Name</th>
                 <th className="px-4 py-3 font-semibold">Progress</th>
@@ -455,25 +467,35 @@ export default function SetupRemindersClient({
               )}
             </tbody>
           </table>
-        </div>
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-          className="mt-4"
-        />
-      </div>
+          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            className="mt-4"
+          />
+        </div>}
+      </section>
 
-      {/* Email Logs Section */}
-      <div className="rounded-3xl border border-border bg-surface p-6 shadow-sm shadow-slate-200/50">
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold text-foreground">Email logs</h2>
-          <p className="mt-1 text-sm text-muted">
-            Recent setup reminder emails sent to schools
-          </p>
-        </div>
+      <section className="border border-border bg-surface p-4 shadow-sm sm:p-6">
+        <button
+          type="button"
+          onClick={() => togglePanel("emailLogs")}
+          className="mb-6 flex items-start gap-2 text-left"
+          aria-expanded={openPanels.emailLogs}
+          aria-controls="email-logs-panel"
+        >
+          <ChevronRight className={`mt-1 h-5 w-5 shrink-0 text-muted transition-transform duration-200 ${openPanels.emailLogs ? "rotate-90 text-foreground" : ""}`} />
+          <span>
+            <span className="flex items-center gap-2 text-brand"><Clock3 size={18} /><span className="text-xl font-semibold text-foreground">Email logs</span></span>
+            <span className="mt-1 block text-sm text-muted">
+              Recent setup reminder emails sent to schools
+            </span>
+          </span>
+        </button>
 
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
+        {openPanels.emailLogs && <div id="email-logs-panel">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
           <p className="text-sm text-muted">
             Showing {emailLogs.length === 0 ? 0 : (emailLogPage - 1) * emailLogItemsPerPage + 1}–
             {Math.min(emailLogPage * emailLogItemsPerPage, emailLogs.length)} of {emailLogs.length} emails
@@ -492,11 +514,11 @@ export default function SetupRemindersClient({
               ))}
             </select>
           </label>
-        </div>
+          </div>
 
-        <div className="overflow-x-auto">
+          <div className="overflow-x-auto">
           <table className="w-full divide-y divide-border text-sm">
-            <thead className="bg-background text-left text-xs uppercase tracking-[0.15em] text-muted">
+            <thead className="bg-[#f6f8fa] text-left text-xs font-bold uppercase tracking-[.1em] text-muted">
               <tr>
                 <th className="px-4 py-3 font-semibold">Recipient</th>
                 <th className="px-4 py-3 font-semibold">School</th>
@@ -557,18 +579,19 @@ export default function SetupRemindersClient({
               )}
             </tbody>
           </table>
-        </div>
-        {emailLogTotalPages > 1 && (
-          <div className="mt-4">
-            <Pagination
-              currentPage={emailLogPage}
-              totalPages={emailLogTotalPages}
-              onPageChange={setEmailLogPage}
-              className="justify-end"
-            />
           </div>
-        )}
-      </div>
+          {emailLogTotalPages > 1 && (
+            <div className="mt-4">
+              <Pagination
+                currentPage={emailLogPage}
+                totalPages={emailLogTotalPages}
+                onPageChange={setEmailLogPage}
+                className="justify-end"
+              />
+            </div>
+          )}
+        </div>}
+      </section>
     </div>
   );
 }

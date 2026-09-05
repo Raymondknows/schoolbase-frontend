@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Info } from "lucide-react";
+import { ClipboardList, FileText, Info, Send, Users2 } from "lucide-react";
 import { Pagination } from "@/components/ui/pagination";
 import { ErrorModal } from "@/components/ui/error-modal";
 import { getBackendUrl } from "@/lib/backend-url";
@@ -69,31 +69,27 @@ This update is intended to ensure your school continues to receive strong value 
 If you would like a tailored review of how this change affects your current plan, or if you want guidance on the best package for your school, please reply to this email and we will be happy to assist.`,
   },
   SUBSCRIPTION_THANK_YOU: {
-    subject: "Thank you for choosing SchoolBase — your school is ready for smarter operations",
+    subject: "Payment received for the 2026/2027 Academic Session — welcome to SchoolBase",
     body: `Hello,
 
-Thank you for choosing SchoolBase. We are truly pleased to support your school and help your team work with more clarity, confidence, and efficiency every day.
+We are pleased to confirm that we have received your payment for the 2026/2027 Academic Session. Thank you for choosing us to support your school's management and daily operations.
 
-Your subscription gives your school access to a comprehensive digital platform covering Admissions, Student Records, Attendance, Fees, Payments, Timetable & Lesson Planning, Results, Report Cards, Staff Management, Parent Portal, School Website, and WhatsApp Communication.
+With SchoolBase, your school can enjoy a simpler and more efficient way to manage important activities, including:
 
-What this means for your school:
-• Faster and more organized daily administration for staff and leadership.
-• Better coordination of class schedules, teacher responsibilities, and student records.
-• Improved communication with parents through the portal and WhatsApp channels.
-• Stronger financial visibility through fee monitoring and payment tracking.
-• More accurate reporting and result management for teachers and school leaders.
-• A more professional digital presence through your school website and modern parent experience.
+• Easy student and school record management
+• Quick and accurate attendance tracking
+• Automated result computation and report generation
+• Simplified fee management and payment tracking
+• A Parent Portal that keeps parents informed about their children's activities and progress
+• Reduced administrative workload for school owners, administrators, and teachers
+• Easy access and management from your smartphone or computer
+• A user-friendly system that does not require an IT specialist to operate
 
-What to do next:
-• Log in to SchoolBase and review your school dashboard.
-• Confirm your school profile, departments, and staff information.
-• Add classes, students, and timetable data.
-• Publish fee schedules and activate parent access.
-• Start using WhatsApp communication and reporting features to keep everyone informed.
+Our goal is to help your school save time, reduce stress, improve communication, and manage daily operations more efficiently.
 
-We are excited to partner with your school as you build a more efficient and modern school experience. If you need any support at any stage, please reach out to us at info@schoolbase.live or contact us on WhatsApp at +2349031368963.
+We are excited to have you on board and look forward to supporting you throughout your SchoolBase journey. Our team will be available to guide you through the onboarding process and ensure you get the best experience from the platform.
 
-Thank you again for choosing SchoolBase — we are proud to be part of your school’s growth and success.`,
+Thank you once again for choosing SchoolBase.`,
   },
   SUPPORT_UPDATE: {
     subject: "SchoolBase support update: we are actively handling your request",
@@ -221,10 +217,12 @@ const DEFAULT_SUBJECTS: Record<string, string> = {
   BEST_PRACTICE_TIP: "Best-practice guidance: improve school operations with SchoolBase",
   MANUAL_ANNOUNCEMENT: "Important SchoolBase announcement: key update for your school operations",
   PRICE_UPDATE: "Important SchoolBase pricing update: more value, more flexibility, and better support",
-  SUBSCRIPTION_THANK_YOU: "Thank you for choosing SchoolBase — your school is ready for smarter operations",
+  SUBSCRIPTION_THANK_YOU: "Payment received for the 2026/2027 Academic Session — welcome to SchoolBase",
   POLICY_UPDATE: "SchoolBase policy update: important information for your school",
   ACCOUNT_SECURITY: "Security notice: protect your SchoolBase accounts and school data",
 };
+
+const LOG_PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
 interface School {
   id: string;
@@ -458,34 +456,42 @@ export default function EmailCenterClient({
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <EmailCenterStat icon={<Users2 size={18} />} label="Audience size" value={String(targetCount)} detail={selectedTarget === "school" ? "Selected school" : "Selected segment"} />
+        <EmailCenterStat icon={<FileText size={18} />} label="Message type" value="Ready" detail={emailTypeLabel} />
+        <EmailCenterStat icon={<Send size={18} />} label="Emails logged" value={String(totalCount)} detail="Matching selected type" />
+        <EmailCenterStat icon={<ClipboardList size={18} />} label="Latest status" value={emailLogs[0]?.status || "—"} detail={emailLogs[0] ? new Date(emailLogs[0].sentAt).toLocaleDateString() : "No delivery yet"} />
+      </section>
+
+      <section className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-center">
+        <div>
+          <div className="text-sm font-semibold text-foreground">Communication workspace</div>
+          <p className="mt-1 text-sm text-muted">Select an audience, prepare the message, and review delivery records below.</p>
+        </div>
+        <div className="rounded-lg border border-border bg-surface px-3 py-2 text-xs font-semibold text-brand">{emailLogs.length ? "Delivery history available" : "Ready to compose"}</div>
+      </section>
+
       <div className="grid gap-5 lg:grid-cols-[1.5fr_1fr]">
-        <section className="rounded-2xl border border-border bg-surface p-4 shadow-[0_8px_20px_rgba(15,23,42,0.02)] sm:p-6">
+        <section className="border border-border bg-surface p-4 shadow-sm sm:p-6">
           <div className="mb-5 flex items-center justify-between gap-4">
             <div>
               <span className="inline-flex rounded-full bg-brand/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-brand">Overview</span>
               <h2 className="mt-3 text-xl font-semibold text-foreground">Email summary</h2>
             </div>
 
-            <button
-              type="button"
-              onClick={openComposer}
-              className="rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground transition hover:bg-surface"
-            >
-              Edit
-            </button>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-xl border border-border bg-background p-4">
+            <div className="border border-border bg-background p-4">
               <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted">Target</p>
               <p className="mt-3 text-base font-bold text-foreground">{selectedTarget === "school" ? selectedSchool?.name || "School" : SEGMENTS.find((option) => option.value === selectedSegment)?.label || "Segment"}</p>
             </div>
-            <div className="rounded-xl border border-border bg-background p-4">
+            <div className="border border-border bg-background p-4">
               <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted">Audience</p>
               <p className="mt-3 text-2xl font-bold text-foreground">{targetCount}</p>
             </div>
-            <div className="rounded-xl border border-border bg-background p-4">
+            <div className="border border-border bg-background p-4">
               <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted">Template</p>
               <p className="mt-3 line-clamp-2 text-sm font-semibold text-foreground">{EMAIL_TYPES.find((option) => option.value === selectedEmailType)?.label || "Custom email"}</p>
             </div>
@@ -509,7 +515,7 @@ export default function EmailCenterClient({
           </div>
         </section>
 
-        <aside className="min-w-0 rounded-2xl border border-border bg-brand/5 p-4 text-sm text-foreground shadow-[0_8px_20px_rgba(15,23,42,0.02)] sm:p-5">
+          <aside className="min-w-0 border border-[#9ac7ea] bg-[#f3f9fe] p-4 text-sm text-foreground sm:p-5">
           <div className="flex items-center gap-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">i</div>
             <p className="text-sm font-semibold text-foreground">Helpful guidance</p>
@@ -522,6 +528,16 @@ export default function EmailCenterClient({
           </ul>
         </aside>
       </div>
+
+      <EmailLogsSection
+        logs={emailLogs}
+        currentPage={currentPage}
+        itemsPerPage={itemsPerPage}
+        totalCount={totalCount}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={handlePageSizeChange}
+        onSelectLog={setSelectedLog}
+      />
 
       {composeOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-3 sm:p-4">
@@ -761,6 +777,82 @@ export default function EmailCenterClient({
         </div>
       )}
     </div>
+  );
+}
+
+function EmailCenterStat({ icon, label, value, detail }: { icon: React.ReactNode; label: string; value: string; detail: string }) {
+  return (
+    <div className="border border-border bg-surface p-5">
+      <div className="mb-4 flex items-center gap-2 text-brand">
+        {icon}
+        <span className="text-xs font-bold uppercase tracking-[.12em] text-muted">{label}</span>
+      </div>
+      <div className="text-3xl font-semibold text-foreground">{value}</div>
+      <div className="mt-1 line-clamp-2 text-xs text-muted">{detail}</div>
+    </div>
+  );
+}
+
+function EmailLogsSection({
+  logs,
+  currentPage,
+  itemsPerPage,
+  totalCount,
+  onPageChange,
+  onPageSizeChange,
+  onSelectLog,
+}: {
+  logs: EmailLog[];
+  currentPage: number;
+  itemsPerPage: number;
+  totalCount: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
+  onSelectLog: (log: EmailLog) => void;
+}) {
+  const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
+  const firstItem = totalCount === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+  const lastItem = Math.min(currentPage * itemsPerPage, totalCount);
+
+  return (
+    <section className="border border-border bg-surface p-4 shadow-sm sm:p-6">
+      <div className="mb-6 flex flex-col justify-between gap-3 border-b border-border pb-4 sm:flex-row sm:items-end">
+        <div>
+          <div className="flex items-center gap-2 text-brand"><ClipboardList size={18} /><span className="text-xs font-bold uppercase tracking-[.12em]">Delivery history</span></div>
+          <h2 className="mt-2 text-xl font-semibold text-foreground">Email logs</h2>
+          <p className="mt-1 text-sm text-muted">Recent platform emails sent to schools and segments.</p>
+        </div>
+        <div className="flex items-center gap-3 text-sm text-muted">
+          <span>Showing {firstItem}–{lastItem} of {totalCount}</span>
+          <label>
+            <span className="sr-only">Rows per page</span>
+            <select value={itemsPerPage} onChange={onPageSizeChange} className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm text-foreground focus:border-brand focus:outline-none">
+              {LOG_PAGE_SIZE_OPTIONS.map((size) => <option key={size} value={size}>{size} rows</option>)}
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[760px] text-sm">
+          <thead className="bg-background text-left text-xs font-bold uppercase tracking-[.1em] text-muted">
+            <tr><th className="px-4 py-3">Recipient</th><th className="px-4 py-3">Type</th><th className="px-4 py-3">Subject</th><th className="px-4 py-3">Sent</th><th className="px-4 py-3">Status</th></tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {logs.length === 0 ? <tr><td colSpan={5} className="px-4 py-10 text-center text-muted">No emails sent yet.</td></tr> : logs.map((log) => (
+              <tr key={log.id} onClick={() => onSelectLog(log)} className="cursor-pointer hover:bg-brand/5">
+                <td className="px-4 py-4"><div className="font-semibold text-foreground">{log.recipientName || log.recipientEmail}</div><div className="text-xs text-muted">{log.recipientEmail}</div></td>
+                <td className="px-4 py-4 text-muted">{EMAIL_TYPES.find((type) => type.value === log.emailType)?.label || log.emailType}</td>
+                <td className="max-w-[260px] truncate px-4 py-4 text-muted">{log.subject}</td>
+                <td className="whitespace-nowrap px-4 py-4 text-muted">{new Date(log.sentAt).toLocaleString()}</td>
+                <td className="px-4 py-4"><span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${log.status === "SENT" ? "bg-emerald-100 text-emerald-700" : log.status === "FAILED" ? "bg-red-100 text-red-700" : "bg-slate-100 text-slate-700"}`}>{log.status}</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} className="mt-4 justify-end" />}
+    </section>
   );
 }
 
