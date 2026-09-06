@@ -129,7 +129,7 @@ export default function AuditPage() {
         }
 
         const data = await response.json();
-        setLogs(data.logs || []);
+        setLogs((data.logs || []).filter((log: AuditLog) => !log.action?.startsWith("API_")));
         if (schoolsResponse.ok) {
           const schoolsData = await schoolsResponse.json();
           setSchools((schoolsData.schools || []).map((school: { name?: string | null }) => school.name).filter(Boolean).sort());
@@ -232,20 +232,20 @@ export default function AuditPage() {
         <section className="min-w-0 border border-border bg-surface p-5">
           <div className="mb-5 border-b border-border pb-5">
             <div className="flex items-center gap-2 text-brand"><ListFilter className="h-4 w-4" /><span className="text-sm font-semibold text-foreground">Filter activity</span></div>
-            <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto]">
-              <label className="flex items-center gap-2 border border-border bg-background px-3 py-2.5">
+            <div className="mt-3 grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(220px,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
+              <label className="flex min-w-0 items-center gap-2 border border-border bg-background px-3 py-2.5">
                 <Search className="h-4 w-4 text-muted" />
                 <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search action, actor, school, or details" className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none" />
               </label>
-              <select value={schoolFilter} onChange={(event) => setSchoolFilter(event.target.value)} className="border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-brand">
+              <select value={schoolFilter} onChange={(event) => setSchoolFilter(event.target.value)} className="min-w-0 max-w-full border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-brand">
                 <option value="ALL">All schools</option>
                 {schoolOptions.map((school) => <option key={school} value={school}>{school}</option>)}
               </select>
-              <select value={actionFilter} onChange={(event) => setActionFilter(event.target.value)} className="border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-brand">
+              <select value={actionFilter} onChange={(event) => setActionFilter(event.target.value)} className="min-w-0 max-w-full border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-brand">
                 <option value="ALL">All actions</option>
                 {actionOptions.map((action) => <option key={action} value={action}>{action}</option>)}
               </select>
-              <select value={timeFilter} onChange={(event) => setTimeFilter(event.target.value)} className="border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-brand">
+              <select value={timeFilter} onChange={(event) => setTimeFilter(event.target.value)} className="min-w-0 max-w-full border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-brand">
                 <option value="ALL">Any time</option>
                 <option value="24H">Last 24 hours</option>
                 <option value="7D">Last 7 days</option>
