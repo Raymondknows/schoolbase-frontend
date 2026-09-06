@@ -20,7 +20,7 @@ export function unlockAudio() {
 }
 
 // Shared short open/close tones using Web Audio API
-export function playOpenTone() {
+export function playOpenTone(volume = 1) {
   try {
     const ctx = createAudioContext();
     if (!ctx) return;
@@ -41,8 +41,9 @@ export function playOpenTone() {
         osc.stop(now + delay + duration);
       };
 
-      playTone(860, 0.14, 0.05, 0);
-      playTone(1180, 0.14, 0.05, 0.07);
+      const level = Math.min(0.12, 0.05 * volume);
+      playTone(860, 0.14, level, 0);
+      playTone(1180, 0.14, level, 0.07);
       setTimeout(() => ctx.close(), 700);
     };
 
@@ -79,7 +80,7 @@ const bellProfiles: Record<BellTone, BellProfile> = {
   alert: { sequence: [[1200, 0, 0.13], [900, 0.16, 0.13], [1200, 0.32, 0.13], [900, 0.48, 0.22]], partials: [[1, 1], [2, 0.2]], gain: 0.12, waveform: "square" },
 };
 
-export function playBellTone(tone: BellTone = "classic") {
+export function playBellTone(tone: BellTone = "classic", volume = 1) {
   try {
     const ctx = createAudioContext();
     if (!ctx) return;
@@ -97,7 +98,7 @@ export function playBellTone(tone: BellTone = "classic") {
           oscillator.frequency.setValueAtTime(sweepStart * ratio, start + delay);
           oscillator.frequency.linearRampToValueAtTime(sweepEnd * ratio, start + delay + duration);
           gain.gain.setValueAtTime(0.0001, start + delay);
-          gain.gain.exponentialRampToValueAtTime(profile.gain * volume, start + delay + 0.015);
+          gain.gain.exponentialRampToValueAtTime(Math.min(0.24, profile.gain * volume), start + delay + 0.015);
           gain.gain.exponentialRampToValueAtTime(0.0001, start + delay + duration);
           oscillator.connect(gain);
           gain.connect(ctx.destination);

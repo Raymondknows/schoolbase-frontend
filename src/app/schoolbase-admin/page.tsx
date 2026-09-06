@@ -25,18 +25,76 @@ import {
   MailCheck,
   GraduationCap,
   LifeBuoy,
+  Radio,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import AdminSkeleton from "@/components/ui/skeleton";
 import { getBackendUrl } from "@/lib/backend-url";
 import { resolveSchoolAssetUrl } from "@/lib/asset-urls";
-import { announceSupportAlert, stopSupportAlertSpeech, unlockAudio } from "@/lib/sounds";
+import { announceSupportAlert, playOpenTone, stopSupportAlertSpeech, unlockAudio } from "@/lib/sounds";
 
 function getActivityTitle(log: any) {
-  const raw = log?.event ?? log?.action;
-  if (typeof raw === "string" && raw.trim()) {
-    return raw.replace(/_/g, " ");
+  const raw = (log?.event ?? log?.action ?? "").toString().trim().toUpperCase();
+  const labels: Record<string, string> = {
+    LOGIN_SUCCESS: "Login succeeded",
+    LOGIN_FAILED: "Login failed",
+    PARENT_LOGIN_SUCCESS: "Parent login succeeded",
+    PARENT_LOGIN_FAILED: "Parent login failed",
+    MANUAL_SIGNUP_APPROVED: "Signup approved",
+    PLATFORM_SETTINGS_UPDATED: "Platform settings updated",
+    UPGRADE: "Plan upgraded",
+    SETPLAN: "Plan updated",
+    SET_PLAN: "Plan updated",
+    EXTENDTRIAL: "Trial extended",
+    EXTEND_TRIAL: "Trial extended",
+    CANCEL: "Subscription cancelled",
+    SUSPEND: "School suspended",
+    ACTIVATE: "School activated",
+    IMPERSONATE: "School impersonated",
+    VERIFY: "Verification updated",
+    VERIFIED: "Verification updated",
+  };
+
+  if (labels[raw]) return labels[raw];
+  const apiLabels: Array<[string, string]> = [
+    ["ADMIN_STUDENTS", "Student created"],
+    ["ADMIN_TEACHERS", "Teacher created"],
+    ["ADMIN_ASSESSMENTS", "Assessment updated"],
+    ["ADMIN_CLASSES", "Class updated"],
+    ["ADMIN_SUBJECTS", "Subject updated"],
+    ["ADMIN_FEES", "Fee record updated"],
+    ["SCHOOLBASE_ADMIN_SCHOOLS", "School updated"],
+  ];
+  const apiLabel = apiLabels.find(([route]) => raw.includes(route));
+  if (apiLabel) return apiLabel[1];
+  if (raw && !raw.startsWith("API_")) {
+    return raw.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (letter: string) => letter.toUpperCase());
   }
   return "Platform activity";
+}
+
+function isVisibleActivity(log: any) {
+  const raw = (log?.event ?? log?.action ?? "").toString().toUpperCase();
+  return !(
+    raw.includes("ADMIN_VERIFY") ||
+    raw.includes("AUTH_LOGIN") ||
+    raw.includes("AUDIT_LOG") ||
+    raw.includes("HEALTH")
+  );
+}
+
+function getActivityDetails(log: any) {
+  const details = typeof log?.details === "string" ? log.details.trim() : "";
+  if (!details || /^\w+\s+\/api\//i.test(details)) return null;
+  if ((log?.event ?? log?.action ?? "").toString().toUpperCase().startsWith("API_")) return null;
+
+  if ((log?.event ?? log?.action) === "MANUAL_SIGNUP_APPROVED") {
+    const match = details.match(/approved signup for (.+?)\s+<[^>]+> and created school/i);
+    return match ? `New school signup approved for ${match[1]}` : "New school signup approved";
+  }
+
+  return details;
 }
 
 function getSchoolInitials(name?: string) {
@@ -73,10 +131,13 @@ export default function PlatformOverviewPage() {
   const [newSupportAlert, setNewSupportAlert] = useState<{ open: boolean; request: any | null }>({ open: false, request: null });
   const newSupportAlertRef = useRef<{ open: boolean; request: any | null }>({ open: false, request: null });
   const knownSupportIdsRef = useRef<Set<string | number>>(new Set());
+  const knownActivityIdsRef = useRef<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [dashboardMessage, setDashboardMessage] = useState<string | null>(null);
   const [reminding, setReminding] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [newActivityIds, setNewActivityIds] = useState<Set<string>>(new Set());
   const [cardScroll, setCardScroll] = useState(0);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     activity: false,
@@ -139,7 +200,9 @@ export default function PlatformOverviewPage() {
 
         setStats(statsData);
         setSchools(schoolsData.schools || []);
-        setActivityLogs(activityData.logs || []);
+        const initialActivity = (activityData.logs || []).filter(isVisibleActivity);
+        setActivityLogs(initialActivity);
+        knownActivityIdsRef.current = new Set(initialActivity.map((log: any) => log.id));
         setEmailLogs(emailData.logs || []);
         setTrialSchools(trialData.schools || []);
         setSupportRequests(supportData.supportRequests || []);
@@ -163,6 +226,39 @@ export default function PlatformOverviewPage() {
 
     loadData();
   }, []);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(async () => {
+      try {
+        const backendUrl = getBackendUrl();
+        const response = await fetch(`${backendUrl}/schoolbase-admin/api/audit-logs?limit=20`, {
+          credentials: "include",
+          cache: "no-store",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (!response.ok) return;
+
+        const data = await response.json();
+        const incoming = (data.logs || []).filter(isVisibleActivity);
+        const freshIds = incoming
+          .filter((log: any) => log.id && !knownActivityIdsRef.current.has(log.id))
+          .map((log: any) => log.id as string);
+
+        if (freshIds.length > 0) {
+          setNewActivityIds(new Set(freshIds));
+          window.setTimeout(() => setNewActivityIds(new Set()), 900);
+          if (soundEnabled) playOpenTone();
+        }
+
+        knownActivityIdsRef.current = new Set(incoming.map((log: any) => log.id));
+        setActivityLogs(incoming);
+      } catch (error) {
+        console.error("Error polling activity:", error);
+      }
+    }, 10000);
+
+    return () => window.clearInterval(intervalId);
+  }, [soundEnabled]);
 
 
   useEffect(() => {
@@ -311,7 +407,7 @@ export default function PlatformOverviewPage() {
           <h1 className="mt-2 text-3xl font-bold text-foreground">Platform Overview</h1>
           <p className="mt-1 text-muted">Manage schools, monitor platform health, and respond to support activity</p>
         </div>
-        <button type="button" onClick={() => setIsPanelOpen(true)} className="inline-flex items-center justify-center gap-2 self-start rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover sm:self-auto">
+        <button type="button" onClick={() => { setIsPanelOpen(true); setExpandedSections((current) => ({ ...current, activity: true })); }} className="inline-flex items-center justify-center gap-2 self-start rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover sm:self-auto">
           <ShieldCheck className="h-4 w-4" /> Open admin panel
         </button>
       </div>
@@ -350,6 +446,21 @@ export default function PlatformOverviewPage() {
               40% { transform: rotate(12deg); }
               60% { transform: rotate(-9deg); }
               80% { transform: rotate(9deg); }
+            }
+
+            .activity-event-new {
+              animation: activity-in 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+              border-color: rgb(59 130 246 / 0.45);
+              box-shadow: 0 0 0 1px rgb(59 130 246 / 0.08), 0 10px 24px rgb(59 130 246 / 0.08);
+            }
+
+            @keyframes activity-in {
+              from { opacity: 0; transform: translateY(-12px) scale(0.985); }
+              to { opacity: 1; transform: translateY(0) scale(1); }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+              .activity-event-new { animation: none; }
             }
           `}</style>
         </>
@@ -480,24 +591,38 @@ export default function PlatformOverviewPage() {
             <div className="overflow-y-auto p-6">
               <div className="space-y-2.5">
                 <section className="border border-border bg-surface p-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setExpandedSections((current) => ({ ...current, activity: !current.activity }))}
-                    className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-xl px-2 py-1.5 text-left"
-                  >
+                  <div className="flex w-full items-center justify-between gap-2 rounded-xl px-2 py-1.5 text-left">
+                    <button
+                      type="button"
+                      onClick={() => setExpandedSections((current) => ({ ...current, activity: !current.activity }))}
+                      className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-left"
+                    >
                     <div className="flex items-center gap-2">
                       <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
                         <Activity className="h-3.5 w-3.5" />
                       </div>
                       <div>
-                        <h3 className="text-sm font-semibold text-foreground">Recent activity</h3>
-                        <p className="text-[11px] text-muted">Audit events and school actions.</p>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-semibold text-foreground">Live activity monitor</h3>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-600"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live</span>
+                        </div>
+                        <p className="text-[11px] text-muted">New school actions appear here automatically.</p>
                       </div>
                     </div>
+                    </button>
                     <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        title={soundEnabled ? "Turn off activity sounds" : "Turn on activity sounds"}
+                        aria-label={soundEnabled ? "Turn off activity sounds" : "Turn on activity sounds"}
+                        onClick={() => { setSoundEnabled((enabled) => !enabled); unlockAudio(); }}
+                        className="rounded-md p-1.5 text-muted transition hover:bg-background hover:text-brand"
+                      >
+                        {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+                      </button>
                       {expandedSections.activity ? <ChevronUp className="h-4 w-4 text-muted" /> : <ChevronDown className="h-4 w-4 text-muted" />}
                     </div>
-                  </button>
+                  </div>
                   {expandedSections.activity ? (
                     <div className="mt-2 space-y-2 px-1 pb-1">
                       <div className="mb-1.5 flex justify-end">
@@ -508,12 +633,12 @@ export default function PlatformOverviewPage() {
                       {activityLogs.length === 0 ? (
                         <div className="border border-border bg-background px-3 py-2 text-sm text-muted">No activity recorded yet.</div>
                       ) : (
-                        activityLogs.map((log: any) => (
-                          <div key={log.id} className="border border-border bg-background px-3 py-2.5">
+                        activityLogs.slice(0, 12).map((log: any) => (
+                          <div key={log.id} className={`activity-event border border-border bg-background px-3 py-2.5 ${newActivityIds.has(log.id) ? "activity-event-new" : ""}`}>
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0">
                                 <p className="truncate text-sm font-semibold text-foreground">{getActivityTitle(log)}</p>
-                                <p className="mt-1 text-xs text-muted">{log.details || "No additional details provided."}</p>
+                                {getActivityDetails(log) ? <p className="mt-1 text-xs text-muted">{getActivityDetails(log)}</p> : null}
                               </div>
                               <p className="shrink-0 text-[11px] uppercase tracking-[0.18em] text-muted">
                                 {log.createdAt ? new Date(log.createdAt).toLocaleString() : "—"}
