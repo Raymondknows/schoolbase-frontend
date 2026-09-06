@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import SubscriptionModal from "@/components/subscription-modal";
 import { getBackendUrl } from "@/lib/backend-url";
-import { CalendarDays, PlusCircle, BookOpen, AlertCircle, Trash2 } from "lucide-react";
+import { CalendarDays, PlusCircle, BookOpen, AlertCircle, Trash2, Clock3, CheckCircle2, Search } from "lucide-react";
 
 interface Term {
   id: string;
@@ -386,6 +386,7 @@ export default function AcademicYearsPage() {
     (count, year) => count + year.terms.length,
     0
   );
+  const currentYear = academicYears.find((year) => year.isCurrent);
 
   const formatDate = (date?: string | null) => {
     if (!date) return "Not set";
@@ -406,23 +407,20 @@ export default function AcademicYearsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand">School settings</p>
-          <h1 className="mt-2 text-3xl font-bold text-foreground">Academic years & terms</h1>
-          <p className="mt-3 max-w-2xl text-sm text-muted">
-            Manage academic years and term periods for the whole school. Create years, add terms, and set the current academic year.
-          </p>
+          <div className="flex items-center gap-2 text-sm font-medium text-brand"><CalendarDays size={17} /> Academic operations</div>
+          <h1 className="mt-2 text-3xl font-bold text-foreground">Academic Years &amp; Terms</h1>
+          <p className="mt-1 text-muted">Manage school years, term dates, and the active academic cycle</p>
         </div>
 
-        <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="flex flex-wrap items-center gap-3">
           <Button
             onClick={() => setShowNewTermModal(true)}
-            variant="primary"
+            variant="secondary"
             disabled={academicYears.length === 0}
-            className="h-9 w-full rounded-lg border border-[#0A66C2] bg-[#0A66C2] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0858a8] sm:w-auto"
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"
           >
             <PlusCircle className="h-4 w-4" />
             Add Term
@@ -430,7 +428,7 @@ export default function AcademicYearsPage() {
           <Button
             onClick={() => setShowNewYearModal(true)}
             variant="primary"
-            className="h-9 w-full rounded-lg border border-[#0A66C2] bg-[#0A66C2] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0858a8] sm:w-auto"
+            className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"
           >
             <CalendarDays className="h-4 w-4" />
             Add Year
@@ -438,26 +436,35 @@ export default function AcademicYearsPage() {
         </div>
       </div>
 
-      {/* Error Message */}
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">
           {error}
         </div>
       )}
 
-      {/* Search */}
-      <div className="rounded-lg border border-border bg-surface p-4">
-        <label className="block text-sm font-medium text-foreground">
-          Search academic years or terms
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <AcademicStat icon={<CalendarDays size={18} />} label="Academic years" value={String(academicYears.length)} detail="Configured school cycles" />
+        <AcademicStat icon={<Clock3 size={18} />} label="Total terms" value={String(totalTerms)} detail="Defined term periods" />
+        <AcademicStat icon={<CheckCircle2 size={18} />} label="Current year" value={currentYear?.name || "Not set"} detail="Active academic cycle" />
+        <AcademicStat icon={<Search size={18} />} label="View" value={searchQuery ? "Filtered" : "All years"} detail="Current search scope" />
+      </section>
+
+      <section className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-end">
+        <div>
+          <div className="flex items-center gap-2 text-brand"><Search className="h-4 w-4" /><span className="text-sm font-semibold text-foreground">Find a year or term</span></div>
+          <p className="mt-1 text-sm text-muted">Search the academic calendar before editing dates or setting the active year.</p>
+        </div>
+        <label className="w-full text-sm font-medium text-foreground sm:max-w-sm">
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by year or term name..."
-            className="mt-2 w-full rounded-lg border border-border bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            aria-label="Search academic years or terms"
+            className="mt-1 w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-brand"
           />
         </label>
-      </div>
+      </section>
 
       {/* Content */}
       {loading ? (
@@ -483,10 +490,11 @@ export default function AcademicYearsPage() {
       ) : (
         <div className="space-y-4">
           {filteredYears.map((year) => (
-            <div key={year.id} className="rounded-lg border border-border bg-surface overflow-hidden">
+            <div key={year.id} className="border border-border bg-surface overflow-hidden">
               {/* Year Header */}
               <div className="border-b border-border bg-background px-6 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex flex-wrap items-center gap-2">
+                  <CalendarDays className="h-4 w-4 text-brand" />
                   <h2 className="text-lg font-semibold text-foreground">
                     {year.name}
                   </h2>
@@ -926,6 +934,29 @@ export default function AcademicYearsPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function AcademicStat({
+  icon,
+  label,
+  value,
+  detail,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="border border-border bg-surface p-5 transition hover:border-brand/50">
+      <div className="mb-4 flex items-center gap-2 text-brand">
+        {icon}
+        <span className="text-xs font-bold uppercase tracking-[.12em] text-muted">{label}</span>
+      </div>
+      <div className="truncate text-3xl font-semibold text-foreground">{value}</div>
+      <div className="mt-1 text-xs text-muted">{detail}</div>
     </div>
   );
 }

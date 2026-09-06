@@ -1,31 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { MailPlus, PlusCircle } from "lucide-react";
-import AdminPageShell from "@/components/admin-page-shell";
+import { HelpCircle, MailPlus, PlusCircle } from "lucide-react";
 import SupportRequestsClient from "./support-requests-client";
 
 export default function SupportPage() {
   return (
-    <AdminPageShell
-      title="Support Requests"
-      subtitle="Track and resolve school support tickets from one place"
-      actions={
-        <>
-          <Link href="/schoolbase-admin/email-center" className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-surface">
-            <MailPlus className="h-4 w-4" />
-            Email center
-          </Link>
-          <button type="button" className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand/90">
-            <PlusCircle className="h-4 w-4" />
-            New ticket
-          </button>
-        </>
-      }
-    >
-      <div className="px-3 py-3 sm:px-2">
-        <SupportRequestsClient initialRequests={[]} />
+    <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+          <div className="flex items-center gap-2 text-sm font-medium text-brand"><HelpCircle size={17} /> Support operations</div>
+          <h1 className="mt-2 text-3xl font-bold text-foreground">Support Requests</h1>
+          <p className="mt-1 text-muted">Track and resolve school support tickets from one place</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link href="/schoolbase-admin/email-center" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"><MailPlus className="h-4 w-4" /> Email center</Link>
+          <button type="button" className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"><PlusCircle className="h-4 w-4" /> New ticket</button>
+        </div>
       </div>
-    </AdminPageShell>
+      <SupportRequestsClient initialRequests={[]} />
+    </div>
   );
 }

@@ -467,35 +467,35 @@ export function SchoolTable({
   };
 
   return (
-    <div className="rounded-3xl border border-border bg-surface p-6 shadow-sm shadow-slate-200/50">
+    <div className="border border-border bg-surface p-5">
       <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div className="mb-4 w-full">
           {filterControls ?? (
             <div className="flex flex-wrap items-center gap-3">
               <button
                 type="button"
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${quickFilter === "NONE" ? "bg-brand text-white" : "bg-background text-foreground border border-border"}`}
+                className={`rounded-md px-3 py-2 text-sm font-semibold transition ${quickFilter === "NONE" ? "bg-brand text-white" : "bg-background text-foreground border border-border"}`}
                 onClick={() => setQuickFilter("NONE")}
               >
                 All
               </button>
               <button
                 type="button"
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${quickFilter === "TRIAL_ENDING" ? "bg-brand text-white" : "bg-background text-foreground border border-border"}`}
+                className={`rounded-md px-3 py-2 text-sm font-semibold transition ${quickFilter === "TRIAL_ENDING" ? "bg-brand text-white" : "bg-background text-foreground border border-border"}`}
                 onClick={() => setQuickFilter("TRIAL_ENDING")}
               >
                 Trials ending soon
               </button>
               <button
                 type="button"
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${quickFilter === "UNVERIFIED" ? "bg-brand text-white" : "bg-background text-foreground border border-border"}`}
+                className={`rounded-md px-3 py-2 text-sm font-semibold transition ${quickFilter === "UNVERIFIED" ? "bg-brand text-white" : "bg-background text-foreground border border-border"}`}
                 onClick={() => setQuickFilter("UNVERIFIED")}
               >
                 Unverified
               </button>
               <button
                 type="button"
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${quickFilter === "SUSPENDED" ? "bg-brand text-white" : "bg-background text-foreground border border-border"}`}
+                className={`rounded-md px-3 py-2 text-sm font-semibold transition ${quickFilter === "SUSPENDED" ? "bg-brand text-white" : "bg-background text-foreground border border-border"}`}
                 onClick={() => setQuickFilter("SUSPENDED")}
               >
                 Suspended

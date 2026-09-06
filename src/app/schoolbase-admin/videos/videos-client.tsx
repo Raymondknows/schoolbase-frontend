@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ErrorModal } from "@/components/ui/error-modal";
-import { Plus, Copy, Trash2, Edit2 } from "lucide-react";
+import { Plus, Copy, Trash2, Edit2, Filter, PlayCircle, Star, Tags, Upload } from "lucide-react";
 import { getBackendUrl } from "@/lib/backend-url";
 import {
   createVideoAction,
@@ -243,7 +243,7 @@ export default function VideosClient({
     : null;
 
   return (
-    <div className="relative w-full space-y-4">
+    <div className="relative w-full">
       <ErrorModal
         isOpen={statusModal.open}
         onClose={() => setStatusModal((prev) => ({ ...prev, open: false }))}
@@ -398,17 +398,19 @@ export default function VideosClient({
         </div>
       )}
 
-      <div className="rounded-lg border border-border bg-surface p-4 shadow-sm sm:p-5">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="min-w-0 space-y-4">
+        <div className="border border-border bg-surface p-5">
         <div className="flex flex-col gap-4 border-b border-border pb-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand">Overview</p>
             <h2 className="mt-2 text-xl font-semibold text-foreground">Video Library</h2>
           </div>
 
-          <div className="flex flex-wrap gap-2 text-xs text-muted">
+            <div className="flex flex-wrap gap-2 text-xs text-muted">
             <span className="rounded-md border border-border bg-background px-2.5 py-1.5">{totalVideos} total</span>
             <span className="rounded-md border border-border bg-background px-2.5 py-1.5">{featuredVideos} featured</span>
-            <span className="rounded-md border border-border bg-background px-2.5 py-1.5">{categoryCount} categories</span>
+              <span className="rounded-md border border-border bg-background px-2.5 py-1.5">{categoryCount} categories</span>
           </div>
         </div>
 
@@ -420,7 +422,7 @@ export default function VideosClient({
                   key={category}
                   type="button"
                   onClick={() => setActiveCategory(category)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                  className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                     activeCategory === category
                       ? "bg-brand text-white"
                       : "bg-background text-muted ring-1 ring-border hover:text-foreground"
@@ -434,7 +436,7 @@ export default function VideosClient({
             <button
               type="button"
               onClick={() => setShowFeaturedOnly((prev) => !prev)}
-              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+              className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                 showFeaturedOnly
                   ? "bg-amber-100 text-amber-700 ring-1 ring-amber-200"
                   : "bg-background text-muted ring-1 ring-border hover:text-foreground"
@@ -456,7 +458,7 @@ export default function VideosClient({
           filteredVideos.map((video) => (
             <div
               key={video.id}
-              className="rounded-lg border border-border bg-background p-3 shadow-sm transition-colors hover:border-brand/30 sm:p-4"
+              className="border border-border bg-surface p-4 transition-colors hover:border-brand/30"
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="min-w-0 flex-1">
@@ -477,8 +479,8 @@ export default function VideosClient({
                   </p>
 
                   <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted">
-                    <span className="rounded-full bg-surface px-2 py-1 ring-1 ring-border">Created {new Date(video.createdAt).toLocaleDateString()}</span>
-                    <span className="break-all rounded-full bg-surface px-2 py-1 ring-1 ring-border">
+                    <span className="rounded-md bg-background px-2 py-1 ring-1 ring-border">Created {new Date(video.createdAt).toLocaleDateString()}</span>
+                    <span className="break-all rounded-md bg-background px-2 py-1 ring-1 ring-border">
                       {typeof window !== "undefined" ? `${window.location.origin}/video-tutorials/${video.id}` : `/video-tutorials/${video.id}`}
                     </span>
                   </div>
@@ -514,6 +516,43 @@ export default function VideosClient({
             </div>
           ))
         )}
+      </div>
+        </div>
+
+        <aside className="h-fit space-y-4">
+          <div className="border border-border bg-surface p-5">
+            <div className="mb-4 flex items-center gap-2 text-brand">
+              <Filter size={17} />
+              <h2 className="text-sm font-bold uppercase tracking-[.12em] text-foreground">Library pulse</h2>
+            </div>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center justify-between border-b border-border pb-3"><span className="flex items-center gap-2 text-muted"><PlayCircle size={15} /> Total videos</span><strong className="text-foreground">{totalVideos}</strong></div>
+              <div className="flex items-center justify-between border-b border-border pb-3"><span className="flex items-center gap-2 text-muted"><Star size={15} /> Featured</span><strong className="text-foreground">{featuredVideos}</strong></div>
+              <div className="flex items-center justify-between"><span className="flex items-center gap-2 text-muted"><Tags size={15} /> Categories</span><strong className="text-foreground">{categoryCount}</strong></div>
+            </div>
+          </div>
+
+          <div className="border border-border bg-surface p-5">
+            <div className="mb-3 flex items-center gap-2 text-brand">
+              <Tags size={17} />
+              <h2 className="text-sm font-bold uppercase tracking-[.12em] text-foreground">Browse categories</h2>
+            </div>
+            <div className="space-y-1">
+              {categoryOptions.map((category) => (
+                <button key={category} type="button" onClick={() => setActiveCategory(category)} className={`flex w-full items-center justify-between px-2.5 py-2 text-left text-sm transition ${activeCategory === category ? "bg-brand text-white" : "text-muted hover:bg-background hover:text-foreground"}`}>
+                  <span>{category}</span><span className="text-xs opacity-70">{category === "All" ? videos.length : videos.filter((video) => video.category === category).length}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="border border-brand/20 bg-brand/5 p-5">
+            <Upload className="h-5 w-5 text-brand" />
+            <h2 className="mt-3 font-semibold text-foreground">Keep the library useful</h2>
+            <p className="mt-1 text-sm leading-6 text-muted">Add short, task-focused tutorials and feature the most important onboarding guides.</p>
+            <button type="button" onClick={onShowForm} className="mt-4 inline-flex items-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-hover"><Plus size={15} /> Add video</button>
+          </div>
+        </aside>
       </div>
 
       {confirmDeleteVideoId && (

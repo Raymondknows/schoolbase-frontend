@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { LifeBuoy, School2 } from "lucide-react";
-import AdminPageShell from "@/components/admin-page-shell";
+import { CreditCard, LifeBuoy, School2 } from "lucide-react";
 import AdminSkeleton from "@/components/ui/skeleton";
 import SubscriptionsClient from "./subscriptions-client";
 
@@ -57,49 +56,40 @@ export default function SubscriptionsPage() {
 
   if (loading) {
     return (
-      <AdminPageShell
-        title="Subscriptions"
-        subtitle="Manage school subscriptions and billing"
-        actions={
-          <>
-            <Link href="/schoolbase-admin/schools?status=TRIAL" className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-surface">
-              <School2 className="h-4 w-4" />
-              Trial schools
-            </Link>
-            <Link href="/schoolbase-admin/support" className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand/90">
-              <LifeBuoy className="h-4 w-4" />
-              Billing support
-            </Link>
-          </>
-        }
-      >
-        <div className="px-3 py-6 sm:px-5">
-          <AdminSkeleton />
-        </div>
-      </AdminPageShell>
+      <SubscriptionPageFrame>
+        <AdminSkeleton />
+      </SubscriptionPageFrame>
     );
   }
 
   return (
-    <AdminPageShell
-      title="Subscriptions"
-      subtitle="Manage school subscriptions and billing"
-      actions={
-        <>
-          <Link href="/schoolbase-admin/schools?status=TRIAL" className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-surface">
-            <School2 className="h-4 w-4" />
-            Trial schools
+    <SubscriptionPageFrame>
+      <SubscriptionsClient schools={schools} payments={payments} />
+    </SubscriptionPageFrame>
+  );
+}
+
+function SubscriptionPageFrame({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+          <div className="flex items-center gap-2 text-sm font-medium text-brand">
+            <CreditCard size={17} /> Billing operations
+          </div>
+          <h1 className="mt-2 text-3xl font-bold text-foreground">Subscriptions</h1>
+          <p className="mt-1 text-muted">Manage school plans, approvals, billing history, and expiry dates</p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <Link href="/schoolbase-admin/schools?status=TRIAL" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light">
+            <School2 className="h-4 w-4" /> Trial schools
           </Link>
-          <Link href="/schoolbase-admin/support" className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand/90">
-            <LifeBuoy className="h-4 w-4" />
-            Billing support
+          <Link href="/schoolbase-admin/support" className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover">
+            <LifeBuoy className="h-4 w-4" /> Billing support
           </Link>
-        </>
-      }
-    >
-      <div className="px-3 py-6 sm:px-5 space-y-6">
-        <SubscriptionsClient schools={schools} payments={payments} />
+        </div>
       </div>
-    </AdminPageShell>
+      {children}
+    </div>
   );
 }

@@ -363,20 +363,17 @@ export default function WhatsAppSettingsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-3xl border border-border bg-surface p-6 shadow-sm shadow-black/5 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-[#25D366]/10 text-[#25D366] shadow-md shadow-[#25D366]/10">
-            <WhatsAppIcon className="h-7 w-7" />
-          </div>
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand">WhatsApp</p>
-            <h1 className="text-3xl font-bold leading-tight">{pageTitle}</h1>
-            <p className="mt-2 max-w-2xl text-sm text-muted">Manage the school WhatsApp connection, send test messages, and view WhatsApp session status from one place.</p>
+            <div className="flex items-center gap-2 text-sm font-medium text-brand"><WhatsAppIcon className="h-[18px] w-[18px] text-[#25D366]" /> Communication operations</div>
+            <h1 className="mt-2 text-3xl font-bold leading-tight text-foreground">{pageTitle}</h1>
+            <p className="mt-1 max-w-2xl text-muted">Manage the school WhatsApp connection, send test messages, and monitor pairing status</p>
           </div>
         </div>
 
-        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm shadow-sm">
+        <div className="inline-flex items-center gap-2 self-start rounded-lg border border-border bg-surface px-4 py-2.5 text-sm sm:self-auto">
           {isConnected ? (
             <CheckCircle2 className="h-4 w-4 text-emerald-500 animate-pulse" />
           ) : isPendingPairing ? (
@@ -389,7 +386,7 @@ export default function WhatsAppSettingsPage() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(360px,1fr)_minmax(420px,1fr)]">
-        <div className="rounded-xl border border-border p-6">
+        <div className="border border-border bg-surface p-5">
           <div className="flex flex-col gap-4">
             {statusDescription && (
               <p className="text-sm text-muted">{statusDescription}</p>
@@ -403,7 +400,7 @@ export default function WhatsAppSettingsPage() {
             {session?.pairingCode && <p className="text-xs text-muted">Pairing code: {session.pairingCode}</p>}
           </div>
 
-          <div className="mt-6 rounded-lg border border-border bg-background/70 p-4">
+          <div className="mt-6 border border-border bg-background p-4">
             <p className="text-sm font-semibold">Connection status</p>
             <p className="mt-2 text-sm text-muted">{connectionStatusCopy}</p>
           </div>
@@ -491,8 +488,8 @@ export default function WhatsAppSettingsPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-border p-6">
-          <h2 className="text-lg font-semibold mb-3">Send Test Message</h2>
+        <div className="border border-border bg-surface p-5">
+          <div className="mb-4 flex items-center gap-2 text-brand"><Send className="h-[18px] w-[18px]" /><h2 className="text-lg font-semibold text-foreground">Send Test Message</h2></div>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">Phone number</label>
@@ -551,7 +548,7 @@ export default function WhatsAppSettingsPage() {
       */}
 
       {actionMessage && (
-        <div className="rounded-lg border border-border bg-background p-4 text-sm">
+        <div className="border border-border bg-surface p-4 text-sm text-foreground">
           {actionMessage}
         </div>
       )}

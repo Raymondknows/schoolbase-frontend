@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, KeyRound, RefreshCw, Sparkles, UserRoundPlus, Search, Printer, Eye, Download, ShieldOff, Copy, X, Users, CheckCircle2, Clock3, AlertTriangle } from "lucide-react";
+import { ArrowLeft, KeyRound, RefreshCw, Sparkles, UserRoundPlus, Search, Printer, Eye, Download, ShieldOff, Copy, X, Users, CheckCircle2, Clock3, AlertTriangle, ClipboardList, ListFilter } from "lucide-react";
 import { getBackendUrl } from "@/lib/backend-url";
 import { buildPinCardHtml, buildPinSheetHtml } from "@/lib/pin-print";
 import { resolveSchoolAssetUrl } from "@/lib/asset-urls";
@@ -1195,7 +1195,7 @@ export default function ResultPinsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
       <ErrorModal
         isOpen={statusModal.open}
         onClose={() => setStatusModal((prev) => ({ ...prev, open: false }))}
@@ -1230,20 +1230,22 @@ export default function ResultPinsPage() {
           }}
         />
       ) : null}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <Link href="/admin/settings" className="inline-flex items-center gap-2 text-sm font-medium text-brand hover:text-brand/80">
-            <ArrowLeft className="h-4 w-4" />
-            Back to settings
-          </Link>
-          <h1 className="mt-3 text-3xl font-bold text-foreground">Result PIN Centre</h1>
-          <p className="mt-2 text-sm text-muted">A polished workspace for generating, printing, and tracking result access PINs.</p>
+          <div className="flex items-center gap-2 text-sm font-medium text-brand">
+            <KeyRound size={17} /> Results operations
+          </div>
+          <h1 className="mt-2 text-3xl font-bold text-foreground">Result Access PINs</h1>
+          <p className="mt-1 text-muted">Generate, print, and manage secure PINs for result publishing</p>
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="flex flex-wrap items-center gap-3">
+          <Link href="/admin/settings" className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-background">
+            <ArrowLeft className="h-4 w-4" /> Settings
+          </Link>
           <button
             type="button"
             onClick={() => document.getElementById('student-pin-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-            className="inline-flex items-center gap-2 rounded-lg border border-[#0A66C2] bg-[#0A66C2] px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0858a8]"
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"
           >
             <UserRoundPlus className="h-4 w-4" />
             Student PIN
@@ -1251,7 +1253,7 @@ export default function ResultPinsPage() {
           <button
             type="button"
             onClick={() => document.getElementById('class-pin-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-            className="inline-flex items-center gap-2 rounded-lg border border-[#0A66C2] bg-[#0A66C2] px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0858a8]"
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"
           >
             <Users className="h-4 w-4" />
             Class PINs
@@ -1259,7 +1261,7 @@ export default function ResultPinsPage() {
           <button
             type="button"
             onClick={() => document.getElementById('batch-pin-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-            className="inline-flex items-center gap-2 rounded-lg border border-[#0A66C2] bg-[#0A66C2] px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0858a8]"
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"
           >
             <Sparkles className="h-4 w-4" />
             Scratch Cards
@@ -1267,7 +1269,7 @@ export default function ResultPinsPage() {
           <button
             type="button"
             onClick={() => document.getElementById('pin-registry')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-            className="inline-flex items-center gap-2 rounded-lg border border-[#0A66C2] bg-[#0A66C2] px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0858a8]"
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"
           >
             <Printer className="h-4 w-4" />
             Print Sheet
@@ -1276,7 +1278,7 @@ export default function ResultPinsPage() {
             type="button"
             onClick={() => void loadStatus()}
             disabled={loadingStatus}
-            className="inline-flex items-center gap-2 rounded-lg border border-[#0A66C2] bg-[#0A66C2] px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0858a8] disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-70"
           >
             <RefreshCw className={`h-4 w-4 ${loadingStatus ? "animate-spin" : ""}`} />
             {loadingStatus ? "Syncing..." : "Sync status"}
@@ -1284,9 +1286,9 @@ export default function ResultPinsPage() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-border bg-surface p-5">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
         <div className="flex flex-wrap items-center gap-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1 text-sm font-medium text-foreground">
+          <div className="inline-flex items-center gap-2 rounded-md border border-border bg-surface px-3 py-2 text-sm font-semibold text-foreground">
             <KeyRound className="h-4 w-4 text-brand" />
             {loadingStatus ? "Loading status..." : status?.enabled ? "PIN access enabled" : "PIN access disabled"}
           </div>
@@ -1312,30 +1314,28 @@ export default function ResultPinsPage() {
         </div>
       ) : null}
 
-      <div className="rounded-3xl border border-border bg-surface p-5 shadow-sm">
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <div className="space-y-6">
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {summaryCards.map((card) => {
             const Icon = card.icon;
             return (
-              <div key={card.label} className="group rounded-2xl border border-border bg-background p-5 shadow-sm transition hover:border-brand/50 hover:shadow-md">
-                <div className="flex items-start gap-3">
-                  <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${card.iconClass}`}>
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">{card.label}</p>
-                    <p className="mt-3 text-3xl font-semibold text-foreground">{card.value}</p>
-                  </div>
+              <div key={card.label} className="border border-border bg-surface p-5 transition hover:border-brand/50">
+                <div className="mb-4 flex items-center gap-2 text-brand">
+                  <Icon className="h-[18px] w-[18px]" />
+                  <span className="text-xs font-bold uppercase tracking-[.12em] text-muted">{card.label}</span>
                 </div>
-                <p className="mt-4 text-xs text-muted">{card.sub}</p>
+                <div className="text-3xl font-semibold text-foreground">{card.value}</div>
+                <div className="mt-1 text-xs text-muted">{card.sub}</div>
               </div>
             );
           })}
-        </div>
+        </section>
 
-        <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div className="mt-6 border-t border-border pt-6">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-foreground">Result PIN Registry</h2>
+            <div className="flex items-center gap-2 text-brand"><ClipboardList className="h-[18px] w-[18px]" /><span className="text-xs font-bold uppercase tracking-[.12em] text-muted">PIN operations</span></div>
+            <h2 className="mt-2 text-xl font-semibold text-foreground">Result PIN Registry</h2>
             <p className="text-sm text-muted">Search by PIN, student name, admission number, or batch.</p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -1371,8 +1371,11 @@ export default function ResultPinsPage() {
             </button>
           </div>
         </div>
+        </div>
 
-        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-4 border border-border bg-surface p-4">
+          <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground"><ListFilter className="h-4 w-4 text-brand" /> Filter registry</div>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <select value={pinFilterStatus} onChange={(event) => setPinFilterStatus(event.target.value)} className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground">
             <option value="all">All statuses</option>
             <option value="ACTIVE">Active</option>
@@ -1414,12 +1417,13 @@ export default function ResultPinsPage() {
               <option key={batchName} value={batchName}>{batchName}</option>
             ))}
           </select>
+          </div>
         </div>
 
-        <div className="mt-4 overflow-hidden rounded-lg border border-border" id="pin-registry">
+        <div className="mt-4 overflow-hidden border border-border" id="pin-registry">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-background/60 px-3 py-3 text-sm text-muted">
             <div className="flex flex-wrap items-center gap-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1 text-xs font-semibold text-foreground">
+              <div className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground">
                 <input
                   type="checkbox"
                   checked={studentPageAllSelected}
@@ -1437,7 +1441,7 @@ export default function ResultPinsPage() {
                 onClick={() => { void handlePrintSelected('student'); }}
                 className={`rounded-lg border px-3 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${selectedStudentPinIds.length ? 'bg-brand border-brand text-white hover:bg-brand/90' : 'border-border bg-background text-foreground hover:bg-muted/30'}`}
               >
-                Print Selected
+                <Printer className="h-3.5 w-3.5" /> Print Selected
               </button>
               <button
                 type="button"
@@ -1445,7 +1449,7 @@ export default function ResultPinsPage() {
                 onClick={() => handleExportSelected('student')}
                 className={`rounded-lg border px-3 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${selectedStudentPinIds.length ? 'bg-brand border-brand text-white hover:bg-brand/90' : 'border-border bg-background text-foreground hover:bg-muted/30'}`}
               >
-                Export Selected
+                <Download className="h-3.5 w-3.5" /> Export Selected
               </button>
               <button
                 type="button"
@@ -1453,7 +1457,7 @@ export default function ResultPinsPage() {
                 onClick={() => { void handleNotifySelected('student'); }}
                 className={`rounded-lg border px-3 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${selectedStudentPinIds.length && !isNotifying ? 'bg-brand border-brand text-white hover:bg-brand/90' : 'border-border bg-background text-foreground hover:bg-muted/30'}`}
               >
-                {isNotifying ? 'Sending…' : 'Notify Guardians'}
+                <Users className="h-3.5 w-3.5" /> {isNotifying ? 'Sending…' : 'Notify Guardians'}
               </button>
               <button
                 type="button"
@@ -1461,7 +1465,7 @@ export default function ResultPinsPage() {
                 onClick={() => handleOpenConfirm('deactivate', 'student')}
                 className={`rounded-lg border px-3 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${selectedStudentPinIds.length ? 'bg-brand border-brand text-white hover:bg-brand/90' : 'border-border bg-background/80 text-foreground opacity-50'}`}
               >
-                Deactivate Selected
+                <ShieldOff className="h-3.5 w-3.5" /> Deactivate Selected
               </button>
               <button
                 type="button"
@@ -1469,7 +1473,7 @@ export default function ResultPinsPage() {
                 onClick={() => handleOpenConfirm('delete', 'student')}
                 className={`rounded-lg border px-3 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${selectedStudentPinIds.length ? 'bg-brand border-brand text-white hover:bg-brand/90' : 'border-border bg-background/80 text-foreground opacity-50'}`}
               >
-                Delete Selected
+                <X className="h-3.5 w-3.5" /> Delete Selected
               </button>
             </div>
           </div>
@@ -1604,7 +1608,7 @@ export default function ResultPinsPage() {
               </div>
             )}
           </div>
-        </div>
+          </div>
 
         {notifyModal.open ? (
           <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-4">

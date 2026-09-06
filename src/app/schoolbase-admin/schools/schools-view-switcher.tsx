@@ -362,11 +362,7 @@ export default function SchoolsViewSwitcher({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-        <div className="min-w-0" />
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
           {
             label: "Total schools",
@@ -435,9 +431,9 @@ export default function SchoolsViewSwitcher({
         ].map((card) => {
           const Icon = card.icon;
           return (
-            <Link key={card.label} href={card.href} className="cursor-pointer group rounded-lg border border-border bg-surface p-5 shadow-sm transition hover:border-brand/50 hover:shadow-md">
+            <Link key={card.label} href={card.href} className="group cursor-pointer border border-border bg-surface p-5 transition hover:border-brand/50 hover:bg-brand/5">
               <div className="flex items-start gap-3">
-                <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${card.iconClass}`}>
+                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${card.iconClass}`}>
                   <Icon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">

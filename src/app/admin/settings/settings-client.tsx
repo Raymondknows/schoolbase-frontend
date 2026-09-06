@@ -433,37 +433,36 @@ export default function SettingsPageClient({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand">Configuration</p>
+          <div className="flex items-center gap-2 text-sm font-medium text-brand"><Building2 size={17} /> School operations</div>
           <h1 className="mt-2 text-3xl font-bold text-foreground">School Settings</h1>
-          <p className="mt-3 max-w-2xl text-sm text-muted">Manage your school profile, location, branding, payments, and online admissions settings from a single secure dashboard.</p>
+          <p className="mt-1 text-muted">Manage your school profile, branding, payments, admissions, and result access</p>
           {detectedCountryName && detectedCurrency ? (
-            <p className="mt-3 text-sm text-muted">
+            <p className="mt-2 text-sm text-muted">
               Detected market: <span className="font-semibold text-foreground">{detectedCountryName}</span> · <span className="font-semibold text-brand">{detectedCurrency}</span>
             </p>
           ) : null}
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-3">
           <Link
             href="/admin/settings/academic-years"
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-[#0A66C2] bg-[#0A66C2] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0858a8]"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"
           >
             <CalendarDays className="h-4 w-4" />
             Manage Session
           </Link>
           <Link
             href="/admin/settings/whatsapp"
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-[#0A66C2] bg-[#0A66C2] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0858a8]"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"
           >
             <WhatsAppIcon className="h-4 w-4" />
             WhatsApp Settings
           </Link>
           <Link
             href="/admin/settings/result-pins"
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-[#0A66C2] bg-[#0A66C2] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0858a8]"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"
           >
             <ShieldCheck className="h-4 w-4" />
             Result PINs
@@ -471,8 +470,8 @@ export default function SettingsPageClient({
         </div>
       </div>
 
-      {/* Status Badges */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-3 border-b border-border pb-5">
+        <span className="text-sm font-semibold text-foreground">Integration status</span>
         <Badge variant={status?.paystack?.effective ? "success" : "default"}>
           {status?.paystack?.effective ? "✓ Paystack Configured" : "Paystack Not Configured"}
         </Badge>
@@ -498,8 +497,8 @@ export default function SettingsPageClient({
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* School Profile Section */}
-        <div className="rounded-lg border border-border bg-surface overflow-hidden">
-          <div className="border-b border-border bg-background px-6 py-4">
+        <div className="border border-border bg-surface overflow-hidden">
+          <div className="border-b border-border bg-surface px-6 py-4">
             <button
               type="button"
               onClick={() => togglePanel('profile')}
@@ -655,8 +654,8 @@ export default function SettingsPageClient({
         </div>
 
         {/* Principal Section */}
-        <div className="rounded-lg border border-border bg-surface overflow-hidden">
-          <div className="border-b border-border bg-background px-6 py-4">
+        <div className="border border-border bg-surface overflow-hidden">
+          <div className="border-b border-border bg-surface px-6 py-4">
             <button
               type="button"
               onClick={() => togglePanel('principal')}
@@ -826,8 +825,8 @@ export default function SettingsPageClient({
           )}
         </div>
         {/* Report Signatories Section */}
-        <div className="rounded-lg border border-border bg-surface overflow-hidden">
-          <div className="border-b border-border bg-background px-6 py-4">
+        <div className="border border-border bg-surface overflow-hidden">
+          <div className="border-b border-border bg-surface px-6 py-4">
             <button
               type="button"
               onClick={() => togglePanel('signatories')}
@@ -854,8 +853,8 @@ export default function SettingsPageClient({
         </div>
 
         {/* Admissions Settings Section */}
-        <div className="rounded-lg border border-border bg-surface overflow-hidden">
-          <div className="border-b border-border bg-background px-6 py-4">
+        <div className="border border-border bg-surface overflow-hidden">
+          <div className="border-b border-border bg-surface px-6 py-4">
             <button
               type="button"
               onClick={() => togglePanel('admissions')}
@@ -967,8 +966,8 @@ export default function SettingsPageClient({
         </div>
 
         {/* Result Access PIN Section */}
-        <div className="rounded-lg border border-border bg-surface overflow-hidden">
-          <div className="border-b border-border bg-background px-6 py-4">
+        <div className="border border-border bg-surface overflow-hidden">
+          <div className="border-b border-border bg-surface px-6 py-4">
             <button
               type="button"
               onClick={() => togglePanel('resultAccess')}
@@ -1065,8 +1064,8 @@ export default function SettingsPageClient({
         </div>
 
         {/* Security Section */}
-        <div className="rounded-lg border border-border bg-surface overflow-hidden">
-          <div className="border-b border-border bg-background px-6 py-4">
+        <div className="border border-border bg-surface overflow-hidden">
+          <div className="border-b border-border bg-surface px-6 py-4">
             <button
               type="button"
               onClick={() => togglePanel('security')}
@@ -1109,8 +1108,8 @@ export default function SettingsPageClient({
         </div>
 
         {/* Payment Section */}
-        <div className="rounded-lg border border-border bg-surface overflow-hidden">
-          <div className="border-b border-border bg-background px-6 py-4">
+        <div className="border border-border bg-surface overflow-hidden">
+          <div className="border-b border-border bg-surface px-6 py-4">
             <button
               type="button"
               onClick={() => togglePanel('payment')}

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { BellRing, ClipboardList, FileText, LifeBuoy, Mail, Send, Users2 } from "lucide-react";
-import AdminPageShell from "@/components/admin-page-shell";
 import { ErrorModal } from "@/components/ui/error-modal";
 import { Pagination } from "@/components/ui/pagination";
 import { sendDirectCampaignEmailAction } from "@/app/schoolbase-admin/actions";
@@ -158,29 +157,19 @@ export default function CampaignPage() {
   };
 
   return (
-    <AdminPageShell
-      title="Campaign"
-      subtitle="Send a SchoolBase campaign to contacts without saving them as school records."
-      actions={
-        <>
-          <Link href="/schoolbase-admin/setup-reminders" className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-surface">
-            <BellRing className="h-4 w-4" />
-            Setup reminders
-          </Link>
-          <Link href="/schoolbase-admin/support" className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-surface">
-            <LifeBuoy className="h-4 w-4" />
-            Support inbox
-          </Link>
-          <button
-            type="button"
-            onClick={openComposer}
-            className="inline-flex items-center justify-center rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand/90"
-          >
-            Compose campaign
-          </button>
-        </>
-      }
-    >
+    <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+          <div className="flex items-center gap-2 text-sm font-medium text-brand"><Send size={17} /> Campaign operations</div>
+          <h1 className="mt-2 text-3xl font-bold text-foreground">Campaign</h1>
+          <p className="mt-1 text-muted">Send a SchoolBase campaign to contacts without saving them as school records</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link href="/schoolbase-admin/setup-reminders" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"><BellRing className="h-4 w-4" /> Setup reminders</Link>
+          <Link href="/schoolbase-admin/support" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"><LifeBuoy className="h-4 w-4" /> Support inbox</Link>
+          <button type="button" onClick={openComposer} className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"><Send className="h-4 w-4" /> Compose campaign</button>
+        </div>
+      </div>
       <div className="space-y-6">
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <CampaignStat icon={<Users2 size={18} />} label="Valid recipients" value={String(validRecipients.length)} detail={`of ${MAX_RECIPIENTS} maximum`} />
@@ -378,7 +367,7 @@ export default function CampaignPage() {
         type="success"
         confirmLabel="Done"
       />
-    </AdminPageShell>
+    </div>
   );
 }
 

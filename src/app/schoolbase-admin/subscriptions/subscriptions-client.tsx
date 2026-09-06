@@ -10,6 +10,7 @@ import Link from "next/link";
 import { getBackendUrl } from "@/lib/backend-url";
 import { resolveSchoolAssetUrl } from "@/lib/asset-urls";
 import { playCloseTone, playOpenTone } from "@/lib/sounds";
+import { Pagination } from "@/components/ui/pagination";
 import type { School } from "@prisma/client";
 
 const PLAN_CONFIG = {
@@ -32,6 +33,7 @@ const STATUS_CONFIG = {
 };
 
 const ITEMS_PER_PAGE = 15;
+const PAYMENTS_PER_PAGE = 10;
 
 function toInputDate(value?: string | Date | null) {
   if (!value) return "";
@@ -74,6 +76,7 @@ export default function SubscriptionsPageClient({
   const [schools, setSchools] = useState<School[]>(initialSchools);
   const [payments, setPayments] = useState<SubscriptionPaymentRecord[]>(initialPayments);
   const [activeTab, setActiveTab] = useState<"overview" | "payments">("overview");
+  const [paymentPage, setPaymentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [planFilter, setPlanFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -206,6 +209,7 @@ export default function SubscriptionsPageClient({
 
   useEffect(() => {
     setPayments(initialPayments);
+    setPaymentPage(1);
   }, [initialPayments]);
 
   useEffect(() => {
@@ -276,6 +280,11 @@ export default function SubscriptionsPageClient({
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
+  const paymentTotalPages = Math.max(1, Math.ceil(payments.length / PAYMENTS_PER_PAGE));
+  const paginatedPayments = payments.slice(
+    (paymentPage - 1) * PAYMENTS_PER_PAGE,
+    paymentPage * PAYMENTS_PER_PAGE,
+  );
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -345,8 +354,8 @@ export default function SubscriptionsPageClient({
   }
 
   return (
-    <div className="w-full space-y-8">
-      <div className="rounded-lg border border-border bg-surface p-3 sm:p-4">
+    <div className="w-full space-y-6">
+      <div className="border-b border-border pb-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-2">
             <button
@@ -413,7 +422,7 @@ export default function SubscriptionsPageClient({
       </div>
 
       {activeTab === "payments" ? (
-        <div className="rounded-lg border border-border bg-surface p-4">
+        <div className="border border-border bg-surface p-5">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <div>
               <h2 className="text-lg font-semibold text-foreground">Subscription Payments</h2>
@@ -441,7 +450,7 @@ export default function SubscriptionsPageClient({
                   </tr>
                 </thead>
                 <tbody>
-                  {payments.map((payment) => (
+                  {paginatedPayments.map((payment) => (
                     <tr key={payment.id} className="border-t border-border hover:bg-background/50 transition-colors">
                       <td className="px-3 py-2">
                         <div className="font-medium text-foreground">{payment.schoolName}</div>
@@ -469,15 +478,29 @@ export default function SubscriptionsPageClient({
               </table>
             </div>
           ) : (
-            <div className="rounded-lg border border-dashed border-border bg-background px-4 py-6 text-center text-sm text-muted">
+            <div className="border border-dashed border-border bg-background px-4 py-6 text-center text-sm text-muted">
               No subscription payments have been recorded yet.
+            </div>
+          )}
+          {payments.length > 0 && (
+            <div className="mt-4 border-t border-border pt-4">
+              <p className="text-xs text-muted">
+                Showing {(paymentPage - 1) * PAYMENTS_PER_PAGE + 1}–
+                {Math.min(paymentPage * PAYMENTS_PER_PAGE, payments.length)} of {payments.length} payments
+              </p>
+              <Pagination
+                currentPage={paymentPage}
+                totalPages={paymentTotalPages}
+                onPageChange={setPaymentPage}
+                className="mt-3"
+              />
             </div>
           )}
         </div>
       ) : (
         <>
           {pendingSchools.length > 0 && (
-        <div className="rounded-lg border border-border bg-surface p-6">
+        <div className="border border-border bg-surface p-5">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-3 h-3 rounded-full bg-warning animate-pulse"></div>
             <h2 className="text-lg font-semibold text-foreground">Pending Approvals</h2>
@@ -492,7 +515,7 @@ export default function SubscriptionsPageClient({
             {pendingSchools.map((school) => (
               <div
                 key={school.id}
-                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-lg border border-border bg-background p-4 hover:shadow-md transition"
+                className="flex flex-col gap-3 border border-border bg-background p-4 transition hover:bg-surface sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-foreground">{school.name}</p>
@@ -568,7 +591,7 @@ export default function SubscriptionsPageClient({
       {/* Schools Table */}
       {paginatedSchools.length > 0 ? (
         <div className="space-y-4">
-          <div className="hidden sm:block overflow-x-auto rounded-lg border border-border bg-surface">
+          <div className="hidden overflow-x-auto border border-border bg-surface sm:block">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-border bg-background text-muted">
                 <tr>
