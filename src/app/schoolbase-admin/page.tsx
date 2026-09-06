@@ -26,7 +26,6 @@ import {
   GraduationCap,
   LifeBuoy,
 } from "lucide-react";
-import AdminPageShell from "@/components/admin-page-shell";
 import AdminSkeleton from "@/components/ui/skeleton";
 import { getBackendUrl } from "@/lib/backend-url";
 import { resolveSchoolAssetUrl } from "@/lib/asset-urls";
@@ -305,22 +304,17 @@ export default function PlatformOverviewPage() {
   ];
 
   return (
-    <AdminPageShell
-      title="Platform Overview"
-      subtitle="Manage all schools and monitor platform health"
-      actions={
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setIsPanelOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand/90 cursor-pointer"
-          >
-            <ShieldCheck className="h-4 w-4" />
-            Open admin panel
-          </button>
+    <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+          <div className="flex items-center gap-2 text-sm font-medium text-brand"><ShieldCheck size={17} /> Platform operations</div>
+          <h1 className="mt-2 text-3xl font-bold text-foreground">Platform Overview</h1>
+          <p className="mt-1 text-muted">Manage schools, monitor platform health, and respond to support activity</p>
         </div>
-      }
-    >
+        <button type="button" onClick={() => setIsPanelOpen(true)} className="inline-flex items-center justify-center gap-2 self-start rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover sm:self-auto">
+          <ShieldCheck className="h-4 w-4" /> Open admin panel
+        </button>
+      </div>
       {newSupportAlert.open && newSupportAlert.request ? (
         <>
           <div className="fixed inset-x-0 top-20 z-50 flex justify-center px-4">
@@ -378,18 +372,18 @@ export default function PlatformOverviewPage() {
               const IconComponent = stat.icon; 
               return (
                 <Link key={idx} href={stat.href}>
-                  <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md h-full cursor-pointer hover:border-brand/50 flex flex-col">
+                  <div className="group h-full cursor-pointer border border-border bg-surface p-5 transition hover:border-brand/50 flex flex-col">
                     <div className="flex items-start gap-3">
-                      <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg ${stat.color} shadow-sm`}>
-                        <IconComponent className={`h-4 w-4 ${stat.iconColor}`} />
+                      <div className="flex items-center gap-2 text-brand">
+                        <IconComponent className="h-[18px] w-[18px]" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-xs text-muted">{stat.label}</p>
-                        <p className="mt-1 text-lg font-bold text-foreground">{stat.value}</p>
+                        <p className="text-xs font-bold uppercase tracking-[.12em] text-muted">{stat.label}</p>
+                        <p className="mt-3 text-3xl font-semibold text-foreground">{stat.value}</p>
                       </div>
                       <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
                     </div>
-                    <p className="mt-2 text-[11px] text-muted">{stat.sub}</p>
+                    <p className="mt-1 text-xs text-muted">{stat.sub}</p>
                   </div>
                 </Link>
               );
@@ -413,7 +407,7 @@ export default function PlatformOverviewPage() {
           const IconComponent = stat.icon;
           return (
             <Link key={idx} href={stat.href} className="block mb-3">
-              <div className="group rounded-lg border border-border bg-surface p-5 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50 flex items-start gap-4">
+              <div className="group border border-border bg-surface p-5 transition hover:border-brand/50 flex items-start gap-4">
                 <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${stat.color} shadow-sm`}>
                   <IconComponent className={`h-5 w-5 ${stat.iconColor}`} />
                 </div>
@@ -467,7 +461,7 @@ export default function PlatformOverviewPage() {
             className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 cursor-pointer"
             onClick={() => setIsPanelOpen(false)}
           />
-          <div className={`relative ml-auto flex h-full w-full max-w-4xl flex-col overflow-hidden bg-surface shadow-2xl transition-transform duration-300 ease-out ${
+          <div className={`relative ml-auto flex h-full w-full max-w-4xl flex-col overflow-hidden border-l border-border bg-surface shadow-2xl transition-transform duration-300 ease-out ${
             isPanelOpen ? 'translate-x-0' : 'translate-x-full'
           }`}>
             <div className="flex items-center justify-between border-b border-border px-6 py-5">
@@ -485,7 +479,7 @@ export default function PlatformOverviewPage() {
             </div>
             <div className="overflow-y-auto p-6">
               <div className="space-y-2.5">
-                <section className="rounded-2xl border border-border bg-surface/50 p-2.5">
+                <section className="border border-border bg-surface p-2.5">
                   <button
                     type="button"
                     onClick={() => setExpandedSections((current) => ({ ...current, activity: !current.activity }))}
@@ -512,10 +506,10 @@ export default function PlatformOverviewPage() {
                         </Link>
                       </div>
                       {activityLogs.length === 0 ? (
-                        <div className="rounded-xl border border-border bg-background/80 px-3 py-2 text-sm text-muted">No activity recorded yet.</div>
+                        <div className="border border-border bg-background px-3 py-2 text-sm text-muted">No activity recorded yet.</div>
                       ) : (
                         activityLogs.map((log: any) => (
-                          <div key={log.id} className="rounded-xl border border-border bg-background/80 px-3 py-2.5">
+                          <div key={log.id} className="border border-border bg-background px-3 py-2.5">
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0">
                                 <p className="truncate text-sm font-semibold text-foreground">{getActivityTitle(log)}</p>
@@ -535,7 +529,7 @@ export default function PlatformOverviewPage() {
                   ) : null}
                 </section>
 
-                <section className="rounded-2xl border border-border bg-surface/50 p-2.5">
+                <section className="border border-border bg-surface p-2.5">
                   <button
                     type="button"
                     onClick={() => setExpandedSections((current) => ({ ...current, emails: !current.emails }))}
@@ -562,10 +556,10 @@ export default function PlatformOverviewPage() {
                         </Link>
                       </div>
                       {emailLogs.length === 0 ? (
-                        <div className="rounded-xl border border-border bg-background/80 px-3 py-2 text-sm text-muted">No email activity recorded.</div>
+                        <div className="border border-border bg-background px-3 py-2 text-sm text-muted">No email activity recorded.</div>
                       ) : (
                         emailLogs.map((log: any) => (
-                          <div key={log.id} className="rounded-xl border border-border bg-background/80 px-3 py-2.5">
+                          <div key={log.id} className="border border-border bg-background px-3 py-2.5">
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0">
                                 <p className="truncate text-sm font-semibold text-foreground">{log.subject}</p>
@@ -583,7 +577,7 @@ export default function PlatformOverviewPage() {
                   ) : null}
                 </section>
 
-                <section className="rounded-2xl border border-border bg-surface/50 p-2.5">
+                <section className="border border-border bg-surface p-2.5">
                   <button
                     type="button"
                     onClick={() => setExpandedSections((current) => ({ ...current, trials: !current.trials }))}
@@ -610,10 +604,10 @@ export default function PlatformOverviewPage() {
                         </Link>
                       </div>
                       {trialSchools.length === 0 ? (
-                        <div className="rounded-xl border border-border bg-background/80 px-3 py-2 text-sm text-muted">No trial schools to show.</div>
+                        <div className="border border-border bg-background px-3 py-2 text-sm text-muted">No trial schools to show.</div>
                       ) : (
                         trialSchools.map((school: any) => (
-                          <div key={school.id} className="rounded-xl border border-border bg-background/80 px-3 py-2.5">
+                          <div key={school.id} className="border border-border bg-background px-3 py-2.5">
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0">
                                 <p className="truncate text-sm font-semibold text-foreground">{school.name}</p>
@@ -633,7 +627,7 @@ export default function PlatformOverviewPage() {
                   ) : null}
                 </section>
 
-                <section className="rounded-2xl border border-border bg-surface/50 p-2.5">
+                <section className="border border-border bg-surface p-2.5">
                   <button
                     type="button"
                     onClick={() => setExpandedSections((current) => ({ ...current, support: !current.support }))}
@@ -660,10 +654,10 @@ export default function PlatformOverviewPage() {
                         </Link>
                       </div>
                       {supportRequests.length === 0 ? (
-                        <div className="rounded-xl border border-border bg-background/80 px-3 py-2 text-sm text-muted">No open support requests at the moment.</div>
+                        <div className="border border-border bg-background px-3 py-2 text-sm text-muted">No open support requests at the moment.</div>
                       ) : (
                         supportRequests.slice(0, 5).map((request: any) => (
-                          <div key={request.id} className="rounded-xl border border-border bg-background/80 px-3 py-2.5">
+                          <div key={request.id} className="border border-border bg-background px-3 py-2.5">
                             <p className="text-sm font-semibold text-foreground">{request.subject}</p>
                             <p className="mt-1 text-xs text-muted">{request.school?.name || 'Unknown school'} • {request.priority}</p>
                             <p className="mt-2 text-xs text-muted line-clamp-2">{request.message}</p>
@@ -680,7 +674,7 @@ export default function PlatformOverviewPage() {
       ) : null}
 
       {/* Recent Schools */}
-      <div className="rounded-xl border border-border bg-surface p-6 shadow-sm hover:shadow-md transition-shadow">
+      <div className="border border-border bg-surface p-5">
         <div className="flex items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
@@ -744,6 +738,6 @@ export default function PlatformOverviewPage() {
           View all <ArrowUpRight className="h-3 w-3" />
         </Link>
       </div>
-    </AdminPageShell>
+    </div>
   );
 }

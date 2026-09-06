@@ -450,7 +450,7 @@ export default function SchoolsViewSwitcher({
       {viewMode === "list" ? (
         <SchoolTable schools={filteredSchools} filterControls={filterControls} onOpenDetails={openSchoolDetails} />
       ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {filteredSchools.length === 0 ? (
             <div className="col-span-2 text-center py-12">
               <p className="text-muted">No schools found</p>
@@ -497,11 +497,11 @@ export default function SchoolsViewSwitcher({
                       openSchoolDetails(school);
                     }
                   }}
-                  className="group cursor-pointer rounded-2xl border border-border bg-background p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/30 hover:bg-brand/5 hover:shadow-md"
+                      className="group cursor-pointer border border-border bg-surface p-5 transition-colors hover:border-brand/40 hover:bg-brand/5"
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex min-w-0 cursor-pointer items-center gap-3">
-                      <div className="flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-brand/10 text-brand">
+                          <div className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-brand/10 text-brand">
                         {school.logoUrl ? (
                           <img
                             src={resolveSchoolAssetUrl(school.logoUrl) || school.logoUrl}
@@ -520,7 +520,7 @@ export default function SchoolsViewSwitcher({
 
                     <div className="flex flex-wrap items-center justify-end gap-2" onClick={(event) => event.stopPropagation()}>
                       <span
-                        className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${getStatusClasses(school.status)}`}
+                            className={`shrink-0 rounded-md px-2.5 py-1 text-xs font-medium ${getStatusClasses(school.status)}`}
                       >
                         {school.status}
                       </span>
@@ -550,7 +550,7 @@ export default function SchoolsViewSwitcher({
                         <p className="text-xs uppercase tracking-[0.18em] text-muted">Capacity</p>
                         <p className="mt-1 text-sm font-semibold text-foreground">{planLimit ? `${studentCount} / ${planLimit}` : planLimitLabel}</p>
                       </div>
-                      <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-muted">{usageStatus}</span>
+                          <span className="rounded-md bg-background px-2.5 py-1 text-xs text-muted">{usageStatus}</span>
                     </div>
                     <div className="mt-3 h-2 rounded-full bg-slate-200">
                       <div
