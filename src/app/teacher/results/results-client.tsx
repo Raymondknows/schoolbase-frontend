@@ -242,7 +242,7 @@ export default function TeacherResultsEnhancedClient({
           <p className="text-sm font-semibold text-amber-900">No assessments found for &quot;{searchQuery || initialSubject}&quot;</p>
           <p className="text-sm text-amber-900 mt-1">If you expected to see an assessment for this subject, it may not have been created yet. Contact your administrator or check the assessments list.</p>
           <div className="mt-3">
-            <Link href="/teacher/results" className="inline-flex items-center gap-2 rounded-lg bg-white border border-border px-3 py-2 text-sm font-medium text-brand hover:bg-brand/5">View all assessments</Link>
+            <Link href="/teacher/results" className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-white border border-border px-3 py-2 text-sm font-medium text-brand hover:bg-brand/5">View all assessments</Link>
           </div>
         </div>
       )}
@@ -320,7 +320,7 @@ export default function TeacherResultsEnhancedClient({
                     setActivePhase(phase);
                     handleFilterChange();
                   }}
-                  className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
+                  className={`cursor-pointer rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
                     isActive
                       ? "border-brand bg-brand text-white"
                       : "bg-background text-muted hover:bg-surface border border-border"
@@ -345,7 +345,7 @@ export default function TeacherResultsEnhancedClient({
                 setSelectedTerm("ALL");
                 handleFilterChange();
               }}
-              className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground hover:bg-background focus:outline-none focus:ring-2 focus:ring-brand transition"
+              className="cursor-pointer rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground hover:bg-background focus:outline-none focus:ring-2 focus:ring-brand transition"
             >
               {sessionOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -363,7 +363,7 @@ export default function TeacherResultsEnhancedClient({
                 setSelectedTerm(e.target.value);
                 handleFilterChange();
               }}
-              className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground hover:bg-background focus:outline-none focus:ring-2 focus:ring-brand transition"
+              className="cursor-pointer rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground hover:bg-background focus:outline-none focus:ring-2 focus:ring-brand transition"
             >
               {uniqueTerms.map((term) => (
                 <option key={term.value} value={term.value}>
@@ -381,7 +381,7 @@ export default function TeacherResultsEnhancedClient({
                 setActiveStatus(e.target.value);
                 handleFilterChange();
               }}
-              className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground hover:bg-background focus:outline-none focus:ring-2 focus:ring-brand transition"
+              className="cursor-pointer rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground hover:bg-background focus:outline-none focus:ring-2 focus:ring-brand transition"
             >
               {STATUS_ORDER.map((status) => {
                 const count = getStatusStats(status);
@@ -407,32 +407,38 @@ export default function TeacherResultsEnhancedClient({
 
       {/* Assessment Cards - Professional Grid */}
       {paginatedAssessments.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="space-y-2">
           {paginatedAssessments.map((assessment) => {
             const progress = calculateProgress(assessment);
             const isPublished = assessment.status === "PUBLISHED";
             const isDraft = assessment.status === "DRAFT";
             const isLocked = Boolean(assessment.isLocked);
+            const accentBorder = isPublished
+              ? "border-l-emerald-500"
+              : assessment.status === "APPROVED"
+                ? "border-l-amber-500"
+                : "border-l-brand";
             const phaseConfig = PHASE_CONFIG[assessment.phase as keyof typeof PHASE_CONFIG];
             const statusConfig = STATUS_CONFIG[assessment.status as keyof typeof STATUS_CONFIG];
             const StatusIcon = statusConfig.icon;
 
             return (
-              <Link key={assessment.id} href={`/teacher/results/${assessment.id}`}>
-                <div className="border border-border bg-surface p-5 transition hover:border-brand/40 hover:bg-brand-light">
+              <Link key={assessment.id} href={`/teacher/results/${assessment.id}`} className="cursor-pointer">
+                <div className={`grid gap-3 border border-border border-l-4 bg-surface p-3.5 transition hover:border-brand/40 hover:bg-brand-light lg:grid-cols-[minmax(220px,1fr)_minmax(260px,1.25fr)_minmax(210px,auto)] lg:items-center ${accentBorder}`}>
+                  <div className="space-y-2 lg:min-w-0">
                   {/* Header */}
-                  <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-semibold text-foreground truncate">
+                      <h3 className="truncate text-base font-semibold text-foreground">
                         {assessment.name}
                       </h3>
-                      <p className="text-sm text-muted mt-1">
+                      <p className="mt-0.5 text-xs text-muted">
                         {assessment.term?.name}
                       </p>
                     </div>
-                    <div className="flex flex-wrap items-center justify-end gap-2 ml-2">
+                    <div className="ml-2 flex max-w-[48%] flex-wrap items-center justify-end gap-1">
                       {isLocked && (
-                        <Badge variant="warning" className="flex items-center gap-1">
+                        <Badge variant="warning" className="flex items-center gap-1 px-1.5 py-0.5 text-[10px]">
                           <AlertCircle className="w-3 h-3" />
                           Locked
                         </Badge>
@@ -441,7 +447,7 @@ export default function TeacherResultsEnhancedClient({
                         variant={
                           isPublished ? "success" : assessment.status === "APPROVED" ? "brand" : "default"
                         }
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-1 px-1.5 py-0.5 text-[10px]"
                       >
                         <StatusIcon className="w-3 h-3" />
                         {resultStatusLabel(assessment.status)}
@@ -450,19 +456,21 @@ export default function TeacherResultsEnhancedClient({
                   </div>
 
                   {/* Phase Badge */}
-                  <div className="mb-4">
-                    <span className={`inline-block border border-border px-2 py-1 text-xs font-medium ${phaseConfig.color}`}>
+                  <div>
+                    <span className={`inline-block border border-border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${phaseConfig.color}`}>
                       {phaseConfig.label}
                     </span>
                   </div>
+                  </div>
 
+                  <div className="space-y-3">
                   {/* Progress Section */}
-                  <div className="mb-4 space-y-2">
+                  <div className="mb-0 space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs font-medium text-muted">Score Entry Progress</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">Score progress</p>
                       <p className="text-xs font-bold text-brand">{progress}%</p>
                     </div>
-                    <div className="h-2 w-full overflow-hidden bg-background">
+                    <div className="h-1.5 w-full overflow-hidden bg-background">
                       <div
                         className="h-full bg-brand transition-all"
                         style={{ width: `${progress}%` }}
@@ -471,22 +479,22 @@ export default function TeacherResultsEnhancedClient({
                   </div>
 
                   {/* Stats */}
-                  <div className="mb-4 grid grid-cols-3 gap-3 border-y border-border bg-background p-3 text-center">
+                  <div className="mb-0 grid grid-cols-3 gap-2 border-y border-border bg-background px-2 py-2 text-center">
                     <div>
-                      <p className="text-xs text-muted">Total Students</p>
-                      <p className="text-lg font-bold text-foreground">
+                      <p className="text-[10px] uppercase tracking-wide text-muted">Students</p>
+                      <p className="text-base font-bold text-foreground">
                               {assessment.studentCount ?? assessment._count?.results ?? 0}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted">Entries</p>
-                      <p className="text-lg font-bold text-foreground">
+                      <p className="text-[10px] uppercase tracking-wide text-muted">Entries</p>
+                      <p className="text-base font-bold text-foreground">
                               {assessment.entryCount ?? assessment._count?.results ?? 0}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted">Remaining</p>
-                      <p className="text-lg font-bold text-orange-600">
+                      <p className="text-[10px] uppercase tracking-wide text-muted">Left</p>
+                      <p className="text-base font-bold text-orange-600">
                               {Math.max(
                                 0,
                                 (assessment.studentCount ?? assessment._count?.results ?? 0) -
@@ -495,15 +503,16 @@ export default function TeacherResultsEnhancedClient({
                       </p>
                     </div>
                   </div>
+                  </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-2 mt-auto">
+                  <div className="flex gap-2 lg:flex-col">
                     <button
                       onClick={(e) => {
                         e.preventDefault();
                         window.location.href = `/teacher/results/${assessment.id}`;
                       }}
-                      className="flex-1 bg-brand text-white hover:bg-brand-dark font-medium py-2 px-3 rounded-lg text-sm transition inline-flex items-center justify-center gap-1"
+                      className="flex-1 cursor-pointer bg-brand px-2.5 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-dark inline-flex items-center justify-center gap-1"
                     >
                       {isPublished ? "View Results" : isDraft ? "Enter Scores" : "Continue"}
                       <ChevronRight className="w-4 h-4" />
@@ -514,7 +523,7 @@ export default function TeacherResultsEnhancedClient({
                           e.preventDefault();
                           window.location.href = `/teacher/results/${assessment.id}/subjects`;
                         }}
-                        className="flex-1 border border-brand text-brand hover:bg-brand/5 font-medium py-2 px-3 rounded-lg text-sm transition"
+                        className="flex-1 cursor-pointer border border-brand px-2.5 py-1.5 text-xs font-semibold text-brand transition hover:bg-brand/5"
                       >
                         By Subject
                       </button>
@@ -525,7 +534,7 @@ export default function TeacherResultsEnhancedClient({
                           e.preventDefault();
                           window.location.href = `/teacher/results/${assessment.id}/analytics`;
                         }}
-                        className="flex-1 border border-border text-foreground hover:bg-background font-medium py-2 px-3 rounded-lg text-sm transition inline-flex items-center justify-center gap-1"
+                        className="flex-1 cursor-pointer border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground transition hover:bg-background inline-flex items-center justify-center gap-1"
                       >
                         <BarChart3 className="w-4 h-4" />
                         Analytics
@@ -557,7 +566,7 @@ export default function TeacherResultsEnhancedClient({
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="rounded px-3 py-1.5 border border-border text-sm font-medium text-foreground hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="cursor-pointer rounded px-3 py-1.5 border border-border text-sm font-medium text-foreground hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
               Prev
             </button>
@@ -576,7 +585,7 @@ export default function TeacherResultsEnhancedClient({
                   )}
                   <button
                     onClick={() => setCurrentPage(page)}
-                    className={`rounded px-3 py-1.5 text-sm font-medium transition ${
+                    className={`cursor-pointer rounded px-3 py-1.5 text-sm font-medium transition ${
                       page === currentPage
                         ? "bg-brand text-white"
                         : "border border-border text-foreground hover:bg-background"
@@ -589,7 +598,7 @@ export default function TeacherResultsEnhancedClient({
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="rounded px-3 py-1.5 border border-border text-sm font-medium text-foreground hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="cursor-pointer rounded px-3 py-1.5 border border-border text-sm font-medium text-foreground hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
               Next
             </button>
