@@ -67,8 +67,8 @@ export default function TeacherTimetablePage() {
       setBoardName(data.configs?.[0]?.name || "Published timetable");
       setEntries((data.configs?.[0]?.entries || []) as Entry[]);
       setError("");
-    } catch (requestError: any) {
-      setError(requestError.message || "Unable to load timetable");
+    } catch (requestError: unknown) {
+      setError(requestError instanceof Error ? requestError.message : "Unable to load timetable");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -76,6 +76,8 @@ export default function TeacherTimetablePage() {
   }
 
   useEffect(() => {
+    // Initial data fetch intentionally updates the loading state.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, []);
 
@@ -184,7 +186,7 @@ export default function TeacherTimetablePage() {
             </section>
             {countdown && nextLesson ? (
               <div
-                className="fixed z-40 w-[min(280px,calc(100vw-24px))] touch-none select-none rounded-2xl border border-brand/20 bg-surface/95 p-3 shadow-xl shadow-blue-900/10 backdrop-blur-sm print:hidden"
+                className="fixed z-40 w-[min(280px,calc(100vw-24px))] touch-none select-none rounded-lg border border-brand/20 bg-surface/95 p-3 shadow-xl shadow-blue-900/10 backdrop-blur-sm print:hidden"
                 style={{ left: countdownPosition.x, top: countdownPosition.y }}
               >
                 <div
@@ -197,7 +199,7 @@ export default function TeacherTimetablePage() {
                     setIsDraggingCountdown(true);
                   }}
                 >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
                     <Timer size={18} />
                   </div>
                   <div className="min-w-0">
@@ -208,7 +210,7 @@ export default function TeacherTimetablePage() {
                 </div>
               </div>
             ) : null}
-            <section className="rounded-[24px] border border-border/70 bg-surface/80 p-5 shadow-sm">
+            <section className="border-b border-border pb-5">
               <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[.12em] text-muted">
@@ -226,7 +228,7 @@ export default function TeacherTimetablePage() {
                   </span>
                 </div>
               </div>
-              <div className="mt-5 grid grid-cols-5 gap-2">
+              <div className="mt-4 grid grid-cols-5 gap-2">
                 {days.map((day, index) => (
                   <button
                     key={day}
@@ -251,7 +253,7 @@ export default function TeacherTimetablePage() {
               {todayEntries.map((entry) => (
                 <article
                   key={entry.id}
-                  className="rounded-[20px] border border-border/70 bg-surface p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                  className="border border-border bg-surface p-5 transition hover:border-brand/40 hover:bg-brand-light"
                   style={{ borderTop: `4px solid ${accents[selectedDay]}` }}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -263,7 +265,7 @@ export default function TeacherTimetablePage() {
                         {entry.subject?.name || "Lesson"}
                       </h3>
                     </div>
-                    <span className="rounded-full bg-brand-light px-2 py-1 text-xs font-bold text-brand">
+                    <span className="rounded-lg bg-brand-light px-2 py-1 text-xs font-bold text-brand">
                       {entry.period.startsAt}
                     </span>
                   </div>
@@ -316,7 +318,7 @@ function Summary({
   detail: string;
 }) {
   return (
-    <div className="rounded-[20px] border border-border/70 bg-gradient-to-br from-blue-500/10 to-blue-600/5 p-4 shadow-sm">
+    <div className="border border-border bg-surface p-5">
       <div className="flex items-center gap-2 text-brand">
         {icon}
         <span className="text-xs font-bold uppercase tracking-[.12em] text-muted">

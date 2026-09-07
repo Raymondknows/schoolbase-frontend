@@ -59,8 +59,8 @@ export default function ProfilePage() {
 
         const data = await res.json();
         setProfile(data);
-      } catch (err: any) {
-        setError(err.message || 'Failed to load profile');
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Failed to load profile');
       } finally {
         setLoading(false);
       }
@@ -129,8 +129,8 @@ export default function ProfilePage() {
         setShowPasswordModal(false);
         setPasswordSuccess(false);
       }, 1600);
-    } catch (err: any) {
-      setPasswordError(err.message || 'Failed to change password');
+    } catch (err: unknown) {
+      setPasswordError(err instanceof Error ? err.message : 'Failed to change password');
     } finally {
       setChangingPassword(false);
     }
@@ -160,8 +160,8 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="px-3 py-4 sm:px-4 lg:px-6 lg:py-6">
-        <div className="mx-auto max-w-6xl space-y-4 sm:space-y-5">
+      <main className="min-h-screen pb-12">
+        <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
           <div className="flex min-h-[60vh] items-center justify-center">
             <div className="flex items-center gap-3 text-sm text-muted">
               <Loader2 className="h-5 w-5 animate-spin text-brand" />
@@ -169,15 +169,15 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     );
   }
 
   if (error) {
     return (
-      <div className="px-3 py-4 sm:px-4 lg:px-6 lg:py-6">
-        <div className="mx-auto max-w-6xl space-y-4 sm:space-y-5">
-          <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4">
+      <main className="min-h-screen pb-12">
+        <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+          <div className="flex items-start gap-3 border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3">
             <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
             <div>
               <p className="font-medium text-red-900">
@@ -187,14 +187,14 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     );
   }
 
   if (!profile) {
     return (
       <div className="px-3 py-4 sm:px-4 lg:px-6 lg:py-6">
-        <div className="mx-auto max-w-6xl space-y-4 sm:space-y-5 py-20 text-center">
+        <div className="mx-auto max-w-7xl space-y-6 px-5 py-20 text-center">
           <User className="mx-auto h-10 w-10 text-muted/40" />
           <p className="mt-3 text-sm text-muted">
             No profile information available.
@@ -221,38 +221,32 @@ export default function ProfilePage() {
   );
 
   return (
-<div className="px-3 py-4 sm:px-4 lg:px-6 lg:py-6">
-      <div className="mx-auto max-w-6xl space-y-4 sm:space-y-5">
+<main className="min-h-screen pb-12">
+  <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
 
         {/* Page heading */}
-        <div className="mb-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand">
-            Account
-          </p>
-
-          <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            Profile
-          </h1>
-
-          <p className="mt-1 text-sm text-muted">
-            Manage your teacher account and security.
-          </p>
+        <div className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
+          <div>
+            <div className="flex items-center gap-2 text-sm font-medium text-brand">
+              <User className="h-[17px] w-[17px]" /> Teacher workspace
+            </div>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Profile</h1>
+            <p className="mt-1 text-muted">Manage your teacher account and security.</p>
+          </div>
         </div>
 
         {/* Main profile header */}
-        <section className="overflow-hidden rounded-[28px] border border-border/70 bg-surface shadow-sm">
+        <section className="border border-border bg-surface">
 
           {/* Brand header */}
-          <div className="relative h-28 bg-gradient-to-r from-brand/15 via-brand/5 to-transparent sm:h-32">
-            <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-brand/5 to-transparent" />
-          </div>
+          <div className="border-b border-border bg-background px-5 py-3 text-xs font-bold uppercase tracking-[.12em] text-muted">Account identity</div>
 
           {/* Profile identity */}
-          <div className="relative px-5 pb-6 sm:px-8 sm:pb-8">
-            <div className="-mt-12 flex flex-col gap-5 sm:-mt-14 sm:flex-row sm:items-end sm:justify-between">
+          <div className="px-5 py-5 sm:px-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
-              <div className="flex items-end gap-4">
-                <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-[26px] border-4 border-surface bg-brand/10 text-brand shadow-md sm:h-28 sm:w-28">
+              <div className="flex items-center gap-4">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-brand/20 bg-brand/10 text-brand sm:h-20 sm:w-20">
                   <span className="text-3xl font-bold sm:text-4xl">
                     {initials || 'T'}
                   </span>
@@ -264,7 +258,7 @@ export default function ProfilePage() {
                   </h2>
 
                   <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">
+                    <span className="border border-brand/30 bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">
                       {profile.role}
                     </span>
 
@@ -284,8 +278,8 @@ export default function ProfilePage() {
         </section>
 
         {/* Account details */}
-        <section className="mt-10">
-          <div className="mb-5">
+        <section>
+          <div className="mb-4">
             <h2 className="text-lg font-semibold text-foreground">
               Account details
             </h2>
@@ -295,12 +289,12 @@ export default function ProfilePage() {
             </p>
           </div>
 
-          <div className="divide-y divide-border rounded-[24px] border border-border/70 bg-surface shadow-sm">
+          <div className="divide-y divide-border border border-border bg-surface">
 
             {/* Email */}
             <div className="flex flex-col gap-2 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
               <div className="flex items-center gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-background text-muted">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-background text-muted">
                   <Mail className="h-5 w-5" />
                 </div>
 
@@ -314,7 +308,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <span className="ml-14 inline-flex w-fit items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 sm:ml-0">
+              <span className="ml-14 inline-flex w-fit items-center gap-1.5 border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 sm:ml-0">
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 Active
               </span>
@@ -322,7 +316,7 @@ export default function ProfilePage() {
 
             {/* School */}
             <div className="flex items-center gap-4 px-5 py-5 sm:px-6">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-background text-muted">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-background text-muted">
                 <Building2 className="h-5 w-5" />
               </div>
 
@@ -339,7 +333,7 @@ export default function ProfilePage() {
 
             {/* Role */}
             <div className="flex items-center gap-4 px-5 py-5 sm:px-6">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-background text-muted">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-background text-muted">
                 <Shield className="h-5 w-5" />
               </div>
 
@@ -356,7 +350,7 @@ export default function ProfilePage() {
 
             {/* Joined */}
             <div className="flex items-center gap-4 px-5 py-5 sm:px-6">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-background text-muted">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-background text-muted">
                 <Calendar className="h-5 w-5" />
               </div>
 
@@ -375,8 +369,8 @@ export default function ProfilePage() {
         </section>
 
         {/* Security */}
-        <section className="mt-10">
-          <div className="mb-5">
+        <section>
+          <div className="mb-4">
             <h2 className="text-lg font-semibold text-foreground">
               Security
             </h2>
@@ -386,14 +380,14 @@ export default function ProfilePage() {
             </p>
           </div>
 
-          <div className="overflow-hidden rounded-[24px] border border-border/70 bg-surface shadow-sm">
+          <div className="overflow-hidden border border-border bg-surface">
 
             <button
               type="button"
               onClick={openPasswordModal}
               className="group flex w-full items-center gap-4 px-5 py-5 text-left transition hover:bg-background sm:px-6"
             >
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-brand/10 text-brand">
                 <KeyRound className="h-5 w-5" />
               </div>
 
@@ -572,6 +566,6 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
-    </div>
+    </main>
   );
 }

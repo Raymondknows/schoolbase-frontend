@@ -55,13 +55,6 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
 
   const profileGuardian = profileStudent ? getGuardian(profileStudent) : null;
 
-  const getStudentInitials = (student: any) =>
-    [student.firstName, student.lastName]
-      .filter(Boolean)
-      .map((part: string) => part[0]?.toUpperCase())
-      .slice(0, 2)
-      .join("") || "NA";
-
   // Filter by phase and search
   const filteredPupils = useMemo(() => {
     let filtered = pupils;
@@ -118,30 +111,22 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
   };
 
   return (
-    <div className="px-3 py-4 sm:px-4 lg:px-6 lg:py-6">
-      <div className="mx-auto max-w-6xl space-y-4 sm:space-y-5">
-        <header>
-          <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand/10 text-brand">
-              <Users className="h-5 w-5" />
+    <main className="min-h-screen pb-12">
+      <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+        <header className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
+          <div>
+            <div className="flex items-center gap-2 text-sm font-medium text-brand">
+              <Users className="h-[17px] w-[17px]" /> Teacher workspace
             </div>
-
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                Students
-              </h1>
-
-              <p className="mt-1 text-sm text-muted">
-                {pupils.length} student{pupils.length !== 1 ? "s" : ""} across your assigned classes.
-              </p>
-            </div>
+            <h1 className="mt-2 text-3xl font-bold text-foreground sm:text-4xl">Students</h1>
+            <p className="mt-1 text-muted">{pupils.length} student{pupils.length !== 1 ? "s" : ""} across {classes.length} assigned class{classes.length !== 1 ? "es" : ""}.</p>
           </div>
         </header>
 
-        <section className="grid gap-3 sm:grid-cols-3">
-          <article className="rounded-[20px] border border-border/70 bg-gradient-to-br from-blue-500/10 to-blue-600/5 p-4 shadow-sm">
+        <section className="grid gap-4 sm:grid-cols-3">
+          <article className="border border-border bg-surface p-5">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
                 <Users className="h-5 w-5 text-blue-600" />
               </div>
               <div className="min-w-0">
@@ -156,9 +141,9 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
             <p className="mt-3 text-sm text-muted">Students across all assigned classes.</p>
           </article>
 
-          <article className="rounded-[20px] border border-border/70 bg-gradient-to-br from-violet-500/10 to-violet-600/5 p-4 shadow-sm">
+          <article className="border border-border bg-surface p-5">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-violet-50">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-50">
                 <span className="text-sm font-semibold text-violet-600">P</span>
               </div>
               <div className="min-w-0">
@@ -173,9 +158,9 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
             <p className="mt-3 text-sm text-muted">Primary phase students.</p>
           </article>
 
-          <article className="rounded-[20px] border border-border/70 bg-gradient-to-br from-amber-500/10 to-amber-600/5 p-4 shadow-sm">
+          <article className="border border-border bg-surface p-5">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-50">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-50">
                 <span className="text-sm font-semibold text-amber-600">S</span>
               </div>
               <div className="min-w-0">
@@ -191,7 +176,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
           </article>
         </section>
 
-        <section className="rounded-[24px] border border-border/70 bg-surface/80 p-4 shadow-sm sm:p-5">
+        <section className="border-b border-border pb-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-[0.18em] text-muted">Search & filters</p>
@@ -201,7 +186,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                   placeholder="Search by name or admission number..."
                   value={searchQuery}
                   onChange={handleSearchChange}
-                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none transition placeholder:text-muted focus:border-brand focus:ring-2 focus:ring-brand/10"
+                  className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none transition placeholder:text-muted focus:border-brand"
                 />
               </div>
             </div>
@@ -214,9 +199,9 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                   <button
                     key={phase}
                     onClick={() => handlePhaseChange(phase)}
-                    className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+                    className={`rounded-lg border px-4 py-2 text-xs font-semibold transition ${
                       isActive
-                        ? "bg-brand text-white"
+                        ? "border-brand bg-brand text-white"
                         : "border border-border bg-background text-foreground hover:border-brand"
                     }`}
                   >
@@ -257,7 +242,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
         {paginatedPupils.length > 0 ? (
           <>
             {/* Desktop Table View */}
-            <div className="hidden sm:block overflow-hidden rounded-lg border border-border bg-surface">
+            <div className="hidden overflow-hidden rounded-lg border border-border bg-surface sm:block">
               <table className="w-full text-left text-sm">
                 <thead className="border-b border-border bg-background text-muted">
                   <tr>
@@ -309,7 +294,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                           <button
                             type="button"
                             onClick={() => openProfileModal(p)}
-                            className="rounded-full border border-border bg-white px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-surface"
+                            className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-background"
                           >
                             View
                           </button>
@@ -331,7 +316,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                 return (
                   <div
                     key={p.id}
-                    className="rounded-lg border border-border bg-surface px-3 py-3 hover:bg-background/50 transition-colors"
+                    className="border border-border bg-surface px-3 py-3 hover:bg-background/50 transition-colors"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -356,7 +341,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                       <button
                         type="button"
                         onClick={() => openProfileModal(p)}
-                        className="rounded-full border border-border bg-white px-2.5 py-1 text-xs font-semibold text-foreground transition hover:bg-surface flex-shrink-0"
+                        className="rounded-lg border border-border bg-surface px-2.5 py-1 text-xs font-semibold text-foreground transition hover:bg-background flex-shrink-0"
                       >
                         View
                       </button>
@@ -417,7 +402,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
             )}
           </>
         ) : (
-          <div className="rounded-lg border border-border bg-surface px-6 py-12 text-center">
+          <div className="rounded-lg border border-dashed border-[#9ac7ea] bg-[#f3f9fe] px-6 py-12 text-center">
             <p className="text-muted">
               {searchQuery
                 ? `No students found matching "${searchQuery}"`
@@ -547,6 +532,6 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
           </div>
         </div>
       ) : null}
-    </div>
+    </main>
   );
 }

@@ -5,13 +5,11 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   AlertCircle,
   BookOpen,
-  CheckCircle,
   ChevronLeft,
   ChevronRight,
   Grid3X3,
   List,
   Search,
-  TrendingUp,
   Users,
   X,
 } from 'lucide-react';
@@ -111,7 +109,7 @@ export default function SubjectsPage() {
   if (loading) {
     return (
       <div className="px-3 py-4 sm:px-4 lg:px-6 lg:py-6">
-        <div className="mx-auto max-w-6xl space-y-4 sm:space-y-5">
+        <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
           <div className="space-y-2">
             <div className="h-7 w-32 animate-pulse rounded-lg bg-surface" />
             <div className="h-4 w-72 animate-pulse rounded bg-surface" />
@@ -121,40 +119,32 @@ export default function SubjectsPage() {
             {[1, 2, 3].map((item) => (
               <div
                 key={item}
-                className="h-24 animate-pulse rounded-[20px] border border-border/70 bg-surface"
+                className="h-24 animate-pulse border border-border bg-surface"
               />
             ))}
           </div>
 
-          <div className="h-96 animate-pulse rounded-[24px] border border-border/70 bg-surface" />
+          <div className="h-96 animate-pulse border border-border bg-surface" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="px-3 py-4 sm:px-4 lg:px-6 lg:py-6">
-      <div className="mx-auto max-w-6xl space-y-4 sm:space-y-5">
-        <header>
-          <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand/10 text-brand">
-              <BookOpen className="h-5 w-5" />
+    <main className="min-h-screen pb-12">
+      <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+        <header className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
+          <div>
+            <div className="flex items-center gap-2 text-sm font-medium text-brand">
+              <BookOpen className="h-[17px] w-[17px]" /> Teacher workspace
             </div>
-
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                Your Subjects
-              </h1>
-
-              <p className="mt-1 text-sm text-muted">
-                View and manage the subjects assigned to you.
-              </p>
-            </div>
+            <h1 className="mt-2 text-3xl font-bold text-foreground sm:text-4xl">Your Subjects</h1>
+            <p className="mt-1 text-muted">View and manage the subjects assigned to you.</p>
           </div>
         </header>
 
         {error && (
-          <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4">
+          <div className="flex items-start gap-3 border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3">
             <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
             <div className="min-w-0">
               <p className="text-sm font-semibold text-red-800">Unable to load subjects</p>
@@ -163,10 +153,10 @@ export default function SubjectsPage() {
           </div>
         )}
 
-        <section className="grid gap-3 sm:grid-cols-3">
-          <article className="rounded-[20px] border border-border/70 bg-gradient-to-br from-blue-500/10 to-blue-600/5 p-4 shadow-sm">
+        <section className="grid gap-4 sm:grid-cols-2">
+          <article className="border border-border bg-surface p-5">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
                 <BookOpen className="h-5 w-5 text-blue-600" />
               </div>
               <div className="min-w-0">
@@ -177,21 +167,21 @@ export default function SubjectsPage() {
             <p className="mt-3 text-sm text-muted">Subjects currently assigned to you.</p>
           </article>
 
-          <article className="rounded-[20px] border border-border/70 bg-gradient-to-br from-blue-500/10 to-blue-600/5 p-4 shadow-sm">
+          <article className="border border-border bg-surface p-5">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
                 <BookOpen className="h-5 w-5 text-blue-600" />
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted">Total Subjects</p>
-                <p className="mt-1 text-2xl font-semibold text-foreground">{stats.total}</p>
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted">Subject codes</p>
+                <p className="mt-1 text-2xl font-semibold text-foreground">{subjects.filter((subject) => subject.code).length}</p>
               </div>
             </div>
-            <p className="mt-3 text-sm text-muted">Subjects currently assigned to you.</p>
+            <p className="mt-3 text-sm text-muted">Assigned subjects with a code.</p>
           </article>
         </section>
 
-        <section className="rounded-[24px] border border-border/70 bg-surface/80 p-4 shadow-sm sm:p-5">
+        <section className="border-b border-border pb-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-foreground">Subjects</h2>
@@ -217,7 +207,7 @@ export default function SubjectsPage() {
                     setCurrentPage(1);
                   }}
                   placeholder="Search by subject name or code..."
-                  className="w-full rounded-xl border border-border bg-background py-2.5 pl-10 pr-10 text-sm text-foreground outline-none transition placeholder:text-muted focus:border-brand focus:ring-2 focus:ring-brand/10"
+                  className="w-full rounded-lg border border-border bg-surface py-2.5 pl-10 pr-10 text-sm text-foreground outline-none transition placeholder:text-muted focus:border-brand"
                 />
 
                 {searchQuery ? (
@@ -234,14 +224,14 @@ export default function SubjectsPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <div className="flex rounded-full border border-border bg-background p-1">
+              <div className="flex rounded-lg border border-border bg-background p-1">
                 <button
                   type="button"
                   onClick={() => setViewMode('list')}
                   aria-label="List view"
-                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                    className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition ${
                     viewMode === 'list'
-                      ? 'bg-brand text-white shadow-sm'
+                      ? 'bg-brand text-white'
                       : 'text-muted hover:text-foreground'
                   }`}
                 >
@@ -252,9 +242,9 @@ export default function SubjectsPage() {
                   type="button"
                   onClick={() => setViewMode('grid')}
                   aria-label="Grid view"
-                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                    className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition ${
                     viewMode === 'grid'
-                      ? 'bg-brand text-white shadow-sm'
+                      ? 'bg-brand text-white'
                       : 'text-muted hover:text-foreground'
                   }`}
                 >
@@ -293,10 +283,10 @@ export default function SubjectsPage() {
             {paginatedSubjects.map((subject) => (
               <div
                 key={subject.id}
-                className="rounded-2xl border border-border bg-surface p-6 transition hover:shadow-md hover:border-brand/50"
+                className="border border-border bg-surface p-5 transition hover:border-brand/40 hover:bg-brand-light"
               >
                 <div className="flex items-start gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand/10 text-brand">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-brand/10 text-brand">
                     <BookOpen className="h-5 w-5" />
                   </div>
 
@@ -311,13 +301,13 @@ export default function SubjectsPage() {
                 <div className="mt-5 flex flex-wrap gap-2">
                   <Link
                     href={`/teacher/results?subject=${encodeURIComponent(subject.name)}`}
-                    className="inline-flex items-center justify-center rounded-full border border-border bg-white px-3 py-1.5 text-xs font-semibold text-brand transition hover:bg-brand/5"
+                    className="inline-flex items-center justify-center rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-brand transition hover:bg-background"
                   >
                     View results
                   </Link>
                   <button
                     type="button"
-                    className="inline-flex items-center justify-center rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-surface"
+                    className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-surface"
                   >
                     Manage
                   </button>
@@ -329,7 +319,7 @@ export default function SubjectsPage() {
 
         {paginatedSubjects.length > 0 && viewMode === 'list' && (
           <>
-            <div className="hidden sm:block overflow-hidden rounded-2xl border border-border bg-surface">
+            <div className="hidden overflow-hidden rounded-lg border border-border bg-surface sm:block">
               <table className="w-full text-left text-sm">
                 <thead className="border-b border-border bg-background text-muted">
                   <tr>
@@ -353,13 +343,13 @@ export default function SubjectsPage() {
                         <div className="flex flex-wrap gap-2">
                           <Link
                             href={`/teacher/results?subject=${encodeURIComponent(subject.name)}`}
-                            className="rounded-full border border-border bg-white px-3 py-1 text-xs font-semibold text-brand transition hover:bg-brand/5"
+                            className="rounded-lg border border-border bg-surface px-3 py-1 text-xs font-semibold text-brand transition hover:bg-background"
                           >
                             View results
                           </Link>
                           <button
                             type="button"
-                            className="rounded-full border border-border bg-background px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-surface"
+                            className="rounded-lg border border-border bg-background px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-surface"
                           >
                             Manage
                           </button>
@@ -373,7 +363,7 @@ export default function SubjectsPage() {
 
             <div className="sm:hidden space-y-2">
               {paginatedSubjects.map((subject) => (
-                <div key={subject.id} className="rounded-2xl border border-border bg-background p-4">
+                <div key={subject.id} className="border border-border bg-background p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-foreground">{subject.name}</p>
@@ -385,13 +375,13 @@ export default function SubjectsPage() {
                   <div className="mt-3 flex flex-wrap gap-2">
                     <Link
                       href={`/teacher/results?subject=${encodeURIComponent(subject.name)}`}
-                      className="rounded-full border border-border bg-white px-3 py-1 text-xs font-semibold text-brand transition hover:bg-brand/5"
+                      className="rounded-lg border border-border bg-surface px-3 py-1 text-xs font-semibold text-brand transition hover:bg-background"
                     >
                       View results
                     </Link>
                     <button
                       type="button"
-                      className="rounded-full border border-border bg-background px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-surface"
+                      className="rounded-lg border border-border bg-background px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-surface"
                     >
                       Manage
                     </button>
@@ -403,8 +393,8 @@ export default function SubjectsPage() {
         )}
 
         {paginatedSubjects.length === 0 && !error && (
-          <div className="rounded-2xl border border-dashed border-border bg-background/70 px-6 py-12 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-brand/10 text-brand">
+          <div className="rounded-lg border border-dashed border-[#9ac7ea] bg-[#f3f9fe] px-6 py-12 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-brand/10 text-brand">
               <Users className="h-6 w-6" />
             </div>
             <p className="mt-3 text-sm font-semibold text-foreground">No subjects found</p>
@@ -459,6 +449,6 @@ export default function SubjectsPage() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }

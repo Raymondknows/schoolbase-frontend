@@ -94,16 +94,20 @@ export default function AnnouncementsPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <main className="min-h-screen pb-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
         <div>
-          <h1 className="text-4xl font-bold text-foreground">School Announcements</h1>
-          <p className="mt-2 text-muted">Important updates and news from your school</p>
+          <div className="flex items-center gap-2 text-sm font-medium text-brand">
+            <Megaphone className="h-[17px] w-[17px]" /> Teacher workspace
+          </div>
+          <h1 className="mt-2 text-3xl font-bold text-foreground sm:text-4xl">School Announcements</h1>
+          <p className="mt-1 text-muted">Important updates and news from your school.</p>
         </div>
         
         {/* View Toggle */}
-        <div className="flex items-center gap-2 bg-surface border border-border rounded-lg p-1">
+        <div className="flex items-center gap-2 border border-border bg-surface p-1">
           <button
             onClick={() => setViewMode("grid")}
             className={`p-2 rounded transition-colors ${
@@ -130,40 +134,48 @@ export default function AnnouncementsPage() {
       </div>
 
       {error && (
-        <div className="rounded-lg bg-red-50 border border-red-200 p-4 flex items-start gap-3">
+        <div className="border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
           <p className="text-red-800">{error}</p>
         </div>
       )}
 
       {/* Announcements List */}
+      <section className="border-b border-border pb-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[.12em] text-muted">School communications</p>
+            <h2 className="mt-1 text-xl font-semibold text-foreground">Latest announcements</h2>
+          </div>
+          <span className="text-sm font-semibold text-muted">{messages.length} {messages.length === 1 ? 'update' : 'updates'}</span>
+        </div>
+      </section>
+
       {messages.length === 0 ? (
-        <div className="rounded-lg border border-border bg-surface p-16 text-center">
+        <div className="rounded-lg border border-dashed border-[#9ac7ea] bg-[#f3f9fe] p-16 text-center">
           <Megaphone className="h-16 w-16 text-muted/40 mx-auto mb-4" />
           <p className="text-lg text-muted">No announcements yet</p>
           <p className="text-sm text-muted/70 mt-2">Check back soon for important updates</p>
         </div>
       ) : viewMode === "grid" ? (
         /* Grid View */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {messages.map((msg) => (
             <article
               key={msg.id}
-              className="rounded-xl border border-border bg-surface overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col group"
+              className="border border-border bg-surface transition hover:border-brand/40 hover:bg-brand-light flex flex-col group"
             >
               {/* Featured Image / Header */}
-              <div className="h-48 bg-gradient-to-br from-brand/20 to-brand/5 flex items-center justify-center overflow-hidden relative group-hover:from-brand/30 group-hover:to-brand/10 transition-all">
-                <div className="text-center px-4">
-                  <div className="text-5xl mb-2">📢</div>
-                  <p className="text-sm text-muted/70 line-clamp-2">{msg.subject}</p>
-                </div>
+              <div className="flex h-16 items-center gap-3 border-b border-border bg-background px-5">
+                <Megaphone className="h-5 w-5 text-brand" />
+                <p className="text-xs font-bold uppercase tracking-[.12em] text-muted">School update</p>
               </div>
 
               {/* Content */}
-              <div className="p-6 flex-1 flex flex-col">
+              <div className="flex flex-1 flex-col p-5">
                 {/* Category/Badge */}
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="inline-block px-2.5 py-1 rounded-full bg-brand/10 text-brand text-xs font-semibold uppercase tracking-wider">
+                  <span className="inline-block border border-brand/30 bg-brand/10 px-2.5 py-1 text-brand text-xs font-semibold uppercase tracking-wider">
                     Announcement
                   </span>
                   <span className="text-xs text-muted">
@@ -172,7 +184,7 @@ export default function AnnouncementsPage() {
                 </div>
 
                 {/* Title */}
-                <h2 className="text-xl font-bold text-foreground mb-3 line-clamp-2 group-hover:text-brand transition-colors">
+                <h2 className="text-lg font-bold text-foreground mb-3 line-clamp-2 group-hover:text-brand transition-colors">
                   {msg.subject}
                 </h2>
 
@@ -194,7 +206,7 @@ export default function AnnouncementsPage() {
                     onClick={() => setSelectedAnnouncement(msg)}
                     className="text-xs font-semibold text-brand hover:text-brand/80 transition-colors"
                   >
-                    Read More →
+                    Read more
                   </button>
                 </div>
               </div>
@@ -207,12 +219,12 @@ export default function AnnouncementsPage() {
           {messages.map((msg) => (
             <article
               key={msg.id}
-              className="rounded-xl border border-border bg-surface overflow-hidden hover:shadow-md transition-all duration-300 group"
+              className="border border-border bg-surface transition hover:border-brand/40 hover:bg-brand-light group"
             >
-              <div className="flex gap-6 p-6">
+              <div className="flex gap-5 p-5">
                 {/* Featured Visual */}
-                <div className="flex-shrink-0 w-32 h-32 rounded-lg bg-gradient-to-br from-brand/20 to-brand/5 flex items-center justify-center overflow-hidden group-hover:from-brand/30 group-hover:to-brand/10 transition-all">
-                  <div className="text-4xl">📢</div>
+                <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center border border-border bg-background">
+                  <Megaphone className="h-7 w-7 text-brand" />
                 </div>
 
                 {/* Content */}
@@ -220,7 +232,7 @@ export default function AnnouncementsPage() {
                   {/* Header */}
                   <div>
                     <div className="flex items-center gap-3 mb-3">
-                      <span className="inline-block px-2.5 py-1 rounded-full bg-brand/10 text-brand text-xs font-semibold uppercase tracking-wider">
+                      <span className="inline-block border border-brand/30 bg-brand/10 px-2.5 py-1 text-brand text-xs font-semibold uppercase tracking-wider">
                         Announcement
                       </span>
                       <span className="text-xs text-muted">
@@ -252,7 +264,7 @@ export default function AnnouncementsPage() {
                       onClick={() => setSelectedAnnouncement(msg)}
                       className="text-sm font-semibold text-brand hover:text-brand/80 transition-colors"
                     >
-                      Read Full Announcement →
+                      Read full announcement
                     </button>
                   </div>
                 </div>
@@ -265,7 +277,7 @@ export default function AnnouncementsPage() {
       {/* Full Announcement Modal */}
       {selectedAnnouncement && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="rounded-lg bg-surface border border-border shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg border border-border bg-surface shadow-lg">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-border/50 sticky top-0 bg-surface">
               <h2 className="text-2xl font-bold text-foreground">{selectedAnnouncement.subject}</h2>
@@ -313,5 +325,6 @@ export default function AnnouncementsPage() {
         </div>
       )}
     </div>
+    </main>
   );
 }

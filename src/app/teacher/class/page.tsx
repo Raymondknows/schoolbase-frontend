@@ -114,8 +114,6 @@ export default function ClassPage() {
 
   useEffect(() => {
     if (!selectedClass?.id) {
-      setStudents([]);
-      setStudentsLoading(false);
       return;
     }
 
@@ -140,17 +138,17 @@ export default function ClassPage() {
         const data = await res.json();
 
         const normalizedStudents: Student[] = (data.students || []).map(
-          (student: any) => ({
+          (student: Record<string, unknown>) => ({
             ...student,
             name:
-              student.name ||
+              (student.name as string) ||
               [student.firstName, student.lastName]
                 .filter(Boolean)
-                .join(' ') ||
+                .join(' ') as string ||
               'Unknown student',
-            admissionNo: student.admissionNo || '',
-            email: student.email || '',
-            photoUrl: student.photoUrl || null,
+            admissionNo: (student.admissionNo as string) || '',
+            email: (student.email as string) || '',
+            photoUrl: (student.photoUrl as string) || null,
           }),
         );
 
@@ -255,53 +253,40 @@ export default function ClassPage() {
 
   if (loading) {
     return (
-      <div className="px-3 py-4 sm:px-4 lg:px-6 lg:py-6">
-        <div className="mx-auto max-w-6xl space-y-4 sm:space-y-5">
+      <main className="min-h-screen pb-12">
+        <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
           <div className="space-y-2">
             <div className="h-7 w-32 animate-pulse rounded-lg bg-surface" />
             <div className="h-4 w-72 animate-pulse rounded bg-surface" />
           </div>
-
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-3">
             {[1, 2, 3].map((item) => (
-              <div
-                key={item}
-                className="h-24 animate-pulse rounded-[20px] border border-border/70 bg-surface"
-              />
+              <div key={item} className="h-24 animate-pulse border border-border bg-surface" />
             ))}
           </div>
-
-          <div className="h-96 animate-pulse rounded-[24px] border border-border/70 bg-surface" />
+          <div className="h-96 animate-pulse border border-border bg-surface" />
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="px-3 py-4 sm:px-4 lg:px-6 lg:py-6">
-      <div className="mx-auto max-w-6xl space-y-4 sm:space-y-5">
+    <main className="min-h-screen pb-12">
+      <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
       {/* Header */}
-      <header>
-        <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand/10 text-brand">
-            <BookOpen className="h-5 w-5" />
+      <header className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
+        <div>
+          <div className="flex items-center gap-2 text-sm font-medium text-brand">
+            <BookOpen className="h-[17px] w-[17px]" /> Teacher workspace
           </div>
-
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              My Class
-            </h1>
-
-            <p className="mt-1 text-sm text-muted">
-              View your students and manage your class roster.
-            </p>
-          </div>
+          <h1 className="mt-2 text-3xl font-bold text-foreground sm:text-4xl">My Class</h1>
+          <p className="mt-1 text-muted">View your students and manage your class roster.</p>
         </div>
       </header>
 
       {/* Error */}
       {error && (
-        <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4">
+        <div className="flex items-start gap-3 border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3">
           <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
 
           <div className="min-w-0">
@@ -315,7 +300,7 @@ export default function ClassPage() {
       )}
 
       {/* Class selector / class identity */}
-      <div className="space-y-4 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
+      <section className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-center">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
             Selected Class
@@ -372,7 +357,7 @@ export default function ClassPage() {
                     setSearchQuery('');
                     setCurrentPage(1);
                   }}
-                  className="w-full appearance-none rounded-[20px] border border-border bg-background px-4 py-3 pr-10 text-sm font-medium text-foreground outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"
+                    className="w-full appearance-none rounded-lg border border-border bg-surface px-3 py-2.5 pr-10 text-sm font-semibold text-foreground outline-none transition focus:border-brand"
                 >
                   {classes.map((cls) => (
                     <option key={cls.id} value={cls.id}>
@@ -390,14 +375,14 @@ export default function ClassPage() {
               </div>
             </div>
           )}
-      </div>
+      </section>
 
       {/* Stats */}
       {selectedClass && (
-        <section className="grid gap-3 sm:grid-cols-3">
-          <article className="rounded-[20px] border border-border/70 bg-gradient-to-br from-blue-500/10 to-blue-600/5 p-4 shadow-sm">
+        <section className="grid gap-4 sm:grid-cols-3">
+          <article className="border border-border bg-surface p-5">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
                 <Users className="h-5 w-5 text-blue-600" />
               </div>
 
@@ -417,9 +402,9 @@ export default function ClassPage() {
             </p>
           </article>
 
-          <article className="rounded-[20px] border border-border/70 bg-gradient-to-br from-violet-500/10 to-violet-600/5 p-4 shadow-sm">
+          <article className="border border-border bg-surface p-5">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-violet-50">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-50">
                 <CheckCircle className="h-5 w-5 text-violet-600" />
               </div>
 
@@ -439,9 +424,9 @@ export default function ClassPage() {
             </p>
           </article>
 
-          <article className="rounded-[20px] border border-border/70 bg-gradient-to-br from-amber-500/10 to-amber-600/5 p-4 shadow-sm">
+          <article className="border border-border bg-surface p-5">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-50">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-50">
                 <Users className="h-5 w-5 text-amber-600" />
               </div>
 
@@ -465,7 +450,7 @@ export default function ClassPage() {
 
       {/* Students */}
       {selectedClass && (
-        <section className="rounded-[24px] border border-border/70 bg-surface/80 p-4 shadow-sm sm:p-5">
+        <section className="border border-border bg-surface p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-foreground">
@@ -525,7 +510,7 @@ export default function ClassPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <div className="flex rounded-xl border border-border bg-background p-1">
+                  <div className="flex rounded-lg border border-border bg-background p-1">
                     <button
                       type="button"
                       onClick={() => setViewMode('list')}
@@ -586,7 +571,7 @@ export default function ClassPage() {
                 <>
                   {/* Desktop List */}
                   {viewMode === 'list' && (
-                    <div className="mt-4 hidden overflow-hidden rounded-2xl border border-border sm:block">
+                    <div className="mt-4 hidden overflow-hidden rounded-lg border border-border sm:block">
                       <div className="overflow-x-auto">
                         <table className="w-full min-w-[650px] text-left text-sm">
                           <thead className="border-b border-border bg-background">
@@ -672,7 +657,7 @@ export default function ClassPage() {
                       {paginatedStudents.map((student) => (
                         <div
                           key={student.id}
-                          className="rounded-2xl border border-border bg-background p-3.5 transition-colors hover:border-brand/30"
+                          className="border border-border bg-background p-3.5 transition-colors hover:border-brand/30"
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex min-w-0 items-center gap-3">
@@ -730,7 +715,7 @@ export default function ClassPage() {
                       {paginatedStudents.map((student) => (
                         <div
                           key={student.id}
-                          className="rounded-2xl border border-border bg-background p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/30 hover:bg-brand/5 hover:shadow-sm"
+                          className="border border-border bg-background p-4 transition-colors hover:border-brand/30 hover:bg-brand/5"
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex min-w-0 items-center gap-3">
@@ -857,8 +842,8 @@ export default function ClassPage() {
                   )}
                 </>
               ) : (
-                <div className="mt-5 rounded-2xl border border-dashed border-border bg-background/70 px-6 py-12 text-center">
-                  <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-brand/10 text-brand">
+                <div className="mt-5 rounded-lg border border-dashed border-[#9ac7ea] bg-[#f3f9fe] px-6 py-12 text-center">
+                  <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-lg bg-brand/10 text-brand">
                     <Search className="h-5 w-5" />
                   </div>
 
@@ -867,7 +852,7 @@ export default function ClassPage() {
                   </p>
 
                   <p className="mt-1 text-sm text-muted">
-                    No students match "{searchQuery}".
+                    No students match &quot;{searchQuery}&quot;.
                   </p>
 
                   <button
@@ -881,8 +866,8 @@ export default function ClassPage() {
               )}
             </>
           ) : (
-            <div className="mt-5 rounded-2xl border border-dashed border-border bg-background/70 px-6 py-12 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-brand/10 text-brand">
+            <div className="mt-5 rounded-lg border border-dashed border-[#9ac7ea] bg-[#f3f9fe] px-6 py-12 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-brand/10 text-brand">
                 <Users className="h-6 w-6" />
               </div>
 
@@ -900,8 +885,8 @@ export default function ClassPage() {
 
       {/* No class */}
       {!selectedClass && !error && (
-        <section className="rounded-[24px] border border-dashed border-border bg-surface/80 px-6 py-14 text-center shadow-sm">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-brand/10 text-brand">
+        <section className="rounded-lg border border-dashed border-[#9ac7ea] bg-[#f3f9fe] px-6 py-14 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-brand/10 text-brand">
             <BookOpen className="h-6 w-6" />
           </div>
 
@@ -914,7 +899,7 @@ export default function ClassPage() {
           </p>
         </section>
       )}
-    </div>
-  </div>
+      </div>
+    </main>
   );
 }

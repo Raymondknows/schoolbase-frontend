@@ -96,8 +96,8 @@ export default function AttendancePage() {
         if (data.classes?.length > 0) {
           setSelectedClass(data.classes[0].id);
         }
-      } catch (err: any) {
-        setError(err?.message || 'Failed to load classes');
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Failed to load classes');
       } finally {
         setLoading(false);
       }
@@ -108,8 +108,6 @@ export default function AttendancePage() {
 
   useEffect(() => {
     if (!selectedClass) {
-      setStudents([]);
-      setAttendance({});
       return;
     }
 
@@ -133,8 +131,8 @@ export default function AttendancePage() {
 
         setAttendance(initial);
         setCurrentPage(1);
-      } catch (err: any) {
-        setError(err?.message || 'Failed to load students');
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Failed to load students');
         setStudents([]);
       }
     }
@@ -206,8 +204,8 @@ export default function AttendancePage() {
       setSaveModalTitle('Attendance saved');
       setSaveModalMessage('Attendance was saved successfully.');
       setSaveModalOpen(true);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to save attendance');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to save attendance');
     } finally {
       setSaving(false);
     }
@@ -229,85 +227,22 @@ export default function AttendancePage() {
   const selectedClassInfo = classes.find((cls) => cls.id === selectedClass) || null;
 
   return (
-    <div className="px-3 py-4 sm:px-4 lg:px-6 lg:py-6">
-      <div className="mx-auto max-w-6xl space-y-4 sm:space-y-5">
-        <header>
-          <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand/10 text-brand">
-              <Users className="h-5 w-5" />
+    <main className="min-h-screen pb-12">
+      <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+        <header className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
+          <div>
+            <div className="flex items-center gap-2 text-sm font-medium text-brand">
+              <Users className="h-[17px] w-[17px]" /> Teacher workspace
             </div>
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">Attendance</h1>
-              <p className="mt-1 text-sm text-muted">Mark and track student attendance by class and date.</p>
-            </div>
+            <h1 className="mt-2 text-3xl font-bold text-foreground sm:text-4xl">Attendance</h1>
+            <p className="mt-1 text-muted">Mark and track student attendance by class and date.</p>
           </div>
         </header>
-
-        <section className="rounded-[24px] border border-border/70 bg-surface/80 p-4 shadow-sm sm:p-5">
-          <div className="space-y-4 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
-                Selected Class
-              </p>
-
-              {selectedClassInfo ? (
-                <>
-                  <h2 className="mt-1 text-xl font-semibold text-foreground">
-                    {selectedClassInfo.name}
-                  </h2>
-
-                  <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <span className="rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-sm font-medium text-brand">
-                      {selectedClassInfo.studentCount} students
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <h2 className="mt-1 text-lg font-semibold text-foreground">
-                  No class selected
-                </h2>
-              )}
-            </div>
-
-            {classes.length > 1 && (
-              <div className="w-full sm:w-64">
-                <label htmlFor="class-selector" className="mb-1.5 block text-xs font-medium text-muted">
-                  Class
-                </label>
-
-                <div className="relative">
-                  <select
-                    id="class-selector"
-                    value={selectedClass}
-                    onChange={(event) => {
-                      setSelectedClass(event.target.value);
-                      setSearchQuery('');
-                      setCurrentPage(1);
-                    }}
-                    className="w-full appearance-none rounded-[20px] border border-border bg-background px-4 py-3 pr-10 text-sm font-medium text-foreground outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"
-                  >
-                    {classes.map((teacherClass) => (
-                      <option key={teacherClass.id} value={teacherClass.id}>
-                        {teacherClass.name}
-                      </option>
-                    ))}
-                  </select>
-
-                  <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-muted">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                      <path d="M6 9l6 6 6-6" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
 
         {(error || attendanceAlreadyTaken) && (
           <div className="space-y-3">
             {error && (
-              <div className="rounded-2xl border border-red-200 bg-red-50 p-4 flex gap-3">
+              <div className="border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 flex gap-3">
                 <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-red-800">Unable to save attendance</p>
@@ -317,7 +252,7 @@ export default function AttendancePage() {
             )}
 
             {attendanceAlreadyTaken && (
-              <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 flex gap-3">
+              <div className="border border-[#f0d58a] bg-[#fff9e8] px-4 py-3 flex gap-3">
                 <Clock className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-amber-900">Attendance Already Recorded</p>
@@ -330,59 +265,56 @@ export default function AttendancePage() {
           </div>
         )}
 
-        <section className="rounded-[24px] border border-border/70 bg-surface/80 p-4 shadow-sm sm:p-5">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">Register details</h2>
-              <p className="mt-1 text-sm text-muted">Select class and date before marking attendance.</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => router.push('/teacher/attendance/summary')}
-              className="inline-flex items-center justify-center rounded-full border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition hover:border-brand"
-            >
-              <BarChart3 className="mr-2 h-4 w-4" />
-              View summary
-            </button>
-          </div>
-
-          <div className="mt-5 grid gap-4 sm:grid-cols-[1fr_auto]">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-foreground">Class</p>
-                <div className="rounded-[20px] border border-border bg-background px-4 py-3 text-sm text-foreground">
-                  {selectedClassName || 'Select a class'}
-                </div>
+        <section className="border border-border bg-surface px-4 py-3">
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
+            <div className="shrink-0 xl:w-[190px]">
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted">Selected class</p>
+              <div className="mt-1 flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-foreground">{selectedClassName || 'No class selected'}</h2>
+                {selectedClassInfo && <span className="border border-brand/30 bg-brand/10 px-2 py-0.5 text-xs font-semibold text-brand">{selectedClassInfo.studentCount} students</span>}
               </div>
-
-              <label className="block text-sm font-medium text-foreground">
-                Date
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(event) => setDate(event.target.value)}
-                  className="mt-2 w-full rounded-[20px] border border-border bg-background px-4 py-3 text-sm text-foreground outline-none focus:border-brand focus:ring-2 focus:ring-brand/10"
-                />
-              </label>
             </div>
 
-            <div className="flex items-end gap-3">
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={saving || attendanceAlreadyTaken || !selectedClass}
-                className="w-full rounded-[20px] bg-brand px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand/90 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {saving ? 'Saving...' : 'Save attendance'}
-              </button>
+            {classes.length > 1 && (
+              <div className="w-full xl:w-[190px]">
+                <label htmlFor="class-selector" className="sr-only">Class</label>
+                <select
+                  id="class-selector"
+                  value={selectedClass}
+                  onChange={(event) => {
+                    setSelectedClass(event.target.value);
+                    setSearchQuery('');
+                    setCurrentPage(1);
+                  }}
+                  className="w-full appearance-none rounded-lg border border-border bg-surface px-3 py-2.5 text-sm font-semibold text-foreground outline-none transition focus:border-brand"
+                >
+                  {classes.map((teacherClass) => <option key={teacherClass.id} value={teacherClass.id}>{teacherClass.name}</option>)}
+                </select>
+              </div>
+            )}
+
+            <div className="hidden h-8 w-px bg-border xl:block" />
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted">Register details</p>
+              <p className="mt-1 truncate text-sm text-muted">Choose the date, then mark each student below.</p>
             </div>
+            <label className="flex items-center gap-2 whitespace-nowrap text-sm font-medium text-foreground">
+              Date
+              <input type="date" value={date} onChange={(event) => setDate(event.target.value)} className="rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-brand" />
+            </label>
+            <button type="button" onClick={() => router.push('/teacher/attendance/summary')} className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light">
+              <BarChart3 className="h-4 w-4" /> Summary
+            </button>
+            <button type="button" onClick={handleSave} disabled={saving || attendanceAlreadyTaken || !selectedClass} className="rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50">
+              {saving ? 'Saving...' : 'Save attendance'}
+            </button>
           </div>
         </section>
 
-        <section className="grid gap-3 sm:grid-cols-4">
-          <article className="rounded-[20px] border border-border/70 bg-gradient-to-br from-blue-500/10 to-blue-600/5 p-4 shadow-sm">
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <article className="border border-border bg-surface p-5">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
                 <Users className="h-5 w-5 text-blue-600" />
               </div>
               <div className="min-w-0">
@@ -393,9 +325,9 @@ export default function AttendancePage() {
             <p className="mt-3 text-sm text-muted">Students assigned to the selected class.</p>
           </article>
 
-          <article className="rounded-[20px] border border-border/70 bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 p-4 shadow-sm">
+          <article className="border border-border bg-surface p-5">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-50">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50">
                 <CheckCircle2 className="h-5 w-5 text-emerald-600" />
               </div>
               <div className="min-w-0">
@@ -406,9 +338,9 @@ export default function AttendancePage() {
             <p className="mt-3 text-sm text-muted">Marked present for the selected date.</p>
           </article>
 
-          <article className="rounded-[20px] border border-border/70 bg-gradient-to-br from-red-500/10 to-red-600/5 p-4 shadow-sm">
+          <article className="border border-border bg-surface p-5">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-red-50">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-50">
                 <AlertCircle className="h-5 w-5 text-red-600" />
               </div>
               <div className="min-w-0">
@@ -419,9 +351,9 @@ export default function AttendancePage() {
             <p className="mt-3 text-sm text-muted">Marked absent for the selected date.</p>
           </article>
 
-          <article className="rounded-[20px] border border-border/70 bg-gradient-to-br from-amber-500/10 to-amber-600/5 p-4 shadow-sm">
+          <article className="border border-border bg-surface p-5">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-50">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-50">
                 <Clock className="h-5 w-5 text-amber-600" />
               </div>
               <div className="min-w-0">
@@ -433,7 +365,7 @@ export default function AttendancePage() {
           </article>
         </section>
 
-        <section className="rounded-[24px] border border-border/70 bg-surface/80 p-4 shadow-sm sm:p-5">
+        <section className="border border-border bg-surface p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-foreground">Students</h2>
@@ -455,7 +387,7 @@ export default function AttendancePage() {
                   setCurrentPage(1);
                 }}
                 placeholder="Search students by name or admission number..."
-                className="w-full rounded-xl border border-border bg-background py-2.5 pl-10 pr-10 text-sm text-foreground outline-none transition placeholder:text-muted focus:border-brand focus:ring-2 focus:ring-brand/10"
+                className="w-full rounded-lg border border-border bg-surface py-2.5 pl-10 pr-10 text-sm text-foreground outline-none transition placeholder:text-muted focus:border-brand"
               />
               {searchQuery && (
                 <button
@@ -470,14 +402,14 @@ export default function AttendancePage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="flex rounded-xl border border-border bg-background p-1">
+              <div className="flex rounded-lg border border-border bg-background p-1">
                 <button
                   type="button"
                   onClick={() => setViewMode('list')}
                   aria-label="List view"
                   className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
                     viewMode === 'list'
-                      ? 'bg-brand text-white shadow-sm'
+                      ? 'bg-brand text-white'
                       : 'text-muted hover:text-foreground'
                   }`}
                 >
@@ -491,7 +423,7 @@ export default function AttendancePage() {
                   aria-label="Grid view"
                   className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
                     viewMode === 'grid'
-                      ? 'bg-brand text-white shadow-sm'
+                      ? 'bg-brand text-white'
                       : 'text-muted hover:text-foreground'
                   }`}
                 >
@@ -528,8 +460,8 @@ export default function AttendancePage() {
           </div>
 
           {filteredStudents.length === 0 ? (
-            <div className="mt-5 rounded-2xl border border-dashed border-border bg-background/70 px-6 py-12 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-brand/10 text-brand">
+            <div className="mt-5 rounded-lg border border-dashed border-[#9ac7ea] bg-[#f3f9fe] px-6 py-12 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-brand/10 text-brand">
                 <Users className="h-6 w-6" />
               </div>
               <p className="mt-3 text-sm font-semibold text-foreground">No students found</p>
@@ -541,7 +473,7 @@ export default function AttendancePage() {
             <>
               {viewMode === 'list' ? (
                 <>
-                  <div className="mt-4 hidden overflow-hidden rounded-2xl border border-border sm:block">
+                  <div className="mt-4 hidden overflow-hidden rounded-lg border border-border sm:block">
                     <div className="overflow-x-auto">
                       <table className="w-full min-w-[650px] text-left text-sm">
                         <thead className="border-b border-border bg-background">
@@ -597,7 +529,7 @@ export default function AttendancePage() {
                     {paginatedStudents.map((student) => {
                       const studentName = `${student.firstName} ${student.lastName}`.trim() || `Student ${student.admissionNo || student.id}`;
                       return (
-                        <div key={student.id} className="rounded-2xl border border-border bg-background p-4">
+                        <div key={student.id} className="border border-border bg-background p-4">
                           <div className="flex items-start justify-between gap-3">
                             <div>
                               <p className="font-semibold text-sm text-foreground">{studentName}</p>
@@ -639,7 +571,7 @@ export default function AttendancePage() {
                   {paginatedStudents.map((student) => {
                     const studentName = `${student.firstName} ${student.lastName}`.trim() || `Student ${student.admissionNo || student.id}`;
                     return (
-                      <div key={student.id} className="rounded-2xl border border-border bg-background p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/30 hover:bg-brand/5 hover:shadow-sm">
+                      <div key={student.id} className="border border-border bg-background p-4 transition-colors hover:border-brand/30 hover:bg-brand/5">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <p className="truncate text-sm font-semibold text-foreground">{studentName}</p>
@@ -754,6 +686,6 @@ export default function AttendancePage() {
           confirmLabel={saveModalType === 'success' ? 'Done' : 'Review'}
         />
       </div>
-    </div>
+    </main>
   );
 }

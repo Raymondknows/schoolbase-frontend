@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import {
   FileText,
   CheckCircle2,
@@ -9,11 +9,9 @@ import {
   TrendingUp,
   AlertCircle,
   BarChart3,
-  Download,
 } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { resultStatusLabel, type ResultStatus } from "@/lib/format";
 
 const PHASE_CONFIG = {
@@ -34,10 +32,12 @@ const PHASE_ORDER = ["ALL", "EARLY_YEARS", "PRIMARY", "SECONDARY"];
 const STATUS_ORDER = ["ALL", "PUBLISHED", "APPROVED", "DRAFT"];
 const ITEMS_PER_PAGE = 15;
 
-const getSessionValue = (assessment: any) =>
+type SessionOption = { name?: string; isCurrent?: boolean };
+
+const getSessionValue = (assessment: Assessment) =>
   assessment.sessionName || assessment.term?.academicYear?.name || "No session";
 
-const getDefaultSessionOption = (assessments: Assessment[], sessions: any[] = []) => {
+const getDefaultSessionOption = (assessments: Assessment[], sessions: SessionOption[] = []) => {
   const currentSession = sessions.find((session) => session.isCurrent);
   if (currentSession?.name) {
     return currentSession.name;
@@ -71,6 +71,7 @@ const getDefaultTermOption = (assessments: Assessment[], selectedSession: string
 interface Assessment {
   id: string;
   name: string;
+  sessionName?: string;
   phase: string;
   status: ResultStatus;
   isLocked?: boolean;
@@ -97,7 +98,7 @@ export default function TeacherResultsEnhancedClient({
   initialSubject,
 }: {
   assessments: Assessment[];
-  sessions?: any[];
+  sessions?: SessionOption[];
   initialSubject?: string | null;
 }) {
   const [activePhase, setActivePhase] = useState("ALL");
@@ -111,7 +112,7 @@ export default function TeacherResultsEnhancedClient({
     const uniqueSessions = Array.from(
       new Set(
         (sessions.length > 0
-          ? sessions.map((session: any) => session.name).filter(Boolean)
+          ? sessions.map((session) => session.name).filter(Boolean)
           : assessments.map(getSessionValue)
         ).filter(Boolean)
       )
@@ -223,18 +224,22 @@ export default function TeacherResultsEnhancedClient({
   };
 
   return (
-    <div className="w-full space-y-6">
+    <main className="min-h-screen pb-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-foreground mb-2">Assessment Results</h1>
-        <p className="text-base text-muted">
-          Manage, review, and publish student assessment results with professional reporting
-        </p>
+      <div className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
+        <div>
+          <div className="flex items-center gap-2 text-sm font-medium text-brand">
+            <FileText className="h-[17px] w-[17px]" /> Teacher workspace
+          </div>
+          <h1 className="mt-2 text-3xl font-bold text-foreground sm:text-4xl">Assessment Results</h1>
+          <p className="mt-1 text-muted">Review, enter, and follow up on student assessment results.</p>
+        </div>
       </div>
 
       {filteredAssessments.length === 0 && (searchQuery || initialSubject) && (
-        <div className="rounded-lg border border-border bg-yellow-50 p-4">
-          <p className="text-sm text-amber-900 font-semibold">No assessments found for "{searchQuery || initialSubject}"</p>
+        <div className="border border-[#f0d58a] bg-[#fff9e8] px-4 py-3">
+          <p className="text-sm font-semibold text-amber-900">No assessments found for &quot;{searchQuery || initialSubject}&quot;</p>
           <p className="text-sm text-amber-900 mt-1">If you expected to see an assessment for this subject, it may not have been created yet. Contact your administrator or check the assessments list.</p>
           <div className="mt-3">
             <Link href="/teacher/results" className="inline-flex items-center gap-2 rounded-lg bg-white border border-border px-3 py-2 text-sm font-medium text-brand hover:bg-brand/5">View all assessments</Link>
@@ -243,8 +248,8 @@ export default function TeacherResultsEnhancedClient({
       )}
 
       {/* Quick Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-xl border border-border bg-gradient-to-br from-blue-50 to-blue-100 p-6 hover:shadow-md transition-shadow">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="border border-border bg-surface p-5">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium text-muted">Pending Entry</p>
             <Clock className="w-5 h-5 text-blue-600" />
@@ -253,7 +258,7 @@ export default function TeacherResultsEnhancedClient({
           <p className="text-xs text-blue-700 mt-1">Awaiting score entry</p>
         </div>
 
-        <div className="rounded-xl border border-border bg-gradient-to-br from-orange-50 to-orange-100 p-6 hover:shadow-md transition-shadow">
+        <div className="border border-border bg-surface p-5">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium text-muted">Incomplete</p>
             <AlertCircle className="w-5 h-5 text-orange-600" />
@@ -262,7 +267,7 @@ export default function TeacherResultsEnhancedClient({
           <p className="text-xs text-orange-700 mt-1">Partial entries</p>
         </div>
 
-        <div className="rounded-xl border border-border bg-gradient-to-br from-amber-50 to-amber-100 p-6 hover:shadow-md transition-shadow">
+        <div className="border border-border bg-surface p-5">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium text-muted">Ready to Publish</p>
             <CheckCircle2 className="w-5 h-5 text-amber-600" />
@@ -271,7 +276,7 @@ export default function TeacherResultsEnhancedClient({
           <p className="text-xs text-amber-700 mt-1">Approved by admin</p>
         </div>
 
-        <div className="rounded-xl border border-border bg-gradient-to-br from-green-50 to-green-100 p-6 hover:shadow-md transition-shadow">
+        <div className="border border-border bg-surface p-5">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium text-muted">Published</p>
             <TrendingUp className="w-5 h-5 text-green-600" />
@@ -282,7 +287,7 @@ export default function TeacherResultsEnhancedClient({
       </div>
 
       {/* Search Bar */}
-      <div className="flex gap-3 flex-col sm:flex-row">
+      <div className="flex flex-col gap-3 border-b border-border pb-5 sm:flex-row">
         <div className="flex-1">
           <input
             type="text"
@@ -298,7 +303,7 @@ export default function TeacherResultsEnhancedClient({
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-4 border-b border-border pb-5 lg:flex-row lg:items-center lg:justify-between">
         {/* Phase Tabs */}
         <div className="flex flex-wrap gap-2 items-center">
           <span className="text-sm font-medium text-muted min-w-fit">Phase:</span>
@@ -315,9 +320,9 @@ export default function TeacherResultsEnhancedClient({
                     setActivePhase(phase);
                     handleFilterChange();
                   }}
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                  className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
                     isActive
-                      ? "bg-brand text-white shadow-md"
+                      ? "border-brand bg-brand text-white"
                       : "bg-background text-muted hover:bg-surface border border-border"
                   }`}
                 >
@@ -397,12 +402,12 @@ export default function TeacherResultsEnhancedClient({
         Showing {paginatedAssessments.length > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0}–
         {Math.min(currentPage * ITEMS_PER_PAGE, filteredAssessments.length)} of{" "}
         {filteredAssessments.length} assessment{filteredAssessments.length !== 1 ? "s" : ""}
-        {searchQuery && <span className="ml-1">matching "{searchQuery}"</span>}
+        {searchQuery && <span className="ml-1">matching &quot;{searchQuery}&quot;</span>}
       </div>
 
       {/* Assessment Cards - Professional Grid */}
       {paginatedAssessments.length > 0 ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {paginatedAssessments.map((assessment) => {
             const progress = calculateProgress(assessment);
             const isPublished = assessment.status === "PUBLISHED";
@@ -414,7 +419,7 @@ export default function TeacherResultsEnhancedClient({
 
             return (
               <Link key={assessment.id} href={`/teacher/results/${assessment.id}`}>
-                <div className="rounded-xl border border-border bg-surface p-6 hover:shadow-lg hover:border-brand/50 transition-all cursor-pointer h-full flex flex-col">
+                <div className="border border-border bg-surface p-5 transition hover:border-brand/40 hover:bg-brand-light">
                   {/* Header */}
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1 min-w-0">
@@ -446,7 +451,7 @@ export default function TeacherResultsEnhancedClient({
 
                   {/* Phase Badge */}
                   <div className="mb-4">
-                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${phaseConfig.color}`}>
+                    <span className={`inline-block border border-border px-2 py-1 text-xs font-medium ${phaseConfig.color}`}>
                       {phaseConfig.label}
                     </span>
                   </div>
@@ -457,16 +462,16 @@ export default function TeacherResultsEnhancedClient({
                       <p className="text-xs font-medium text-muted">Score Entry Progress</p>
                       <p className="text-xs font-bold text-brand">{progress}%</p>
                     </div>
-                    <div className="w-full h-2 rounded-full bg-background overflow-hidden">
+                    <div className="h-2 w-full overflow-hidden bg-background">
                       <div
-                        className="h-full bg-gradient-to-r from-brand to-brand-light transition-all"
+                        className="h-full bg-brand transition-all"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
                   </div>
 
                   {/* Stats */}
-                  <div className="grid grid-cols-3 gap-3 mb-4 text-center p-3 bg-background rounded-lg">
+                  <div className="mb-4 grid grid-cols-3 gap-3 border-y border-border bg-background p-3 text-center">
                     <div>
                       <p className="text-xs text-muted">Total Students</p>
                       <p className="text-lg font-bold text-foreground">
@@ -592,5 +597,6 @@ export default function TeacherResultsEnhancedClient({
         </div>
       )}
     </div>
+    </main>
   );
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useSearchParams } from 'next/navigation';
 import TeacherResultsEnhancedClient from "./results-client";
 import { useAssessmentData } from "@/lib/hooks/useAssessmentData";
