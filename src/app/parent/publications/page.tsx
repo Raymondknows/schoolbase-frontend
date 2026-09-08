@@ -56,7 +56,7 @@ export default function PublicationsPage() {
             <div className="h-5 w-64 bg-slate-100 rounded animate-pulse"></div>
           </div>
           {[1, 2, 3].map((i) => (
-            <div key={i} className="rounded-[12px] border border-border bg-surface p-4 space-y-3 animate-pulse">
+            <div key={i} className="overflow-hidden rounded-lg border border-border bg-surface p-4 space-y-3 animate-pulse">
               <div className="h-5 w-32 bg-slate-200 rounded"></div>
               <div className="h-4 w-48 bg-slate-100 rounded"></div>
               <div className="h-20 w-full bg-slate-100 rounded"></div>
@@ -82,24 +82,18 @@ export default function PublicationsPage() {
 
   return (
     <ParentPageShell onRefresh={loadData}>
-      <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-semibold text-foreground">School Publications</h1>
+      <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+        <div className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-end">
+          <div>
+          <div className="flex items-center gap-2 text-sm font-medium text-brand"><BookOpen className="h-4 w-4" /> School communications</div>
+          <h1 className="mt-2 text-3xl font-bold text-foreground">School Publications</h1>
           <p className="mt-1 text-sm text-muted">Latest news and updates from your school</p>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm text-muted">
-            <BookOpen className="h-4 w-4 text-brand" />
-            Publications
           </div>
+          <span className="text-xs font-bold uppercase tracking-[.12em] text-muted">{announcements.length} updates</span>
         </div>
-      
-      
-      </div>
 
       {error && (
-        <div className="rounded-lg border border-error bg-error/10 p-4 flex gap-3">
+        <div className="rounded-lg border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-[#a61b29] flex gap-3">
           <AlertCircle className="h-5 w-5 text-error flex-shrink-0 mt-0.5" />
           <div>
             <h3 className="font-semibold text-error">Error</h3>
@@ -109,44 +103,43 @@ export default function PublicationsPage() {
       )}
 
       {/* Publications List */}
-      <div className="mx-auto max-w-7xl">
         {announcements.length === 0 ? (
-          <div className="rounded-[12px] border border-border bg-surface p-12 text-center">
-            <BookOpen className="h-16 w-16 text-muted/40 mx-auto mb-4" />
-            <p className="text-lg text-muted">No publications yet</p>
+          <div className="rounded-lg border border-dashed border-[#9ac7ea] bg-[#f3f9fe] p-14 text-center">
+            <BookOpen className="mx-auto mb-4 h-8 w-8 text-brand" />
+            <p className="text-sm font-semibold text-foreground">No publications yet</p>
             <p className="text-sm text-muted/70 mt-2">Check back soon for school updates</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="overflow-hidden rounded-lg border border-border bg-surface">
+            <div className="border-b border-border bg-[#f6f8fa] px-4 py-3">
+              <p className="text-[11px] font-bold uppercase tracking-[.12em] text-muted">Communications board</p>
+              <p className="mt-1 text-sm font-semibold text-foreground">Latest school updates</p>
+            </div>
             {announcements.map((publication) => (
               <button
                 key={publication.id}
                 onClick={() => setSelectedAnnouncement(publication)}
-                className="w-full text-left rounded-[12px] border border-border bg-surface p-6 shadow-sm transition hover:shadow-md hover:border-brand/50"
+                className="w-full border-b border-border px-4 py-4 text-left transition last:border-0 hover:bg-background"
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 mb-3">
-                      <span className="inline-flex rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-brand">
-                        News
-                      </span>
-                      <span className="text-xs text-muted">
+                    <div className="mb-2 flex flex-wrap items-center gap-3">
+                      <span className="text-[11px] font-bold uppercase tracking-[.12em] text-brand">News</span>
+                      <span className="text-[11px] text-muted">
                         {getReadingTime(publication.body)} min read
                       </span>
                     </div>
-                    <h2 className="text-lg font-semibold text-foreground truncate">{publication.title}</h2>
-                    <p className="text-sm text-muted mt-2 line-clamp-3">{getExcerpt(publication.body, 180)}</p>
+                    <h2 className="text-sm font-semibold text-foreground truncate">{publication.title}</h2>
+                    <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted">{getExcerpt(publication.body, 180)}</p>
                   </div>
 
                   <div className="flex-shrink-0 text-right">
-                    <p className="text-sm font-semibold text-foreground">{new Date(publication.publishedAt || publication.createdAt).toLocaleDateString('en-US', {
+                    <p className="text-xs font-semibold text-foreground">{new Date(publication.publishedAt || publication.createdAt).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
                       year: 'numeric',
                     })}</p>
-                    <span className="mt-2 inline-flex items-center rounded-full bg-background px-3 py-1 text-xs font-semibold text-muted">
-                      Read
-                    </span>
+                    <span className="mt-2 inline-flex items-center text-xs font-semibold text-brand">Read <span className="ml-1">›</span></span>
                   </div>
                 </div>
               </button>
@@ -158,13 +151,11 @@ export default function PublicationsPage() {
       {/* Modal */}
       {selectedAnnouncement && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-surface rounded-[12px] max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-border">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]">
             {/* Modal Header */}
-            <div className="sticky top-0 flex flex-col gap-4 p-6 border-b border-border bg-surface/95 backdrop-blur">
+            <div className="sticky top-0 flex flex-col gap-3 border-b border-border bg-[#f6f8fa] p-5">
               <div className="flex items-center gap-3">
-                <span className="inline-flex rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-brand">
-                  News
-                </span>
+                <span className="text-[11px] font-bold uppercase tracking-[.12em] text-brand">News</span>
                 <span className="text-xs text-muted">
                   {getReadingTime(selectedAnnouncement.body)} min read
                 </span>
@@ -173,7 +164,7 @@ export default function PublicationsPage() {
                 <h2 className="text-2xl font-bold text-foreground">{selectedAnnouncement.title}</h2>
                 <button
                   onClick={() => setSelectedAnnouncement(null)}
-                  className="flex-shrink-0 p-2 rounded-full hover:bg-background transition-colors text-muted hover:text-foreground"
+                  className="flex-shrink-0 rounded-lg p-2 text-muted transition-colors hover:bg-background hover:text-foreground"
                 >
                   <X className="h-6 w-6" />
                 </button>
@@ -181,7 +172,7 @@ export default function PublicationsPage() {
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 space-y-4">
+            <div className="space-y-4 p-5">
               {/* Publication Date */}
               <div className="flex flex-col gap-2 text-sm text-muted/70 pb-4 border-b border-border/50">
                 <span className="font-semibold text-foreground">Published on</span>
@@ -197,11 +188,6 @@ export default function PublicationsPage() {
                 </time>
               </div>
 
-              {/* Featured Visual */}
-              <div className="h-64 rounded-[12px] bg-gradient-to-br from-brand/20 to-brand/5 flex items-center justify-center overflow-hidden">
-                <div className="text-7xl">📰</div>
-              </div>
-
               {/* Full Content */}
               <div className="prose prose-sm max-w-none dark:prose-invert">
                 <div className="text-foreground leading-relaxed whitespace-pre-wrap text-base">
@@ -211,13 +197,13 @@ export default function PublicationsPage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="sticky bottom-0 flex flex-col gap-3 p-6 border-t border-border bg-surface/95 backdrop-blur sm:flex-row sm:items-center sm:justify-between">
+            <div className="sticky bottom-0 flex flex-col gap-3 border-t border-border bg-[#f6f8fa] p-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="text-sm text-muted">
                 {announcements.findIndex(a => a.id === selectedAnnouncement.id) + 1} of {announcements.length}
               </div>
               <button
                 onClick={() => setSelectedAnnouncement(null)}
-                className="w-full rounded-[12px] bg-brand px-4 py-3 text-sm font-semibold text-white hover:bg-brand/90 transition-colors sm:w-auto"
+                className="w-full rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-hover sm:w-auto"
               >
                 Close
               </button>

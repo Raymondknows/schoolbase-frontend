@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { CreditCard, AlertCircle, Eye, Filter } from "lucide-react";
+import { CreditCard, AlertCircle, Eye, Search, ChevronRight } from "lucide-react";
 import { formatMoney } from "@/lib/format";
 import { getBackendUrl } from "@/lib/backend-url";
 import ParentPageShell from "@/components/parent-page-shell";
@@ -82,21 +82,22 @@ export default function InvoicesPage() {
   if (loading) {
     return (
       <ParentPageShell onRefresh={loadData}>
-        <div className="space-y-6">
+        <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
           <div className="space-y-2">
-            <div className="h-10 w-48 bg-slate-200 rounded-lg animate-pulse"></div>
-            <div className="h-5 w-64 bg-slate-100 rounded animate-pulse"></div>
+            <div className="h-4 w-32 bg-slate-200 animate-pulse"></div>
+            <div className="h-9 w-56 bg-slate-200 animate-pulse"></div>
+            <div className="h-4 w-72 bg-slate-100 animate-pulse"></div>
           </div>
           <div className="grid grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="rounded-[20px] bg-surface p-5 border border-border space-y-2">
-                <div className="h-4 w-16 bg-slate-100 rounded animate-pulse"></div>
-                <div className="h-6 w-20 bg-slate-200 rounded animate-pulse"></div>
+              <div key={i} className="border border-border bg-surface p-5 space-y-2">
+                <div className="h-4 w-24 bg-slate-100 animate-pulse"></div>
+                <div className="h-8 w-24 bg-slate-200 animate-pulse"></div>
               </div>
             ))}
           </div>
           {[1, 2].map((i) => (
-            <div key={i} className="rounded-[20px] border border-border bg-surface p-4 space-y-3 animate-pulse">
+            <div key={i} className="overflow-hidden rounded-lg border border-border bg-surface p-4 space-y-3 animate-pulse">
               <div className="h-5 w-32 bg-slate-200 rounded"></div>
               <div className="h-4 w-48 bg-slate-100 rounded"></div>
             </div>
@@ -108,14 +109,18 @@ export default function InvoicesPage() {
 
   return (
     <ParentPageShell onRefresh={loadData}>
-      {/* Page Header */}
-      <div>
-        <h1 className="text-4xl font-bold text-foreground">Billing & Invoices</h1>
-        <p className="mt-2 text-muted">Manage school fees and payment history</p>
+      <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+      <div className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-end">
+        <div>
+          <div className="flex items-center gap-2 text-sm font-medium text-brand"><CreditCard className="h-4 w-4" /> Finance operations</div>
+          <h1 className="mt-2 text-3xl font-bold text-foreground">Billing &amp; Invoices</h1>
+          <p className="mt-1 text-sm text-muted">Review school fees, payment status, and invoice history</p>
+        </div>
+        <button type="button" onClick={() => router.push('/parent')} className="inline-flex items-center gap-2 self-start rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand hover:bg-brand-light sm:self-auto">Dashboard <ChevronRight className="h-4 w-4" /></button>
       </div>
 
       {error && (
-        <div className="rounded-xl border border-error bg-error/10 p-4 flex gap-3">
+        <div className="rounded-lg border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-[#a61b29] flex gap-3">
           <AlertCircle className="h-5 w-5 text-error flex-shrink-0 mt-0.5" />
           <div>
             <h3 className="font-semibold text-error">Error Loading Invoices</h3>
@@ -125,45 +130,40 @@ export default function InvoicesPage() {
       )}
 
       {/* Quick Totals */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-[20px] border border-border bg-surface p-4 text-center">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-muted">Outstanding</p>
-          <p className="mt-3 text-xl font-semibold text-error">{formatMoney(totalOutstanding, currency)}</p>
-          <p className="text-xs text-muted mt-1">{invoices.filter(inv => ["SENT", "PART_PAID", "OVERDUE"].includes(inv.status)).length} pending</p>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="border border-border bg-surface p-5">
+          <p className="text-xs font-bold uppercase tracking-[.12em] text-muted">Outstanding</p>
+          <p className="mt-4 text-3xl font-semibold text-foreground">{formatMoney(totalOutstanding, currency)}</p>
+          <p className="mt-1 text-xs text-muted">{invoices.filter(inv => ["SENT", "PART_PAID", "OVERDUE"].includes(inv.status)).length} pending</p>
         </div>
-        <div className="rounded-[20px] border border-border bg-surface p-4 text-center">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-muted">Paid</p>
-          <p className="mt-3 text-xl font-semibold text-success">{formatMoney(totalPaid, currency)}</p>
-          <p className="text-xs text-muted mt-1">{invoices.filter(inv => inv.status === "PAID").length} paid</p>
+        <div className="border border-border bg-surface p-5">
+          <p className="text-xs font-bold uppercase tracking-[.12em] text-muted">Paid</p>
+          <p className="mt-4 text-3xl font-semibold text-foreground">{formatMoney(totalPaid, currency)}</p>
+          <p className="mt-1 text-xs text-muted">{invoices.filter(inv => inv.status === "PAID").length} paid</p>
         </div>
-        <div className="rounded-[20px] border border-border bg-surface p-4 text-center">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-muted">Total</p>
-          <p className="mt-3 text-xl font-semibold text-brand">{formatMoney(totalOutstanding + totalPaid, currency)}</p>
-          <p className="text-xs text-muted mt-1">{invoices.length} invoices</p>
+        <div className="border border-border bg-surface p-5">
+          <p className="text-xs font-bold uppercase tracking-[.12em] text-muted">Total billed</p>
+          <p className="mt-4 text-3xl font-semibold text-foreground">{formatMoney(totalOutstanding + totalPaid, currency)}</p>
+          <p className="mt-1 text-xs text-muted">{invoices.length} invoices</p>
         </div>
-        <div className="rounded-3xl border border-border bg-surface p-4 text-center">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-muted">Payment Rate</p>
-          <p className="mt-3 text-xl font-semibold text-brand">{invoices.length > 0 ? Math.round((totalPaid / (totalPaid + totalOutstanding)) * 100) : 0}%</p>
-          <p className="text-xs text-muted mt-1">of billed total</p>
+        <div className="border border-border bg-surface p-5">
+          <p className="text-xs font-bold uppercase tracking-[.12em] text-muted">Payment rate</p>
+          <p className="mt-4 text-3xl font-semibold text-foreground">{invoices.length > 0 ? Math.round((totalPaid / (totalPaid + totalOutstanding)) * 100) : 0}%</p>
+          <p className="mt-1 text-xs text-muted">of billed total</p>
         </div>
       </div>
 
       {/* Invoice List */}
-      <div className="rounded-[20px] border border-border bg-surface shadow-sm overflow-hidden">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-5 py-4 border-b border-border bg-background">
+      <div className="overflow-hidden rounded-lg border border-border bg-surface">
+        <div className="flex flex-col gap-3 border-b border-border bg-[#f6f8fa] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-foreground">Invoice History</h2>
-            <p className="text-sm text-muted mt-1">A clean, mobile-style billing list</p>
+            <p className="text-[11px] font-bold uppercase tracking-[.12em] text-muted">Finance records</p>
+            <h2 className="mt-1 text-sm font-semibold text-foreground">Invoice history</h2>
           </div>
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search invoices..."
-            className="min-w-[200px] rounded-2xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
-          />
+          <div className="relative"><Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted" /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search invoices..." className="min-w-[220px] rounded-lg border border-border bg-surface py-2 pl-9 pr-3 text-sm outline-none focus:border-brand" /></div>
         </div>
 
-        <div className="flex flex-wrap gap-2 px-5 py-4 border-b border-border bg-surface">
+        <div className="flex flex-wrap gap-2 border-b border-border px-4 py-3 bg-surface">
           {[
             { value: "all", label: "All" },
             { value: "outstanding", label: "Outstanding" },
@@ -175,7 +175,7 @@ export default function InvoicesPage() {
               className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
                 filter === btn.value
                   ? "bg-brand text-white"
-                  : "bg-background text-foreground border border-border hover:border-brand/70"
+                  : "border border-border bg-surface text-brand hover:bg-brand-light"
               }`}
             >
               {btn.label}
@@ -185,7 +185,7 @@ export default function InvoicesPage() {
 
         {filtered.length === 0 ? (
           <div className="text-center py-16 px-6">
-            <CreditCard className="h-16 w-16 text-muted mx-auto mb-4 opacity-50" />
+            <CreditCard className="mx-auto mb-4 h-8 w-8 text-brand" />
             <p className="text-muted font-medium">No invoices found</p>
             <p className="text-sm text-muted mt-1">Try adjusting your filters or search terms</p>
           </div>
@@ -197,20 +197,20 @@ export default function InvoicesPage() {
               const getStatusBadge = (status: string) => {
                 switch (status) {
                   case "PAID":
-                    return "bg-emerald-100 text-emerald-700 border-emerald-200";
+                    return "bg-[#e6f4ea] text-[#137333] border-[#b7dfbf]";
                   case "OVERDUE":
-                    return "bg-red-100 text-red-700 border-red-200";
+                    return "bg-[#fff5f5] text-[#a61b29] border-[#f5c2c7]";
                   case "PART_PAID":
-                    return "bg-amber-100 text-amber-700 border-amber-200";
+                    return "bg-[#fff4d6] text-[#8a5a00] border-[#f1d58a]";
                   case "SENT":
-                    return "bg-blue-100 text-blue-700 border-blue-200";
+                    return "bg-brand-light text-brand border-brand/20";
                   default:
-                    return "bg-slate-100 text-slate-700 border-slate-200";
+                    return "bg-background text-muted border-border";
                 }
               };
 
               return (
-                <div key={invoice.id} className="px-5 py-4">
+                <div key={invoice.id} className="border-b border-border px-4 py-4 last:border-0">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
                       <p className="text-[11px] uppercase tracking-[0.24em] text-muted">Invoice {invoice.id.slice(0, 8).toUpperCase()}</p>
@@ -224,13 +224,13 @@ export default function InvoicesPage() {
                   </div>
 
                   <div className="mt-3 flex flex-wrap items-center gap-3">
-                    <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${getStatusBadge(invoice.status)}`}>
+                    <span className={`inline-flex items-center border px-2.5 py-1 text-xs font-semibold ${getStatusBadge(invoice.status)}`}>
                       {invoice.status === "PART_PAID" ? "Partial" : invoice.status === "DRAFT" ? "Draft" : invoice.status}
                     </span>
                     <span className="text-xs text-muted">Due {new Date(invoice.dueDate).toLocaleDateString()}</span>
                     <button
                       onClick={() => router.push(`/parent/invoices/${invoice.id}`)}
-                      className="inline-flex items-center justify-center gap-2 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand/90 transition"
+                      className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-hover transition"
                     >
                       <Eye className="h-4 w-4" />
                       View
@@ -246,14 +246,15 @@ export default function InvoicesPage() {
 
       {/* Payment Instructions */}
       {totalOutstanding > 0 && (
-        <div className="rounded-xl border-2 border-amber-200 bg-amber-50 p-6">
-          <h3 className="font-bold text-lg text-amber-900">Payment Reminder</h3>
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+          <h3 className="text-sm font-bold text-amber-900">Payment reminder</h3>
           <p className="text-amber-800 mt-2">You have an outstanding balance of <span className="font-bold">{formatMoney(totalOutstanding, currency)}</span> due. Please make payment as soon as possible to avoid late fees.</p>
-          <button className="mt-4 px-6 py-2.5 bg-brand text-white rounded-lg font-semibold hover:bg-brand/90 shadow-sm transition-colors">
-            Make Payment
+          <button className="mt-4 rounded-lg bg-brand px-4 py-2.5 font-semibold text-white transition-colors hover:bg-brand-hover">
+            Make payment
           </button>
         </div>
       )}
+      </div>
     </ParentPageShell>
   );
 }

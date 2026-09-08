@@ -89,21 +89,21 @@ export default function PaymentsPage() {
   if (loading) {
     return (
       <ParentPageShell onRefresh={loadData}>
-        <div className="space-y-6">
+        <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
           <div className="space-y-2">
             <div className="h-10 w-48 bg-slate-200 rounded-lg animate-pulse"></div>
             <div className="h-5 w-64 bg-slate-100 rounded animate-pulse"></div>
           </div>
           <div className="grid grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="rounded-3xl bg-surface p-5 border border-border space-y-2">
+              <div key={i} className="border border-border bg-surface p-5 space-y-2">
                 <div className="h-4 w-16 bg-slate-100 rounded animate-pulse"></div>
                 <div className="h-6 w-20 bg-slate-200 rounded animate-pulse"></div>
               </div>
             ))}
           </div>
           {[1, 2].map((i) => (
-            <div key={i} className="rounded-3xl border border-border bg-surface p-4 space-y-3 animate-pulse">
+            <div key={i} className="overflow-hidden rounded-lg border border-border bg-surface p-4 space-y-3 animate-pulse">
               <div className="h-5 w-32 bg-slate-200 rounded"></div>
               <div className="h-4 w-48 bg-slate-100 rounded"></div>
             </div>
@@ -123,27 +123,31 @@ export default function PaymentsPage() {
 
   return (
     <ParentPageShell onRefresh={loadData}>
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-6">
-          <h1 className="text-3xl font-semibold text-foreground">Payments</h1>
+      <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+        <div className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-end">
+          <div>
+          <div className="flex items-center gap-2 text-sm font-medium text-brand"><CreditCard className="h-4 w-4" /> Finance operations</div>
+          <h1 className="mt-2 text-3xl font-bold text-foreground">Payments</h1>
           <p className="mt-1 text-sm text-muted">Track all your payments and receipts</p>
+          </div>
+          <button type="button" onClick={() => window.location.href = '/parent'} className="inline-flex items-center gap-2 self-start rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand hover:bg-brand-light sm:self-auto">Dashboard</button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
           {/* Left: children list for filtering */}
           <aside className="lg:col-span-4">
             <div className="sticky top-20 space-y-4">
-              <div className="rounded-[12px] border border-border bg-surface p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand/10 text-brand">
-                    <CreditCard className="h-5 w-5" />
-                  </div>
+              <div className="overflow-hidden rounded-lg border border-border bg-surface">
+                <div className="border-b border-border bg-[#f6f8fa] px-4 py-3">
+                  <p className="text-[11px] font-bold uppercase tracking-[.12em] text-muted">Payment records</p>
+                  <div className="mt-1 flex items-end justify-between gap-3">
                   <div>
-                    <p className="text-sm font-medium text-muted">Payments</p>
-                    <p className="text-lg font-semibold text-foreground">{payments.length}</p>
+                    <p className="text-sm font-semibold text-foreground">Payments</p>
+                  </div>
+                  <p className="text-2xl font-semibold text-foreground">{payments.length}</p>
                   </div>
                 </div>
-                <div className="mt-4">
+                <div className="p-4">
                   <input
                     placeholder="Filter by student..."
                     onChange={() => {}}
@@ -152,7 +156,7 @@ export default function PaymentsPage() {
                 </div>
               </div>
 
-              <div className="rounded-[12px] border border-border bg-surface overflow-hidden">
+              <div className="overflow-hidden rounded-lg border border-border bg-surface">
                 <div className="divide-y divide-border max-h-[60vh] overflow-auto">
                   {children.map((c) => {
                     const isSelected = selectedChildId === c.id;
@@ -162,7 +166,7 @@ export default function PaymentsPage() {
                         onClick={() => setSelectedChildId(c.id)}
                         className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-background transition ${isSelected ? 'bg-background' : ''}`}
                       >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 overflow-hidden">
+                        <div className="flex h-10 w-10 items-center justify-center border border-border bg-background text-brand overflow-hidden">
                           {c.photoUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={c.photoUrl} alt={`${c.firstName} ${c.lastName}`} className="h-10 w-10 object-cover" />
@@ -186,7 +190,7 @@ export default function PaymentsPage() {
           {/* Right: payments list and stats */}
           <main className="lg:col-span-8">
             {error && (
-              <div className="rounded-[12px] border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm mb-6">
+              <div className="rounded-lg border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-[#a61b29] mb-4">
                 <div className="flex items-start gap-3">
                   <AlertCircle className="mt-0.5 h-5 w-5 text-red-600" />
                   <div>
@@ -197,40 +201,38 @@ export default function PaymentsPage() {
               </div>
             )}
 
-            <div className="rounded-[12px] border border-border bg-surface p-6 mb-4">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <p className="text-xs text-muted uppercase">Total Paid</p>
-                  <p className="mt-2 text-xl font-semibold text-success">{formatMoney(totalPaid, currency)}</p>
+            <div className="grid gap-4 sm:grid-cols-3 mb-4">
+                <div className="border border-border bg-surface p-5">
+                  <p className="text-xs font-bold uppercase tracking-[.1em] text-muted">Total paid</p>
+                  <p className="mt-4 text-3xl font-semibold text-foreground">{formatMoney(totalPaid, currency)}</p>
                 </div>
-                <div>
-                  <p className="text-xs text-muted uppercase">Count</p>
-                  <p className="mt-2 text-xl font-semibold text-brand">{payments.length}</p>
+                <div className="border border-border bg-surface p-5">
+                  <p className="text-xs font-bold uppercase tracking-[.1em] text-muted">Transactions</p>
+                  <p className="mt-4 text-3xl font-semibold text-foreground">{payments.length}</p>
                 </div>
-                <div>
-                  <p className="text-xs text-muted uppercase">Latest</p>
-                  <p className="mt-2 text-lg font-semibold text-foreground">
+                <div className="border border-border bg-surface p-5">
+                  <p className="text-xs font-bold uppercase tracking-[.1em] text-muted">Latest payment</p>
+                  <p className="mt-4 text-xl font-semibold text-foreground">
                     {payments.length > 0
                       ? new Date(payments[0].paidAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                       : '—'}
                   </p>
                 </div>
-              </div>
             </div>
 
             {payments.length === 0 ? (
-              <div className="rounded-[12px] border border-border bg-surface p-12 text-center shadow-sm">
-                <CreditCard className="h-16 w-16 text-muted/40 mx-auto mb-4" />
-                <p className="text-lg text-muted">No payments recorded yet</p>
+              <div className="rounded-lg border border-dashed border-[#9ac7ea] bg-[#f3f9fe] p-14 text-center">
+                <CreditCard className="mx-auto mb-4 h-8 w-8 text-brand" />
+                <p className="text-sm font-semibold text-foreground">No payments recorded yet</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {payments.map((payment) => (
-                  <div key={payment.id} className="rounded-[12px] border border-border bg-surface p-4 shadow-sm">
+                  <div key={payment.id} className="border-b border-border bg-surface px-4 py-4 last:border-0">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <span className="inline-flex rounded-full bg-success/10 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-success">Paid</span>
+                          <span className="inline-flex border border-[#b7dfbf] bg-[#e6f4ea] px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#137333]">Paid</span>
                           <span className="text-xs text-muted">{methodLabels[payment.method] || payment.method}</span>
                         </div>
                         <p className="text-sm text-foreground font-medium">School Fees</p>
@@ -242,8 +244,7 @@ export default function PaymentsPage() {
                           {new Date(payment.paidAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </p>
                         <button className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-brand hover:text-brand/80 transition">
-                          <Download className="h-3.5 w-3.5" />
-                          Receipt
+                          <Download className="h-3.5 w-3.5" /> Receipt
                         </button>
                       </div>
                     </div>

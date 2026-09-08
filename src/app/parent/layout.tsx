@@ -34,14 +34,18 @@ export default function ParentLayout({
       return;
     }
 
+    let disposed = false;
+    let controller: AbortController | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
     async function loadData() {
       try {
         setLoading(true);
         const backendUrl = getBackendUrl();
         
         // Verify parent session with timeout
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        controller = new AbortController();
+        timeoutId = setTimeout(() => controller?.abort(), 5000);
 
         try {
           const verifyRes = await fetch(`${backendUrl}/api/parent/verify`, {
@@ -50,16 +54,16 @@ export default function ParentLayout({
             headers: { 'Content-Type': 'application/json' },
             signal: controller.signal,
           });
-          
-          clearTimeout(timeoutId);
 
           const verifyData = await verifyRes.json();
           
           if (!verifyData.authenticated) {
+            if (disposed) return;
             router.push('/parent/login');
             return;
           }
 
+          if (disposed) return;
           setSession({
             id: verifyData.guardianId,
             name: verifyData.name,
@@ -70,27 +74,44 @@ export default function ParentLayout({
           const schoolRes = await fetch(`${backendUrl}/api/parent/school`, {
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
           });
           
-          if (schoolRes.ok) {
+          if (!disposed && schoolRes.ok) {
             const schoolData = await schoolRes.json();
             setSchool(schoolData);
           }
         } catch (fetchErr) {
-          clearTimeout(timeoutId);
+          if (disposed || (fetchErr instanceof DOMException && fetchErr.name === 'AbortError')) {
+            return;
+          }
           console.error('Verify error:', fetchErr);
           router.push('/parent/login');
           return;
         }
-        
-        setLoading(false);
       } catch (err) {
+        if (disposed) return;
         console.error('Layout error:', err);
         router.push('/parent/login');
+      } finally {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+        if (!disposed) {
+          setLoading(false);
+        }
       }
     }
 
     loadData();
+    return () => {
+      disposed = true;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      controller?.abort();
+    };
   }, [router, pathname]);
 
   // For login page, just show children without layout

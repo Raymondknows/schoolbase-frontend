@@ -6,6 +6,18 @@ import { getBackendUrl } from "@/lib/backend-url";
 import ParentPageShell from "@/components/parent-page-shell";
 import { useEffectiveCurrency } from "../parent-school-context";
 
+interface PaymentAccount {
+  id: string;
+  label: string;
+  bankName: string;
+  accountName: string;
+  accountNumber: string;
+  branchName?: string | null;
+  currency?: string | null;
+  purpose?: string | null;
+  isDefault?: boolean;
+}
+
 interface SchoolInfo {
   id: string;
   name: string;
@@ -29,6 +41,7 @@ interface SchoolInfo {
   manualPaymentAccountName?: string | null;
   manualPaymentAccountNumber?: string | null;
   manualPaymentBankName?: string | null;
+  paymentAccounts?: PaymentAccount[];
   paymentInstructions?: string | null;
   tagline?: string | null;
 }
@@ -156,6 +169,17 @@ export default function SchoolPage() {
   }
 
   const contactLabel = school.email || school.phone ? 'Reach out to the school directly' : 'No direct contact details provided';
+  const legacyPaymentAccount: PaymentAccount[] = school.manualPaymentAccountName || school.manualPaymentAccountNumber || school.manualPaymentBankName
+    ? [{
+        id: 'legacy-payment-account',
+        label: 'General Fees',
+        bankName: school.manualPaymentBankName || '',
+        accountName: school.manualPaymentAccountName || '',
+        accountNumber: school.manualPaymentAccountNumber || '',
+        currency: school.currency,
+      }]
+    : [];
+  const paymentAccounts = school.paymentAccounts?.length ? school.paymentAccounts : legacyPaymentAccount;
 
   return (
     <ParentPageShell onRefresh={loadData}>
@@ -280,40 +304,29 @@ export default function SchoolPage() {
         ) : null}
 
         {/* Payments Section */}
-        {school.manualPaymentAccountName || school.manualPaymentAccountNumber || school.manualPaymentBankName ? (
+        {paymentAccounts.length > 0 ? (
           <>
             <div className="border-t border-border/50" />
             <div>
               <p className="text-lg font-bold text-foreground mb-5 tracking-tight">Bank Transfer Details</p>
-              <div className="space-y-3">
-                {school.manualPaymentAccountName ? (
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">Account name</p>
-                    <p className="mt-1 text-base font-medium text-foreground">{school.manualPaymentAccountName}</p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {paymentAccounts.map((account) => (
+                  <div key={account.id} className="rounded-xl border border-border bg-background p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="font-semibold text-foreground">{account.label}</p>
+                      {account.isDefault ? <span className="rounded-full bg-brand-light px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-brand">Default</span> : null}
+                    </div>
+                    <dl className="mt-4 space-y-2 text-sm">
+                      {account.bankName ? <div><dt className="text-xs uppercase tracking-wide text-muted">Bank</dt><dd className="font-medium text-foreground">{account.bankName}</dd></div> : null}
+                      {account.accountName ? <div><dt className="text-xs uppercase tracking-wide text-muted">Account name</dt><dd className="font-medium text-foreground">{account.accountName}</dd></div> : null}
+                      {account.accountNumber ? <div><dt className="text-xs uppercase tracking-wide text-muted">Account number</dt><dd className="font-mono font-medium text-foreground">{account.accountNumber}</dd></div> : null}
+                      {account.branchName ? <div><dt className="text-xs uppercase tracking-wide text-muted">Branch</dt><dd className="font-medium text-foreground">{account.branchName}</dd></div> : null}
+                      {account.purpose ? <div><dt className="text-xs uppercase tracking-wide text-muted">Purpose</dt><dd className="font-medium text-foreground">{account.purpose}</dd></div> : null}
+                    </dl>
                   </div>
-                ) : null}
-
-                {school.manualPaymentBankName ? (
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">Bank</p>
-                    <p className="mt-1 text-base font-medium text-foreground">{school.manualPaymentBankName}</p>
-                  </div>
-                ) : null}
-
-                {school.manualPaymentAccountNumber ? (
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">Account number</p>
-                    <p className="mt-1 text-base font-medium text-foreground font-mono">{school.manualPaymentAccountNumber}</p>
-                  </div>
-                ) : null}
-
-                {school.paymentInstructions ? (
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">Payment instructions</p>
-                    <p className="mt-2 text-sm leading-6 text-foreground/80 whitespace-pre-wrap">{school.paymentInstructions}</p>
-                  </div>
-                ) : null}
+                ))}
               </div>
+              {school.paymentInstructions ? <p className="mt-4 text-sm leading-6 text-foreground/80 whitespace-pre-wrap">{school.paymentInstructions}</p> : null}
             </div>
           </>
         ) : null}
