@@ -4,7 +4,7 @@ import { getBackendUrl } from "@/lib/backend-url";
 import { useEffect, useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Send, Mail, AlertCircle, CheckCircle, Clock, TrendingUp, ArrowUpRight } from "lucide-react";
+import { MessageCircle, Send, Mail, AlertCircle, CheckCircle, Clock, TrendingUp } from "lucide-react";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { UserGuide, type PageHelpGuide } from "@/components/ui/user-guide";
 import SubscriptionModal from "@/components/subscription-modal";
@@ -246,19 +246,21 @@ export default function WhatsAppPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <main className="min-h-screen pb-12">
+      <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
       {/* Header */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between lg:gap-6">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-            <MessageCircle className="h-8 w-8 text-brand" />
-            Communications Log
-          </h1>
-          <p className="mt-1 text-muted">View all notifications sent to parents</p>
+          <div className="flex items-center gap-2 text-sm font-medium text-brand">
+            <WhatsAppIcon className="h-[17px] w-[17px] text-[#25D366]" />
+            Communication operations
+          </div>
+          <h1 className="mt-2 text-3xl font-bold text-foreground">Communications log</h1>
+          <p className="mt-1 text-muted">Monitor parent notifications across WhatsApp and email</p>
         </div>
 
         {whatsAppConnected !== null && (
-          <div className="inline-flex items-center gap-3 rounded-full border px-4 py-2 shadow-sm transition-colors">
+          <div className="inline-flex items-center gap-3 self-start rounded-lg border border-border bg-surface px-4 py-2.5 text-sm sm:self-auto">
             <span className={`inline-flex h-9 w-9 items-center justify-center rounded-full ${whatsAppConnected ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
               <WhatsAppIcon className="h-5 w-5" />
             </span>
@@ -270,9 +272,7 @@ export default function WhatsAppPage() {
                 {whatsAppConnected ? 'Ready for messages.' : 'Reconnect via settings.'}
               </span>
             </div>
-            <span className={`inline-flex h-6 min-w-[2.25rem] items-center justify-center rounded-full px-2 text-xs font-semibold ${whatsAppConnected ? 'bg-emerald-600 text-white' : 'bg-amber-600 text-white'}`}>
-              {whatsAppConnected ? 'On' : 'Off'}
-            </span>
+            <span className={`h-2.5 w-2.5 rounded-full ${whatsAppConnected ? 'bg-emerald-500' : 'bg-amber-500'}`} />
           </div>
         )}
       </div>
@@ -286,131 +286,49 @@ export default function WhatsAppPage() {
 
       {/* Summary Stats */}
       {stats && (
-        <div className="hidden sm:grid grid-cols-5 gap-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {/* Total Sent */}
-          <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50 flex flex-col">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 shadow-sm">
-                <TrendingUp className="h-4 w-4 text-blue-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted">Total Sent</p>
-                <p className="mt-1 text-lg font-bold text-foreground">{stats.total}</p>
-              </div>
-              <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-            </div>
-            <p className="mt-2 text-[11px] text-muted">All channels combined</p>
+          <div className="border border-border bg-surface p-5">
+            <div className="mb-4 flex items-center gap-2 text-brand"><TrendingUp size={18} /><span className="text-xs font-bold uppercase tracking-[.12em] text-muted">Total sent</span></div>
+            <div className="text-3xl font-semibold text-foreground">{stats.total}</div>
+            <div className="mt-1 text-xs text-muted">All channels combined</div>
           </div>
 
           {/* Successful */}
-          <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50 flex flex-col">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-100 shadow-sm">
-                <CheckCircle className="h-4 w-4 text-emerald-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted">Successful</p>
-                <p className="mt-1 text-lg font-bold text-foreground">{stats.sent}</p>
-              </div>
-              <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-            </div>
-            <p className="mt-2 text-[11px] text-muted">{stats.total > 0 ? ((stats.sent / stats.total) * 100).toFixed(0) : 0}% success rate</p>
+          <div className="border border-border bg-surface p-5">
+            <div className="mb-4 flex items-center gap-2 text-brand"><CheckCircle size={18} /><span className="text-xs font-bold uppercase tracking-[.12em] text-muted">Successful</span></div>
+            <div className="text-3xl font-semibold text-foreground">{stats.sent}</div>
+            <div className="mt-1 text-xs text-muted">{stats.total > 0 ? ((stats.sent / stats.total) * 100).toFixed(0) : 0}% success rate</div>
           </div>
 
           {/* Failed */}
-          <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50 flex flex-col">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-amber-100 shadow-sm">
-                <AlertCircle className="h-4 w-4 text-amber-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted">Failed</p>
-                <p className="mt-1 text-lg font-bold text-foreground">{stats.failed}</p>
-              </div>
-              <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-            </div>
-            <p className="mt-2 text-[11px] text-muted">Delivery failures</p>
+          <div className="border border-border bg-surface p-5">
+            <div className="mb-4 flex items-center gap-2 text-brand"><AlertCircle size={18} /><span className="text-xs font-bold uppercase tracking-[.12em] text-muted">Failed</span></div>
+            <div className="text-3xl font-semibold text-foreground">{stats.failed}</div>
+            <div className="mt-1 text-xs text-muted">Delivery failures</div>
           </div>
 
           {/* Pending */}
-          <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50 flex flex-col">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-purple-100 shadow-sm">
-                <Clock className="h-4 w-4 text-purple-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted">Pending</p>
-                <p className="mt-1 text-lg font-bold text-foreground">{stats.pending}</p>
-              </div>
-              <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-            </div>
-            <p className="mt-2 text-[11px] text-muted">Still processing</p>
+          <div className="border border-border bg-surface p-5">
+            <div className="mb-4 flex items-center gap-2 text-brand"><Clock size={18} /><span className="text-xs font-bold uppercase tracking-[.12em] text-muted">Pending</span></div>
+            <div className="text-3xl font-semibold text-foreground">{stats.pending}</div>
+            <div className="mt-1 text-xs text-muted">Still processing</div>
           </div>
 
           {/* Channel Breakdown */}
-          <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50 flex flex-col">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-rose-100 shadow-sm">
-                <MessageCircle className="h-4 w-4 text-rose-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted">By Channel</p>
-                <p className="mt-1 text-lg font-bold text-foreground">{stats.byChannel.WHATSAPP + stats.byChannel.EMAIL}</p>
-              </div>
-              <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-            </div>
-            <p className="mt-2 text-[11px] text-muted flex justify-between">
-              <span>WA: {stats.byChannel.WHATSAPP}</span>
-              <span>Email: {stats.byChannel.EMAIL}</span>
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Mobile Summary Cards */}
-      {stats && (
-        <div className="sm:hidden space-y-3">
-          <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 shadow-sm">
-                <TrendingUp className="h-4 w-4 text-blue-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted">Total Sent</p>
-                <p className="mt-1 text-lg font-bold text-foreground">{stats.total}</p>
-              </div>
-              <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-            </div>
-          </div>
-          <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-100 shadow-sm">
-                <CheckCircle className="h-4 w-4 text-emerald-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted">Successful</p>
-                <p className="mt-1 text-lg font-bold text-foreground">{stats.sent}</p>
-              </div>
-              <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-            </div>
-          </div>
-          <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-amber-100 shadow-sm">
-                <AlertCircle className="h-4 w-4 text-amber-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted">Failed</p>
-                <p className="mt-1 text-lg font-bold text-foreground">{stats.failed}</p>
-              </div>
-              <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
+          <div className="border border-border bg-surface p-5 sm:col-span-2 lg:col-span-4">
+            <div className="mb-4 flex items-center gap-2 text-brand"><MessageCircle size={18} /><span className="text-xs font-bold uppercase tracking-[.12em] text-muted">Channel mix</span></div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div><div className="text-2xl font-semibold text-foreground">{stats.byChannel.WHATSAPP}</div><div className="mt-1 text-xs text-muted">WhatsApp notifications</div></div>
+              <div><div className="text-2xl font-semibold text-foreground">{stats.byChannel.EMAIL}</div><div className="mt-1 text-xs text-muted">Email notifications</div></div>
             </div>
           </div>
         </div>
       )}
 
       {/* Filters and Search */}
-      <div className="grid gap-4 sm:grid-cols-5">
+      <section className="flex flex-col justify-between gap-4 border-b border-border pb-5 lg:flex-row lg:items-center">
+      <div className="grid flex-1 gap-3 sm:grid-cols-5">
         {/* Search Box */}
         <div className="sm:col-span-2">
           <input
@@ -421,7 +339,7 @@ export default function WhatsAppPage() {
               setSearchQuery(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full rounded-lg border border-border bg-surface px-4 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-brand"
+            className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground placeholder-muted outline-none focus:border-brand"
           />
         </div>
 
@@ -432,7 +350,7 @@ export default function WhatsAppPage() {
             setFilterType(e.target.value);
             setCurrentPage(1);
           }}
-          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand"
+          className="rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-brand"
         >
           <option value="ALL">All Types</option>
           <option value="ISSUE_BILLS">Invoice Issued</option>
@@ -447,7 +365,7 @@ export default function WhatsAppPage() {
             setFilterStatus(e.target.value);
             setCurrentPage(1);
           }}
-          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand"
+          className="rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-brand"
         >
           <option value="ALL">All Status</option>
           <option value="SENT">Sent</option>
@@ -462,16 +380,17 @@ export default function WhatsAppPage() {
             setFilterChannel(e.target.value);
             setCurrentPage(1);
           }}
-          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand"
+          className="rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-brand"
         >
           <option value="ALL">All Channels</option>
           <option value="WHATSAPP">WhatsApp</option>
           <option value="EMAIL">Email</option>
         </select>
       </div>
+      </section>
 
       {/* Results Info */}
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted">
           Showing {paginatedNotifications.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}–
           {Math.min(currentPage * itemsPerPage, filteredNotifications.length)} of {filteredNotifications.length} notification{filteredNotifications.length !== 1 ? "s" : ""}
@@ -498,17 +417,17 @@ export default function WhatsAppPage() {
 
       {/* Notifications Table */}
       {!loading ? (
-        <div className="rounded-lg border border-border overflow-hidden mb-6">
+        <div className="overflow-hidden rounded-lg border border-border bg-surface shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-border bg-surface">
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Date</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Guardian</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Type</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Channel</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Status</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Reference</th>
+                <tr className="border-b border-border bg-[#f6f8fa]">
+                  <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-[.1em] text-muted">Date</th>
+                  <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-[.1em] text-muted">Guardian</th>
+                  <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-[.1em] text-muted">Type</th>
+                  <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-[.1em] text-muted">Channel</th>
+                  <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-[.1em] text-muted">Status</th>
+                  <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-[.1em] text-muted">Reference</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -521,24 +440,24 @@ export default function WhatsAppPage() {
                     const StatusIcon = statusConfig.icon;
                     return (
                       <tr key={notif.id} className="hover:bg-surface/50 transition-colors">
-                        <td className="px-6 py-4 text-sm text-foreground">
+                        <td className="px-5 py-4 text-sm text-foreground">
                           {new Date(notif.date).toLocaleDateString()} {new Date(notif.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </td>
-                        <td className="px-6 py-4 text-sm">
+                        <td className="px-5 py-4 text-sm">
                           <div className="font-medium text-foreground">{notif.guardian}</div>
                         </td>
-                        <td className="px-6 py-4 text-sm">
+                        <td className="px-5 py-4 text-sm">
                           <Badge className={typeConfig.color}>
                             {typeConfig.label}
                           </Badge>
                         </td>
-                        <td className="px-6 py-4 text-sm">
+                        <td className="px-5 py-4 text-sm">
                           <div className="flex items-center gap-2">
                             <ChannelIcon className={`h-4 w-4 ${channelConfig.color}`} />
                             <span className="text-foreground">{channelConfig.label}</span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm">
+                        <td className="px-5 py-4 text-sm">
                           <div className="flex items-center gap-2">
                             <StatusIcon className={`h-4 w-4`} />
                             <Badge className={statusConfig.color}>
@@ -546,7 +465,7 @@ export default function WhatsAppPage() {
                             </Badge>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm">
+                        <td className="px-5 py-4 text-sm">
                           <code className="bg-surface-2 px-2 py-1 rounded text-xs text-foreground">
                             {notif.reference || "-"}
                           </code>
@@ -556,7 +475,7 @@ export default function WhatsAppPage() {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-muted">
+                    <td colSpan={6} className="px-5 py-12 text-center text-muted">
                       No communications found
                     </td>
                   </tr>
@@ -567,7 +486,7 @@ export default function WhatsAppPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-border bg-surface px-6 py-4">
+            <div className="flex items-center justify-between border-t border-border bg-[#f6f8fa] px-5 py-4">
               <div className="text-sm text-muted">
                 Page {currentPage} of {totalPages} ({filteredNotifications.length} total)
               </div>
@@ -601,5 +520,6 @@ export default function WhatsAppPage() {
       {/* Help & Guide */}
       <UserGuide guide={HELP_GUIDE} />
     </div>
+    </main>
   );
 }
