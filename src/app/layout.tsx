@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/header";
 import FooterWrapper from "@/components/footer-wrapper";
+import PwaInstallPrompt from "@/components/pwa-install-prompt";
 
 export const metadata: Metadata = {
   title: "SchoolBase — Everything your school needs in one simple platform",
@@ -23,6 +24,11 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    title: "SchoolBase",
+    statusBarStyle: "default",
   },
   other: {
     "msapplication-config": "/browserconfig.xml",
@@ -82,6 +88,7 @@ export default function RootLayout({
         <Header />
         <main className="flex-1">{children}</main>
         <FooterWrapper />
+        <PwaInstallPrompt />
       </body>
     </html>
   );

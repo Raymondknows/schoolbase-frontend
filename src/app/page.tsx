@@ -118,16 +118,18 @@ export default async function HomePage() {
       <section className="border-b border-border bg-surface">
         <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
           <h1 className="max-w-3xl text-4xl font-bold leading-tight tracking-tight text-foreground md:text-5xl md:leading-tight">
-            Everything your school needs in one simple platform.
+            Everything your school needs in one simple platform
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted">
-            Collect fees, remind parents on WhatsApp, publish results, and give
-            your school a professional digital experience, all in one place. <strong className="text-foreground">Register and start using immediately</strong> — includes a <strong className="text-foreground">7-day free trial</strong>.
+            Manage fees, engage parents on WhatsApp, publish results, and deliver
+            a professional digital experience for your school, all in one place.
+            Start with a <strong className="text-foreground">7-day free trial</strong> and
+            move your school forward with confidence.
           </p>
           <div className="mt-10 flex flex-wrap gap-4" id="start">
-            <Button href="#buy">Subscribe</Button>
-            <Button variant="secondary" href="/signup">
-              Get started
+            <Button href="/login">School login</Button>
+            <Button variant="secondary" href="/parent/login">
+              Parent login
             </Button>
           </div>
         </div>

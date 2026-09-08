@@ -102,7 +102,7 @@ export function CountrySelectModal() {
               Select your country.
             </h3>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Choose the country you are buying from so we can personalize your pricing, currency, and onboarding experience. This only affects your current browsing experience and pricing preview.
+              Choose your country so we can personalize your pricing, currency, and onboarding experience.
             </p>
           </div>
           <button
@@ -150,7 +150,7 @@ export function CountrySelectModal() {
             disabled={loading}
             className="inline-flex w-full justify-center rounded-3xl bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
           >
-            {loading ? "Saving…" : "Confirm country"}
+            {loading ? "Saving…" : "Confirm"}
           </button>
         </div>
       </div>

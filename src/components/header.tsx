@@ -10,7 +10,7 @@ export default async function Header() {
   if (isLoggedIn) return null;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-white/95 backdrop-blur print:hidden">
+    <header className="sticky top-0 z-50 border-b border-border bg-white/95 backdrop-blur">
       <div className="mx-auto max-w-6xl px-4 py-3">
         {/* Top bar with social links - hide for logged-in users */}
         {!isLoggedIn && (
@@ -55,7 +55,7 @@ export default async function Header() {
         {/* Main header - shown only on public pages (no logged-in session) */}
         {!isLoggedIn && (
           <div className="flex items-center justify-between gap-4">
-            <AppLogo showSpinner />
+            <AppLogo />
 
             {/* Navigation */}
             <nav className="hidden items-center gap-5 text-sm font-medium text-muted md:flex">
@@ -81,12 +81,6 @@ export default async function Header() {
 
             {/* CTA Buttons */}
             <div className="flex items-center gap-2">
-              <Link
-                href="/login"
-                className="inline-flex px-3 py-1.5 text-sm font-medium text-foreground hover:text-brand"
-              >
-                Sign in
-              </Link>
               <Link
                 href="/signup"
                 className="inline-flex px-5 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brand/90 text-sm"
