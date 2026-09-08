@@ -95,9 +95,6 @@ export function CountrySelectModal() {
       <div className="w-full max-w-lg rounded-[28px] border border-slate-200 bg-white p-4 shadow-2xl ring-1 ring-slate-200 sm:p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-brand">
-              Country selection
-            </p>
             <h3 className="mt-2 text-xl font-semibold text-foreground sm:text-2xl">
               Select your country.
             </h3>
