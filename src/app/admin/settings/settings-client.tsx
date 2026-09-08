@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ErrorModal } from "@/components/ui/error-modal";
-import { Building2, MapPin, DollarSign, FileText, Upload, Save, AlertCircle, Zap, X, KeyRound, CalendarDays, ShieldCheck, Copy, CheckCircle2, ChevronRight, Loader2 } from "lucide-react";
+import { Building2, MapPin, DollarSign, FileText, Upload, Save, AlertCircle, Zap, X, KeyRound, CalendarDays, ShieldCheck, Copy, CheckCircle2, ChevronRight, Loader2, Plus, Pencil, Trash2 } from "lucide-react";
 import { UserGuide, type PageHelpGuide } from "@/components/ui/user-guide";
 import SignatoriesClient from './signatories-client';
 import { WhatsAppIcon } from "@/components/ui/icons";
@@ -36,6 +36,19 @@ interface SchoolSettingsProps {
     manualPaymentAccountName?: string | null;
     manualPaymentAccountNumber?: string | null;
     manualPaymentBankName?: string | null;
+    paymentAccounts?: Array<{
+      id?: string;
+      label: string;
+      bankName: string;
+      accountName: string;
+      accountNumber: string;
+      branchName?: string | null;
+      currency?: string | null;
+      purpose?: string | null;
+      isDefault?: boolean;
+      isActive?: boolean;
+      sortOrder?: number;
+    }>;
     enabledPhases: Array<{ phase: string }>;
     partner?: { name: string } | null;
     admissionsEnabled?: boolean;
@@ -84,6 +97,8 @@ export default function SettingsPageClient({
   const [manualPaymentAccountName, setManualPaymentAccountName] = useState(school.manualPaymentAccountName ?? "");
   const [manualPaymentAccountNumber, setManualPaymentAccountNumber] = useState(school.manualPaymentAccountNumber ?? "");
   const [manualPaymentBankName, setManualPaymentBankName] = useState(school.manualPaymentBankName ?? "");
+  const [paymentAccounts, setPaymentAccounts] = useState(() => school.paymentAccounts?.length ? school.paymentAccounts : (school.manualPaymentBankName || school.manualPaymentAccountName || school.manualPaymentAccountNumber ? [{ label: "General Fees", bankName: school.manualPaymentBankName ?? "", accountName: school.manualPaymentAccountName ?? "", accountNumber: school.manualPaymentAccountNumber ?? "", isDefault: true, isActive: true }] : []));
+  const [editingPaymentAccount, setEditingPaymentAccount] = useState<number | null>(null);
   
   const [logoUrl, setLogoUrl] = useState<string | null>(school.logoUrl ?? null);
   const [signatureUrl, setSignatureUrl] = useState<string | null>(school.principalSignatureUrl ?? null);
@@ -251,6 +266,7 @@ export default function SettingsPageClient({
           manualPaymentAccountName: manualPaymentAccountName.trim() || null,
           manualPaymentAccountNumber: manualPaymentAccountNumber.trim() || null,
           manualPaymentBankName: manualPaymentBankName.trim() || null,
+          paymentAccounts: paymentAccounts.map((account, index) => ({ ...account, sortOrder: index })),
           principalSignatureUrl: signatureUrl,
           stampUrl: stampUrl,
           logoUrl: logoUrl,
@@ -1130,38 +1146,51 @@ export default function SettingsPageClient({
 
           {openPanels.payment && (
             <div id="payment-information-panel" className="p-6 space-y-5">
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-3 border-b border-border pb-5 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Bank Name</label>
-                <input
-                  type="text"
-                  value={manualPaymentBankName}
-                  onChange={(e) => setManualPaymentBankName(e.target.value)}
-                  placeholder="e.g. First Bank of Nigeria"
-                  className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-brand/50"
-                />
+                <p className="text-sm font-semibold text-foreground">Payment accounts</p>
+                <p className="mt-1 max-w-2xl text-xs text-muted">Add labelled accounts such as Tuition, Books, Transport, or Boarding. Active accounts appear on invoices.</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Account Name</label>
-                <input
-                  type="text"
-                  value={manualPaymentAccountName}
-                  onChange={(e) => setManualPaymentAccountName(e.target.value)}
-                  placeholder="Account holder name"
-                  className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-brand/50"
-                />
+              <Button type="button" variant="outline" onClick={() => { setPaymentAccounts((current) => [...current, { label: "", bankName: "", accountName: "", accountNumber: "", purpose: "", currency, isDefault: current.length === 0, isActive: true }]); setEditingPaymentAccount(paymentAccounts.length); }}><Plus className="mr-2 h-4 w-4" />Add account</Button>
+            </div>
+            {paymentAccounts.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-[#9ac7ea] bg-[#f3f9fe] p-8 text-center">
+                <DollarSign className="mx-auto text-brand" size={28} />
+                <p className="mt-3 text-sm font-semibold text-foreground">No payment accounts configured</p>
+                <p className="mt-1 text-xs text-muted">Add an account to show payment instructions on invoices.</p>
               </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Account Number</label>
-              <input
-                type="text"
-                value={manualPaymentAccountNumber}
-                onChange={(e) => setManualPaymentAccountNumber(e.target.value)}
-                placeholder="1234567890"
-                className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-brand/50"
-              />
-            </div>
+            ) : (
+              <div className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-background">
+                {paymentAccounts.map((account, index) => (
+                  <div key={`${account.id ?? 'new'}-${index}`} className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-semibold text-foreground">{account.label || 'Untitled account'}</p>
+                        {account.isDefault && <span className="rounded-full bg-[#e6f4ea] px-2.5 py-1 text-[11px] font-bold text-[#137333]">DEFAULT</span>}
+                        {!account.isActive && <span className="rounded-full bg-[#fff4d6] px-2.5 py-1 text-[11px] font-bold text-[#8a5a00]">INACTIVE</span>}
+                      </div>
+                      <p className="mt-1 text-sm text-muted">{account.bankName || 'Bank not set'} · {account.accountName || 'Account name not set'}</p>
+                      <p className="mt-1 font-mono text-xs text-muted">{account.accountNumber || 'Account number not set'}{account.currency ? ` · ${account.currency}` : ''}</p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <label className="flex items-center gap-2 text-xs font-medium text-muted"><input type="checkbox" checked={account.isActive !== false} onChange={(event) => setPaymentAccounts((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, isActive: event.target.checked } : item))} /> Active</label>
+                      <Button type="button" variant="outline" onClick={() => setEditingPaymentAccount(editingPaymentAccount === index ? null : index)}><Pencil className="mr-2 h-4 w-4" />Edit</Button>
+                      <button type="button" aria-label={`Remove ${account.label || 'payment account'}`} className="rounded-lg border border-red-200 p-2 text-red-600 hover:bg-red-50" onClick={() => { setPaymentAccounts((current) => current.filter((_, itemIndex) => itemIndex !== index)); if (editingPaymentAccount === index) setEditingPaymentAccount(null); }}><Trash2 className="h-4 w-4" /></button>
+                    </div>
+                    {editingPaymentAccount === index && (
+                      <div className="basis-full border-t border-border pt-4">
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          {([['label', 'Label'], ['bankName', 'Bank Name'], ['accountName', 'Account Name'], ['accountNumber', 'Account Number'], ['purpose', 'Purpose'], ['currency', 'Currency']] as const).map(([field, label]) => (
+                            <label key={field} className="text-sm font-medium text-foreground">{label}<input value={account[field] ?? ''} onChange={(event) => setPaymentAccounts((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, [field]: event.target.value } : item))} className="mt-2 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm" /></label>
+                          ))}
+                        </div>
+                        <label className="mt-4 flex items-center gap-2 text-sm font-medium text-foreground"><input type="radio" name="default-payment-account" checked={Boolean(account.isDefault)} onChange={() => setPaymentAccounts((current) => current.map((item, itemIndex) => ({ ...item, isDefault: itemIndex === index })))} /> Use as default account</label>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           )}
         </div>

@@ -406,10 +406,18 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
             <div className="mt-8 pt-8">
               <h3 className="text-sm font-semibold uppercase tracking-[0.3em] text-gray-500">Payment Instructions</h3>
               <div className="mt-3 space-y-1 text-sm text-gray-700">
-                {school?.manualPaymentAccountName && <p><span className="font-medium text-gray-900">Account Name:</span> {school.manualPaymentAccountName}</p>}
-                {school?.manualPaymentAccountNumber && <p><span className="font-medium text-gray-900">Account Number:</span> {school.manualPaymentAccountNumber}</p>}
-                {school?.manualPaymentBankName && <p><span className="font-medium text-gray-900">Bank:</span> {school.manualPaymentBankName}</p>}
-                {!school?.manualPaymentAccountName && !school?.manualPaymentAccountNumber && !school?.manualPaymentBankName && (
+                {school?.paymentAccounts?.length ? school.paymentAccounts.map((account: any) => (
+                  <div key={account.id} className="mb-4 border-b border-gray-100 pb-3 last:border-0">
+                    <p className="font-semibold text-gray-900">{account.label}</p>
+                    <p><span className="font-medium text-gray-900">Bank:</span> {account.bankName}</p>
+                    <p><span className="font-medium text-gray-900">Account Name:</span> {account.accountName}</p>
+                    <p><span className="font-medium text-gray-900">Account Number:</span> {account.accountNumber}</p>
+                  </div>
+                )) : school?.manualPaymentAccountName || school?.manualPaymentAccountNumber || school?.manualPaymentBankName ? <>
+                  {school.manualPaymentAccountName && <p><span className="font-medium text-gray-900">Account Name:</span> {school.manualPaymentAccountName}</p>}
+                  {school.manualPaymentAccountNumber && <p><span className="font-medium text-gray-900">Account Number:</span> {school.manualPaymentAccountNumber}</p>}
+                  {school.manualPaymentBankName && <p><span className="font-medium text-gray-900">Bank:</span> {school.manualPaymentBankName}</p>}
+                </> : (
                   <p>Payments should be made through the school’s approved payment channel. Kindly keep a copy of the receipt for reference.</p>
                 )}
               </div>
