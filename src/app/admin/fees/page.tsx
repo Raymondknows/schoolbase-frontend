@@ -172,7 +172,7 @@ export default function FeesPage() {
       }
 
       const detailsQuery = reminderDetails.length ? `&details=${encodeURIComponent(reminderDetails.join(' | '))}` : '';
-      router.push(`/admin/fees?reminders=1&sent=${result.sent}${detailsQuery}`);
+      router.push(`/admin/fees?reminders=1&sent=${result.sent}&whatsappSent=${result.whatsappSent ?? 0}&whatsappFailed=${result.whatsappFailed ?? 0}&queued=${result.queued ?? 0}${detailsQuery}`);
     } catch (err) {
       console.error("Error sending reminders:", err);
       router.push(`/admin/fees?error=1&errorMessage=${encodeURIComponent(err instanceof Error ? err.message : 'Failed to send reminders')}`);

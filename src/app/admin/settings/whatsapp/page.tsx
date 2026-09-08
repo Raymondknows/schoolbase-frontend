@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { UserGuide, type PageHelpGuide } from "@/components/ui/user-guide";
 import { Badge } from "@/components/ui/badge";
 import { ErrorModal } from "@/components/ui/error-modal";
-import { ArrowLeft, CheckCircle2, QrCode, Send, Wifi, WifiOff } from "lucide-react";
+import { ArrowLeft, CheckCircle2, QrCode, Save, Send, Wifi, WifiOff } from "lucide-react";
 import Link from "next/link";
 
 function WhatsAppIcon({ className = '' }: { className?: string }) {
@@ -28,6 +28,34 @@ interface SessionStatus {
   debugLog?: string[];
   debugInfo?: Record<string, unknown>;
 }
+
+interface WhatsAppPolicy {
+  enabled: boolean;
+  messagesPerMinute: number;
+  messagesPerHour: number;
+  messagesPerDay: number;
+  batchSize: number;
+  batchCooldownSeconds: number;
+  quietHoursStart: string;
+  quietHoursEnd: string;
+  requireApprovalForBulk: boolean;
+  allowAutomaticRetries: boolean;
+  timezone: string;
+}
+
+const DEFAULT_POLICY: WhatsAppPolicy = {
+  enabled: true,
+  messagesPerMinute: 10,
+  messagesPerHour: 100,
+  messagesPerDay: 300,
+  batchSize: 25,
+  batchCooldownSeconds: 120,
+  quietHoursStart: '21:00',
+  quietHoursEnd: '07:00',
+  requireApprovalForBulk: true,
+  allowAutomaticRetries: true,
+  timezone: 'Africa/Lagos',
+};
 
 export default function WhatsAppSettingsPage() {
   const [session, setSession] = useState<SessionStatus | null>(null);
@@ -53,10 +81,53 @@ export default function WhatsAppSettingsPage() {
   const isStreamErrorRetrying = debugInfo?.streamErrorRetrying === true;
   const streamErrorReconnectAttempts = typeof debugInfo?.streamErrorReconnectAttempts === 'number' ? debugInfo.streamErrorReconnectAttempts : 0;
   const [isCodeCopied, setIsCodeCopied] = useState(false);
+  const [policy, setPolicy] = useState<WhatsAppPolicy>(DEFAULT_POLICY);
+  const [isPolicyLoading, setIsPolicyLoading] = useState(true);
+  const [isPolicySaving, setIsPolicySaving] = useState(false);
 
   useEffect(() => {
     void fetchStatus(true);
+    void fetchPolicy();
   }, []);
+
+  async function fetchPolicy() {
+    try {
+      const response = await fetch('/api/admin/communications/whatsapp-policy', { credentials: 'include' });
+      if (response.ok) {
+        const data = await response.json();
+        setPolicy({ ...DEFAULT_POLICY, ...(data.policy || {}) });
+      }
+    } catch (error) {
+      console.error('Policy fetch error:', error);
+    } finally {
+      setIsPolicyLoading(false);
+    }
+  }
+
+  async function savePolicy() {
+    setIsPolicySaving(true);
+    setActionMessage(null);
+    try {
+      const response = await fetch('/api/admin/communications/whatsapp-policy', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(policy),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setActionMessage(data.error || 'Unable to save WhatsApp policy.');
+        return;
+      }
+      setPolicy({ ...DEFAULT_POLICY, ...(data.policy || policy) });
+      setActionMessage('WhatsApp safety policy saved.');
+    } catch (error) {
+      console.error('Policy save error:', error);
+      setActionMessage('Unable to save WhatsApp policy.');
+    } finally {
+      setIsPolicySaving(false);
+    }
+  }
 
   useEffect(() => {
     const loadPreview = async () => {
@@ -516,6 +587,64 @@ export default function WhatsAppSettingsPage() {
               </Button>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="border border-border bg-surface p-5">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">WhatsApp safety policy</h2>
+            <p className="mt-1 text-sm text-muted">Control this school&apos;s sending limits, quiet hours, retries, and bulk-send protection.</p>
+          </div>
+          <Button onClick={() => void savePolicy()} disabled={isPolicyLoading || isPolicySaving}>
+            <Save className="mr-2 h-4 w-4" />
+            {isPolicySaving ? 'Saving…' : 'Save policy'}
+          </Button>
+        </div>
+
+        <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+          <label className="flex items-center gap-2 text-sm font-medium">
+            <input type="checkbox" checked={policy.enabled} onChange={(e) => setPolicy({ ...policy, enabled: e.target.checked })} />
+            Allow WhatsApp sending
+          </label>
+          <label className="flex items-center gap-2 text-sm font-medium">
+            <input type="checkbox" checked={policy.requireApprovalForBulk} onChange={(e) => setPolicy({ ...policy, requireApprovalForBulk: e.target.checked })} />
+            Require bulk approval
+          </label>
+          <label className="flex items-center gap-2 text-sm font-medium">
+            <input type="checkbox" checked={policy.allowAutomaticRetries} onChange={(e) => setPolicy({ ...policy, allowAutomaticRetries: e.target.checked })} />
+            Allow automatic retries
+          </label>
+          <label className="text-sm font-medium">
+            Timezone
+            <input value={policy.timezone} onChange={(e) => setPolicy({ ...policy, timezone: e.target.value })} className="mt-2 w-full rounded-lg border border-border px-3 py-2 font-normal" />
+          </label>
+        </div>
+
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {([
+            ['messagesPerMinute', 'Messages / minute'],
+            ['messagesPerHour', 'Messages / hour'],
+            ['messagesPerDay', 'Messages / day'],
+            ['batchSize', 'Bulk batch size'],
+            ['batchCooldownSeconds', 'Batch cooldown (seconds)'],
+          ] as const).map(([key, label]) => (
+            <label key={key} className="text-sm font-medium">
+              {label}
+              <input type="number" min="0" value={policy[key]} onChange={(e) => setPolicy({ ...policy, [key]: Number(e.target.value) })} className="mt-2 w-full rounded-lg border border-border px-3 py-2 font-normal" />
+            </label>
+          ))}
+        </div>
+
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <label className="text-sm font-medium">
+            Quiet hours start
+            <input type="time" value={policy.quietHoursStart} onChange={(e) => setPolicy({ ...policy, quietHoursStart: e.target.value })} className="mt-2 w-full rounded-lg border border-border px-3 py-2 font-normal" />
+          </label>
+          <label className="text-sm font-medium">
+            Quiet hours end
+            <input type="time" value={policy.quietHoursEnd} onChange={(e) => setPolicy({ ...policy, quietHoursEnd: e.target.value })} className="mt-2 w-full rounded-lg border border-border px-3 py-2 font-normal" />
+          </label>
         </div>
       </div>
 

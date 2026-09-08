@@ -90,7 +90,7 @@ export default function StudentEditClient({ studentId }: { studentId: string }) 
           setGuardianLast(g.guardian?.lastName || "");
           setGuardianRelationship(g.relationship || "Parent");
           setGuardianEmail(g.guardian?.email || "");
-          setGuardianPhone(g.guardian?.phone || "");
+          setGuardianPhone(g.guardian?.whatsapp || g.guardian?.phone || "");
           setGuardianAltPhone(g.guardian?.altPhone || "");
           setGuardianOccupation(g.guardian?.occupation || "");
         }

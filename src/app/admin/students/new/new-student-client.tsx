@@ -212,7 +212,14 @@ export default function NewStudentClient() {
         throw new Error(result.error || "Failed to create student");
       }
 
-      router.push("/admin/students?created=1");
+      const result = await response.json();
+      const whatsappOutcome = Array.isArray(result.notificationOutcomes)
+        ? result.notificationOutcomes.find((outcome: { channel?: string }) => outcome.channel === 'WHATSAPP')
+        : null;
+      const notificationQuery = whatsappOutcome
+        ? `&whatsappStatus=${encodeURIComponent(whatsappOutcome.status)}${whatsappOutcome.error ? `&whatsappError=${encodeURIComponent(whatsappOutcome.error)}` : ''}`
+        : '';
+      router.push(`/admin/students?saved=1${notificationQuery}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : "An error occurred";
       setError(message);

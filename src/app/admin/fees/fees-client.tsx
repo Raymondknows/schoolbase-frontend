@@ -182,6 +182,9 @@ export default function FeesPageClient({
     const created = Number(searchParams.get("created") ?? 0);
     const reminders = searchParams.get("reminders") === "1";
     const remindersSent = Number(searchParams.get("sent") ?? 0);
+    const whatsappSent = Number(searchParams.get("whatsappSent") ?? 0);
+    const whatsappFailed = Number(searchParams.get("whatsappFailed") ?? 0);
+    const queued = Number(searchParams.get("queued") ?? 0);
     const paymentRecorded = searchParams.get("paymentRecorded") === "1";
     const error = searchParams.get("error") === "1";
     const errorMessage = searchParams.get("errorMessage") ?? undefined;
@@ -197,7 +200,11 @@ export default function FeesPageClient({
     } else if (reminders) {
       setModalType('success');
       setModalTitle('Reminders sent');
-      setModalMessage(`${remindersSent ?? 0} reminders were queued for sending.`);
+      const outcome = [`${remindersSent ?? 0} reminder deliveries completed`];
+      if (whatsappSent > 0) outcome.push(`${whatsappSent} WhatsApp sent`);
+      if (whatsappFailed > 0) outcome.push(`${whatsappFailed} WhatsApp failed`);
+      if (queued > 0) outcome.push(`${queued} still queued`);
+      setModalMessage(`${outcome.join('. ')}.`);
     } else if (paymentRecorded) {
       setModalType('success');
       setModalTitle('Payment recorded');

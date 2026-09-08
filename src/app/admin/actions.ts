@@ -131,6 +131,7 @@ export async function createAnnouncement(formData: FormData) {
     const publish = formData.get("publish") === "on";
     const academicYearId = formData.get("academicYearId") as string | null;
     const termId = formData.get("termId") as string | null;
+    const bulkApproval = formData.get("bulkApproval") === "on";
 
     if (!title || !body) {
       throw new Error("Title and body are required");
@@ -156,6 +157,7 @@ export async function createAnnouncement(formData: FormData) {
         title,
         body,
         publish,
+        bulkApproval,
         academicYearId: academicYearId || undefined,
         termId: termId || undefined,
       }),

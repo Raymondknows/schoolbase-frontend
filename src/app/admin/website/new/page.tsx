@@ -155,6 +155,18 @@ export default function NewAnnouncementPage() {
           <span className="text-xs text-muted">(uncheck to save as draft)</span>
         </label>
 
+        <label className="flex items-start gap-2 text-sm font-medium">
+          <input
+            type="checkbox"
+            name="bulkApproval"
+            className="mt-0.5 h-4 w-4 rounded border-border"
+          />
+          <span>
+            I approve sending this announcement to the school&apos;s WhatsApp recipients.
+            <span className="mt-1 block text-xs font-normal text-muted">Required for larger broadcasts. Quiet hours and rate limits still apply.</span>
+          </span>
+        </label>
+
         <div className="flex gap-3">
           <Button type="submit" disabled={submitting} className="flex-1">
             {submitting ? "Publishing…" : "Post announcement"}

@@ -102,7 +102,18 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
   const [selectedLetter, setSelectedLetter] = useState("ALL");
   const searchParams = useSearchParams();
   const [successModalMessage, setSuccessModalMessage] = useState<string | null>(() => {
+    const whatsappStatus = searchParams?.get("whatsappStatus");
+    const whatsappError = searchParams?.get("whatsappError");
     if (searchParams?.get("saved")) {
+      if (whatsappStatus === 'FAILED') {
+        return `Student registration completed, but the WhatsApp admission notification failed${whatsappError ? `: ${whatsappError}` : '.'}`;
+      }
+      if (whatsappStatus === 'PENDING') {
+        return "Student registration completed. The WhatsApp admission notification is queued for delivery.";
+      }
+      if (whatsappStatus === 'SENT') {
+        return "Student registration completed and the WhatsApp admission notification was sent.";
+      }
       return "Student registration completed successfully and the learner is now enrolled in the school roster.";
     }
     if (searchParams?.get("updated")) {

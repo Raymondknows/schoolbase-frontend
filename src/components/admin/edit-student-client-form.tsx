@@ -45,7 +45,7 @@ export default function EditStudentClientForm({
     primaryGuardian?.relation || "Parent"
   );
   const [guardianEmail, setGuardianEmail] = useState(primaryGuardian?.guardian?.email || "");
-  const [guardianPhone, setGuardianPhone] = useState(primaryGuardian?.guardian?.phone || "");
+  const [guardianPhone, setGuardianPhone] = useState(primaryGuardian?.guardian?.whatsapp || primaryGuardian?.guardian?.phone || "");
   const [guardianAltPhone, setGuardianAltPhone] = useState(
     primaryGuardian?.guardian?.altPhone || ""
   );
