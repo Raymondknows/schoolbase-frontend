@@ -246,19 +246,19 @@ const termParam = selectedTerm ? `&termId=${selectedTerm.id}` : "";
   if (loading) {
     return (
       <ParentPageShell onRefresh={loadData}>
-        <div className="space-y-6">
+        <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
           <div className="space-y-2">
             <div className="h-10 w-48 bg-slate-200 rounded-lg animate-pulse"></div>
             <div className="h-5 w-64 bg-slate-100 rounded animate-pulse"></div>
           </div>
-          <div className="rounded-[20px] border border-slate-200 bg-surface p-5 space-y-4 animate-pulse">
+          <div className="overflow-hidden rounded-lg border border-border bg-surface p-5 space-y-4 animate-pulse">
             <div className="h-5 w-32 bg-slate-200 rounded"></div>
             {[1, 2].map((i) => (
               <div key={i} className="h-10 w-24 bg-slate-100 rounded inline-block mr-2"></div>
             ))}
           </div>
           {[1, 2].map((i) => (
-            <div key={i} className="rounded-[20px] border border-slate-200 bg-surface p-5 space-y-3 animate-pulse">
+            <div key={i} className="overflow-hidden rounded-lg border border-border bg-surface p-5 space-y-3 animate-pulse">
               <div className="h-5 w-40 bg-slate-200 rounded"></div>
               <div className="h-16 w-full bg-slate-100 rounded"></div>
             </div>
@@ -270,7 +270,7 @@ const termParam = selectedTerm ? `&termId=${selectedTerm.id}` : "";
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-300 bg-red-50 p-4 flex gap-3">
+      <div className="mx-auto max-w-7xl rounded-lg border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-[#a61b29] flex gap-3">
         <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
         <div>
           <h3 className="font-semibold text-red-900">Error</h3>
@@ -284,13 +284,13 @@ const termParam = selectedTerm ? `&termId=${selectedTerm.id}` : "";
     return (
       <ParentPageShell onRefresh={loadData}>
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-surface rounded-[20px] shadow-xl max-w-md w-full p-8 space-y-6">
+          <div className="w-full max-w-md space-y-6 rounded-lg border border-border bg-surface p-6 shadow-[0_16px_50px_rgba(10,102,194,0.16)]">
             <div className="text-center">
-              <div className="mx-auto w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-4">
-                <Lock className="w-8 h-8 text-amber-600" />
+              <div className="mb-4 flex items-center gap-2 text-brand">
+                <Lock className="h-5 w-5" />
               </div>
               <h2 className="text-2xl font-bold text-foreground">Result PIN Required</h2>
-              <p className="text-sm text-slate-600 mt-2">
+                <p className="mt-2 text-sm text-muted">
                 Enter the result PIN provided by the school to view {[selectedChild.lastName, selectedChild.firstName].filter(Boolean).join(' ')}'s results.
               </p>
             </div>
@@ -306,12 +306,12 @@ const termParam = selectedTerm ? `&termId=${selectedTerm.id}` : "";
                   type="password"
                   maxLength={20}
                   autoFocus
-                  className="w-full rounded-2xl border border-slate-200 bg-background px-4 py-3 text-center text-lg font-semibold text-foreground outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+                  className="w-full rounded-lg border border-border bg-background px-4 py-3 text-center text-lg font-semibold text-foreground outline-none focus:border-brand"
                 />
               </div>
 
               {pinError && (
-                <div className="rounded-lg border border-red-200 bg-red-50 p-3 flex gap-2">
+                <div className="rounded-lg border border-[#f5c2c7] bg-[#fff5f5] p-3 flex gap-2 text-[#a61b29]">
                   <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
                   <p className="text-sm text-red-700">{pinError}</p>
                 </div>
@@ -321,13 +321,13 @@ const termParam = selectedTerm ? `&termId=${selectedTerm.id}` : "";
                 type="button"
                 onClick={handleUnlockResults}
                 disabled={pinChecking || !pinInput.trim()}
-                className="w-full rounded-2xl bg-brand px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {pinChecking ? "Verifying..." : "Unlock Results"}
               </button>
             </div>
 
-            <p className="text-xs text-slate-500 text-center">
+            <p className="text-center text-xs text-muted">
               Your PIN is confidential and used only to verify access.
             </p>
           </div>
@@ -338,7 +338,7 @@ const termParam = selectedTerm ? `&termId=${selectedTerm.id}` : "";
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-300 bg-red-50 p-4 flex gap-3">
+      <div className="mx-auto max-w-7xl rounded-lg border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-[#a61b29] flex gap-3">
         <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
         <div>
           <h3 className="font-semibold text-red-900">Error</h3>
@@ -351,9 +351,9 @@ const termParam = selectedTerm ? `&termId=${selectedTerm.id}` : "";
   if (children.length === 0) {
     return (
       <ParentPageShell onRefresh={loadData}>
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-12 text-center">
-          <GraduationCap className="h-12 w-12 text-slate-400 mx-auto mb-3" />
-          <p className="text-slate-600">No children linked to this account</p>
+        <div className="mx-auto max-w-7xl rounded-lg border border-dashed border-[#9ac7ea] bg-[#f3f9fe] p-14 text-center">
+          <GraduationCap className="mx-auto mb-3 h-8 w-8 text-brand" />
+          <p className="text-sm font-semibold text-foreground">No children linked to this account</p>
         </div>
       </ParentPageShell>
     );
@@ -361,19 +361,21 @@ const termParam = selectedTerm ? `&termId=${selectedTerm.id}` : "";
 
   return (
     <ParentPageShell onRefresh={loadData}>
-      <div className="border-b border-slate-200 pb-6 print:hidden">
-        <h1 className="text-4xl font-bold text-foreground">Academic Results</h1>
-        <p className="mt-1 text-sm text-slate-600">View your child's grades and assessment performance</p>
+      <div className="flex flex-col justify-between gap-4 border-b border-border pb-5 print:hidden sm:flex-row sm:items-end">
+        <div><div className="flex items-center gap-2 text-sm font-medium text-brand"><GraduationCap className="h-4 w-4" /> Academic operations</div>
+        <h1 className="mt-2 text-3xl font-bold text-foreground">Academic Results</h1>
+        <p className="mt-1 text-sm text-muted">View your child&apos;s grades and assessment performance</p></div>
+        <Link href="/parent" className="inline-flex items-center gap-2 self-start rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand hover:bg-brand-light sm:self-auto">Dashboard <ChevronRight className="h-4 w-4" /></Link>
       </div>
 
-      <div className="rounded-[20px] border border-slate-200 bg-surface p-5 hover:shadow-sm transition-shadow print:hidden">
-          <div className="flex items-center gap-3 mb-4">
-          <Filter className="h-5 w-5 text-slate-600" />
-          <h2 className="font-semibold text-foreground">Filter Results</h2>
+      <div className="overflow-hidden rounded-lg border border-border bg-surface print:hidden">
+          <div className="flex items-center gap-2 border-b border-border bg-[#f6f8fa] px-4 py-3">
+          <Filter className="h-[18px] w-[18px] text-brand" />
+          <h2 className="text-sm font-semibold text-foreground">Filter results</h2>
         </div>
 
         {pinRequired && selectedChild && (
-          <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <div className="m-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
             <p className="text-sm font-semibold text-amber-900">Result PIN required</p>
             <p className="mt-1 text-sm text-amber-800">Enter the result PIN provided by the school to view this child’s results.</p>
             <div className="mt-3 flex flex-col gap-2 sm:flex-row">
@@ -400,7 +402,7 @@ const termParam = selectedTerm ? `&termId=${selectedTerm.id}` : "";
           <div>
               <label className="block text-sm font-semibold text-foreground mb-3">Select Child</label>
             <div className="overflow-x-auto pb-1">
-              <div className="flex gap-2 min-w-[max-content]">
+              <div className="flex min-w-[max-content] gap-2">
                 {children.map((child) => (
                   <button
                     key={child.id}
@@ -417,10 +419,10 @@ const termParam = selectedTerm ? `&termId=${selectedTerm.id}` : "";
                       setPinRequired(false);
                       setPinError(null);
                     }}
-                    className={`rounded-full px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap ${
+                    className={`rounded-lg border px-3 py-2 text-sm font-semibold transition-colors whitespace-nowrap ${
                       selectedChild?.id === child.id
                         ? "bg-brand text-white shadow-sm"
-                        : "bg-slate-100 text-foreground border border-slate-200 hover:border-slate-300"
+                        : "bg-surface text-brand border-border hover:bg-brand-light"
                     }`}
                   >
                     {[child.lastName, child.firstName].filter(Boolean).join(' ')}
@@ -445,7 +447,7 @@ const termParam = selectedTerm ? `&termId=${selectedTerm.id}` : "";
                 setSelectedAssessmentId(null);
                 setReportCardData(null);
               }}
-              className="w-full rounded-[20px] border border-slate-200 bg-background px-4 py-3 text-sm text-foreground outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+              className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground outline-none focus:border-brand"
             >
               <option value="">Latest Term</option>
               {terms.map((term) => (
@@ -459,21 +461,21 @@ const termParam = selectedTerm ? `&termId=${selectedTerm.id}` : "";
       </div>
 
       {selectedChild && (
-        <div className="space-y-6 rounded-[20px] border border-slate-200 bg-surface p-5 hover:shadow-sm transition-shadow print:border-0 print:bg-transparent print:p-0 print:rounded-none print:shadow-none">
-          <div className="flex items-center gap-3 border-b border-slate-200 pb-4 print:hidden">
-            <GraduationCap className="h-5 w-5 text-slate-600" />
+        <div className="space-y-6 overflow-hidden rounded-lg border border-border bg-surface p-5 print:border-0 print:bg-transparent print:p-0 print:rounded-none print:shadow-none">
+          <div className="flex items-center gap-2 border-b border-border bg-[#f6f8fa] px-4 py-3 print:hidden">
+            <GraduationCap className="h-[18px] w-[18px] text-brand" />
             <div>
               <h2 className="font-semibold text-foreground">
                 Results for {[selectedChild.lastName, selectedChild.firstName].filter(Boolean).join(' ')}
               </h2>
-              <p className="text-xs text-slate-600 mt-1">{activeResultsLabel}</p>
+              <p className="mt-1 text-xs text-muted">{activeResultsLabel}</p>
             </div>
           </div>
 
           {results.length === 0 ? (
-            <div className="rounded-[20px] border border-slate-200 bg-slate-50 p-10 text-center print:hidden">
-              <GraduationCap className="h-12 w-12 text-slate-400 mx-auto mb-3" />
-              <p className="text-slate-600">
+            <div className="rounded-lg border border-dashed border-[#9ac7ea] bg-[#f3f9fe] p-14 text-center print:hidden">
+              <GraduationCap className="mx-auto mb-3 h-8 w-8 text-brand" />
+              <p className="text-sm text-muted">
                 {statusMessage || (selectedTerm ? `No published results are available for ${selectedTerm.name} yet.` : "No published results are available yet. Results will appear here once the school publishes them.")}
               </p>
             </div>
@@ -485,20 +487,20 @@ const termParam = selectedTerm ? `&termId=${selectedTerm.id}` : "";
                     key={result.assessmentId}
                     type="button"
                     onClick={() => setSelectedAssessmentId(result.assessmentId)}
-                    className={`w-full rounded-[20px] border p-4 text-left transition ${
+                    className={`w-full border p-4 text-left transition ${
                       selectedAssessmentId === result.assessmentId
-                        ? "border-brand bg-brand/5 shadow-sm"
-                        : "border-slate-200 bg-background hover:border-slate-300"
+                        ? "border-brand bg-brand/5"
+                        : "border-border bg-background hover:border-brand/40"
                     }`}
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div className="min-w-0">
                         <p className="text-base font-semibold text-foreground truncate">{result.subject}</p>
-                        <p className="text-sm text-slate-600 mt-1 truncate">
+                        <p className="mt-1 truncate text-sm text-muted">
                           CA {result.caScore ?? "—"} · Test {result.testScore ?? "—"} · Exam {result.examScore ?? "—"}
                         </p>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-slate-400" />
+                      <ChevronRight className="h-4 w-4 text-muted" />
                     </div>
                     <div className="mt-3 flex items-center justify-between gap-3 text-sm font-medium text-brand">
                       <span>Total: {result.totalScore ?? "—"}</span>
@@ -508,7 +510,7 @@ const termParam = selectedTerm ? `&termId=${selectedTerm.id}` : "";
                 ))}
               </div>
 
-              <div className="rounded-[20px] border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 print:hidden">
+              <div className="rounded-lg border border-border bg-background p-4 text-sm text-muted print:hidden">
                 <p className="font-semibold text-foreground">Selected report card</p>
                 <p className="mt-1">
                   {selectedAssessment
@@ -518,7 +520,7 @@ const termParam = selectedTerm ? `&termId=${selectedTerm.id}` : "";
               </div>
 
               {reportLoading ? (
-                <div className="text-center py-12 text-slate-600">Loading report card...</div>
+                <div className="border border-border bg-background p-12 text-center text-muted">Loading report card...</div>
               ) : reportCardData && selectedAssessmentId ? (
                 <WaecReportCard
                   assessmentId={selectedAssessmentId}
@@ -542,9 +544,9 @@ const termParam = selectedTerm ? `&termId=${selectedTerm.id}` : "";
                   showDownload={false}
                 />
               ) : (
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-12 text-center">
-                  <GraduationCap className="h-12 w-12 text-slate-400 mx-auto mb-3" />
-                  <p className="text-slate-600">No report card available</p>
+                <div className="rounded-lg border border-dashed border-[#9ac7ea] bg-[#f3f9fe] p-14 text-center">
+                  <GraduationCap className="mx-auto mb-3 h-8 w-8 text-brand" />
+                  <p className="text-sm font-semibold text-foreground">No report card available</p>
                 </div>
               )}
 

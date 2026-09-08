@@ -58,6 +58,45 @@ html[data-theme="dark"] {
   --background: #020617;
 }
 
+/* Keep legacy utility colors readable when the shared theme is dark. */
+html[data-theme="dark"] .bg-white,
+html[data-theme="dark"] .bg-white\/95 {
+  background-color: var(--surface) !important;
+}
+
+html[data-theme="dark"] .bg-\[\#f6f8fa\] {
+  background-color: #111827 !important;
+}
+
+html[data-theme="dark"] .bg-\[\#f3f9fe\] {
+  background-color: #0f2438 !important;
+}
+
+html[data-theme="dark"] .bg-amber-50 {
+  background-color: #2b2110 !important;
+}
+
+html[data-theme="dark"] .bg-red-50 {
+  background-color: #2b1115 !important;
+}
+
+html[data-theme="dark"] .text-slate-900,
+html[data-theme="dark"] .text-slate-800,
+html[data-theme="dark"] .text-slate-700 {
+  color: var(--foreground) !important;
+}
+
+html[data-theme="dark"] .text-slate-600,
+html[data-theme="dark"] .text-slate-500,
+html[data-theme="dark"] .text-slate-400 {
+  color: var(--muted) !important;
+}
+
+html[data-theme="dark"] .border-slate-200,
+html[data-theme="dark"] .border-slate-100 {
+  border-color: var(--border) !important;
+}
+
 /* Print Styles */
 @media print {
   body {
@@ -75,4 +114,18 @@ html[data-theme="dark"] {
     margin: 0;
     padding: 0;
   }
+}
+
+/* These selectors intentionally live after Tailwind's generated utilities so
+   legacy hard-coded light surfaces cannot override the active theme. */
+html[data-theme="dark"] [class*="bg-white"] {
+  background-color: var(--surface) !important;
+}
+
+html[data-theme="dark"] [class*="bg-[#f6f8fa]"] {
+  background-color: #111827 !important;
+}
+
+html[data-theme="dark"] [class*="bg-[#f3f9fe]"] {
+  background-color: #0f2438 !important;
 }
