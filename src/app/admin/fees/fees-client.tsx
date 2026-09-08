@@ -134,7 +134,7 @@ export default function FeesPageClient({
   outstanding?: number;
   currency?: string;
   terms?: TermItem[];
-  onIssueBills?: (termId: string) => Promise<void>;
+  onIssueBills?: (termId: string, bulkApproval?: boolean) => Promise<void>;
   onSendReminders?: (invoiceId?: string) => Promise<void>;
   whatsAppConnected?: boolean | null;
   whatsAppStatusMessage?: string | null;
@@ -160,6 +160,7 @@ export default function FeesPageClient({
 
   // Issue bills and send reminders state
   const [issuingBills, setIssuingBills] = useState(false);
+  const [bulkApproval, setBulkApproval] = useState(false);
   const [sendingReminders, setSendingReminders] = useState(false);
   const [selectedTermId, setSelectedTermId] = useState("");
   const [academicYears, setAcademicYears] = useState<any[]>([]);
@@ -196,7 +197,11 @@ export default function FeesPageClient({
     if (success) {
       setModalType('success');
       setModalTitle('Invoices issued');
-      setModalMessage(`${created ?? 0} invoice${(created ?? 0) !== 1 ? 's' : ''} were created.`);
+      const outcome = [`${created ?? 0} invoice${(created ?? 0) !== 1 ? 's' : ''} were created`];
+      if (whatsappSent > 0) outcome.push(`${whatsappSent} WhatsApp sent`);
+      if (whatsappFailed > 0) outcome.push(`${whatsappFailed} WhatsApp failed`);
+      if (queued > 0) outcome.push(`${queued} still queued`);
+      setModalMessage(`${outcome.join('. ')}.`);
     } else if (reminders) {
       setModalType('success');
       setModalTitle('Reminders sent');
@@ -254,7 +259,7 @@ export default function FeesPageClient({
     
     setIssuingBills(true);
     try {
-      await onIssueBills(selectedTermId);
+      await onIssueBills(selectedTermId, bulkApproval);
     } finally {
       setIssuingBills(false);
     }
@@ -773,6 +778,10 @@ export default function FeesPageClient({
                 <ReceiptText className="h-4 w-4" />
                 {issuingBills ? "Issuing..." : "Issue Bills"}
               </Button>
+              <label className="flex items-center gap-2 text-xs text-muted sm:max-w-[220px]">
+                <input type="checkbox" checked={bulkApproval} onChange={(e) => setBulkApproval(e.target.checked)} />
+                Approve WhatsApp delivery to eligible guardians
+              </label>
             </form>
 
             <form onSubmit={handleSendRemindersSubmit}>

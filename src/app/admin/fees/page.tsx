@@ -116,13 +116,13 @@ export default function FeesPage() {
     fetchData();
   }, []);
 
-  const handleIssueBills = async (termId: string) => {
+  const handleIssueBills = async (termId: string, bulkApproval = false) => {
     try {
       const response = await fetch('/api/admin/fees/invoices/issue-bills', {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json", "x-school-id": localStorage.getItem('schoolId') || '' },
-        body: JSON.stringify({ termId, currency: data?.currency || 'NGN' }),
+        body: JSON.stringify({ termId, bulkApproval, currency: data?.currency || 'NGN' }),
       });
 
       if (!response.ok) {
@@ -132,7 +132,7 @@ export default function FeesPage() {
 
       const result = await response.json();
       console.log("Bills issued:", result);
-      router.push(`/admin/fees?success=1&created=${result.created}`);
+      router.push(`/admin/fees?success=1&created=${result.created}&whatsappSent=${result.whatsappSent ?? 0}&whatsappFailed=${result.whatsappFailed ?? 0}&queued=${result.queued ?? 0}`);
     } catch (err) {
       console.error("Error issuing bills:", err);
       router.push(`/admin/fees?error=1&errorMessage=${encodeURIComponent(err instanceof Error ? err.message : 'Failed to issue bills')}`);
