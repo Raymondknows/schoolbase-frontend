@@ -29,29 +29,40 @@ const EMAIL_TYPES = [
   { value: "MANUAL_ANNOUNCEMENT", label: "Announcement" },
   { value: "POLICY_UPDATE", label: "Compliance update" },
   { value: "ACCOUNT_SECURITY", label: "Security notice" },
+  { value: "ACCOUNT_VERIFICATION_SUSPENSION", label: "Account verification suspension" },
 ];
 
 const PLATFORM_FEATURES = "Admissions, Student Records, Attendance, Fees, Payments, Timetable & Lesson Planning, Results, Report Cards, Staff Management, Parent Portal, School Website, and WhatsApp Communication";
 
 const EMAIL_TEMPLATES: Record<string, { subject: string; body: string }> = {
   PRODUCT_UPDATE: {
-    subject: "SchoolBase product update: smarter operations, stronger engagement, and more control",
+    subject: "SchoolBase is more powerful: explore your latest school tools",
     body: `Hello,
 
-We’re pleased to share a new SchoolBase update designed to help your school run more efficiently, communicate more effectively, and manage operations with greater visibility.
+SchoolBase has become more powerful, more connected, and easier to use.
 
-This release strengthens the full SchoolBase experience across Admissions, Student Records, Attendance, Fees, Payments, Timetable & Lesson Planning, Results, Report Cards, Staff Management, Parent Portal, School Website, and WhatsApp Communication.
+We have made several important improvements to help your school save time, communicate better with families, and deliver a more professional school experience.
 
-What’s new and improved:
-• A more streamlined admin dashboard for attendance, fees, reports, and key school operations.
-• Improved tools for timetable planning, lesson coordination, and academic scheduling.
-• Faster communication workflows for parent updates, notices, and payment reminders.
-• Better visibility into student performance and school-wide reporting across teams.
-• Stronger support for modern school operations with improved usability and data consistency.
+What is new and improved:
+• Smarter WhatsApp communication for parent updates, notices, and fee reminders.
+• Multiple school bank accounts for specific needs such as school fees, books, transport, and boarding.
+• A stronger timetable and academic operations experience for planning and coordination.
+• A cleaner, more beautiful admin interface that makes daily work easier to find and complete.
+• Improved invoices, payment tracking, receipts, and parent access.
+• Better results publishing and report-card workflows.
+• A richer parent portal for fees, results, announcements, and school information.
 
-This update is part of our ongoing commitment to helping schools improve productivity, reduce manual work, and create a more professional experience for parents, students, and staff.
+If your school is already using SchoolBase, please log in today and explore the latest improvements. Review your school settings, update your payment accounts, check your timetable, and make sure your WhatsApp and parent communication workflows are ready for the new term.
 
-We encourage you to explore the latest improvements in SchoolBase and contact us if you would like tailored guidance on maximizing the platform for your school.`,
+Log in here:
+https://schoolbase.live/login
+
+If you would like help reviewing the new features or setting them up for your school, reply to this email or contact our support team. We will be happy to guide you.
+
+Thank you for building with SchoolBase.
+
+SchoolBase
+Professional school operations. Clearer communication. Better experiences for schools and parents.`,
   },
   PRICE_UPDATE: {
     subject: "Important SchoolBase pricing update: more value, more flexibility, and better support",
@@ -176,6 +187,20 @@ We recommend reviewing the following areas across SchoolBase modules, including 
 
 If you need support securing your account or reviewing the appropriate access settings for your school, please reply to this email and our team will be happy to assist.`,
   },
+  ACCOUNT_VERIFICATION_SUSPENSION: {
+    subject: "Action required: SchoolBase account verification review",
+    body: `Hello,
+
+Following a recent review of your SchoolBase account, we need to verify some of the registration information submitted during signup. Certain details appear to be incomplete, inconsistent, or not currently verifiable.
+
+As a precaution, access to your SchoolBase account has been temporarily suspended while this verification review is completed. This is a security and account-integrity measure and does not represent a final determination about your school.
+
+If your school is genuine and you would like to restore access, please contact our support team via WhatsApp on +234 903 225 0338. We may ask you to confirm or provide supporting information for the school and account administrator.
+
+Our team will review the information provided and guide you through the reactivation process where appropriate. Until the review is completed, access to the account will remain suspended.
+
+Thank you for your cooperation`,
+  },
 };
 
 const SEGMENTS = [
@@ -211,7 +236,7 @@ function InfoTooltip({ content }: { content: string }) {
 }
 
 const DEFAULT_SUBJECTS: Record<string, string> = {
-  PRODUCT_UPDATE: "SchoolBase product update: smarter operations, stronger engagement, and more control",
+  PRODUCT_UPDATE: "SchoolBase is more powerful: explore your latest school tools",
   SUPPORT_UPDATE: "SchoolBase support update: we are actively handling your request",
   ONBOARDING_GUIDANCE: "Welcome to SchoolBase — we’re excited to have your school on board",
   BEST_PRACTICE_TIP: "Best-practice guidance: improve school operations with SchoolBase",
@@ -220,6 +245,7 @@ const DEFAULT_SUBJECTS: Record<string, string> = {
   SUBSCRIPTION_THANK_YOU: "Payment received for the 2026/2027 Academic Session — welcome to SchoolBase",
   POLICY_UPDATE: "SchoolBase policy update: important information for your school",
   ACCOUNT_SECURITY: "Security notice: protect your SchoolBase accounts and school data",
+  ACCOUNT_VERIFICATION_SUSPENSION: "Action required: SchoolBase account verification review",
 };
 
 const LOG_PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
