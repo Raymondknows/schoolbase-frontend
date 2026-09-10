@@ -382,7 +382,7 @@ export default function WhatsAppSettingsPage() {
     }
 
     if (session.status === 'connected') {
-      return 'WhatsApp is connected and ready to send test messages.';
+      return 'WhatsApp is connected and ready.';
     }
 
     if (session.status === 'qr') {
@@ -444,21 +444,38 @@ export default function WhatsAppSettingsPage() {
           </div>
         </div>
 
-        <div className="inline-flex items-center gap-2 self-start rounded-lg border border-border bg-surface px-4 py-2.5 text-sm sm:self-auto">
+        <div
+          className={`inline-flex items-center gap-2 self-start rounded-xl border px-4 py-2.5 text-sm shadow-sm transition-all duration-300 sm:self-auto ${
+            isConnected
+              ? 'border-emerald-200 bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-800 shadow-[0_0_0_1px_rgba(16,185,129,0.12)]'
+              : isPendingPairing
+                ? 'border-amber-200 bg-amber-50 text-amber-800'
+                : 'border-border bg-surface text-slate-700'
+          }`}
+        >
           {isConnected ? (
-            <CheckCircle2 className="h-4 w-4 text-emerald-500 animate-pulse" />
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 animate-pulse" />
           ) : isPendingPairing ? (
             <span className="inline-flex h-2.5 w-2.5 rounded-full bg-amber-500" />
           ) : (
             <span className="inline-flex h-2.5 w-2.5 rounded-full bg-slate-400" />
           )}
-          <span className="font-semibold text-sm text-slate-900">{badgeLabel}</span>
+          <span className="text-sm font-semibold">{badgeLabel}</span>
         </div>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(360px,1fr)_minmax(420px,1fr)]">
-        <div className="border border-border bg-surface p-5">
-          <div className="flex flex-col gap-4">
+        <div
+          className={`relative overflow-hidden rounded-2xl p-5 transition-all duration-300 ${
+            isConnected
+              ? 'bg-gradient-to-br from-emerald-50 via-white to-green-50 shadow-[0_18px_35px_rgba(16,185,129,0.14)]'
+              : 'border border-border bg-surface'
+          }`}
+        >
+          {isConnected && (
+            <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[linear-gradient(135deg,rgba(37,211,102,0.18),rgba(34,197,94,0.09),rgba(22,163,74,0.18),rgba(16,185,129,0.08))] animate-[spin_8s_linear_infinite] opacity-80" />
+          )}
+          <div className={`relative flex flex-col gap-4 ${isConnected ? 'rounded-[18px] border border-emerald-200/80 bg-white/55 backdrop-blur-sm' : ''} p-2`}>
             {statusDescription && (
               <p className="text-sm text-muted">{statusDescription}</p>
             )}
@@ -471,9 +488,24 @@ export default function WhatsAppSettingsPage() {
             {session?.pairingCode && <p className="text-xs text-muted">Pairing code: {session.pairingCode}</p>}
           </div>
 
-          <div className="mt-6 border border-border bg-background p-4">
-            <p className="text-sm font-semibold">Connection status</p>
-            <p className="mt-2 text-sm text-muted">{connectionStatusCopy}</p>
+          <div
+            className={`mt-6 overflow-hidden rounded-2xl border p-4 transition-all duration-300 ${
+              isConnected
+                ? 'border-emerald-200 bg-gradient-to-r from-emerald-100 via-emerald-50 to-green-50 shadow-[0_0_0_1px_rgba(16,185,129,0.08)]'
+                : 'border-border bg-background'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`flex h-10 w-10 items-center justify-center rounded-full ${isConnected ? 'bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)] animate-pulse' : 'bg-slate-200 text-slate-600'}`}>
+                {isConnected ? <CheckCircle2 className="h-5 w-5" /> : <Wifi className="h-5 w-5" />}
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Connection status</p>
+                <p className={`mt-1 text-sm ${isConnected ? 'text-emerald-700' : 'text-muted'}`}>
+                  {isConnected ? 'WhatsApp is connected and ready.' : connectionStatusCopy}
+                </p>
+              </div>
+            </div>
           </div>
 
           {session?.qr ? (
@@ -546,8 +578,8 @@ export default function WhatsAppSettingsPage() {
               </div>
             )}
             <div className="flex flex-wrap gap-3">
-              <Button onClick={handleConnect} disabled={isConnecting}>
-                {isConnecting ? 'Connecting…' : 'Connect'}
+              <Button onClick={handleConnect} disabled={isConnecting || isConnected} className={isConnected ? 'cursor-not-allowed opacity-50' : ''}>
+                {isConnecting ? 'Connecting…' : isConnected ? 'Connected' : 'Connect'}
               </Button>
               <Button onClick={handleDisconnect} disabled={isDisconnecting || !isConnected} variant="secondary">
                 {isDisconnecting ? 'Disconnecting…' : 'Disconnect'}
