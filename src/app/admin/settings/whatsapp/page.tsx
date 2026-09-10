@@ -1,21 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { UserGuide, type PageHelpGuide } from "@/components/ui/user-guide";
 import { Badge } from "@/components/ui/badge";
 import { ErrorModal } from "@/components/ui/error-modal";
+import { WhatsAppIcon } from "@/components/ui/icons";
 import { ArrowLeft, CheckCircle2, QrCode, Save, Send, Wifi, WifiOff } from "lucide-react";
 import Link from "next/link";
-
-function WhatsAppIcon({ className = '' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
-      <path d="M12 2.04c-5.47 0-9.94 4.47-9.94 9.94 0 1.75.47 3.42 1.36 4.87L2 22l5.3-1.39a9.9 9.9 0 0 0 4.7 1.16c5.47 0 9.94-4.47 9.94-9.94S17.47 2.04 12 2.04Zm5.61 13.72c-.2.58-1.22 1.14-1.68 1.23-.44.09-1.02.13-1.82-.05-.44-.11-1.44-.42-2.1-.66-1.14-.39-1.89-.87-2.12-1.32-.23-.45-.58-.88-.42-1.42.16-.54.72-.95 1.03-1.35.27-.35.37-.62.56-.93.18-.31.08-.58-.04-.82-.11-.23-1.02-2.47-1.4-3.4-.37-.8-.75-.7-1.02-.71-.26-.01-.56-.01-.86-.01-.29 0-.76.11-1.16.54-.4.43-1.5 1.46-1.5 3.56 0 2.11 1.54 4.15 1.75 4.44.2.28 3.03 4.64 7.35 6.6 1.03.45 1.83.72 2.46.92.74.23 1.42.2 1.95.12.6-.09 1.85-.76 2.11-1.5.27-.74.27-1.39.19-1.52-.09-.13-.35-.2-.74-.35Z" />
-      <path d="M15.9 12.92c-.24-.12-1.44-.7-1.66-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.02-.37-1.94-1.2-.72-.64-1.2-1.44-1.34-1.68-.14-.24-.02-.37.1-.49.1-.1.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.48-.4-.42-.54-.43-.14-.01-.3-.01-.46-.01-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2 0 1.18.86 2.32.98 2.48.12.16 1.68 2.56 4.06 3.6 2.37 1.04 2.37.7 2.8.66.43-.04 1.4-.56 1.6-1.1.2-.54.2-1.01.14-1.1-.06-.09-.22-.14-.46-.26Z" fill="white" />
-    </svg>
-  );
-}
 
 interface SessionStatus {
   status?: string;
@@ -84,11 +76,70 @@ export default function WhatsAppSettingsPage() {
   const [policy, setPolicy] = useState<WhatsAppPolicy>(DEFAULT_POLICY);
   const [isPolicyLoading, setIsPolicyLoading] = useState(true);
   const [isPolicySaving, setIsPolicySaving] = useState(false);
+  const wasConnectedRef = useRef(false);
+
+  const playConnectionTone = (mode: 'connected' | 'disconnected') => {
+    try {
+      const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!AudioContextClass) return;
+
+      const audioContext = new AudioContextClass();
+      const masterGain = audioContext.createGain();
+      masterGain.gain.value = mode === 'connected' ? 0.18 : 0.11;
+      masterGain.connect(audioContext.destination);
+
+      const playTone = (frequency: number, start: number, duration: number, volume: number) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(frequency, start);
+        gainNode.gain.setValueAtTime(0.0001, start);
+        gainNode.gain.exponentialRampToValueAtTime(volume, start + 0.04);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(masterGain);
+
+        oscillator.start(start);
+        oscillator.stop(start + duration + 0.08);
+      };
+
+      const now = audioContext.currentTime;
+      if (mode === 'connected') {
+        playTone(740, now, 0.28, 0.22);
+        playTone(950, now + 0.14, 0.32, 0.18);
+        playTone(1180, now + 0.28, 0.36, 0.15);
+      } else {
+        playTone(430, now, 0.22, 0.1);
+        playTone(310, now + 0.12, 0.26, 0.08);
+      }
+
+      setTimeout(() => {
+        void audioContext.close();
+      }, 1000);
+    } catch (error) {
+      console.error('WhatsApp connection sound error:', error);
+    }
+  };
 
   useEffect(() => {
     void fetchStatus(true);
     void fetchPolicy();
   }, []);
+
+  useEffect(() => {
+    const isConnected = session?.status === 'connected';
+    if (!wasConnectedRef.current && isConnected) {
+      playConnectionTone('connected');
+    }
+
+    if (wasConnectedRef.current && !isConnected) {
+      playConnectionTone('disconnected');
+    }
+
+    wasConnectedRef.current = isConnected;
+  }, [session?.status]);
 
   async function fetchPolicy() {
     try {
@@ -444,68 +495,53 @@ export default function WhatsAppSettingsPage() {
           </div>
         </div>
 
-        <div
-          className={`inline-flex items-center gap-2 self-start rounded-xl border px-4 py-2.5 text-sm shadow-sm transition-all duration-300 sm:self-auto ${
-            isConnected
-              ? 'border-emerald-200 bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-800 shadow-[0_0_0_1px_rgba(16,185,129,0.12)]'
-              : isPendingPairing
-                ? 'border-amber-200 bg-amber-50 text-amber-800'
-                : 'border-border bg-surface text-slate-700'
-          }`}
-        >
+        <div className="inline-flex items-center gap-2 self-start sm:self-auto">
           {isConnected ? (
-            <CheckCircle2 className="h-4 w-4 text-emerald-600 animate-pulse" />
+            <WhatsAppIcon className="h-7 w-7 text-[#25D366]" />
           ) : isPendingPairing ? (
             <span className="inline-flex h-2.5 w-2.5 rounded-full bg-amber-500" />
           ) : (
             <span className="inline-flex h-2.5 w-2.5 rounded-full bg-slate-400" />
           )}
-          <span className="text-sm font-semibold">{badgeLabel}</span>
+          <span className={`text-base font-semibold ${isConnected ? 'text-[#25D366]' : 'text-slate-600'}`}>
+            {isConnected ? 'Connected' : badgeLabel}
+          </span>
         </div>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(360px,1fr)_minmax(420px,1fr)]">
         <div
-          className={`relative overflow-hidden rounded-2xl p-5 transition-all duration-300 ${
+          className={`relative overflow-hidden p-5 transition-all duration-300 ${
             isConnected
-              ? 'bg-gradient-to-br from-emerald-50 via-white to-green-50 shadow-[0_18px_35px_rgba(16,185,129,0.14)]'
+              ? 'border border-[#25D366]/35 bg-white shadow-[0_0_0_1px_rgba(37,211,102,0.08)]'
               : 'border border-border bg-surface'
           }`}
         >
-          {isConnected && (
-            <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[linear-gradient(135deg,rgba(37,211,102,0.18),rgba(34,197,94,0.09),rgba(22,163,74,0.18),rgba(16,185,129,0.08))] animate-[spin_8s_linear_infinite] opacity-80" />
-          )}
-          <div className={`relative flex flex-col gap-4 ${isConnected ? 'rounded-[18px] border border-emerald-200/80 bg-white/55 backdrop-blur-sm' : ''} p-2`}>
-            {statusDescription && (
-              <p className="text-sm text-muted">{statusDescription}</p>
-            )}
+          <div className={`relative border p-4 ${isConnected ? 'border-[#25D366]/20 bg-[#F5FFF8] text-slate-900' : 'border-border bg-background text-foreground'}`}>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className={`flex h-10 w-10 items-center justify-center rounded-full ${isConnected ? 'bg-[#25D366] text-white shadow-[0_0_12px_rgba(37,211,102,0.24)]' : 'bg-slate-200 text-slate-600'}`}>
+                  {isConnected ? <CheckCircle2 className="h-5 w-5" /> : <Wifi className="h-5 w-5" />}
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-[#25D366]">Connection status</p>
+                  <p className={`mt-1 text-sm font-semibold ${isConnected ? 'text-slate-900' : 'text-foreground'}`}>
+                    {isConnected ? 'Connected and ready.' : connectionStatusCopy}
+                  </p>
+                </div>
+              </div>
+              {isConnected && (
+                <span className="rounded-full border border-[#25D366]/30 bg-[#25D366]/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#128C7E]">
+                  Live
+                </span>
+              )}
+            </div>
             {isStreamErrorRetrying && (
-              <p className="text-sm font-medium text-amber-600 mt-2">Retrying after stream error ({streamErrorReconnectAttempts})</p>
+              <p className="mt-3 text-xs font-medium text-amber-600">Retrying after stream error ({streamErrorReconnectAttempts})</p>
             )}
             {session?.phoneNumber && (
-              <p className="mt-1 text-lg font-semibold">{extractPhone(session.phoneNumber)}</p>
+              <p className="mt-3 text-xs text-slate-600">Device: {extractPhone(session.phoneNumber)}</p>
             )}
-            {session?.pairingCode && <p className="text-xs text-muted">Pairing code: {session.pairingCode}</p>}
-          </div>
-
-          <div
-            className={`mt-6 overflow-hidden rounded-2xl border p-4 transition-all duration-300 ${
-              isConnected
-                ? 'border-emerald-200 bg-gradient-to-r from-emerald-100 via-emerald-50 to-green-50 shadow-[0_0_0_1px_rgba(16,185,129,0.08)]'
-                : 'border-border bg-background'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <div className={`flex h-10 w-10 items-center justify-center rounded-full ${isConnected ? 'bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)] animate-pulse' : 'bg-slate-200 text-slate-600'}`}>
-                {isConnected ? <CheckCircle2 className="h-5 w-5" /> : <Wifi className="h-5 w-5" />}
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground">Connection status</p>
-                <p className={`mt-1 text-sm ${isConnected ? 'text-emerald-700' : 'text-muted'}`}>
-                  {isConnected ? 'WhatsApp is connected and ready.' : connectionStatusCopy}
-                </p>
-              </div>
-            </div>
           </div>
 
           {session?.qr ? (
