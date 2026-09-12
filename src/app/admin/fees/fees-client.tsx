@@ -38,6 +38,7 @@ import {
   SendHorizonal,
   ScrollText,
   CreditCard,
+  X,
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/ui/icons";
 
@@ -148,6 +149,8 @@ export default function FeesPageClient({
   const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentAllocations, setPaymentAllocations] = useState<Record<string, string>>({});
+  const [selectedPaymentItems, setSelectedPaymentItems] = useState<Record<string, boolean>>({});
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("CASH");
   const [paymentReference, setPaymentReference] = useState("");
   const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
@@ -358,9 +361,44 @@ export default function FeesPageClient({
 
   const selectInvoiceForPayment = (invoice: Invoice) => {
     setSelectedInvoice(invoice);
-    setPaymentAmount(((invoice.amountDue - invoice.amountPaid) / 100).toFixed(0));
+    const outstanding = Math.max(0, invoice.amountDue - invoice.amountPaid);
+    const hasItems = (invoice.items?.length || 0) > 0;
+    setPaymentAmount(hasItems ? "0.00" : (outstanding / 100).toFixed(2));
+    setPaymentAllocations(hasItems ? {} : distributePaymentAcrossItems(invoice.items || [], outstanding));
+    setSelectedPaymentItems({});
     setPaymentMethod("CASH");
     setPaymentReference("");
+  };
+
+  const getItemRemaining = (item: NonNullable<Invoice["items"]>[number]) => {
+    const alreadyPaid = (item.allocations || []).reduce((sum, allocation) => sum + allocation.amount, 0);
+    return Math.max(0, item.amount * item.quantity - alreadyPaid);
+  };
+
+  const togglePaymentItem = (item: NonNullable<Invoice["items"]>[number], checked: boolean) => {
+    setSelectedPaymentItems((current) => ({ ...current, [item.id]: checked }));
+    setPaymentAllocations((current) => {
+      const next = { ...current };
+      next[item.id] = checked ? (getItemRemaining(item) / 100).toFixed(2) : "0.00";
+      const total = Object.values(next).reduce((sum, value) => sum + Math.round(Number(value || 0) * 100), 0);
+      setPaymentAmount((total / 100).toFixed(2));
+      return next;
+    });
+  };
+
+  const distributePaymentAcrossItems = (items: NonNullable<Invoice["items"]>, amountInCents: number) => {
+    let remaining = Math.max(0, Math.round(amountInCents));
+    const next: Record<string, string> = {};
+
+    for (const item of items) {
+      const alreadyPaid = (item.allocations || []).reduce((sum, allocation) => sum + allocation.amount, 0);
+      const itemBalance = Math.max(0, item.amount * item.quantity - alreadyPaid);
+      const allocation = Math.min(remaining, itemBalance);
+      next[item.id] = (allocation / 100).toFixed(2);
+      remaining -= allocation;
+    }
+
+    return next;
   };
 
   const handleSendReminderForInvoice = async (invoice: Invoice) => {
@@ -409,91 +447,107 @@ export default function FeesPageClient({
       <style>{whatsAppPulseStyle}</style>
       {/* Payment Modal */}
       {selectedInvoice ? (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 px-4 py-8 overflow-y-auto">
-          <div className="w-full max-w-md rounded-xl border border-border bg-surface p-6 shadow-lg my-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-foreground">
-                Record payment
-              </h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-6">
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              
+              // Prevent double submission
+              if (isSubmittingPayment) return;
+
+              // Validate form
+              if (!paymentAmount || Number(paymentAmount) <= 0 || !paymentMethod) {
+                alert("Please fill in all required fields");
+                return;
+              }
+
+              setIsSubmittingPayment(true);
+
+              try {
+                const backendUrl = getBackendUrl();
+                const amountInCents = Math.round(Number(paymentAmount) * 100);
+                const allocations = Object.entries(paymentAllocations)
+                  .filter(([, allocationAmount]) => Number(allocationAmount) > 0)
+                  .map(([invoiceItemId, allocationAmount]) => ({ invoiceItemId, amount: Number(allocationAmount) }));
+
+                if ((selectedInvoice.items?.length || 0) > 0) {
+                  const allocatedTotal = allocations.reduce((sum, allocation) => sum + Math.round(allocation.amount * 100), 0);
+                  if (allocatedTotal !== amountInCents) {
+                    alert("Allocate the full payment across the fee items before recording it.");
+                    setIsSubmittingPayment(false);
+                    return;
+                  }
+                }
+
+                const response = await fetch(`${backendUrl}/api/admin/fees/payments/record`, {
+                  method: "POST",
+                  credentials: "include",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    invoiceId: selectedInvoice.id,
+                    amount: paymentAmount,
+                    method: paymentMethod,
+                    reference: paymentReference || null,
+                    allocations,
+                    currency,
+                  }),
+                });
+
+                if (!response.ok) {
+                  const errorData = await response.json();
+                  throw new Error(errorData.error || "Failed to record payment");
+                }
+
+                setSelectedInvoice(null);
+                setPaymentAmount("");
+                setPaymentAllocations({});
+                  setSelectedPaymentItems({});
+                setPaymentMethod("CASH");
+                setPaymentReference("");
+                router.push(`/admin/fees?paymentRecorded=1`);
+              } catch (error) {
+                setIsSubmittingPayment(false);
+                const message = error instanceof Error ? error.message : "Failed to record payment";
+                console.error("Error recording payment:", message);
+                alert(message);
+              }
+            }}
+            className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-6 py-5">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-brand">
+                  <CreditCard size={15} /> Fee collection
+                </div>
+                <h2 className="mt-2 text-2xl font-bold text-foreground">Record payment</h2>
+                <p className="mt-2 text-sm text-muted">Apply this payment to the invoice and its fee items.</p>
+              </div>
               <button
                 type="button"
                 onClick={() => setSelectedInvoice(null)}
-                className="text-muted hover:text-foreground transition text-xl leading-none"
+                aria-label="Close"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-border transition-colors hover:bg-background"
               >
-                ×
+                <X size={20} />
               </button>
             </div>
 
-            <div className="mb-6 space-y-2 text-sm">
+            <div className="mx-6 mt-6 grid gap-4 rounded-lg border border-border bg-background p-4 sm:grid-cols-3">
               <div>
-                <p className="text-muted">Student</p>
-                <p className="font-medium text-foreground">{pupilName(selectedInvoice.pupil.firstName, selectedInvoice.pupil.lastName)}</p>
+                <p className="text-xs font-bold uppercase tracking-wide text-muted">Student</p>
+                <p className="mt-2 text-sm font-semibold text-foreground">{pupilName(selectedInvoice.pupil.firstName, selectedInvoice.pupil.lastName)}</p>
               </div>
               <div>
-                <p className="text-muted">Invoice</p>
-                <p className="font-medium text-foreground">{selectedInvoice.invoiceNo}</p>
+                <p className="text-xs font-bold uppercase tracking-wide text-muted">Invoice</p>
+                <p className="mt-2 text-sm font-semibold text-foreground">{selectedInvoice.invoiceNo}</p>
               </div>
               <div>
-                <p className="text-muted">Outstanding Balance</p>
-                <p className="font-semibold text-red-600">{formatStatMoney(selectedInvoice.amountDue - selectedInvoice.amountPaid)}</p>
+                <p className="text-xs font-bold uppercase tracking-wide text-muted">Outstanding</p>
+                <p className="mt-2 text-sm font-semibold text-red-600">{formatStatMoney(selectedInvoice.amountDue - selectedInvoice.amountPaid)}</p>
               </div>
             </div>
 
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                
-                // Prevent double submission
-                if (isSubmittingPayment) return;
-
-                // Validate form
-                if (!paymentAmount || !paymentMethod) {
-                  alert("Please fill in all required fields");
-                  return;
-                }
-
-                setIsSubmittingPayment(true);
-
-                try {
-                  const backendUrl = getBackendUrl();
-                  const response = await fetch(`${backendUrl}/api/admin/fees/payments/record`, {
-                    method: "POST",
-                    credentials: "include",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      invoiceId: selectedInvoice.id,
-                      amount: paymentAmount,
-                      method: paymentMethod,
-                      reference: paymentReference || null,
-                      currency,
-                    }),
-                  });
-
-                  if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || "Failed to record payment");
-                  }
-
-                  const result = await response.json();
-                  console.log("Payment recorded:", result);
-                  
-                  // Show success and refresh/redirect
-                  setSelectedInvoice(null);
-                  setPaymentAmount("");
-                  setPaymentMethod("CASH");
-                  setPaymentReference("");
-                  
-                  // Redirect with success flag
-                  router.push(`/admin/fees?paymentRecorded=1`);
-                } catch (error) {
-                  setIsSubmittingPayment(false);
-                  const message = error instanceof Error ? error.message : "Failed to record payment";
-                  console.error("Error recording payment:", message);
-                  alert(message);
-                }
-              }}
-              className="space-y-4"
-            >
+            <div className="mx-6 mt-6 grid gap-4 sm:grid-cols-2">
               <input type="hidden" name="invoiceId" value={selectedInvoice.id} />
 
               <div>
@@ -504,9 +558,16 @@ export default function FeesPageClient({
                   type="number"
                   name="amount"
                   value={paymentAmount}
-                  onChange={(e) => setPaymentAmount(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setPaymentAmount(value);
+                    if (selectedInvoice.items?.length) {
+                      setPaymentAllocations(distributePaymentAcrossItems(selectedInvoice.items, Math.round(Number(value || 0) * 100)));
+                    }
+                  }}
                   step="0.01"
                   required
+                  readOnly={(selectedInvoice.items?.length || 0) > 0}
                   disabled={isSubmittingPayment}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
@@ -530,9 +591,52 @@ export default function FeesPageClient({
                   ))}
                 </select>
               </div>
+            </div>
 
+              {(selectedInvoice.items?.length || 0) > 0 && (
+                <div className="mx-6 mt-6 space-y-3 rounded-lg border border-border bg-background p-4">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Allocate payment by fee item</p>
+                    <p className="text-xs text-muted">The item allocations must equal the payment amount.</p>
+                  </div>
+                  {selectedInvoice.items!.map((item) => {
+                    const itemBalance = getItemRemaining(item);
+
+                    return (
+                      <div key={item.id} className="grid grid-cols-[minmax(0,1fr)_8rem] items-center gap-3 text-sm">
+                        <div className="flex items-start gap-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedPaymentItems[item.id] === true}
+                            onChange={(event) => togglePaymentItem(item, event.target.checked)}
+                            disabled={isSubmittingPayment || itemBalance <= 0}
+                            className="mt-1 h-4 w-4 rounded border-border text-brand focus:ring-brand"
+                            aria-label={`Mark ${item.name} as paid`}
+                          />
+                          <div>
+                          <p className="font-medium text-foreground">{item.name}</p>
+                          <p className="text-xs text-muted">Remaining: {formatStatMoney(itemBalance)}</p>
+                          </div>
+                        </div>
+                        <input
+                          type="number"
+                          min="0"
+                          max={(itemBalance / 100).toFixed(2)}
+                          step="0.01"
+                          value={paymentAllocations[item.id] || "0.00"}
+                          readOnly
+                          disabled={isSubmittingPayment}
+                          className="w-full rounded-lg border border-border bg-surface px-2 py-2 text-right text-sm text-foreground focus:border-brand focus:outline-none"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+            <div className="mx-6 mt-6 grid gap-4">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
+                <label className="block text-xs font-bold uppercase tracking-wide text-muted mb-2">
                   Reference (optional)
                 </label>
                 <input
@@ -542,29 +646,28 @@ export default function FeesPageClient({
                   onChange={(e) => setPaymentReference(e.target.value)}
                   placeholder="Receipt number, bank reference, etc."
                   disabled={isSubmittingPayment}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
+            </div>
 
-              <div className="pt-2 flex gap-3">
+            <div className="mx-6 mt-7 flex justify-end gap-3 border-t border-border py-5">
                 <button
                   type="button"
                   onClick={() => setSelectedInvoice(null)}
-                  disabled={isSubmittingPayment}
-                  className="flex-1 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="rounded-lg border border-border px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingPayment}
-                  className="flex-1 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brand/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand/90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmittingPayment ? "Recording..." : "Record Payment"}
                 </button>
-              </div>
-            </form>
-          </div>
+            </div>
+          </form>
         </div>
       ) : null}
 

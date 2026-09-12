@@ -18,6 +18,15 @@ export type Pupil = {
   photoUrl?: string | null;
 };
 
+export type InvoiceItem = {
+  id: string;
+  name: string;
+  amount: number;
+  quantity: number;
+  description?: string | null;
+  allocations?: { amount: number }[];
+};
+
 export type Invoice = {
   id: string;
   amountDue: number;
@@ -31,6 +40,7 @@ export type Invoice = {
     name: string;
     term?: { id: string; name: string } | null;
   } | null;
+  items?: InvoiceItem[];
   academicYear?: { id: string; name: string; isCurrent: boolean } | null;
 };
 

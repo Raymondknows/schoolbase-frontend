@@ -13,9 +13,18 @@ interface Invoice {
   childId: string;
   childName: string;
   amountDue: number;
+  amountPaid: number;
   status: "SENT" | "PART_PAID" | "PAID" | "OVERDUE" | "DRAFT";
   dueDate: string;
   description?: string;
+  items?: Array<{
+    id: string;
+    name: string;
+    amount: number;
+    quantity: number;
+    amountPaid: number;
+    amountOutstanding: number;
+  }>;
 }
 
 export default function InvoicesPage() {
@@ -70,11 +79,9 @@ export default function InvoicesPage() {
 
   // Calculate totals
   const totalOutstanding = invoices
-    .filter(inv => ["SENT", "PART_PAID", "OVERDUE"].includes(inv.status))
-    .reduce((sum, inv) => sum + (inv.amountDue || 0), 0);
+    .reduce((sum, inv) => sum + Math.max(0, (inv.amountDue || 0) - (inv.amountPaid || 0)), 0);
   const totalPaid = invoices
-    .filter(inv => inv.status === "PAID")
-    .reduce((sum, inv) => sum + (inv.amountDue || 0), 0);
+    .reduce((sum, inv) => sum + (inv.amountPaid || 0), 0);
 
   const { school: parentSchool } = useParentSchool();
   const currency = useEffectiveCurrency(parentSchool);
@@ -216,6 +223,18 @@ export default function InvoicesPage() {
                       <p className="text-[11px] uppercase tracking-[0.24em] text-muted">Invoice {invoice.id.slice(0, 8).toUpperCase()}</p>
                       <p className="text-base font-semibold text-foreground truncate">{invoice.childName}</p>
                       <p className="text-sm text-muted mt-1 truncate">{invoice.description || "School Fees"}</p>
+                      {invoice.items && invoice.items.length > 0 && (
+                        <div className="mt-3 space-y-1.5">
+                          {invoice.items.map((item) => (
+                            <div key={item.id} className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
+                              <span className="font-medium text-foreground">{item.name}</span>
+                              <span>
+                                Amount {formatMoney(item.amount * item.quantity, currency)} · Paid {formatMoney(item.amountPaid, currency)} · Remaining {formatMoney(item.amountOutstanding, currency)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <div className="text-right">
                       <p className="text-base font-semibold text-foreground">{formatMoney(invoice.amountDue || 0, currency)}</p>

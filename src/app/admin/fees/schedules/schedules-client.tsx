@@ -3,77 +3,6 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import { playOpenTone, playCloseTone } from "@/lib/sounds";
 import { ErrorModal } from "@/components/ui/error-modal";
-
-// Safe play helpers: use global if present, otherwise play a short beep via WebAudio
-const safePlayTone = (freq: number, dur = 0.12) => {
-  if (typeof window !== "undefined" && typeof (window as any).playOpenTone === "function") {
-    // prefer layout-provided handlers if available
-    try {
-      if (freq === 880) (window as any).playOpenTone();
-      else (window as any).playCloseTone();
-      return;
-    } catch (e) {}
-  }
-
-  try {
-    const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.type = "sine";
-    o.frequency.value = freq;
-    o.connect(g);
-    g.connect(ctx.destination);
-    g.gain.value = 0.0001;
-    o.start();
-    g.gain.exponentialRampToValueAtTime(0.08, ctx.currentTime + 0.01);
-    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
-    o.stop(ctx.currentTime + dur + 0.02);
-    setTimeout(() => { try { ctx.close(); } catch (e) {} }, (dur + 50) );
-  } catch (e) {
-    // no-op on failure
-  }
-};
-
-const safePlayOpenTone = () => safePlayTone(880, 0.12);
-const safePlayCloseTone = () => safePlayTone(520, 0.12);
-// Guarded play helpers: prefer canonical handlers, fallback to layout/global then safe beeps.
-const doPlayOpenTone = () => {
-  try {
-    if (typeof playOpenTone === "function") {
-      playOpenTone();
-      return;
-    }
-  } catch (e) {}
-
-  try {
-    if (typeof (window as any).playOpenTone === "function") {
-      (window as any).playOpenTone();
-      return;
-    }
-  } catch (e) {}
-
-  safePlayOpenTone();
-};
-
-const doPlayCloseTone = () => {
-  try {
-    if (typeof playCloseTone === "function") {
-      playCloseTone();
-      return;
-    }
-  } catch (e) {}
-
-  try {
-    if (typeof (window as any).playCloseTone === "function") {
-      (window as any).playCloseTone();
-      return;
-    }
-  } catch (e) {}
-
-  safePlayCloseTone();
-};
 import { useRouter } from "next/navigation";
 import { X, TrendingUp, CheckCircle, AlertCircle, ArrowUpRight, Edit2, Trash2, Search, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -83,6 +12,14 @@ import { getBackendUrl } from "@/lib/backend-url";
 
 type ClassItem = { id: string; name: string; arm?: string | null };
 type TermItem = { id: string; name: string; academicYear: { name: string } };
+type FeeScheduleLineItem = {
+  id: string;
+  name: string;
+  amount: number;
+  description?: string | null;
+  isRequired?: boolean;
+  sortOrder?: number;
+};
 type FeeScheduleItem = {
   id: string;
   name: string;
@@ -90,6 +27,16 @@ type FeeScheduleItem = {
   createdAt: string | Date;
   term: TermItem;
   class?: ClassItem | null;
+  items?: FeeScheduleLineItem[];
+};
+
+type ScheduleDraftItem = {
+  id?: string;
+  name: string;
+  amount: string;
+  description?: string;
+  isRequired?: boolean;
+  isNew?: boolean;
 };
 
 export default function FeeSchedulesPageClient({
@@ -117,18 +64,35 @@ export default function FeeSchedulesPageClient({
   
   // Edit state
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editFormData, setEditFormData] = useState<{ name: string; amount: string } | null>(null);
+  const [editFormData, setEditFormData] = useState<{ name: string; amount: string; classId: string } | null>(null);
+  const [editScheduleContext, setEditScheduleContext] = useState<{ termName: string; academicYearName: string; className: string } | null>(null);
+  const [editDraftItems, setEditDraftItems] = useState<ScheduleDraftItem[]>([]);
   const [editError, setEditError] = useState<string | null>(null);
   const [editSubmitting, setEditSubmitting] = useState(false);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [successModalMessage, setSuccessModalMessage] = useState<string>("");
   const [feeScheduleItems, setFeeScheduleItems] = useState<FeeScheduleItem[]>(feeSchedules);
+  const [createDraftItems, setCreateDraftItems] = useState<ScheduleDraftItem[]>([]);
   
   // Delete state
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleteAnimateState, setDeleteAnimateState] = useState<"enter" | "exit">("enter");
+
+  const addDraftItem = (setter: React.Dispatch<React.SetStateAction<ScheduleDraftItem[]>>) => {
+    setter((current) => [
+      ...current,
+      { name: "", amount: "", description: "", isRequired: true, isNew: true },
+    ]);
+  };
+
+  const removeDraftItem = (
+    setter: React.Dispatch<React.SetStateAction<ScheduleDraftItem[]>>,
+    index: number,
+  ) => {
+    setter((current) => current.filter((_, itemIndex) => itemIndex !== index));
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -138,6 +102,27 @@ export default function FeeSchedulesPageClient({
     try {
       const formData = new FormData(e.currentTarget);
       const backendUrl = getBackendUrl();
+      const name = String(formData.get("name") ?? "").trim();
+      const rawAmount = formData.get("amount");
+      const parsedAmount = rawAmount !== null && rawAmount !== "" ? Number(rawAmount) : NaN;
+
+      const itemPayload = createDraftItems
+        .filter((item) => item.name.trim() && item.amount !== "" && Number(item.amount) >= 0)
+        .map((item, index) => ({
+          name: item.name.trim(),
+          amount: Number(item.amount),
+          description: item.description?.trim() || "",
+          isRequired: item.isRequired !== false,
+          sortOrder: index,
+        }));
+
+      const effectiveAmount = itemPayload.length > 0
+        ? itemPayload.reduce((sum, item) => sum + Number(item.amount || 0), 0)
+        : parsedAmount;
+
+      if (!name || (!Number.isFinite(effectiveAmount) || effectiveAmount < 0) || (itemPayload.length === 0 && (!rawAmount || rawAmount === ""))) {
+        throw new Error("Schedule name and either a total amount or at least one fee item are required.");
+      }
 
       const response = await fetch(`${backendUrl}/api/admin/fees/schedules`, {
         method: "POST",
@@ -148,8 +133,9 @@ export default function FeeSchedulesPageClient({
         body: JSON.stringify({
           termId: formData.get("termId"),
           classId: formData.get("classId") || null,
-          name: formData.get("name"),
-          amount: formData.get("amount"),
+          name,
+          amount: effectiveAmount,
+          items: itemPayload,
         }),
       });
 
@@ -168,8 +154,10 @@ export default function FeeSchedulesPageClient({
         term: created.term,
         class: created.class,
       };
+
       setFeeScheduleItems((current) => [newSchedule, ...current]);
       setShowModal(false);
+      setCreateDraftItems([]);
       setError(null);
       setSuccessModalMessage("A new fee schedule has been created successfully.");
       setSuccessModalOpen(true);
@@ -190,11 +178,37 @@ export default function FeeSchedulesPageClient({
     try {
       const backendUrl = getBackendUrl();
 
+      const cleanedName = editFormData.name.trim();
+      const parsedAmount = editFormData.amount !== "" ? Number(editFormData.amount) : NaN;
+
+      const itemPayload = editDraftItems
+        .filter((item) => item.name.trim() && item.amount !== "" && Number(item.amount) >= 0)
+        .map((item, index) => ({
+          name: item.name.trim(),
+          amount: Number(item.amount),
+          description: item.description?.trim() || "",
+          isRequired: item.isRequired !== false,
+          sortOrder: index,
+        }));
+
+      const effectiveAmount = itemPayload.length > 0
+        ? itemPayload.reduce((sum, item) => sum + Number(item.amount || 0), 0)
+        : parsedAmount;
+
+      if (!cleanedName || (!Number.isFinite(effectiveAmount) || effectiveAmount < 0) || (itemPayload.length === 0 && editFormData.amount === "")) {
+        throw new Error("Schedule name and either a total amount or at least one fee item are required.");
+      }
+
       const response = await fetch(`${backendUrl}/api/admin/fees/schedules/${editingId}`, {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: editFormData.name, amount: editFormData.amount }),
+        body: JSON.stringify({
+          name: cleanedName,
+          amount: effectiveAmount,
+          classId: editFormData.classId || null,
+          items: itemPayload,
+        }),
       });
 
       if (!response.ok) {
@@ -205,20 +219,59 @@ export default function FeeSchedulesPageClient({
       router.refresh();
       setEditingId(null);
       setEditFormData(null);
+      setEditScheduleContext(null);
+      setEditDraftItems([]);
     } catch (err) {
       console.error("Error updating fee schedule:", err);
       setEditError(err instanceof Error ? err.message : "Failed to update fee schedule");
     } finally {
         setEditSubmitting(false);
-        doPlayCloseTone();
+        playCloseTone();
       }
   };
 
-  const startEdit = (schedule: FeeScheduleItem) => {
+  const startEdit = async (schedule: FeeScheduleItem) => {
     setEditingId(schedule.id);
-    setEditFormData({ name: schedule.name, amount: (schedule.amount / 100).toFixed(2) });
+    setEditFormData({
+      name: schedule.name,
+      amount: (schedule.amount / 100).toFixed(2),
+      classId: schedule.class?.id || "",
+    });
+    setEditScheduleContext({
+      termName: schedule.term.name,
+      academicYearName: schedule.term.academicYear.name,
+      className: schedule.class
+        ? `${schedule.class.name}${schedule.class.arm ? ` ${schedule.class.arm}` : ""}`
+        : "All classes",
+    });
     setEditError(null);
-    doPlayOpenTone();
+    setEditDraftItems([]);
+
+    try {
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/admin/fees/schedules/${schedule.id}/items`, {
+        method: "GET",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (response.ok) {
+        const data = await response.json().catch(() => null);
+        const items = Array.isArray(data?.items) ? data.items : [];
+        setEditDraftItems(items.map((item: any) => ({
+          id: item.id,
+          name: item.name || "",
+          amount: (Number(item.amount || 0) / 100).toFixed(2),
+          description: item.description || "",
+          isRequired: item.isRequired !== false,
+          isNew: false,
+        })));
+      }
+    } catch (error) {
+      console.error("Error loading fee schedule items:", error);
+    }
+
+    playOpenTone();
   };
 
   const handleDelete = async () => {
@@ -246,7 +299,7 @@ export default function FeeSchedulesPageClient({
       setDeleteError(err instanceof Error ? err.message : "Failed to delete fee schedule");
     } finally {
       setDeleteLoading(false);
-      doPlayCloseTone();
+      playCloseTone();
     }
   };
 
@@ -310,7 +363,7 @@ export default function FeeSchedulesPageClient({
 
   // Calculate summary stats
   const summaryStats = useMemo(() => {
-    const totalAmount = filteredSchedules.reduce((sum, s) => sum + s.amount, 0);
+    const totalAmount = filteredSchedules.reduce((sum, s) => sum + Math.max(s.amount, 0), 0);
     const uniqueTerms = new Set(filteredSchedules.map(s => s.term.id));
     const uniqueClasses = new Set(filteredSchedules.filter(s => s.class).map(s => s.class!.id));
     
@@ -321,6 +374,11 @@ export default function FeeSchedulesPageClient({
       classCount: uniqueClasses.size,
     };
   }, [filteredSchedules]);
+
+  const getScheduleItemTotal = (schedule: FeeScheduleItem) => {
+    const itemTotal = (schedule.items ?? []).reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+    return itemTotal > 0 ? itemTotal : Math.max(schedule.amount, 0);
+  };
 
   const formatStatMoney = (amount: number) => formatMoney(amount, currency);
 
@@ -335,137 +393,76 @@ export default function FeeSchedulesPageClient({
         confirmLabel="Okay"
       />
 
-      {/* Main Page */}
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+      <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Fee Schedules</h1>
-            <p className="mt-1 text-muted">Manage billing rules by term and class for automated invoicing</p>
-          </div>
-          <Button type="button" onClick={() => { setShowModal(true); doPlayOpenTone(); }} className="gap-2">
-            <span>+ New Schedule</span>
-          </Button>
-        </div>
-
-        {/* Summary Cards - Desktop */}
-        <div className="hidden sm:grid grid-cols-3 gap-3">
-          <div className="group rounded-xl border border-border bg-surface p-6 hover:shadow-lg transition-shadow cursor-pointer hover:border-brand/50 flex flex-col">
-            <div className="flex items-start gap-3">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-blue-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted">Total Amount</p>
-                <p className="mt-2 text-2xl font-bold text-foreground">{formatStatMoney(summaryStats.total)}</p>
-              </div>
-              <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
+            <div className="flex items-center gap-2 text-sm font-medium text-brand">
+              <CalendarDays size={17} /> Academic operations
             </div>
-            <p className="mt-2 text-[11px] text-muted">{summaryStats.scheduleCount} schedule{summaryStats.scheduleCount !== 1 ? "s" : ""}</p>
+            <h1 className="mt-2 text-3xl font-bold text-foreground">Fee schedules</h1>
+            <p className="mt-1 text-muted">Create and manage fee schedules by term, class, and billing category</p>
           </div>
 
-          <div className="group rounded-xl border border-border bg-surface p-6 hover:shadow-lg transition-shadow cursor-pointer hover:border-brand/50 flex flex-col">
-            <div className="flex items-start gap-3">
-              <div className="p-3 bg-emerald-100 rounded-lg">
-                <CheckCircle className="h-6 w-6 text-emerald-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted">Terms Covered</p>
-                <p className="mt-2 text-2xl font-bold text-foreground">{summaryStats.termCount}</p>
-              </div>
-              <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-            </div>
-            <p className="mt-2 text-[11px] text-muted">Academic terms</p>
-          </div>
-
-          <div className="group rounded-xl border border-border bg-surface p-6 hover:shadow-lg transition-shadow hover:border-brand/50 flex flex-col">
-            <div className="flex items-start gap-3">
-              <div className="p-3 bg-orange-100 rounded-lg">
-                <AlertCircle className="h-6 w-6 text-orange-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted">Classes</p>
-                <p className="mt-2 text-2xl font-bold text-foreground">{summaryStats.classCount}</p>
-              </div>
-              <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-            </div>
-            <p className="mt-2 text-[11px] text-muted">Specific class schedules</p>
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => setIsSearchOpen((open) => !open)}
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"
+            >
+              <Search size={16} /> Search
+            </button>
+            <button
+              type="button"
+              onClick={() => { setShowModal(true); playOpenTone(); }}
+              className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover"
+            >
+              <span className="text-base leading-none">+</span> New schedule
+            </button>
           </div>
         </div>
 
-        {/* Summary Cards - Mobile */}
-        <div className="sm:hidden space-y-3">
-          <div className="group rounded-xl border border-border bg-surface p-6 hover:shadow-lg transition-shadow cursor-pointer hover:border-brand/50">
-            <div className="flex items-start gap-3">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-blue-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted">Total Amount</p>
-                <p className="mt-2 text-2xl font-bold text-foreground">{formatStatMoney(summaryStats.total)}</p>
-              </div>
-              <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-            </div>
-            <p className="mt-2 text-[11px] text-muted">{summaryStats.scheduleCount} schedule{summaryStats.scheduleCount !== 1 ? "s" : ""}</p>
-          </div>
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Stat
+            icon={<TrendingUp size={18} />}
+            label="Total amount"
+            value={formatStatMoney(summaryStats.total)}
+            detail={`${summaryStats.scheduleCount} schedule${summaryStats.scheduleCount !== 1 ? "s" : ""}`}
+          />
+          <Stat
+            icon={<CheckCircle size={18} />}
+            label="Terms covered"
+            value={String(summaryStats.termCount)}
+            detail="Academic terms"
+          />
+          <Stat
+            icon={<AlertCircle size={18} />}
+            label="Classes"
+            value={String(summaryStats.classCount)}
+            detail="Specific class schedules"
+          />
+          <Stat
+            icon={<CalendarDays size={18} />}
+            label="Visible schedules"
+            value={String(filteredSchedules.length)}
+            detail="Active filters"
+          />
+        </section>
 
-          <div className="group rounded-xl border border-border bg-surface p-6 hover:shadow-lg transition-shadow cursor-pointer hover:border-brand/50">
-            <div className="flex items-start gap-3">
-              <div className="p-3 bg-emerald-100 rounded-lg">
-                <CheckCircle className="h-6 w-6 text-emerald-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted">Terms Covered</p>
-                <p className="mt-2 text-2xl font-bold text-foreground">{summaryStats.termCount}</p>
-              </div>
-              <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-            </div>
-            <p className="mt-2 text-[11px] text-muted">Academic terms</p>
-          </div>
-
-          <div className="group rounded-xl border border-border bg-surface p-6 hover:shadow-lg transition-shadow cursor-pointer hover:border-brand/50">
-            <div className="flex items-start gap-3">
-              <div className="p-3 bg-orange-100 rounded-lg">
-                <AlertCircle className="h-6 w-6 text-orange-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted">Classes</p>
-                <p className="mt-2 text-2xl font-bold text-foreground">{summaryStats.classCount}</p>
-              </div>
-              <ArrowUpRight className="h-3 w-3 text-muted opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0" />
-            </div>
-            <p className="mt-2 text-[11px] text-muted">Specific class schedules</p>
-          </div>
-        </div>
-
-        {/* Search & Filters */}
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className={`overflow-hidden transition-all duration-300 ease-out flex-shrink-0 ${isSearchOpen ? "w-72 opacity-100 translate-x-0" : "w-0 opacity-0 translate-x-full"}`}>
+        <section className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-center">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className={`overflow-hidden transition-all duration-300 ease-out ${isSearchOpen ? "w-72 opacity-100" : "w-0 opacity-0"}`}>
               <input
                 ref={searchInputRef}
                 type="text"
                 placeholder="Search by name, term, year, or class..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-lg border-2 border-[#0A66C2] bg-background px-4 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
+                className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground placeholder-muted outline-none focus:border-brand"
               />
             </div>
 
-            <Button
-              type="button"
-              variant="primary"
-              onClick={() => setIsSearchOpen((open) => !open)}
-              className="h-9 rounded-md border border-[#0A66C2] bg-[#0A66C2] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0858a8]"
-            >
-              <Search className="h-4 w-4" />
-              {isSearchOpen ? "Close Search" : "Search Schedules"}
-            </Button>
-          </div>
-
-          <div className="flex items-center gap-2 rounded-md border border-[#0A66C2] bg-background px-2.5 py-1.5 text-sm text-foreground shadow-sm">
-            <CalendarDays className="h-4 w-4 text-[#0A66C2]" />
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-sm text-foreground">
+              <CalendarDays className="h-4 w-4 text-brand" />
               <select
                 value={selectedAcademicYearName}
                 onChange={(e) => setSelectedAcademicYearName(e.target.value)}
@@ -473,12 +470,9 @@ export default function FeeSchedulesPageClient({
               >
                 <option value="">Session</option>
                 {yearOptions.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
+                  <option key={year} value={year}>{year}</option>
                 ))}
               </select>
-
               <select
                 value={termFilter}
                 onChange={(e) => setTermFilter(e.target.value)}
@@ -486,14 +480,16 @@ export default function FeeSchedulesPageClient({
               >
                 <option value="ALL">Select term</option>
                 {filteredTerms.map((term) => (
-                  <option key={term.id} value={term.id}>
-                    {term.name}
-                  </option>
+                  <option key={term.id} value={term.id}>{term.name}</option>
                 ))}
               </select>
             </div>
           </div>
-        </div>
+
+          <div className="flex rounded-lg border border-border bg-surface p-1 text-sm">
+            <button type="button" className="rounded-md bg-brand px-3 py-1.5 font-semibold text-white">All schedules</button>
+          </div>
+        </section>
 
         {/* Mobile list (mobile-only) */}
         <div className="sm:hidden space-y-3">
@@ -509,9 +505,22 @@ export default function FeeSchedulesPageClient({
                     <p className="text-sm text-muted mt-1">{schedule.class ? `${schedule.class.name}${schedule.class.arm ? ` ${schedule.class.arm}` : ""}` : "All classes"}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-foreground">{formatStatMoney(schedule.amount)}</p>
+                    <p className="font-semibold text-foreground">{formatStatMoney(getScheduleItemTotal(schedule))}</p>
                     <p className="text-sm text-muted mt-1">{new Date(schedule.createdAt).toLocaleDateString()}</p>
                   </div>
+                </div>
+
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {(schedule.items ?? []).slice(0, 3).map((item) => (
+                    <span key={item.id} className="rounded-full border border-border bg-surface px-2 py-1 text-[10px] font-medium text-muted">
+                      {item.name}
+                    </span>
+                  ))}
+                  {(schedule.items?.length ?? 0) > 3 && (
+                    <span className="rounded-full border border-border bg-surface px-2 py-1 text-[10px] font-medium text-muted">
+                      +{(schedule.items?.length ?? 0) - 3}
+                    </span>
+                  )}
                 </div>
 
                 <div className="mt-3 flex gap-2">
@@ -519,7 +528,7 @@ export default function FeeSchedulesPageClient({
                     <Edit2 className="h-4 w-4" /> Edit
                   </button>
                   <button
-                    onClick={() => { setDeleteAnimateState("enter"); setDeleteId(schedule.id); doPlayOpenTone(); }}
+                    onClick={() => { setDeleteAnimateState("enter"); setDeleteId(schedule.id); playOpenTone(); }}
                     className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm"
                   >
                     Delete
@@ -559,7 +568,23 @@ export default function FeeSchedulesPageClient({
                       className="hover:bg-surface/50 transition-colors"
                     >
                       <td className="px-4 py-3 font-medium text-foreground">
-                        {schedule.name}
+                        <div>
+                          <div>{schedule.name}</div>
+                          {(schedule.items?.length ?? 0) > 0 && (
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {schedule.items!.slice(0, 3).map((item) => (
+                                <span key={item.id} className="rounded-full border border-brand/20 bg-brand/5 px-2 py-0.5 text-[10px] font-medium text-brand">
+                                  {item.name}
+                                </span>
+                              ))}
+                              {(schedule.items!.length > 3) && (
+                                <span className="rounded-full border border-border bg-surface px-2 py-0.5 text-[10px] font-medium text-muted">
+                                  +{schedule.items!.length - 3}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-muted">
                         {schedule.term.name}
@@ -575,7 +600,7 @@ export default function FeeSchedulesPageClient({
                           : "All classes"}
                       </td>
                       <td className="px-4 py-3 text-right font-semibold text-foreground">
-                        {formatStatMoney(schedule.amount)}
+                        {formatStatMoney(getScheduleItemTotal(schedule))}
                       </td>
                       <td className="px-4 py-3 text-muted">
                         {new Date(schedule.createdAt).toLocaleDateString()}
@@ -594,7 +619,7 @@ export default function FeeSchedulesPageClient({
                               onClick={() => {
                                 setDeleteAnimateState("enter");
                                 setDeleteId(schedule.id);
-                                doPlayOpenTone();
+                                playOpenTone();
                               }}
                               className="inline-flex px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-medium transition-colors"
                             >
@@ -623,31 +648,33 @@ export default function FeeSchedulesPageClient({
             className="w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
             style={{ animation: `classes_modal_enter 320ms cubic-bezier(.2,.9,.2,1)` }}
           >
-            <div className="border-b border-border px-6 py-5" style={{ background: "linear-gradient(90deg, rgba(10,102,194,0.12), rgba(10,102,194,0.04))" }}>
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground">Create Fee Schedule</h2>
-                  <p className="mt-1 text-sm text-muted">Add a new fee schedule for a term. Leave class empty to apply to all students.</p>
+            <div className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-6 py-5">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.12em] text-brand">
+                  <CalendarDays size={15} /> Academic operations
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    doPlayCloseTone();
-                    setShowModal(false);
-                    setError(null);
-                  }}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border hover:bg-background transition-colors"
-                >
-                  ✕
-                </button>
+                <h2 className="mt-2 text-2xl font-bold text-foreground">Create Fee Schedule</h2>
+                <p className="mt-1 text-sm text-muted">Add a new fee schedule for a term. Leave class empty to apply to all students.</p>
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  playCloseTone();
+                  setShowModal(false);
+                  setError(null);
+                  setCreateDraftItems([]);
+                }}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-border transition-colors hover:bg-background"
+              >
+                <X size={18} />
+              </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5 px-6 py-6">
+            <form onSubmit={handleSubmit} noValidate className="space-y-6 px-6 py-6">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-1 block">Term *</label>
-                  <select name="termId" required className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand">
+                  <label className="mb-1 block text-sm font-medium text-foreground">Term *</label>
+                  <select name="termId" required className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-brand">
                     <option value="">Select term</option>
                     {filteredTerms.map((t) => (
                       <option key={t.id} value={t.id}>
@@ -658,8 +685,8 @@ export default function FeeSchedulesPageClient({
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-1 block">Class (optional)</label>
-                  <select name="classId" className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand">
+                  <label className="mb-1 block text-sm font-medium text-foreground">Class (optional)</label>
+                  <select name="classId" className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-brand">
                     <option value="">All classes</option>
                     {classes.map((c) => (
                       <option key={c.id} value={c.id}>{c.name}{c.arm ? ` ${c.arm}` : ""}</option>
@@ -668,25 +695,80 @@ export default function FeeSchedulesPageClient({
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-1 block">Schedule Name *</label>
-                  <input type="text" name="name" required placeholder="e.g., First Term Tuition or JSS1 Fees" className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground placeholder-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20" />
+                  <label className="mb-1 block text-sm font-medium text-foreground">Schedule Name *</label>
+                  <input type="text" name="name" required placeholder="e.g., First Term Tuition or JSS1 Fees" className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder-muted outline-none transition focus:border-brand" />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-1 block">Amount ({currency}) *</label>
-                  <input type="number" name="amount" required min="0" step="0.01" placeholder="0.00" className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground placeholder-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20" />
+                  <label className="mb-1 block text-sm font-medium text-foreground">Amount ({currency}) *</label>
+                  <input type="number" name="amount" required min="0" step="0.01" placeholder="0.00" className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder-muted outline-none transition focus:border-brand" />
                 </div>
               </div>
 
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground">Fee items</h3>
+                    <p className="text-xs text-muted">Add the fee lines that belong to this schedule</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => addDraftItem(setCreateDraftItems)}
+                    className="rounded-lg border border-brand/20 bg-brand/5 px-3 py-2 text-xs font-semibold text-brand"
+                  >
+                    + Add item
+                  </button>
+                </div>
+
+                {createDraftItems.length === 0 ? (
+                  <p className="px-2 py-2 text-sm text-muted">No extra fee items yet. Add one if this schedule should include itemized charges.</p>
+                ) : (
+                  createDraftItems.map((item, index) => (
+                    <div key={`${item.name || "new-item"}-${index}`} className="grid gap-2 sm:grid-cols-[minmax(0,1.5fr)_minmax(0,0.85fr)_minmax(0,1.2fr)_auto] sm:items-center">
+                      <input
+                        type="text"
+                        value={item.name}
+                        onChange={(e) => setCreateDraftItems((current) => current.map((entry, entryIndex) => entryIndex === index ? { ...entry, name: e.target.value } : entry))}
+                        placeholder="Item name"
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder-muted outline-none transition focus:border-brand"
+                      />
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={item.amount}
+                        onChange={(e) => setCreateDraftItems((current) => current.map((entry, entryIndex) => entryIndex === index ? { ...entry, amount: e.target.value } : entry))}
+                        placeholder="0.00"
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder-muted outline-none transition focus:border-brand"
+                      />
+                      <input
+                        type="text"
+                        value={item.description || ""}
+                        onChange={(e) => setCreateDraftItems((current) => current.map((entry, entryIndex) => entryIndex === index ? { ...entry, description: e.target.value } : entry))}
+                        placeholder="Description"
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder-muted outline-none transition focus:border-brand"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeDraftItem(setCreateDraftItems, index)}
+                        className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-2 text-xs font-semibold text-red-700"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+
               {error && (
-                <div className="rounded-lg bg-red-50 border border-red-200 p-3">
+                <div className="rounded-lg border border-red-200 bg-red-50 p-3">
                   <p className="text-sm text-red-800">{error}</p>
                 </div>
               )}
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-border">
-                <button type="button" onClick={() => { doPlayCloseTone(); setShowModal(false); setError(null); }} disabled={submitting} className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-surface/90 disabled:opacity-50 text-foreground">Cancel</button>
-                <button type="submit" disabled={submitting} className="flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition-colors disabled:opacity-50" style={{ background: "#0A66C2" }}>
+              <div className="flex justify-end gap-3 border-t border-border pt-4">
+                <button type="button" onClick={() => { playCloseTone(); setShowModal(false); setError(null); }} disabled={submitting} className="flex-1 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-background disabled:opacity-50">Cancel</button>
+                <button type="submit" disabled={submitting} className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:opacity-50">
                   {submitting ? (<><div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />Creating...</>) : (<>Create Schedule</>)}
                 </button>
               </div>
@@ -707,64 +789,159 @@ export default function FeeSchedulesPageClient({
             className="w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
             style={{ animation: `classes_modal_enter 320ms cubic-bezier(.2,.9,.2,1)` }}
           >
-            <div className="border-b border-border px-6 py-5" style={{ background: "linear-gradient(90deg, rgba(10,102,194,0.12), rgba(10,102,194,0.04))" }}>
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground">Edit Fee Schedule</h2>
-                  <p className="mt-1 text-sm text-muted">Update schedule name and amount</p>
+            <div className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-6 py-5">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.12em] text-brand">
+                  <CalendarDays size={15} /> Academic operations
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    doPlayCloseTone();
-                    setEditingId(null);
-                    setEditFormData(null);
-                    setEditError(null);
-                  }}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border hover:bg-background transition-colors"
-                >
-                  ✕
-                </button>
+                <h2 className="mt-2 text-2xl font-bold text-foreground">Edit Fee Schedule</h2>
+                <p className="mt-1 text-sm text-muted">Update schedule name and amount</p>
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  playCloseTone();
+                  setEditingId(null);
+                  setEditFormData(null);
+                  setEditScheduleContext(null);
+                  setEditError(null);
+                  setEditDraftItems([]);
+                }}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-border transition-colors hover:bg-background"
+              >
+                <X size={18} />
+              </button>
             </div>
 
-            <form onSubmit={handleEditSubmit} className="space-y-5 px-6 py-6">
-              <div className="sm:col-span-2">
-                <label className="text-sm font-medium text-foreground mb-1 block">
-                  Schedule Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editFormData.name}
-                  onChange={(e) =>
-                    setEditFormData({ ...editFormData, name: e.target.value })
-                  }
-                  placeholder="e.g., First Term Tuition or JSS1 Fees"
-                  className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground placeholder-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
-                />
+            {editScheduleContext && (
+              <div className="mx-6 mt-6 grid gap-3 rounded-lg border border-border bg-background p-4 sm:grid-cols-3">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wide text-muted">Term</p>
+                  <p className="mt-2 text-sm font-semibold text-foreground">{editScheduleContext.termName}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wide text-muted">Academic year</p>
+                  <p className="mt-2 text-sm font-semibold text-foreground">{editScheduleContext.academicYearName}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wide text-muted">Class</p>
+                  <p className="mt-2 text-sm font-semibold text-foreground">{editScheduleContext.className}</p>
+                </div>
+              </div>
+            )}
+
+            <form onSubmit={handleEditSubmit} noValidate className="space-y-6 px-6 py-6">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-foreground">Class (optional)</label>
+                  <select
+                    value={editFormData.classId}
+                    onChange={(e) => {
+                      const classId = e.target.value;
+                      const selectedClass = classes.find((item) => item.id === classId);
+                      setEditFormData({ ...editFormData, classId });
+                      setEditScheduleContext((current) => current ? {
+                        ...current,
+                        className: selectedClass
+                          ? `${selectedClass.name}${selectedClass.arm ? ` ${selectedClass.arm}` : ""}`
+                          : "All classes",
+                      } : current);
+                    }}
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-brand"
+                  >
+                    <option value="">All classes</option>
+                    {classes.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.name}{item.arm ? ` ${item.arm}` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-foreground">Schedule Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editFormData.name}
+                    onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                    placeholder="e.g., First Term Tuition or JSS1 Fees"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder-muted outline-none transition focus:border-brand"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-foreground">Amount ({currency}) *</label>
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    step="0.01"
+                    value={editFormData.amount}
+                    onChange={(e) => setEditFormData({ ...editFormData, amount: e.target.value })}
+                    placeholder="0.00"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder-muted outline-none transition focus:border-brand"
+                  />
+                </div>
               </div>
 
-              <div className="sm:col-span-2">
-                <label className="text-sm font-medium text-foreground mb-1 block">
-                  Amount ({currency}) *
-                </label>
-                <input
-                  type="number"
-                  required
-                  min="0"
-                  step="0.01"
-                  value={editFormData.amount}
-                  onChange={(e) =>
-                    setEditFormData({ ...editFormData, amount: e.target.value })
-                  }
-                  placeholder="0.00"
-                  className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground placeholder-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
-                />
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground">Fee items</h3>
+                    <p className="text-xs text-muted">Add extra fee lines to this schedule</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEditDraftItems((current) => [...current, { name: "", amount: "", description: "", isRequired: true, isNew: true }])}
+                    className="rounded-lg border border-brand/20 bg-brand/5 px-3 py-2 text-xs font-semibold text-brand"
+                  >
+                    + Add item
+                  </button>
+                </div>
+
+                {editDraftItems.length === 0 ? (
+                  <p className="px-2 py-2 text-sm text-muted">No extra fee items on this schedule yet.</p>
+                ) : (
+                  editDraftItems.map((item, index) => (
+                    <div key={`${item.id || "new-item"}-${index}`} className="grid gap-2 sm:grid-cols-[minmax(0,1.5fr)_minmax(0,0.85fr)_minmax(0,1.2fr)_auto] sm:items-center">
+                      <input
+                        type="text"
+                        value={item.name}
+                        onChange={(e) => setEditDraftItems((current) => current.map((entry, entryIndex) => entryIndex === index ? { ...entry, name: e.target.value } : entry))}
+                        placeholder="Item name"
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder-muted outline-none transition focus:border-brand"
+                      />
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={item.amount}
+                        onChange={(e) => setEditDraftItems((current) => current.map((entry, entryIndex) => entryIndex === index ? { ...entry, amount: e.target.value } : entry))}
+                        placeholder="0.00"
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder-muted outline-none transition focus:border-brand"
+                      />
+                      <input
+                        type="text"
+                        value={item.description || ""}
+                        onChange={(e) => setEditDraftItems((current) => current.map((entry, entryIndex) => entryIndex === index ? { ...entry, description: e.target.value } : entry))}
+                        placeholder="Description"
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder-muted outline-none transition focus:border-brand"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setEditDraftItems((current) => current.filter((_, entryIndex) => entryIndex !== index))}
+                        className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-2 text-xs font-semibold text-red-700"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))
+                )}
               </div>
 
               {editError && (
-                <div className="sm:col-span-2 rounded-lg bg-red-50 border border-red-200 p-3">
+                <div className="rounded-lg border border-red-200 bg-red-50 p-3">
                   <p className="text-sm text-red-800">{editError}</p>
                 </div>
               )}
@@ -776,18 +953,19 @@ export default function FeeSchedulesPageClient({
                     playCloseTone();
                     setEditingId(null);
                     setEditFormData(null);
+                    setEditScheduleContext(null);
                     setEditError(null);
+                    setEditDraftItems([]);
                   }}
                   disabled={editSubmitting}
-                  className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-surface/90 disabled:opacity-50 text-foreground"
+                  className="flex-1 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-background disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={editSubmitting}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition-colors disabled:opacity-50"
-                  style={{ background: "#0A66C2" }}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:opacity-50"
                 >
                   {editSubmitting ? (
                     <>
@@ -818,10 +996,10 @@ export default function FeeSchedulesPageClient({
               animation: `${deleteAnimateState === "enter" ? "classes_delete_enter" : "classes_delete_exit"} 320ms cubic-bezier(.2,.9,.2,1)`,
             }}
           >
-            <div className="border-b border-border px-6 py-5" style={{ background: "linear-gradient(90deg, rgba(220,38,38,0.12), rgba(220,38,38,0.04))" }}>
+            <div className="border-b border-border/70 bg-error/10 px-6 py-5">
               <div className="flex items-start gap-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/70 bg-red-100 shadow-sm">
-                  <AlertCircle className="h-6 w-6 text-red-600" />
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-error/20 bg-error/10 shadow-sm">
+                  <AlertCircle className="h-6 w-6 text-error" />
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold text-foreground">Delete Schedule?</h2>
@@ -845,7 +1023,7 @@ export default function FeeSchedulesPageClient({
                 <button
                 type="button"
                 onClick={() => {
-                  doPlayCloseTone();
+                  playCloseTone();
                   setDeleteId(null);
                   setDeleteError(null);
                 }}
@@ -887,6 +1065,31 @@ export default function FeeSchedulesPageClient({
         guide={SCHEDULES_HELP}
       />
     </>
+  );
+}
+
+function Stat({
+  icon,
+  label,
+  value,
+  detail,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="border border-border bg-surface p-5">
+      <div className="mb-4 flex items-center gap-2 text-brand">
+        {icon}
+        <span className="text-xs font-bold uppercase tracking-[.12em] text-muted">
+          {label}
+        </span>
+      </div>
+      <div className="text-3xl font-semibold text-foreground">{value}</div>
+      <div className="mt-1 text-xs text-muted">{detail}</div>
+    </div>
   );
 }
 

@@ -97,7 +97,28 @@ export default function SettingsPageClient({
   const [manualPaymentAccountName, setManualPaymentAccountName] = useState(school.manualPaymentAccountName ?? "");
   const [manualPaymentAccountNumber, setManualPaymentAccountNumber] = useState(school.manualPaymentAccountNumber ?? "");
   const [manualPaymentBankName, setManualPaymentBankName] = useState(school.manualPaymentBankName ?? "");
-  const [paymentAccounts, setPaymentAccounts] = useState(() => school.paymentAccounts?.length ? school.paymentAccounts : (school.manualPaymentBankName || school.manualPaymentAccountName || school.manualPaymentAccountNumber ? [{ label: "General Fees", bankName: school.manualPaymentBankName ?? "", accountName: school.manualPaymentAccountName ?? "", accountNumber: school.manualPaymentAccountNumber ?? "", isDefault: true, isActive: true }] : []));
+  const [paymentAccounts, setPaymentAccounts] = useState(() => {
+    if (Array.isArray(school.paymentAccounts) && school.paymentAccounts.length > 0) {
+      return school.paymentAccounts;
+    }
+
+    if (Array.isArray(school.paymentAccounts) && school.paymentAccounts.length === 0) {
+      return [];
+    }
+
+    if (school.manualPaymentBankName || school.manualPaymentAccountName || school.manualPaymentAccountNumber) {
+      return [{
+        label: "General Fees",
+        bankName: school.manualPaymentBankName ?? "",
+        accountName: school.manualPaymentAccountName ?? "",
+        accountNumber: school.manualPaymentAccountNumber ?? "",
+        isDefault: true,
+        isActive: true,
+      }];
+    }
+
+    return [];
+  });
   const [editingPaymentAccount, setEditingPaymentAccount] = useState<number | null>(null);
   
   const [logoUrl, setLogoUrl] = useState<string | null>(school.logoUrl ?? null);
@@ -144,6 +165,8 @@ export default function SettingsPageClient({
 
   const [uploading, setUploading] = useState<{ [key: string]: boolean }>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [deleteAccountTarget, setDeleteAccountTarget] = useState<{ index: number; label: string } | null>(null);
+  const [deleteAccountAnimateState, setDeleteAccountAnimateState] = useState<"enter" | "exit">("enter");
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [passwordError, setPasswordError] = useState<string | null>(null);
@@ -186,6 +209,37 @@ export default function SettingsPageClient({
 
   const togglePanel = (panel: keyof typeof openPanels) => {
     setOpenPanels((current) => ({ ...current, [panel]: !current[panel] }));
+  };
+
+  const openDeleteAccountModal = (index: number) => {
+    const target = paymentAccounts[index];
+    setDeleteAccountTarget({ index, label: target?.label || "this payment account" });
+    setDeleteAccountAnimateState("enter");
+  };
+
+  const closeDeleteAccountModal = () => {
+    setDeleteAccountAnimateState("exit");
+    setTimeout(() => {
+      setDeleteAccountTarget(null);
+      setDeleteAccountAnimateState("enter");
+    }, 200);
+  };
+
+  const confirmDeleteAccount = async () => {
+    if (deleteAccountTarget === null) return;
+
+    const targetIndex = deleteAccountTarget.index;
+    const nextAccounts = paymentAccounts.filter((_, itemIndex) => itemIndex !== targetIndex);
+    setPaymentAccounts(nextAccounts);
+    if (editingPaymentAccount === targetIndex) setEditingPaymentAccount(null);
+
+    try {
+      await saveSettings(nextAccounts);
+      closeDeleteAccountModal();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete payment account");
+      closeDeleteAccountModal();
+    }
   };
 
   useEffect(() => {
@@ -240,56 +294,67 @@ export default function SettingsPageClient({
     }
   };
 
+  const saveSettings = async (nextPaymentAccounts: typeof paymentAccounts = paymentAccounts) => {
+    const backendUrl = getBackendUrl();
+    const hasModernPaymentAccounts = Array.isArray(nextPaymentAccounts) && nextPaymentAccounts.length > 0;
+    const hadLegacyPaymentAccounts = Array.isArray(school.paymentAccounts) && school.paymentAccounts.length > 0;
+    const hasLegacyManualFields = Boolean(manualPaymentAccountName.trim() || manualPaymentAccountNumber.trim() || manualPaymentBankName.trim());
+    const shouldClearLegacyPaymentFields = hasModernPaymentAccounts && (hadLegacyPaymentAccounts || hasLegacyManualFields);
+
+    const response = await fetch(`${backendUrl}/api/admin/settings`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: name.trim(),
+        initials: initials.trim().toUpperCase(),
+        slug: slug.trim() || null,
+        tagline: tagline.trim() || null,
+        country: country.trim() || null,
+        currency: currency.trim() || null,
+        address: address.trim() || null,
+        email: email.trim() || null,
+        phone: phone.trim() || null,
+        principalName: principalName.trim() || null,
+        principalComment: principalComment.trim() || null,
+        manualPaymentAccountName: shouldClearLegacyPaymentFields ? null : (manualPaymentAccountName.trim() || null),
+        manualPaymentAccountNumber: shouldClearLegacyPaymentFields ? null : (manualPaymentAccountNumber.trim() || null),
+        manualPaymentBankName: shouldClearLegacyPaymentFields ? null : (manualPaymentBankName.trim() || null),
+        paymentAccounts: nextPaymentAccounts.map((account, index) => ({ ...account, sortOrder: index })),
+        principalSignatureUrl: signatureUrl,
+        stampUrl: stampUrl,
+        logoUrl: logoUrl,
+        resultAccess: {
+          enabled: resultAccessEnabled,
+          mode: resultAccessMode,
+          pinType: resultAccessPinType,
+          pinValidity: resultAccessPinValidity,
+          allowRegeneration: resultAccessAllowRegeneration,
+        },
+        admissionsEnabled,
+        admissionsOpeningDate,
+        admissionsClosingDate,
+        admissionsIntroText,
+        admissionsRequirements,
+        admissionsContactInfo,
+      }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => null);
+      throw new Error(data?.message || "Failed to save settings");
+    }
+
+    return response;
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setIsSaving(true);
 
     try {
-      const backendUrl = getBackendUrl();
-      const response = await fetch(`${backendUrl}/api/admin/settings`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: name.trim(),
-          initials: initials.trim().toUpperCase(),
-          slug: slug.trim() || null,
-          tagline: tagline.trim() || null,
-          country: country.trim() || null,
-          currency: currency.trim() || null,
-          address: address.trim() || null,
-          email: email.trim() || null,
-          phone: phone.trim() || null,
-          principalName: principalName.trim() || null,
-          principalComment: principalComment.trim() || null,
-          manualPaymentAccountName: manualPaymentAccountName.trim() || null,
-          manualPaymentAccountNumber: manualPaymentAccountNumber.trim() || null,
-          manualPaymentBankName: manualPaymentBankName.trim() || null,
-          paymentAccounts: paymentAccounts.map((account, index) => ({ ...account, sortOrder: index })),
-          principalSignatureUrl: signatureUrl,
-          stampUrl: stampUrl,
-          logoUrl: logoUrl,
-          resultAccess: {
-            enabled: resultAccessEnabled,
-            mode: resultAccessMode,
-            pinType: resultAccessPinType,
-            pinValidity: resultAccessPinValidity,
-            allowRegeneration: resultAccessAllowRegeneration,
-          },
-          admissionsEnabled,
-          admissionsOpeningDate,
-          admissionsClosingDate,
-          admissionsIntroText,
-          admissionsRequirements,
-          admissionsContactInfo,
-        }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data?.message || "Failed to save settings");
-      }
+      await saveSettings();
 
       setShowSuccessModal(true);
       setSuccessModalTitle("Settings Saved");
@@ -1175,7 +1240,7 @@ export default function SettingsPageClient({
                     <div className="flex shrink-0 items-center gap-2">
                       <label className="flex items-center gap-2 text-xs font-medium text-muted"><input type="checkbox" checked={account.isActive !== false} onChange={(event) => setPaymentAccounts((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, isActive: event.target.checked } : item))} /> Active</label>
                       <Button type="button" variant="outline" onClick={() => setEditingPaymentAccount(editingPaymentAccount === index ? null : index)}><Pencil className="mr-2 h-4 w-4" />Edit</Button>
-                      <button type="button" aria-label={`Remove ${account.label || 'payment account'}`} className="rounded-lg border border-red-200 p-2 text-red-600 hover:bg-red-50" onClick={() => { setPaymentAccounts((current) => current.filter((_, itemIndex) => itemIndex !== index)); if (editingPaymentAccount === index) setEditingPaymentAccount(null); }}><Trash2 className="h-4 w-4" /></button>
+                      <button type="button" aria-label={`Remove ${account.label || 'payment account'}`} className="rounded-lg border border-red-200 p-2 text-red-600 hover:bg-red-50" onClick={() => openDeleteAccountModal(index)}><Trash2 className="h-4 w-4" /></button>
                     </div>
                     {editingPaymentAccount === index && (
                       <div className="basis-full border-t border-border pt-4">
@@ -1207,6 +1272,63 @@ export default function SettingsPageClient({
           </Button>
         </div>
       </form>
+
+      {deleteAccountTarget && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
+          <style>{`
+            @keyframes settings_payment_delete_enter { from { transform: translateX(36px) scale(.98); opacity: 0 } to { transform: translateX(0) scale(1); opacity: 1 } }
+            @keyframes settings_payment_delete_exit { from { transform: translateX(0) scale(1); opacity: 1 } to { transform: translateX(36px) scale(.98); opacity: 0 } }
+          `}</style>
+
+          <div
+            className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(220,38,38,0.16)]"
+            style={{
+              animation: `${deleteAccountAnimateState === "enter" ? "settings_payment_delete_enter" : "settings_payment_delete_exit"} 320ms cubic-bezier(.2,.9,.2,1)`,
+            }}
+          >
+            <div className="border-b border-border/70 bg-error/10 px-6 py-5">
+              <div className="flex items-start gap-3">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-error/20 bg-error/10 shadow-sm">
+                  <AlertCircle className="h-6 w-6 text-error" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground">Delete payment account?</h2>
+                  <p className="mt-1 text-sm text-muted">This action cannot be undone.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-5">
+              <p className="text-sm leading-6 text-muted">
+                You are about to permanently remove <strong>“{deleteAccountTarget.label}”</strong>.
+              </p>
+              <div className="mt-4 rounded-lg border border-error/20 bg-error/10 p-3">
+                <p className="text-xs text-error">
+                  <strong>Warning:</strong> The account will be removed from invoice payment instructions immediately.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 border-t border-border/70 bg-background px-6 py-4">
+              <button
+                type="button"
+                onClick={closeDeleteAccountModal}
+                className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-surface text-foreground"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteAccount}
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-error px-4 py-2.5 text-sm font-medium text-white hover:bg-error/90 transition-colors"
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete permanently
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Change Password Modal */}
       {showPasswordModal && (

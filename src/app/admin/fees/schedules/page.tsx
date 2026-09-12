@@ -46,7 +46,22 @@ export default function FeeSchedulesPage() {
         });
 
         if (!response.ok) {
-          throw new Error("Failed to fetch fee schedules");
+          const errorBody = await response.json().catch(() => ({}));
+          const message = typeof errorBody?.error === "string" ? errorBody.error : "Failed to fetch fee schedules";
+
+          if (
+            response.status === 400 ||
+            response.status === 401 ||
+            response.status === 403
+          ) {
+            const authLikeFailure = /school id|required to verify subscription|unauthorized|not authenticated|invalid session|login/i.test(message);
+            if (authLikeFailure && typeof window !== "undefined") {
+              window.location.href = "/login";
+              return;
+            }
+          }
+
+          throw new Error(message);
         }
 
         const result = await response.json();

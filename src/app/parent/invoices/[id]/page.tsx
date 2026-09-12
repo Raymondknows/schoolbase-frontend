@@ -16,6 +16,28 @@ type InvoicePayment = {
   reference?: string;
 };
 
+type InvoiceLineItem = {
+  id: string;
+  name: string;
+  amount: number;
+  quantity?: number | null;
+  description?: string | null;
+  feeScheduleItemId?: string | null;
+  amountPaid?: number;
+  amountOutstanding?: number;
+};
+
+type InvoiceAdjustment = {
+  id: string;
+  adjustmentType?: string | null;
+  amount?: number | null;
+  percentage?: number | null;
+  reason?: string | null;
+  status?: string | null;
+  approvedBy?: string | null;
+  createdAt?: string | null;
+};
+
 type InvoiceDetail = {
   id: string;
   invoiceNo?: string;
@@ -43,6 +65,8 @@ type InvoiceDetail = {
       arm?: string | null;
     } | null;
   };
+  items?: InvoiceLineItem[];
+  adjustments?: InvoiceAdjustment[];
   payments: InvoicePayment[];
 };
 
@@ -160,10 +184,28 @@ export default function InvoiceDetailPage() {
   const outstanding = Math.max(0, invoice.amountDue - invoice.amountPaid);
   const isPaid = outstanding === 0;
   const isPartPaid = invoice.amountPaid > 0 && outstanding > 0;
-  const pupilName = formatPupilName(invoice.pupil.firstName, invoice.pupil.lastName, invoice.pupil.middleName || undefined);
-  const className = invoice.pupil.class ? `${invoice.pupil.class.name}${invoice.pupil.class.arm ? ` ${invoice.pupil.class.arm}` : ""}` : "Unassigned";
   const termName = invoice.feeSchedule?.term?.name || "Current Term";
   const academicYear = invoice.feeSchedule?.term?.academicYear?.name || "";
+  const lineItems = invoice.items && invoice.items.length > 0 ? invoice.items : [{
+    id: invoice.id,
+    name: invoice.feeSchedule?.name || "School Fees",
+    amount: invoice.amountDue,
+    quantity: 1,
+    description: `${termName} ${academicYear ? `• ${academicYear}` : ""}`,
+    feeScheduleItemId: null,
+  }];
+  const subtotal = lineItems.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  const totalAdjustments = (invoice.adjustments || []).reduce((sum, adjustment) => {
+    if (adjustment.amount !== null && adjustment.amount !== undefined) {
+      return sum + Number(adjustment.amount || 0);
+    }
+    if (adjustment.percentage !== null && adjustment.percentage !== undefined) {
+      return sum + (subtotal * Number(adjustment.percentage || 0)) / 100;
+    }
+    return sum;
+  }, 0);
+  const pupilName = formatPupilName(invoice.pupil.firstName, invoice.pupil.lastName, invoice.pupil.middleName || undefined);
+  const className = invoice.pupil.class ? `${invoice.pupil.class.name}${invoice.pupil.class.arm ? ` ${invoice.pupil.class.arm}` : ""}` : "Unassigned";
   const invoiceDate = new Date(invoice.createdAt);
   const dueDate = invoice.dueDate ? new Date(invoice.dueDate) : null;
   const payments = invoice.payments || [];
@@ -287,12 +329,21 @@ export default function InvoiceDetailPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td className="py-4 text-sm text-gray-700">
-                      {invoice.feeSchedule?.name || "School Fees"} for {termName}{academicYear ? ` • ${academicYear}` : ""}
-                    </td>
-                    <td className="py-4 text-right text-lg font-bold text-gray-900">{formatMoney(invoice.amountDue, currency)}</td>
-                  </tr>
+                  {lineItems.map((item) => (
+                    <tr key={item.id} className="border-b border-gray-100 last:border-0">
+                      <td className="py-4 pr-4 text-sm text-gray-700">
+                        <div className="font-medium text-gray-900">{item.name}</div>
+                        {item.description ? <div className="mt-1 text-xs text-gray-500">{item.description}</div> : null}
+                        {item.quantity && Number(item.quantity) > 1 ? <div className="mt-1 text-[11px] uppercase tracking-wide text-gray-500">Qty: {item.quantity}</div> : null}
+                        {item.amountPaid !== undefined ? (
+                          <div className="mt-1 text-xs text-gray-500">
+                            Paid: {formatMoney(Number(item.amountPaid || 0), currency)} · Remaining: {formatMoney(Number(item.amountOutstanding || 0), currency)}
+                          </div>
+                        ) : null}
+                      </td>
+                      <td className="py-4 text-right text-sm font-semibold text-gray-900">{formatMoney(Number(item.amount || 0), currency)}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -301,8 +352,14 @@ export default function InvoiceDetailPage() {
               <div className="w-full max-w-sm">
                 <div className="flex items-center justify-between px-4 py-3 text-sm text-gray-600">
                   <span>Subtotal</span>
-                  <span className="font-medium text-gray-900">{formatMoney(invoice.amountDue, currency)}</span>
+                  <span className="font-medium text-gray-900">{formatMoney(subtotal, currency)}</span>
                 </div>
+                {totalAdjustments > 0 && (
+                  <div className="flex items-center justify-between px-4 py-3 text-sm text-gray-600">
+                    <span>Adjustments</span>
+                    <span className="font-medium text-red-600">-{formatMoney(totalAdjustments, currency)}</span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between px-4 py-3 text-sm text-gray-600">
                   <span>Amount Paid</span>
                   <span className="font-medium text-gray-900">{formatMoney(invoice.amountPaid, currency)}</span>
