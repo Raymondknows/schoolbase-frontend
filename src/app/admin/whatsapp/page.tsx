@@ -260,19 +260,19 @@ export default function WhatsAppPage() {
         </div>
 
         {whatsAppConnected !== null && (
-          <div className="inline-flex items-center gap-3 self-start rounded-lg border border-border bg-surface px-4 py-2.5 text-sm sm:self-auto">
-            <span className={`inline-flex h-9 w-9 items-center justify-center rounded-full ${whatsAppConnected ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-              <WhatsAppIcon className="h-5 w-5" />
+          <div className="inline-flex items-center gap-2.5 self-start rounded-full border border-border bg-surface px-2.5 py-1.5 shadow-sm sm:self-auto" title={whatsAppConnected ? 'WhatsApp connected — Ready to send messages' : 'WhatsApp disconnected — Reconnect via settings'}>
+            <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${whatsAppConnected ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+              <WhatsAppIcon className="h-4 w-4" />
             </span>
-            <div className="flex flex-col">
-              <span className="text-sm font-semibold text-foreground">
-                {whatsAppConnected ? 'WhatsApp connected' : 'WhatsApp disconnected'}
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-semibold text-foreground">
+                {whatsAppConnected ? 'Connected' : 'Disconnected'}
               </span>
-              <span className="text-xs text-muted">
-                {whatsAppConnected ? 'Ready for messages.' : 'Reconnect via settings.'}
+              <span className="hidden text-[10px] text-muted sm:inline">
+                {whatsAppConnected ? 'Ready' : 'Reconnect'}
               </span>
             </div>
-            <span className={`h-2.5 w-2.5 rounded-full ${whatsAppConnected ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+            <span className={`h-2 w-2 rounded-full ${whatsAppConnected ? 'bg-emerald-500' : 'bg-amber-500'}`} />
           </div>
         )}
       </div>

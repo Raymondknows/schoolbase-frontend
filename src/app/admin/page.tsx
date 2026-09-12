@@ -10,16 +10,6 @@ import { getBackendUrl } from "@/lib/backend-url";
 import SubscriptionModal from "@/components/subscription-modal";
 import { useRouter, useSearchParams } from "next/navigation";
 
-const whatsAppWiggleStyle = `
-  @keyframes whatsapp-pulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.05); opacity: 0.9; }
-  }
-  .whatsapp-pulse {
-    animation: whatsapp-pulse 2s ease-in-out infinite;
-  }
-`;
-
 const dashboardSectionThemes = [
   {
     shell: "border border-border bg-surface",
@@ -418,9 +408,7 @@ export default function AdminDashboardPage() {
   ];
 
   return (
-    <>
-      <style>{whatsAppWiggleStyle}</style>
-      <div className="space-y-6">
+    <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <div className="flex items-center gap-2 text-sm font-medium text-brand">
@@ -436,12 +424,20 @@ export default function AdminDashboardPage() {
 
         <div className="ml-auto flex items-center gap-2">
           {whatsAppConnected !== null && (
-            <button
-              title={whatsAppConnected ? 'WhatsApp connected — Ready to send school messages' : 'WhatsApp disconnected — Reconnect via settings'}
-              className={`inline-flex h-11 w-11 items-center justify-center rounded-full transition-all shadow-sm whatsapp-pulse ${whatsAppConnected ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200 hover:shadow-md' : 'bg-amber-100 text-amber-600 hover:bg-amber-200 hover:shadow-md'}`}
-            >
-              <WhatsAppIcon className="h-5 w-5" />
-            </button>
+            <div className="inline-flex items-center gap-2.5 self-start rounded-full border border-border bg-surface px-2.5 py-1.5 shadow-sm sm:self-auto" title={whatsAppConnected ? 'WhatsApp connected — Ready to send school messages' : 'WhatsApp disconnected — Reconnect via settings'}>
+              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${whatsAppConnected ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                <WhatsAppIcon className="h-4 w-4" />
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-semibold text-foreground">
+                  {whatsAppConnected ? 'Connected' : 'Disconnected'}
+                </span>
+                <span className="hidden text-[10px] text-muted sm:inline">
+                  {whatsAppConnected ? 'Ready' : 'Reconnect'}
+                </span>
+              </div>
+              <span className={`h-2 w-2 rounded-full ${whatsAppConnected ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+            </div>
           )}
           <Link href="/admin/getting-started" className="inline-flex items-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover">
             Start guide
@@ -631,7 +627,6 @@ export default function AdminDashboardPage() {
           </Link>
         </div>
       </section>
-      </div>
-    </>
+    </div>
   );
 }

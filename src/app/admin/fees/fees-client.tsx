@@ -42,16 +42,6 @@ import {
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/ui/icons";
 
-const whatsAppPulseStyle = `
-  @keyframes whatsapp-pulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.05); opacity: 0.9; }
-  }
-  .whatsapp-pulse {
-    animation: whatsapp-pulse 2s ease-in-out infinite;
-  }
-`;
-
 const STATUS_CONFIG = {
   DRAFT: { label: "Draft", color: "bg-gray-100 text-gray-800" },
   SENT: { label: "Sent", color: "bg-brand/10 text-brand" },
@@ -444,7 +434,6 @@ export default function FeesPageClient({
 
   return (
     <>
-      <style>{whatsAppPulseStyle}</style>
       {/* Payment Modal */}
       {selectedInvoice ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-6">
@@ -757,12 +746,20 @@ export default function FeesPageClient({
 
           <div className="ml-auto flex items-center gap-2">
             {whatsAppConnected !== null && (
-              <button
-                title={whatsAppConnected ? 'WhatsApp connected — Ready to send reminders' : 'WhatsApp disconnected — Reconnect via settings'}
-                className={`inline-flex h-11 w-11 items-center justify-center rounded-full transition-all shadow-sm whatsapp-pulse ${whatsAppConnected ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200 hover:shadow-md' : 'bg-amber-100 text-amber-600 hover:bg-amber-200 hover:shadow-md'}`}
-              >
-                <WhatsAppIcon className="h-5 w-5" />
-              </button>
+              <div className="inline-flex items-center gap-2.5 self-start rounded-full border border-border bg-surface px-2.5 py-1.5 shadow-sm sm:self-auto" title={whatsAppConnected ? 'WhatsApp connected — Ready to send reminders' : 'WhatsApp disconnected — Reconnect via settings'}>
+                <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${whatsAppConnected ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                  <WhatsAppIcon className="h-4 w-4" />
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-semibold text-foreground">
+                    {whatsAppConnected ? 'Connected' : 'Disconnected'}
+                  </span>
+                  <span className="hidden text-[10px] text-muted sm:inline">
+                    {whatsAppConnected ? 'Ready' : 'Reconnect'}
+                  </span>
+                </div>
+                <span className={`h-2 w-2 rounded-full ${whatsAppConnected ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+              </div>
             )}
           </div>
         </div>

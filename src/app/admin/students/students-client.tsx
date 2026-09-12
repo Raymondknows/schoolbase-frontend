@@ -80,16 +80,6 @@ const HELP_GUIDE: PageHelpGuide = {
   ],
 };
 
-const whatsAppPulseStyle = `
-  @keyframes whatsapp-pulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.05); opacity: 0.9; }
-  }
-  .whatsapp-pulse {
-    animation: whatsapp-pulse 2s ease-in-out infinite;
-  }
-`;
-
 export default function StudentsPageClient({ pupils, classes }: { pupils: any[]; classes: any[] }) {
   const router = useRouter();
   const [activePhase, setActivePhase] = useState("ALL");
@@ -512,25 +502,31 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
 
   return (
     <>
-      <style>{whatsAppPulseStyle}</style>
-      <div>
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Students</h1>
-            <p className="mt-2 text-sm text-muted">
-              {pupils.length} active student{pupils.length !== 1 ? "s" : ""} across all phases
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2 sm:justify-end sm:items-center">
-            {whatsAppConnected !== null && (
-              <button
-                title={whatsAppConnected ? 'WhatsApp connected — Ready to send school messages' : 'WhatsApp disconnected — Reconnect via settings'}
-                className={`inline-flex h-11 w-11 items-center justify-center rounded-full transition-all shadow-sm whatsapp-pulse ${whatsAppConnected ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200 hover:shadow-md' : 'bg-amber-100 text-amber-600 hover:bg-amber-200 hover:shadow-md'}`}
-              >
-                <WhatsAppIcon className="h-5 w-5" />
-              </button>
-            )}
-            {/* Animated Search Panel - slides out on same line */}
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Students</h1>
+          <p className="mt-2 text-sm text-muted">
+            {pupils.length} active student{pupils.length !== 1 ? "s" : ""} across all phases
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2 sm:justify-end sm:items-center">
+          {whatsAppConnected !== null && (
+            <div className="inline-flex items-center gap-2.5 self-start rounded-full border border-border bg-surface px-2.5 py-1.5 shadow-sm sm:self-auto" title={whatsAppConnected ? 'WhatsApp connected — Ready to send school messages' : 'WhatsApp disconnected — Reconnect via settings'}>
+              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${whatsAppConnected ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                <WhatsAppIcon className="h-4 w-4" />
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-semibold text-foreground">
+                  {whatsAppConnected ? 'Connected' : 'Disconnected'}
+                </span>
+                <span className="hidden text-[10px] text-muted sm:inline">
+                  {whatsAppConnected ? 'Ready' : 'Reconnect'}
+                </span>
+              </div>
+              <span className={`h-2 w-2 rounded-full ${whatsAppConnected ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+            </div>
+          )}
+          {/* Animated Search Panel - slides out on same line */}
             <div className={`overflow-hidden transition-all duration-300 ease-out flex-shrink-0 ${isSearchOpen ? "w-72 opacity-100 translate-x-0" : "w-0 opacity-0 -translate-x-full"}`}>
               <input
                 ref={searchInputRef}
@@ -896,7 +892,6 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
           </p>
         </div>
       )}
-    </div>
 
       {isImportModalOpen ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
