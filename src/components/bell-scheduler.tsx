@@ -61,7 +61,7 @@ export default function BellScheduler() {
   }, [enabled, schedule]);
 
   useEffect(() => {
-    const interval = window.setInterval(() => setCurrentTime(new Date()), 30000);
+    const interval = window.setInterval(() => setCurrentTime(new Date()), 1000);
     return () => window.clearInterval(interval);
   }, []);
 
@@ -81,10 +81,17 @@ export default function BellScheduler() {
 
   if (!schedule) return null;
   return (
-    <div className="fixed bottom-5 right-5 z-50 print:hidden">
-      <button type="button" onClick={toggle} className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold shadow-lg backdrop-blur-sm transition ${enabled ? "border-[#b7dfc0] bg-[#edf8ef] text-[#137333]" : "border-border bg-surface text-muted hover:text-brand"}`} title={enabled ? "Disable school bell" : "Enable school bell"}>
-        {enabled ? <Check className="h-3.5 w-3.5" /> : <BellOff className="h-3.5 w-3.5" />}
-        {enabled ? `School bell on · ${new Intl.DateTimeFormat("en-GB", { timeZone: schedule.timezone, hour: "2-digit", minute: "2-digit" }).format(currentTime)}` : "Enable school bell"}
+    <div className="fixed right-5 top-5 z-50 print:hidden">
+      <button
+        type="button"
+        onClick={toggle}
+        className={`inline-flex cursor-pointer items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold shadow-sm backdrop-blur-sm transition ${enabled ? "border-emerald-500 bg-emerald-500 text-white shadow-emerald-500/20" : "border-border bg-slate-100 text-slate-700 hover:border-brand/30 hover:text-brand"}`}
+        title={enabled ? "Disable school bell" : "Enable school bell"}
+      >
+        <span className={`flex h-6 w-6 items-center justify-center rounded-full ${enabled ? "bg-white/15 text-white" : "bg-white text-slate-700"}`}>
+          {enabled ? <Check className="h-3.5 w-3.5" /> : <BellOff className="h-3.5 w-3.5" />}
+        </span>
+        {enabled ? `School bell on · ${new Intl.DateTimeFormat("en-GB", { timeZone: schedule.timezone, hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).format(currentTime)}` : "Enable school bell"}
       </button>
     </div>
   );
