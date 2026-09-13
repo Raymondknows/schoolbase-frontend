@@ -118,7 +118,7 @@ export default async function HomePage() {
       <section className="border-b border-border bg-surface">
         <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
           <h1 className="max-w-3xl text-4xl font-bold leading-tight tracking-tight text-foreground md:text-5xl md:leading-tight">
-            Everything your school needs in one simple platform
+            Everything your school needs in one simple platform.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted">
             Manage fees, engage parents on WhatsApp, publish results, and deliver
@@ -130,7 +130,7 @@ export default async function HomePage() {
             <Button href="/login">School login</Button>
             <Button variant="secondary" href="/parent/login">
               Parent login
-            </Button>
+            </Button> 
           </div>
         </div>
       </section>
