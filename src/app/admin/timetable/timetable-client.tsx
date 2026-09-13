@@ -358,7 +358,7 @@ export default function TimetableClient() {
           }
         }
       `}</style>
-      <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+      <div className="mx-auto max-w-7xl space-y-6 px-3 py-5 sm:px-8 sm:py-8 lg:px-12">
         {config && (
           <div className="timetable-print-header hidden">
             <div className="text-xl font-bold text-black">{config.name}</div>

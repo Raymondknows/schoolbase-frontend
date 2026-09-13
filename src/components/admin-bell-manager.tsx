@@ -19,6 +19,10 @@ const tones: ToneOption[] = [
   { value: "soft", label: "Soft progression", detail: "Gentler campus signal" },
   { value: "marimba", label: "Marimba call", detail: "Friendly distinctive signal" },
   { value: "alert", label: "Priority alert", detail: "Strong attention signal" },
+  { value: "church", label: "Church bells", detail: "Recorded midnight church bells" },
+  { value: "ding", label: "Recorded ding", detail: "Short recorded bell chime" },
+  { value: "transition", label: "Bell transition", detail: "Recorded bell transition" },
+  { value: "policeAudio", label: "Recorded siren", detail: "Recorded police operation siren" },
 ];
 
 export default function AdminBellManager({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {

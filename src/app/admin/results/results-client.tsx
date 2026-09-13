@@ -14,6 +14,7 @@ import {
   KeyRound,
   PlusCircle,
   TrendingUp,
+  GraduationCap,
 } from "lucide-react";
 import Link from "next/link";
 import { PublishButton } from "@/components/admin/publish-button";
@@ -411,31 +412,33 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
 
   return (
     <>
-      <div className="w-full">
-        <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-start sm:justify-between">
+      <main className="min-h-screen pb-12">
+        <div className="w-full space-y-6">
+        <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
           <div className="min-w-0">
-            <h1 className="text-3xl font-bold text-foreground">Results</h1>
-            <p className="mt-2 text-sm text-muted">
-              Create and publish results in minutes — parents get notified instantly
-            </p>
+            <div className="flex items-center gap-2 text-sm font-medium text-brand">
+              <GraduationCap size={17} /> Academic operations
+            </div>
+            <h1 className="mt-2 text-3xl font-bold text-foreground">Results</h1>
+            <p className="mt-1 text-muted">Create, review, and publish student results by assessment and term</p>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:flex-wrap lg:w-auto lg:max-w-[760px] lg:justify-end">
             {/* Animated Search Panel - slides out on same line */}
-            <div className={`overflow-hidden transition-all duration-300 ease-out flex-shrink-0 ${isSearchOpen ? "w-72 opacity-100 translate-x-0" : "w-0 opacity-0 translate-x-full"}`}>
+            <div className={`col-span-2 overflow-hidden transition-all duration-300 ease-out sm:col-auto ${isSearchOpen ? "w-full opacity-100 translate-x-0 sm:w-72" : "h-0 w-0 opacity-0 translate-x-full sm:h-auto"}`}>
               <input
                 ref={searchInputRef}
                 type="text"
                 placeholder="Search by assessment name or term..."
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="w-full rounded-lg border-2 border-[#0A66C2] bg-background px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-[#0A66C2] sm:px-4 sm:py-2"
+                className="w-full rounded-lg border-2 border-[#0A66C2] bg-background px-3 py-2.5 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-[#0A66C2] sm:px-4"
               />
             </div>
             <Button
               type="button"
               variant="primary"
               onClick={() => setIsSearchOpen((open) => !open)}
-              className="h-9 w-full rounded-md border border-[#0A66C2] bg-[#0A66C2] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0858a8] sm:w-auto"
+              className="h-auto w-full px-3 py-2.5 text-xs font-semibold sm:w-auto sm:px-4 sm:text-sm"
             >
               <Search className="h-4 w-4" />
               {isSearchOpen ? "Close Search" : "Search Results"}
@@ -443,29 +446,29 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
             <Button
               variant="primary"
               href="/admin/settings/result-pins"
-              className="h-9 w-full rounded-md border border-[#0A66C2] bg-[#0A66C2] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0858a8] sm:w-auto"
+              className="h-auto w-full px-3 py-2.5 text-xs font-semibold sm:w-auto sm:px-4 sm:text-sm"
             >
               <KeyRound className="h-4 w-4" />
-              Result PINs
+              Pin
             </Button>
             <Button
               variant="primary"
               href="/admin/results/new"
-              className="h-9 w-full rounded-md border border-[#0A66C2] bg-[#0A66C2] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0858a8] sm:w-auto"
+              className="h-auto w-full px-3 py-2.5 text-xs font-semibold sm:w-auto sm:px-4 sm:text-sm"
             >
               <PlusCircle className="h-4 w-4" />
-              Create assessment
+              Create
             </Button>
             <Button
               variant="primary"
               href="/admin/promotions"
-              className="h-9 w-full rounded-md border border-[#0A66C2] bg-[#0A66C2] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0858a8] sm:w-auto"
+              className="h-auto w-full px-3 py-2.5 text-xs font-semibold sm:w-auto sm:px-4 sm:text-sm"
             >
               <TrendingUp className="h-4 w-4" />
-              Promotions
+              Promote
             </Button>
-            <div className="flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 shadow-sm">
-              <span className="text-sm font-medium text-muted">Notify parents</span>
+            <div className="col-span-2 flex w-full items-center justify-between gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 shadow-sm sm:col-auto sm:w-auto">
+              <span className="text-xs font-medium text-muted sm:text-sm">Notify parents</span>
               <button
                 type="button"
                 role="switch"
@@ -482,7 +485,15 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
         </div>
 
       {/* Filters - Phase Tabs and Status Dropdown */}
-      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="border border-border bg-surface p-4 sm:p-5">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-semibold text-foreground">Assessment board</h2>
+            <p className="mt-1 text-xs text-muted">Filter results by phase, session, term, or status.</p>
+          </div>
+          <span className="text-xs font-medium text-muted">{filteredAssessments.length} total</span>
+        </div>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         {/* Phase Tabs */}
         <div className="flex flex-wrap gap-2 items-center">
           <span className="text-sm font-medium text-muted min-w-fit">Phase:</span>
@@ -510,13 +521,13 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 shadow-sm">
-            <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">Session</label>
+        <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-3 lg:w-auto">
+          <div className="flex min-w-0 items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2.5">
+            <label className="text-xs font-semibold text-muted">Session</label>
             <select
               value={selectedSession}
               onChange={(e) => handleSessionChange(e.target.value)}
-              className="rounded-md bg-transparent text-sm font-medium text-foreground outline-none"
+              className="min-w-0 flex-1 rounded-md bg-transparent text-sm font-semibold text-foreground outline-none"
             >
               {sessionOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -526,12 +537,12 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
             </select>
           </div>
 
-          <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 shadow-sm">
-            <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">Term</label>
+          <div className="flex min-w-0 items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2.5">
+            <label className="text-xs font-semibold text-muted">Term</label>
             <select
               value={selectedTerm}
               onChange={(e) => handleTermChange(e.target.value)}
-              className="rounded-md bg-transparent text-sm font-medium text-foreground outline-none"
+              className="min-w-0 flex-1 rounded-md bg-transparent text-sm font-semibold text-foreground outline-none"
             >
               {termOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -541,12 +552,12 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
             </select>
           </div>
 
-          <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 shadow-sm">
-            <label className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">Status</label>
+          <div className="flex min-w-0 items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2.5">
+            <label className="text-xs font-semibold text-muted">Status</label>
             <select
               value={activeStatus}
               onChange={(e) => handleStatusChange(e.target.value)}
-              className="rounded-md bg-transparent text-sm font-medium text-foreground outline-none"
+              className="min-w-0 flex-1 rounded-md bg-transparent text-sm font-semibold text-foreground outline-none"
             >
               {STATUS_ORDER.map((status) => {
                 const count = getStatusStats(status);
@@ -560,6 +571,7 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
             </select>
           </div>
         </div>
+      </div>
       </div>
 
       {/* Results Info */}
@@ -583,7 +595,7 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
       {paginatedAssessments.length > 0 ? (
         <>
           {/* Desktop Table */}
-          <div className="hidden sm:block overflow-x-auto rounded-lg border border-border bg-surface">
+          <div className="hidden overflow-x-auto border border-border bg-surface lg:block">
             <table className="w-full text-left text-xs sm:text-sm">
               <thead className="border-b border-border bg-background text-muted">
                 <tr>
@@ -719,7 +731,7 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
           </div>
 
           {/* Mobile List */}
-          <div className="sm:hidden space-y-2">
+          <div className="space-y-2 lg:hidden">
             {paginatedAssessments.map((a, index) => {
               const isPublished = a.status === "PUBLISHED";
               const isApproved = a.status === "APPROVED";
@@ -831,6 +843,7 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
         </div>
       )}
       </div>
+      </main>
 
       {/* Delete Confirmation Modal */}
       {deleteModalOpen && (

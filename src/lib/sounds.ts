@@ -57,14 +57,16 @@ export function playOpenTone(volume = 1) {
   }
 }
 
-export type BellTone = "traditional" | "deep" | "mechanical" | "carillon" | "siren" | "police" | "urgent" | "classic" | "double" | "school" | "soft" | "marimba" | "alert";
+export type BellTone = "traditional" | "deep" | "mechanical" | "carillon" | "siren" | "police" | "urgent" | "classic" | "double" | "school" | "soft" | "marimba" | "alert" | "church" | "ding" | "transition" | "policeAudio";
 export type BellRingMode = "count" | "continuous";
 let bellPatternTimeouts: number[] = [];
 let activeBellContexts: AudioContext[] = [];
+let activeBellAudio: HTMLAudioElement[] = [];
 
 type BellProfile = { sequence: Array<[number, number, number]>; partials: Array<[number, number]>; gain: number; waveform: OscillatorType; sweep?: [number, number] };
+type SynthBellTone = Exclude<BellTone, "church" | "ding" | "transition" | "policeAudio">;
 
-const bellProfiles: Record<BellTone, BellProfile> = {
+const bellProfiles: Record<SynthBellTone, BellProfile> = {
   traditional: { sequence: [[392, 0, 1.1], [330, 0.18, 1.35]], partials: [[1, 1], [2.01, 0.42], [2.98, 0.2], [4.1, 0.1]], gain: 0.16, waveform: "sine" },
   deep: { sequence: [[262, 0, 1.35], [196, 0.2, 1.5]], partials: [[1, 1], [2, 0.5], [3.01, 0.24], [4.2, 0.12]], gain: 0.2, waveform: "sine" },
   mechanical: { sequence: [[740, 0, 0.25], [554, 0.05, 0.32], [740, 0.38, 0.25], [554, 0.43, 0.32]], partials: [[1, 1], [2.4, 0.28], [4, 0.12]], gain: 0.17, waveform: "square" },
@@ -81,11 +83,31 @@ const bellProfiles: Record<BellTone, BellProfile> = {
 };
 
 export function playBellTone(tone: BellTone = "classic", volume = 1) {
+  const audioSources: Partial<Record<BellTone, string>> = {
+    church: "/bells/church-bells.mp3",
+    ding: "/bells/ding.mp3",
+    transition: "/bells/bell-transition.mp3",
+    policeAudio: "/bells/police-siren.mp3",
+  };
+  const audioSource = audioSources[tone];
+  if (audioSource) {
+    const audio = new Audio(audioSource);
+    audio.volume = Math.min(1, Math.max(0, volume));
+    activeBellAudio.push(audio);
+    audio.addEventListener("ended", () => {
+      activeBellAudio = activeBellAudio.filter((activeAudio) => activeAudio !== audio);
+    }, { once: true });
+    audio.play().catch(() => {
+      activeBellAudio = activeBellAudio.filter((activeAudio) => activeAudio !== audio);
+    });
+    return;
+  }
+
   try {
     const ctx = createAudioContext();
     if (!ctx) return;
     activeBellContexts.push(ctx);
-    const profile = bellProfiles[tone] || bellProfiles.traditional;
+    const profile = bellProfiles[tone as SynthBellTone] || bellProfiles.traditional;
     const schedule = () => {
       const start = ctx.currentTime;
       profile.sequence.forEach(([frequency, delay, duration], sequenceIndex) => {
@@ -135,6 +157,11 @@ export function stopBellPattern() {
   bellPatternTimeouts = [];
   activeBellContexts.forEach((ctx) => ctx.close().catch(() => {}));
   activeBellContexts = [];
+  activeBellAudio.forEach((audio) => {
+    audio.pause();
+    audio.currentTime = 0;
+  });
+  activeBellAudio = [];
 }
 
 let supportAlertToneState:

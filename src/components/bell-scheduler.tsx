@@ -21,7 +21,7 @@ export default function BellScheduler() {
   const [schedule, setSchedule] = useState<BellSchedule | null>(null);
   const [currentTime, setCurrentTime] = useState(() => new Date());
   const [position, setPosition] = useState<{ left: number; top: number } | null>(null);
-  const dragRef = useRef({ offsetX: 0, offsetY: 0, dragging: false });
+  const dragRef = useRef({ startX: 0, startY: 0, offsetX: 0, offsetY: 0, active: false, dragging: false, moved: false });
 
   useEffect(() => {
     const savedPosition = window.localStorage.getItem("schoolbase:bell-position");
@@ -81,6 +81,11 @@ export default function BellScheduler() {
   }, []);
 
   const toggle = () => {
+    if (dragRef.current.moved) {
+      dragRef.current.moved = false;
+      return;
+    }
+
     const next = !enabled;
     unlockAudio();
     if (next) {
@@ -95,18 +100,35 @@ export default function BellScheduler() {
   };
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
     dragRef.current = {
-      offsetX: event.clientX - rect.left,
-      offsetY: event.clientY - rect.top,
-      dragging: true,
+      startX: event.clientX,
+      startY: event.clientY,
+      offsetX: 0,
+      offsetY: 0,
+      active: true,
+      dragging: false,
+      moved: false,
     };
-    event.currentTarget.setPointerCapture(event.pointerId);
-    setPosition({ left: rect.left, top: rect.top });
   };
 
   const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (!dragRef.current.dragging) return;
+    if (!dragRef.current.active) return;
+
+    if (!dragRef.current.dragging) {
+      const distance = Math.hypot(
+        event.clientX - dragRef.current.startX,
+        event.clientY - dragRef.current.startY,
+      );
+      if (distance < 6) return;
+
+      const rect = event.currentTarget.getBoundingClientRect();
+      dragRef.current.offsetX = dragRef.current.startX - rect.left;
+      dragRef.current.offsetY = dragRef.current.startY - rect.top;
+      dragRef.current.dragging = true;
+      dragRef.current.moved = true;
+      event.currentTarget.setPointerCapture(event.pointerId);
+      setPosition({ left: rect.left, top: rect.top });
+    }
 
     const rect = event.currentTarget.getBoundingClientRect();
     const nextPosition = {
@@ -118,10 +140,14 @@ export default function BellScheduler() {
   };
 
   const handlePointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
+    dragRef.current.active = false;
     dragRef.current.dragging = false;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
+    window.setTimeout(() => {
+      dragRef.current.moved = false;
+    }, 0);
   };
 
   if (!schedule) return null;
