@@ -26,13 +26,11 @@ import {
   GraduationCap,
   LifeBuoy,
   Radio,
-  Volume2,
-  VolumeX,
 } from "lucide-react";
 import AdminSkeleton from "@/components/ui/skeleton";
 import { getBackendUrl } from "@/lib/backend-url";
 import { resolveSchoolAssetUrl } from "@/lib/asset-urls";
-import { announceSupportAlert, playOpenTone, stopSupportAlertSpeech, unlockAudio } from "@/lib/sounds";
+import { announceSupportAlert, stopSupportAlertSpeech } from "@/lib/sounds";
 
 function getActivityTitle(log: any) {
   const raw = (log?.event ?? log?.action ?? "").toString().trim().toUpperCase();
@@ -136,7 +134,6 @@ export default function PlatformOverviewPage() {
   const [dashboardMessage, setDashboardMessage] = useState<string | null>(null);
   const [reminding, setReminding] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [soundEnabled, setSoundEnabled] = useState(false);
   const [newActivityIds, setNewActivityIds] = useState<Set<string>>(new Set());
   const [cardScroll, setCardScroll] = useState(0);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -147,17 +144,6 @@ export default function PlatformOverviewPage() {
   });
 
   useEffect(() => {
-    unlockAudio();
-
-    const unlockHandler = () => {
-      unlockAudio();
-      window.removeEventListener("pointerdown", unlockHandler);
-      window.removeEventListener("keydown", unlockHandler);
-    };
-
-    window.addEventListener("pointerdown", unlockHandler, { once: true, passive: true });
-    window.addEventListener("keydown", unlockHandler, { once: true, passive: true });
-
     async function loadData() {
       try {
         const backendUrl = getBackendUrl();
@@ -247,7 +233,6 @@ export default function PlatformOverviewPage() {
         if (freshIds.length > 0) {
           setNewActivityIds(new Set(freshIds));
           window.setTimeout(() => setNewActivityIds(new Set()), 900);
-          if (soundEnabled) playOpenTone();
         }
 
         knownActivityIdsRef.current = new Set(incoming.map((log: any) => log.id));
@@ -258,7 +243,7 @@ export default function PlatformOverviewPage() {
     }, 10000);
 
     return () => window.clearInterval(intervalId);
-  }, [soundEnabled]);
+  }, []);
 
 
   useEffect(() => {
@@ -572,7 +557,7 @@ export default function PlatformOverviewPage() {
             className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 cursor-pointer"
             onClick={() => setIsPanelOpen(false)}
           />
-          <div className={`relative ml-auto flex h-full w-full max-w-4xl flex-col overflow-hidden border-l border-border bg-surface shadow-2xl transition-transform duration-300 ease-out ${
+          <div className={`relative ml-auto flex h-full w-full max-w-3xl flex-col overflow-hidden border-l border-border bg-surface shadow-2xl transition-transform duration-300 ease-out ${
             isPanelOpen ? 'translate-x-0' : 'translate-x-full'
           }`}>
             <div className="flex items-center justify-between border-b border-border px-6 py-5">
@@ -591,12 +576,13 @@ export default function PlatformOverviewPage() {
             <div className="overflow-y-auto p-6">
               <div className="space-y-2.5">
                 <section className="border border-border bg-surface p-2.5">
-                  <div className="flex w-full items-center justify-between gap-2 rounded-xl px-2 py-1.5 text-left">
-                    <button
-                      type="button"
-                      onClick={() => setExpandedSections((current) => ({ ...current, activity: !current.activity }))}
-                      className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-left"
-                    >
+                  <button
+                    type="button"
+                    onClick={() => setExpandedSections((current) => ({ ...current, activity: !current.activity }))}
+                    className="relative z-10 flex w-full cursor-pointer items-center justify-between gap-2 rounded-xl px-2 py-1.5 text-left pointer-events-auto"
+                    aria-expanded={expandedSections.activity}
+                    aria-controls="platform-activity-list"
+                  >
                     <div className="flex items-center gap-2">
                       <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
                         <Activity className="h-3.5 w-3.5" />
@@ -609,22 +595,12 @@ export default function PlatformOverviewPage() {
                         <p className="text-[11px] text-muted">New school actions appear here automatically.</p>
                       </div>
                     </div>
-                    </button>
                     <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        title={soundEnabled ? "Turn off activity sounds" : "Turn on activity sounds"}
-                        aria-label={soundEnabled ? "Turn off activity sounds" : "Turn on activity sounds"}
-                        onClick={() => { setSoundEnabled((enabled) => !enabled); unlockAudio(); }}
-                        className="rounded-md p-1.5 text-muted transition hover:bg-background hover:text-brand"
-                      >
-                        {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-                      </button>
                       {expandedSections.activity ? <ChevronUp className="h-4 w-4 text-muted" /> : <ChevronDown className="h-4 w-4 text-muted" />}
                     </div>
-                  </div>
+                  </button>
                   {expandedSections.activity ? (
-                    <div className="mt-2 space-y-2 px-1 pb-1">
+                    <div id="platform-activity-list" className="mt-2 bg-white px-1 pb-1">
                       <div className="mb-1.5 flex justify-end">
                         <Link href="/schoolbase-admin/audit" className="text-xs font-semibold text-brand hover:text-brand/80">
                           View all
@@ -634,7 +610,7 @@ export default function PlatformOverviewPage() {
                         <div className="border border-border bg-background px-3 py-2 text-sm text-muted">No activity recorded yet.</div>
                       ) : (
                         activityLogs.slice(0, 12).map((log: any) => (
-                          <div key={log.id} className={`activity-event border border-border bg-background px-3 py-2.5 ${newActivityIds.has(log.id) ? "activity-event-new" : ""}`}>
+                          <div key={log.id} className={`activity-event border-b border-border px-3 py-3 last:border-b-0 ${newActivityIds.has(log.id) ? "activity-event-new" : ""}`}>
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0">
                                 <p className="truncate text-sm font-semibold text-foreground">{getActivityTitle(log)}</p>
@@ -674,7 +650,7 @@ export default function PlatformOverviewPage() {
                     </div>
                   </button>
                   {expandedSections.emails ? (
-                    <div className="mt-2 space-y-2 px-1 pb-1">
+                    <div className="mt-2 bg-white px-1 pb-1">
                       <div className="mb-1.5 flex justify-end">
                         <Link href="/schoolbase-admin/email-logs" className="text-xs font-semibold text-brand hover:text-brand/80">
                           View logs
@@ -684,7 +660,7 @@ export default function PlatformOverviewPage() {
                         <div className="border border-border bg-background px-3 py-2 text-sm text-muted">No email activity recorded.</div>
                       ) : (
                         emailLogs.map((log: any) => (
-                          <div key={log.id} className="border border-border bg-background px-3 py-2.5">
+                          <div key={log.id} className="border-b border-border px-3 py-3 last:border-b-0">
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0">
                                 <p className="truncate text-sm font-semibold text-foreground">{log.subject}</p>
@@ -722,7 +698,7 @@ export default function PlatformOverviewPage() {
                     </div>
                   </button>
                   {expandedSections.trials ? (
-                    <div className="mt-2 space-y-2 px-1 pb-1">
+                    <div className="mt-2 bg-white px-1 pb-1">
                       <div className="mb-1.5 flex justify-end">
                         <Link href="/schoolbase-admin/schools?status=TRIAL" className="text-xs font-semibold text-brand hover:text-brand/80">
                           View all
@@ -732,7 +708,7 @@ export default function PlatformOverviewPage() {
                         <div className="border border-border bg-background px-3 py-2 text-sm text-muted">No trial schools to show.</div>
                       ) : (
                         trialSchools.map((school: any) => (
-                          <div key={school.id} className="border border-border bg-background px-3 py-2.5">
+                          <div key={school.id} className="border-b border-border px-3 py-3 last:border-b-0">
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0">
                                 <p className="truncate text-sm font-semibold text-foreground">{school.name}</p>
@@ -772,7 +748,7 @@ export default function PlatformOverviewPage() {
                     </div>
                   </button>
                   {expandedSections.support ? (
-                    <div className="mt-2 space-y-2 px-1 pb-1">
+                    <div className="mt-2 bg-white px-1 pb-1">
                       <div className="mb-1.5 flex justify-end">
                         <Link href="/schoolbase-admin/support" className="text-xs font-semibold text-brand hover:text-brand/80">
                           View all
@@ -782,7 +758,7 @@ export default function PlatformOverviewPage() {
                         <div className="border border-border bg-background px-3 py-2 text-sm text-muted">No open support requests at the moment.</div>
                       ) : (
                         supportRequests.slice(0, 5).map((request: any) => (
-                          <div key={request.id} className="border border-border bg-background px-3 py-2.5">
+                          <div key={request.id} className="border-b border-border px-3 py-3 last:border-b-0">
                             <p className="text-sm font-semibold text-foreground">{request.subject}</p>
                             <p className="mt-1 text-xs text-muted">{request.school?.name || 'Unknown school'} • {request.priority}</p>
                             <p className="mt-2 text-xs text-muted line-clamp-2">{request.message}</p>

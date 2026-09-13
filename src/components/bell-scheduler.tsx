@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { Bell, BellOff, Check } from "lucide-react";
 import { playBellPattern, stopBellPattern, type BellRingMode, type BellTone, unlockAudio } from "@/lib/sounds";
 
@@ -20,6 +20,21 @@ export default function BellScheduler() {
   const [enabled, setEnabled] = useState(false);
   const [schedule, setSchedule] = useState<BellSchedule | null>(null);
   const [currentTime, setCurrentTime] = useState(() => new Date());
+  const [position, setPosition] = useState<{ left: number; top: number } | null>(null);
+  const dragRef = useRef({ offsetX: 0, offsetY: 0, dragging: false });
+
+  useEffect(() => {
+    const savedPosition = window.localStorage.getItem("schoolbase:bell-position");
+    if (!savedPosition) return;
+    try {
+      const parsed = JSON.parse(savedPosition);
+      if (typeof parsed.left === "number" && typeof parsed.top === "number") {
+        setPosition(parsed);
+      }
+    } catch {
+      window.localStorage.removeItem("schoolbase:bell-position");
+    }
+  }, []);
 
   useEffect(() => {
     setEnabled(window.localStorage.getItem("schoolbase:bells-enabled") === "true");
@@ -79,13 +94,50 @@ export default function BellScheduler() {
     if (!next) stopBellPattern();
   };
 
+  const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    dragRef.current = {
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top,
+      dragging: true,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setPosition({ left: rect.left, top: rect.top });
+  };
+
+  const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!dragRef.current.dragging) return;
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const nextPosition = {
+      left: Math.min(Math.max(8, event.clientX - dragRef.current.offsetX), Math.max(8, window.innerWidth - rect.width - 8)),
+      top: Math.min(Math.max(8, event.clientY - dragRef.current.offsetY), Math.max(8, window.innerHeight - rect.height - 8)),
+    };
+    setPosition(nextPosition);
+    window.localStorage.setItem("schoolbase:bell-position", JSON.stringify(nextPosition));
+  };
+
+  const handlePointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
+    dragRef.current.dragging = false;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
+
   if (!schedule) return null;
   return (
-    <div className="fixed right-5 top-5 z-50 print:hidden">
+    <div
+      className={`fixed z-50 max-w-[calc(100vw-1rem)] print:hidden touch-none select-none cursor-grab active:cursor-grabbing ${position ? "" : "right-5 top-5"}`}
+      style={position ? { left: position.left, top: position.top } : undefined}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+    >
       <button
         type="button"
         onClick={toggle}
-        className={`inline-flex cursor-pointer items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold shadow-sm backdrop-blur-sm transition ${enabled ? "border-emerald-500 bg-emerald-500 text-white shadow-emerald-500/20" : "border-border bg-slate-100 text-slate-700 hover:border-brand/30 hover:text-brand"}`}
+        className={`inline-flex max-w-full cursor-pointer items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold shadow-sm backdrop-blur-sm transition ${enabled ? "border-emerald-500 bg-emerald-500 text-white shadow-emerald-500/20" : "border-border bg-slate-100 text-slate-700 hover:border-brand/30 hover:text-brand"}`}
         title={enabled ? "Disable school bell" : "Enable school bell"}
       >
         <span className={`flex h-6 w-6 items-center justify-center rounded-full ${enabled ? "bg-white/15 text-white" : "bg-white text-slate-700"}`}>
