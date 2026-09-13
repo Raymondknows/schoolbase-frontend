@@ -183,8 +183,18 @@ export async function createAnnouncement(formData: FormData) {
       throw new Error(errorMessage);
     }
 
-    // Redirect with success flag
-    redirect(`/admin/website?created=1`);
+    const result = await response.json().catch(() => ({}));
+    const params = new URLSearchParams({
+      created: "1",
+      announcementId: String(result.announcementId || result.announcement?.id || ""),
+      whatsappSent: String(result.whatsappSent ?? 0),
+      whatsappFailed: String(result.whatsappFailed ?? 0),
+      emailSent: String(result.emailSent ?? 0),
+      emailFailed: String(result.emailFailed ?? 0),
+      queued: result.queued ? "1" : "0",
+    });
+
+    redirect(`/admin/website?${params.toString()}`);
   } catch (error) {
     // Re-throw Next.js redirect errors
     if (error instanceof Error && error.message === 'NEXT_REDIRECT') {

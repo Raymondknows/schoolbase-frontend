@@ -1,12 +1,11 @@
 "use client";
 
-"use client";
-
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { createAnnouncement } from "@/app/admin/actions";
+import { getBackendUrl } from "@/lib/backend-url";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { WhatsAppIcon } from "@/components/ui/icons";
 
 interface AcademicYearItem {
   id: string;
@@ -20,6 +19,8 @@ export default function NewAnnouncementPage() {
   const [academicYears, setAcademicYears] = useState<AcademicYearItem[]>([]);
   const [selectedAcademicYearId, setSelectedAcademicYearId] = useState("");
   const [selectedTermId, setSelectedTermId] = useState("");
+  const [whatsAppConnected, setWhatsAppConnected] = useState<boolean | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadAcademicYears() {
@@ -45,18 +46,76 @@ export default function NewAnnouncementPage() {
     loadAcademicYears();
   }, []);
 
+  useEffect(() => {
+    async function fetchWhatsAppStatus() {
+      try {
+        const response = await fetch(`${getBackendUrl()}/api/admin/whatsapp/status`, {
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (!response.ok) {
+          setWhatsAppConnected(false);
+          return;
+        }
+        const data = await response.json();
+        setWhatsAppConnected(data?.session?.status === "connected");
+      } catch {
+        setWhatsAppConnected(false);
+      }
+    }
+
+    void fetchWhatsAppStatus();
+  }, []);
+
   const termOptions = useMemo(() => {
     const year = academicYears.find((item) => item.id === selectedAcademicYearId);
     return year?.terms || [];
   }, [academicYears, selectedAcademicYearId]);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     if (submitting) {
-      event.preventDefault();
       return;
     }
 
     setSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const formData = new FormData(event.currentTarget);
+      const response = await fetch(`${getBackendUrl()}/api/admin/announcements`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: String(formData.get("title") || "").trim(),
+          body: String(formData.get("body") || "").trim(),
+          publish: formData.get("publish") === "on",
+          bulkApproval: formData.get("bulkApproval") === "on",
+          academicYearId: formData.get("academicYearId") || undefined,
+          termId: formData.get("termId") || undefined,
+        }),
+      });
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(result?.error || "Failed to publish announcement");
+      }
+
+      const params = new URLSearchParams({
+        created: "1",
+        announcementId: String(result.announcementId || result.announcement?.id || ""),
+        whatsappSent: String(result.whatsappSent ?? 0),
+        whatsappFailed: String(result.whatsappFailed ?? 0),
+        emailSent: String(result.emailSent ?? 0),
+        emailFailed: String(result.emailFailed ?? 0),
+        queued: result.queued ? "1" : "0",
+      });
+      window.location.href = `/admin/website?${params.toString()}`;
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Failed to publish announcement");
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -71,18 +130,43 @@ export default function NewAnnouncementPage() {
       </Link>
 
       {/* Form */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Post news</h1>
-        <p className="mt-1 text-muted">
-          Share announcements with parents, teachers, and the public website.
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Post news</h1>
+          <p className="mt-1 text-muted">
+            Share announcements with parents, teachers, and the public website.
+          </p>
+        </div>
+        {whatsAppConnected !== null && (
+          <div
+            className="inline-flex items-center gap-2.5 self-start rounded-full border border-border bg-surface px-2.5 py-1.5 shadow-sm sm:self-auto"
+            title={whatsAppConnected ? "WhatsApp connected — Ready to send school messages" : "WhatsApp disconnected — Reconnect via settings"}
+          >
+            <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${whatsAppConnected ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+              <WhatsAppIcon className="h-4 w-4" />
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-semibold text-foreground">
+                {whatsAppConnected ? "Connected" : "Disconnected"}
+              </span>
+              <span className="hidden text-[10px] text-muted sm:inline">
+                {whatsAppConnected ? "Ready" : "Reconnect"}
+              </span>
+            </div>
+            <span className={`h-2 w-2 rounded-full ${whatsAppConnected ? "bg-emerald-500" : "bg-amber-500"}`} />
+          </div>
+        )}
       </div>
 
       <form
-        action={createAnnouncement}
         onSubmit={handleSubmit}
         className="space-y-4 rounded-xl border border-border bg-surface p-6"
       >
+        {submitError && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {submitError}
+          </div>
+        )}
         <label className="block text-sm font-medium">
           Title *
           <input

@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { getBackendUrl } from "@/lib/backend-url";
 import { playCloseTone, playOpenTone } from "@/lib/sounds";
 import { Button } from "@/components/ui/button";
 import { ErrorModal } from "@/components/ui/error-modal";
 import { PlusCircle, Search, Trash2 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/ui/icons";
 import { UserGuide, type PageHelpGuide } from "@/components/ui/user-guide";
 import SubscriptionModal from "@/components/subscription-modal";
 import AdminSkeleton from "@/components/ui/skeleton";
@@ -104,6 +106,7 @@ const HELP_GUIDE: PageHelpGuide = {
 };
 
 export default function WebsitePage() {
+  const searchParams = useSearchParams();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -125,6 +128,7 @@ export default function WebsitePage() {
   const [selectedSessionId, setSelectedSessionId] = useState("ALL");
   const [selectedTermId, setSelectedTermId] = useState("ALL");
   const [sortMode, setSortMode] = useState("date-desc");
+  const [whatsAppConnected, setWhatsAppConnected] = useState<boolean | null>(null);
 
   interface AnnouncementTermGroup {
     termId: string;
@@ -301,6 +305,75 @@ export default function WebsitePage() {
     fetchAnnouncements();
   }, []);
 
+  useEffect(() => {
+    if (searchParams.get("created") !== "1") return;
+
+    const announcementId = searchParams.get("announcementId");
+    const whatsappSent = Number(searchParams.get("whatsappSent") || 0);
+    const whatsappFailed = Number(searchParams.get("whatsappFailed") || 0);
+    const emailSent = Number(searchParams.get("emailSent") || 0);
+    const emailFailed = Number(searchParams.get("emailFailed") || 0);
+    const queued = searchParams.get("queued") === "1";
+
+    setStatusModalType(whatsappFailed > 0 ? "error" : "success");
+    setStatusModalTitle(whatsappFailed > 0 ? "Announcement queued, WhatsApp needs attention" : "Announcement published");
+    setStatusModalMessage(
+      queued
+        ? "The announcement was saved successfully. Email and WhatsApp delivery is continuing in the background. Check Notifications for the final delivery status."
+        : `Email: ${emailSent} sent${emailFailed ? `, ${emailFailed} failed` : ""}. WhatsApp: ${whatsappSent} sent${whatsappFailed ? `, ${whatsappFailed} failed` : ""}.`
+    );
+    setStatusModalOpen(true);
+    window.history.replaceState({}, "", "/admin/website");
+
+    if (!announcementId || !queued) return;
+
+    let cancelled = false;
+    let attempts = 0;
+    const poll = async () => {
+      try {
+        const response = await fetch(`${getBackendUrl()}/api/admin/announcements/${announcementId}/delivery-status`, { credentials: "include" });
+        if (!response.ok || cancelled) return;
+        const result = await response.json();
+        if (result.complete || attempts >= 15) {
+          setStatusModalType(result.whatsappFailed > 0 ? "error" : "success");
+          setStatusModalTitle(result.whatsappFailed > 0 ? "WhatsApp delivery needs attention" : "Announcement delivery complete");
+          setStatusModalMessage(`Email: ${result.emailSent} sent${result.emailFailed ? `, ${result.emailFailed} failed` : ""}. WhatsApp: ${result.whatsappSent} sent${result.whatsappFailed ? `, ${result.whatsappFailed} failed` : ""}.`);
+          return;
+        }
+        attempts += 1;
+        window.setTimeout(poll, 2000);
+      } catch {
+        if (!cancelled && attempts < 15) {
+          attempts += 1;
+          window.setTimeout(poll, 2000);
+        }
+      }
+    };
+    void poll();
+    return () => { cancelled = true; };
+  }, [searchParams]);
+
+  useEffect(() => {
+    async function fetchWhatsAppStatus() {
+      try {
+        const response = await fetch(`${getBackendUrl()}/api/admin/whatsapp/status`, {
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (!response.ok) {
+          setWhatsAppConnected(false);
+          return;
+        }
+        const data = await response.json();
+        setWhatsAppConnected(data?.session?.status === "connected");
+      } catch {
+        setWhatsAppConnected(false);
+      }
+    }
+
+    void fetchWhatsAppStatus();
+  }, []);
+
   const openDeleteModal = (announcement: Announcement) => {
     setDeletingAnnouncementId(announcement.id);
     setDeletingAnnouncementTitle(announcement.title || "this announcement");
@@ -355,18 +428,39 @@ export default function WebsitePage() {
     <>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Announcements</h1>
             <p className="mt-1 text-muted">Manage your school's public announcements</p>
           </div>
-          <Link href="/admin/website/new">
-            <Button className="gap-2">
-              <PlusCircle className="h-4 w-4" />
-              <span className="hidden sm:inline">Post news</span>
-              <span className="inline sm:hidden">New</span>
-            </Button>
-          </Link>
+          <div className="flex flex-wrap items-center gap-3 sm:ml-auto">
+            {whatsAppConnected !== null && (
+              <div
+                className="inline-flex items-center gap-2.5 self-start rounded-full border border-border bg-surface px-2.5 py-1.5 shadow-sm sm:self-auto"
+                title={whatsAppConnected ? "WhatsApp connected — Ready to send school messages" : "WhatsApp disconnected — Reconnect via settings"}
+              >
+                <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${whatsAppConnected ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                  <WhatsAppIcon className="h-4 w-4" />
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-semibold text-foreground">
+                    {whatsAppConnected ? "Connected" : "Disconnected"}
+                  </span>
+                  <span className="hidden text-[10px] text-muted sm:inline">
+                    {whatsAppConnected ? "Ready" : "Reconnect"}
+                  </span>
+                </div>
+                <span className={`h-2 w-2 rounded-full ${whatsAppConnected ? "bg-emerald-500" : "bg-amber-500"}`} />
+              </div>
+            )}
+            <Link href="/admin/website/new">
+              <Button className="gap-2">
+                <PlusCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">Post news</span>
+                <span className="inline sm:hidden">New</span>
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Error message */}
