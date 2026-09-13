@@ -49,7 +49,7 @@ export default function NewAnnouncementPage() {
   useEffect(() => {
     async function fetchWhatsAppStatus() {
       try {
-        const response = await fetch(`${getBackendUrl()}/api/admin/whatsapp/status`, {
+        const response = await fetch("/api/admin/whatsapp/status", {
           credentials: "include",
           headers: { "Content-Type": "application/json" },
         });
