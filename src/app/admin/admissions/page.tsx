@@ -136,13 +136,18 @@ export default function AdminAdmissionsPage() {
         throw new Error(data?.error || "Unable to update status");
       }
 
-      setApplications((current) =>
-        current.map((application) =>
-          application.id === id
-            ? { ...application, status: data.application?.status || status, updatedAt: new Date().toISOString() }
-            : application
-        )
-      );
+      const nextApplication = {
+        ...selectedApplication,
+        status: data.application?.status || status,
+        studentId: data.application?.studentId || selectedApplication?.studentId,
+        admissionNo: data.student?.admissionNo || selectedApplication?.admissionNo,
+        reviewedAt: data.application?.reviewedAt || new Date().toISOString(),
+        reviewedBy: data.application?.reviewedBy || selectedApplication?.reviewedBy,
+        updatedAt: data.application?.updatedAt || new Date().toISOString(),
+      };
+
+      setApplications((current) => current.map((application) => application.id === id ? { ...application, ...nextApplication } : application));
+      setSelectedApplication((current: any) => current?.id === id ? { ...current, ...nextApplication } : current);
 
       const createdStudent = data.student ? ` A student record has been created (${data.student.id}).` : "";
       const studentCreationError = data?.studentCreationError;
@@ -352,7 +357,7 @@ export default function AdminAdmissionsPage() {
           </div>
         </div>
         {message ? (
-          <div className="rounded-3xl border border-amber-100 bg-amber-50 px-5 py-4 text-sm text-amber-900 shadow-sm">
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
             {message}
           </div>
         ) : null}
@@ -366,7 +371,7 @@ export default function AdminAdmissionsPage() {
               <h2 className="text-2xl font-semibold text-foreground">Admission applications</h2>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <div className="flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-sm text-foreground">
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground">
                 <span className="font-medium text-muted">Status filter</span>
                 <select
                   value={statusFilter}
@@ -389,7 +394,7 @@ export default function AdminAdmissionsPage() {
               Loading admissions...
             </div>
           ) : filteredApplications.length === 0 ? (
-            <div className="rounded-b-3xl px-6 py-16 text-center text-sm text-muted">
+            <div className="px-6 py-16 text-center text-sm text-muted">
               No applications match this filter.
             </div>
           ) : (
@@ -415,6 +420,7 @@ export default function AdminAdmissionsPage() {
                       <td className="px-5 py-4">
                         <div className="font-medium text-foreground">{application.childName || "—"}</div>
                         <div className="mt-1 text-xs text-muted">{application.parentName || "—"}</div>
+                        {application.admissionNo ? <div className="mt-1 text-xs font-semibold text-brand">{application.admissionNo}</div> : null}
                       </td>
                       <td className="px-5 py-4">
                         <div className="text-foreground">{application.email || "—"}</div>
@@ -422,14 +428,14 @@ export default function AdminAdmissionsPage() {
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${statusStyles[application.status] || statusStyles.SUBMITTED}`}>
+                          <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-semibold ${statusStyles[application.status] || statusStyles.SUBMITTED}`}>
                             {application.status.replace(/_/g, " ")}
                           </span>
                           <select
                             value={application.status}
                             onChange={(event) => void updateStatus(application.id, event.target.value)}
                             disabled={updatingApplicationId === application.id}
-                            className="rounded-2xl border border-border bg-background px-3 py-2 text-xs text-foreground outline-none focus:border-brand"
+                            className="rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground outline-none focus:border-brand"
                           >
                             <option value="SUBMITTED">Submitted</option>
                             <option value="UNDER_REVIEW">Under Review</option>
@@ -464,32 +470,18 @@ export default function AdminAdmissionsPage() {
 
       {successModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-[460px] overflow-hidden rounded-[28px] border border-border bg-surface shadow-[0_20px_70px_rgba(15,23,42,0.18)]">
+          <div className="w-full max-w-[460px] overflow-hidden rounded-lg border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]">
             <div className="flex items-start justify-between border-b border-border px-5 py-4">
               <div className="flex items-center gap-3">
                 <div
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border"
-                  style={{
-                    background:
-                      modalType === "success"
-                        ? "rgba(16,185,129,0.12)"
-                        : modalType === "rejected"
-                          ? "rgba(244,63,94,0.12)"
-                          : "rgba(245,158,11,0.12)",
-                    borderColor:
-                      modalType === "success"
-                        ? "rgba(16,185,129,0.24)"
-                        : modalType === "rejected"
-                          ? "rgba(244,63,94,0.24)"
-                          : "rgba(245,158,11,0.24)",
-                  }}
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-brand/20 bg-brand/10"
                 >
                   {modalType === "success" ? (
-                    <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                    <CheckCircle2 className="h-5 w-5 text-brand" />
                   ) : modalType === "rejected" ? (
-                    <CircleX className="h-5 w-5 text-rose-600" />
+                    <CircleX className="h-5 w-5 text-brand" />
                   ) : (
-                    <AlertTriangle className="h-5 w-5 text-amber-600" />
+                    <AlertTriangle className="h-5 w-5 text-brand" />
                   )}
                 </div>
                 <div>
@@ -510,7 +502,7 @@ export default function AdminAdmissionsPage() {
                   playCloseTone();
                   setSuccessModalOpen(false);
                 }}
-                className="rounded-full border border-border bg-background p-2 text-muted transition hover:bg-surface hover:text-foreground"
+                className="rounded-lg border border-border bg-background p-2 text-muted transition hover:bg-surface hover:text-foreground"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -525,7 +517,7 @@ export default function AdminAdmissionsPage() {
                   playCloseTone();
                   setSuccessModalOpen(false);
                 }}
-                className="w-full rounded-2xl border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface"
+                className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface"
               >
                 Close
               </button>
@@ -536,7 +528,7 @@ export default function AdminAdmissionsPage() {
 
       {detailModalVisible && selectedApplication && (
         <div className={`fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-3 py-4 sm:px-4 transition-opacity duration-300 ease-out ${detailModalOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
-          <div className={`w-full max-w-[1120px] max-h-[calc(100vh-1.5rem)] overflow-hidden rounded-[28px] border border-border bg-surface shadow-[0_24px_90px_rgba(15,23,42,0.18)] transition-all duration-500 ease-out ${detailModalOpen ? "translate-y-0 opacity-100" : "translate-y-16 opacity-0"}`}>
+          <div className={`w-full max-w-[1120px] max-h-[calc(100vh-1.5rem)] overflow-hidden rounded-lg border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)] transition-all duration-500 ease-out ${detailModalOpen ? "translate-y-0 opacity-100" : "translate-y-16 opacity-0"}`}>
             <div
               className="flex flex-col gap-4 border-b border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 bg-background"
             >
@@ -692,19 +684,19 @@ export default function AdminAdmissionsPage() {
 
                   <section className="border border-border bg-surface p-5">
                     <p className="text-[10px] font-bold uppercase tracking-[.12em] text-muted mb-4">Internal Review Notes</p>
-                    <div className="mt-4 rounded-2xl bg-background p-4 text-sm leading-6 text-foreground whitespace-pre-wrap">
+                    <div className="mt-4 rounded-lg bg-background p-4 text-sm leading-6 text-foreground whitespace-pre-wrap">
                       {selectedApplication.note || "No internal review notes are currently attached to this application."}
                     </div>
                   </section>
 
-                  <section className="rounded-[24px] border border-border bg-surface p-4 shadow-sm">
+                  <section className="rounded-lg border border-border bg-surface p-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand">Medical Notes</p>
-                    <div className="mt-4 rounded-2xl bg-background p-4 text-sm leading-6 text-foreground whitespace-pre-wrap">
+                    <div className="mt-4 rounded-lg bg-background p-4 text-sm leading-6 text-foreground whitespace-pre-wrap">
                       {selectedApplication.medicalNotes || "—"}
                     </div>
                   </section>
 
-                  <section className="rounded-[24px] border border-border bg-surface p-4 shadow-sm">
+                  <section className="rounded-lg border border-border bg-surface p-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand">Meta</p>
                     <dl className="mt-4 space-y-3 text-sm text-foreground">
                       <div>
@@ -721,6 +713,12 @@ export default function AdminAdmissionsPage() {
                           <dd className="mt-1">{selectedApplication.applicationNumber}</dd>
                         </div>
                       ) : null}
+                      {selectedApplication.admissionNo ? (
+                        <div>
+                          <dt className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted">Admission Number</dt>
+                          <dd className="mt-1 font-semibold text-brand">{selectedApplication.admissionNo}</dd>
+                        </div>
+                      ) : null}
                     </dl>
                   </section>
                 </div>
@@ -734,7 +732,7 @@ export default function AdminAdmissionsPage() {
                     <button
                       type="button"
                       onClick={() => void updateStatus(selectedApplication.id, "APPROVED")}
-                      className="rounded-2xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                      className="rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
                     >
                       Approve
                     </button>
@@ -743,7 +741,7 @@ export default function AdminAdmissionsPage() {
                     <button
                       type="button"
                       onClick={() => void updateStatus(selectedApplication.id, "UNDER_REVIEW")}
-                      className="rounded-2xl border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:border-border hover:bg-surface focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
+                      className="rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:border-border hover:bg-surface focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
                     >
                       Under Review
                     </button>
@@ -752,7 +750,7 @@ export default function AdminAdmissionsPage() {
                     <button
                       type="button"
                       onClick={() => void updateStatus(selectedApplication.id, "REJECTED")}
-                      className="rounded-2xl border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
+                      className="rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
                     >
                       Reject
                     </button>
@@ -761,7 +759,7 @@ export default function AdminAdmissionsPage() {
                 <button
                   type="button"
                   onClick={closeApplicationDetail}
-                  className="rounded-2xl border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:border-border hover:bg-surface focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
+                  className="rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:border-border hover:bg-surface focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
                 >
                   Close
                 </button>

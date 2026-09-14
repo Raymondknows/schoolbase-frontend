@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { CheckCircle2, GraduationCap, Mail, Phone, Send, Sparkles, Upload } from "lucide-react";
 import { getBackendUrl } from "@/lib/backend-url";
@@ -47,6 +47,7 @@ export default function PublicAdmissionsPage() {
   const [modalMessage, setModalMessage] = useState<string>('');
   const [modalDetails, setModalDetails] = useState<string>('');
   const [activeTab, setActiveTab] = useState<"applicant" | "student" | "guardian" | "photo">("applicant");
+  const submissionKeyRef = useRef<string>(crypto.randomUUID());
 
   useEffect(() => {
     async function loadSettings() {
@@ -165,6 +166,13 @@ export default function PublicAdmissionsPage() {
     return 'Admissions are open now.';
   }, [settings, openingDate, closingDate, today]);
 
+  const completedSteps = [
+    Boolean(form.firstName.trim() && form.lastName.trim() && form.email.trim() && form.phone.trim()),
+    Boolean(form.studentFirstName.trim() && form.studentLastName.trim()),
+    Boolean(form.guardianFirst.trim() || form.guardianLast.trim() || form.guardianEmail.trim() || form.guardianPhone.trim()),
+    Boolean(photoFile),
+  ];
+
   const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
     if (!file) {
@@ -235,10 +243,15 @@ export default function PublicAdmissionsPage() {
 
       if (photoFile) formData.append('photo', photoFile);
 
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 45_000);
       const response = await fetch(`${backendUrl}/api/admissions`, {
         method: 'POST',
         body: formData,
+        headers: { 'X-Admission-Request-Id': submissionKeyRef.current },
+        signal: controller.signal,
       });
+      window.clearTimeout(timeout);
 
       const data = await response.json().catch(() => null);
       if (!response.ok) throw new Error(data?.error || 'Unable to submit your request');
@@ -278,79 +291,119 @@ export default function PublicAdmissionsPage() {
       });
       setPhotoFile(null);
       setPhotoPreview("");
+      submissionKeyRef.current = crypto.randomUUID();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to submit your request');
+      setError(err instanceof DOMException && err.name === 'AbortError'
+        ? 'Submission timed out. Please check your connection and try again.'
+        : err instanceof Error ? err.message : 'Unable to submit your request');
     } finally {
       setSubmitting(false);
     }
   }
 
   const tabs = [
-    { id: "applicant", label: "Applicant" },
-    { id: "student", label: "Student" },
-    { id: "guardian", label: "Guardian" },
-    { id: "photo", label: "Photo" },
+    { id: "applicant", label: "Applicant", detail: "Contact details" },
+    { id: "student", label: "Student", detail: "Academic profile" },
+    { id: "guardian", label: "Guardian", detail: "Family contact" },
+    { id: "photo", label: "Photo", detail: "Final review" },
   ] as const;
 
   const contactItems = contactInfoItems;
   const pageContainerClass = admissionsOpen ? "mx-auto grid max-w-7xl gap-8 lg:grid-cols-[360px_minmax(0,1fr)]" : "mx-auto max-w-7xl";
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-10 text-slate-900 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[#f6f8fb] px-4 py-6 text-slate-900 sm:px-6 lg:px-8 sm:py-8">
+      <div className="mx-auto mb-6 flex max-w-7xl flex-col justify-between gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-end">
+        <div>
+          <div className="flex items-center gap-2 text-sm font-semibold text-[#0A66C2]">
+            <GraduationCap className="h-4 w-4" /> Admissions workspace
+          </div>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Online application</h1>
+          <p className="mt-1 text-sm text-slate-600">A guided application experience for {school?.name || displaySchool?.name || 'your school'}</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+          <span className={`inline-flex items-center gap-2 rounded-full px-3 py-2 ${statusBadgeClass}`}>
+            <span className="h-2 w-2 rounded-full bg-current" /> {statusBadgeText}
+          </span>
+          {settings?.closingDate ? <span className="rounded-full border border-slate-200 bg-white px-3 py-2 text-slate-600">Closes {new Date(settings.closingDate).toLocaleDateString()}</span> : null}
+        </div>
+      </div>
+
+      {admissionsOpen ? (
+        <div className="mx-auto mb-6 grid max-w-7xl gap-3 sm:grid-cols-3">
+          <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
+            <p className="text-[10px] font-bold uppercase tracking-[.12em] text-slate-500">Application mode</p>
+            <p className="mt-1 font-semibold text-slate-900">Guided submission</p>
+          </div>
+          <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
+            <p className="text-[10px] font-bold uppercase tracking-[.12em] text-slate-500">Application steps</p>
+            <p className="mt-1 font-semibold text-slate-900">{completedSteps.filter(Boolean).length} of {tabs.length} completed</p>
+          </div>
+          <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
+            <p className="text-[10px] font-bold uppercase tracking-[.12em] text-slate-500">Expected time</p>
+            <p className="mt-1 font-semibold text-slate-900">About 5 minutes</p>
+          </div>
+        </div>
+      ) : null}
+
       <div className={pageContainerClass}>
         {admissionsOpen ? (
           <aside className="space-y-6">
-            <div className="rounded-3xl border border-[#0A66C2]/20 bg-[#0A66C2]/10 p-6 shadow-sm">
-              <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-3xl bg-white shadow-sm">
+            <div className="rounded-lg border border-border bg-surface p-6 shadow-sm">
+              <div className="flex items-start gap-4">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-brand/15 bg-brand/5">
                   {school?.logoUrl ? (
                     <img src={school.logoUrl} alt={`${school?.name} logo`} className="h-full w-full object-contain" />
                   ) : (
                     <span className="text-2xl font-semibold text-[#0A66C2]">{school?.name?.slice(0, 2).toUpperCase() || "S"}</span>
                   )}
                 </div>
-                <div>
-                  <h1 className="text-2xl font-semibold text-slate-900">{school?.name || "Apply now"}</h1>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-[.12em] text-brand">Admissions workspace</p>
+                  <h1 className="mt-1 text-2xl font-bold tracking-tight text-foreground">{school?.name || "Apply now"}</h1>
                   {(school?.address || school?.city) ? (
-                    <p className="mt-1 text-sm text-slate-600">
+                    <p className="mt-1 text-sm text-muted">
                       {[school?.address, school?.city].filter(Boolean).join(', ')}
                     </p>
                   ) : null}
                 </div>
               </div>
 
-              <p className="mt-5 text-sm leading-6 text-slate-700">
+              <div className="mt-5 border-t border-border pt-5">
+                <p className="text-sm leading-6 text-foreground">
                 {settings?.introText ?? `Apply online for ${school?.name || 'this school'} in just a few steps.`}
-              </p>
+                </p>
+              </div>
 
               {contactItems.length > 0 ? (
-                <div className="mt-6 space-y-3 text-sm text-slate-700">
+                <div className="mt-5 grid gap-2 text-sm text-muted">
                   {contactItems.map((item: string, index: number) => (
-                    <div key={index} className="flex items-center gap-2">
+                    <div key={index} className="flex min-w-0 items-center gap-2 rounded-md border border-border bg-background px-3 py-2">
+                      {index === 0 ? <Mail className="h-4 w-4 shrink-0 text-brand" /> : <Phone className="h-4 w-4 shrink-0 text-brand" />}
                       <span>{item}</span>
                     </div>
                   ))}
                 </div>
               ) : null}
 
-              <div className="mt-6 flex flex-wrap gap-3 text-sm">
-                <span className={`inline-flex items-center rounded-full px-3 py-2 font-semibold ${statusBadgeClass}`}>
+              <div className="mt-5 grid gap-2 text-xs sm:grid-cols-3">
+                <span className={`inline-flex items-center justify-center rounded-md px-3 py-2 text-center font-semibold ${statusBadgeClass}`}>
                   {statusBadgeLabel}
                 </span>
                 {settings?.openingDate ? (
-                  <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-2 text-slate-700">
+                  <span className="inline-flex items-center justify-center rounded-md border border-border bg-background px-3 py-2 text-center text-muted">
                     Starts {new Date(settings.openingDate).toLocaleDateString()}
                   </span>
                 ) : null}
                 {settings?.closingDate ? (
-                  <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-2 text-slate-700">
+                  <span className="inline-flex items-center justify-center rounded-md border border-border bg-background px-3 py-2 text-center text-muted">
                     Ends {new Date(settings.closingDate).toLocaleDateString()}
                   </span>
                 ) : null}
               </div>
             </div>
 
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
               <h2 className="text-lg font-semibold text-slate-900">Admissions requirements</h2>
               <ol className="mt-4 space-y-3 text-sm text-slate-700">
                 {requirementItems.map((item: string, index: number) => (
@@ -364,18 +417,22 @@ export default function PublicAdmissionsPage() {
           </aside>
         ) : null}
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
           {admissionsOpen ? (
             <div className="mb-7">
-              <div className="flex flex-wrap items-center gap-3">
-                {tabs.map((tab) => (
+              <div className="grid gap-2 sm:grid-cols-4">
+                {tabs.map((tab, index) => (
                   <button
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
-                    className={`cursor-pointer rounded-full px-4 py-2 text-sm font-semibold transition ${activeTab === tab.id ? "bg-[#0A66C2] text-white shadow-sm" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}
+                    className={`cursor-pointer rounded-lg border px-3 py-3 text-left transition ${activeTab === tab.id ? "border-[#0A66C2] bg-[#0A66C2] text-white shadow-sm" : "border-slate-200 bg-white text-slate-700 hover:border-[#0A66C2]/40 hover:bg-slate-50"}`}
                   >
-                    {tab.label}
+                    <span className="flex items-center justify-between gap-2">
+                      <span className="flex items-center gap-2"><span className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs ${activeTab === tab.id ? "bg-white/20" : "bg-slate-100 text-slate-500"}`}>{index + 1}</span>{tab.label}</span>
+                      {completedSteps[index] ? <CheckCircle2 className="h-4 w-4" /> : null}
+                    </span>
+                    <span className={`mt-1 block pl-8 text-[11px] ${activeTab === tab.id ? "text-white/75" : "text-slate-500"}`}>{tab.detail}</span>
                   </button>
                 ))}
               </div>
@@ -650,29 +707,23 @@ export default function PublicAdmissionsPage() {
               </div>
             )}
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-3">
                 {error ? <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div> : null}
               </div>
+              <div className="flex items-center gap-2">
+              {activeTab !== "applicant" ? (
+                <button type="button" onClick={() => { const currentIndex = tabs.findIndex((tab) => tab.id === activeTab); setActiveTab(tabs[currentIndex - 1].id); }} className="cursor-pointer rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Back</button>
+              ) : null}
               {activeTab !== "photo" ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const currentIndex = tabs.findIndex((tab) => tab.id === activeTab);
-                    if (currentIndex < tabs.length - 1) {
-                      setActiveTab(tabs[currentIndex + 1].id);
-                    }
-                  }}
-                  className="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-[#0A66C2] px-4 py-2.5 font-semibold text-white transition hover:opacity-90"
-                >
-                  Next
-                </button>
+                <button type="button" onClick={() => { const currentIndex = tabs.findIndex((tab) => tab.id === activeTab); if (currentIndex < tabs.length - 1) setActiveTab(tabs[currentIndex + 1].id); }} className="cursor-pointer inline-flex items-center gap-2 rounded-lg bg-[#0A66C2] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0959a8]">Next</button>
               ) : (
                 <button type="submit" disabled={submitting} className="cursor-pointer inline-flex items-center gap-2 rounded-xl px-4 py-2.5 font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70" style={{ backgroundColor: primaryColor }}>
                   <Send className="h-4 w-4" />
                   {submitting ? "Submitting..." : "Submit"}
                 </button>
               )}
+              </div>
             </div>
           </form>
           )}
