@@ -200,7 +200,7 @@ export default function TeacherReportsPage({
       </Link>
 
       <div className="mb-6 print:hidden">
-        <TeacherPageHeader icon={FileText} title="Report cards" description={`Generate and review professional report cards for ${assessment.name}.`} count={`${uniqueStudents.length} students`}>
+        <TeacherPageHeader icon={FileText} title="Report cards" description={`Generate and review professional report cards for ${assessment.name}.`} count={`${uniqueStudents.length} students`} actionLabel="Assessment" actionHref={`/teacher/results/${id}`}>
           <Badge variant={isPublished ? "success" : "secondary"} className="px-3 py-2">{isPublished ? "Published" : assessment.status}</Badge>
         </TeacherPageHeader>
       </div>
@@ -211,7 +211,7 @@ export default function TeacherReportsPage({
           <div className="sticky top-4 border border-border bg-surface">
             <div className="border-b border-border bg-background px-5 py-4"><p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand">Report queue</p><h2 className="mt-1 text-lg font-semibold text-foreground">Select a student</h2><p className="mt-1 text-xs text-muted">Choose a learner to preview or download their report card.</p></div>
             <div className="p-5">
-            <label className="block text-xs font-semibold text-gray-600 mb-2" htmlFor="student-search">
+            <label className="block text-[11px] font-bold uppercase tracking-[.12em] text-muted mb-2" htmlFor="student-search">
               Search student
             </label>
             <input
@@ -220,17 +220,17 @@ export default function TeacherReportsPage({
               value={studentFilter}
               onChange={(event) => setStudentFilter(event.target.value)}
               placeholder="Search by name or admission"
-              className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-foreground shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/10 mb-4"
+              className="mb-4 w-full rounded-md border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition placeholder:text-muted focus:border-brand focus:ring-2 focus:ring-brand/10"
             />
 
-            <label className="block text-xs font-semibold text-gray-600 mb-2" htmlFor="student-select">
+            <label className="block text-[11px] font-bold uppercase tracking-[.12em] text-muted mb-2" htmlFor="student-select">
               Select student
             </label>
             <select
               id="student-select"
               value={selectedStudent || ""}
               onChange={(event) => setSelectedStudent(event.target.value)}
-              className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/10"
+              className="w-full rounded-md border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"
             >
               {filteredStudents.length === 0 ? (
                 <option value="">No matching students</option>
@@ -249,8 +249,12 @@ export default function TeacherReportsPage({
 
         {/* Report Card Viewer */}
         <div className="lg:col-span-3 print:block print:w-full">
+          <div className="mb-3 flex items-center justify-between border border-border bg-surface px-5 py-4 print:hidden">
+            <div><p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand">Document preview</p><h2 className="mt-1 text-lg font-semibold text-foreground">Student report card</h2></div>
+            <span className="text-xs font-semibold text-muted">{selectedStudent ? "Ready to review" : "Select a student"}</span>
+          </div>
           {reportLoading ? (
-            <div className="text-center py-12 text-muted">Loading report card...</div>
+            <div className="space-y-4 border border-border bg-surface p-6"><div className="h-8 w-1/3 animate-pulse bg-slate-200" /><div className="h-4 w-2/3 animate-pulse bg-slate-100" /><div className="h-72 animate-pulse bg-slate-100" /></div>
           ) : reportCardData && selectedStudent ? (
             <WaecReportCard
               assessmentId={id}

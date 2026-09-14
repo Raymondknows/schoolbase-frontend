@@ -1,13 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { use, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { use, useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, Save, AlertCircle } from "lucide-react";
+import {
+  AlertCircle,
+  BookOpen,
+  CheckCircle2,
+  Save,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
 import { getBackendUrl } from "@/lib/backend-url";
 import AdminSkeleton from "@/components/ui/skeleton";
+import TeacherPageHeader from "@/components/teacher-page-header";
 
 interface ScoreEntry {
   pupilId: string;
@@ -67,9 +74,7 @@ export default function TeacherScoreEntryPage({
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  const router = useRouter();
-
-  const fetchAssessment = async () => {
+  const fetchAssessment = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/teacher/assessments/${id}`);
@@ -80,7 +85,14 @@ export default function TeacherScoreEntryPage({
       const uniquePupils: Record<string, Pupil> = {};
       const initialScores: Record<string, ScoreEntry> = {};
 
-      data.assessment.results.forEach((result: any) => {
+      data.assessment.results.forEach((result: {
+        pupilId: string;
+        pupilName: string;
+        admissionNo: string;
+        caScore: number | null;
+        testScore: number | null;
+        examScore: number | null;
+      }) => {
         const pupilId = result.pupilId;
         if (!uniquePupils[pupilId]) {
           uniquePupils[pupilId] = {
@@ -105,11 +117,13 @@ export default function TeacherScoreEntryPage({
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
-    fetchAssessment();
-  }, [id]);
+    Promise.resolve().then(() => {
+      void fetchAssessment();
+    });
+  }, [fetchAssessment]);
 
   const handleScoreChange = (
     pupilId: string,
@@ -145,6 +159,10 @@ export default function TeacherScoreEntryPage({
       }, 0)
       .toFixed(1);
   };
+
+  const completedRows = Object.values(scores).filter(
+    (entry) => calculateTotal(entry.caScore, entry.testScore, entry.examScore) !== null
+  ).length;
 
   const handleSave = async () => {
     if (!assessment) return;
@@ -206,7 +224,9 @@ export default function TeacherScoreEntryPage({
           href={`/teacher/results/${id}`}
           className="inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline mb-4"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <span className="inline-flex h-5 w-5 items-center justify-center">
+            <AlertCircle className="h-4 w-4" />
+          </span>
           Back
         </Link>
         <div className="rounded-lg border border-red-200 bg-red-50 p-4">
@@ -221,127 +241,215 @@ export default function TeacherScoreEntryPage({
   const isDraft = assessment.status === "DRAFT" && canEdit && !isLocked;
 
   return (
-    <div className="mx-auto max-w-7xl px-3 py-4">
-      <Link
-        href={`/teacher/results/${id}`}
-        className="inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline mb-4"
+    <div className="mx-auto max-w-7xl space-y-6 px-3 py-6 sm:px-6 lg:px-8">
+      <TeacherPageHeader
+        icon={BookOpen}
+        title={assessment.name}
+        description="Score entry workspace for this assessment and learner set."
+        count={isDraft ? "Draft" : assessment.status}
+        actionLabel="Assessment"
+        actionHref={`/teacher/results/${id}`}
       >
-        <ChevronLeft className="w-4 h-4" />
-        Back to Assessment
-      </Link>
-
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">{assessment.name}</h1>
-          <p className="text-sm text-muted mt-1">Enter scores for your students</p>
-        </div>
-        <Badge variant={isDraft ? "default" : "secondary"} className="bg-brand/10 text-brand border-brand/30">
-          {isDraft ? "Draft - Editing Allowed" : "Status: " + assessment.status}
-        </Badge>
-      </div>
-
-      <div className="mb-6 rounded-lg border border-border bg-surface p-4">
-        <h3 className="text-sm font-semibold text-foreground mb-3">Scoring Standard</h3>
-        <div className="flex flex-wrap gap-2">
-          {components.map((component) => (
-            <Badge key={component.id} variant="secondary" className="bg-brand/10 text-brand border-brand/30">
-              {component.name} ({component.maxScore})
-            </Badge>
-          ))}
-        </div>
-      </div>
+        {isDraft && (
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            className="bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover"
+          >
+            <Save className="mr-2 h-4 w-4" />
+            {saving ? "Saving..." : "Save scores"}
+          </Button>
+        )}
+      </TeacherPageHeader>
 
       {!isDraft && (
-        <div className="mb-6 flex gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
-          <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-          <div>
-            <h3 className="font-semibold text-amber-900">Assessment Locked</h3>
-            <p className="text-sm text-amber-800 mt-1">
-              {isLocked
-                ? "This assessment is locked and score entry is disabled."
-                : "This assessment is no longer in draft status. Score entry is disabled."}
-            </p>
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <div className="flex items-start gap-3">
+            <ShieldCheck className="mt-0.5 h-5 w-5 text-amber-700" />
+            <div>
+              <p className="text-sm font-semibold text-amber-900">Assessment status</p>
+              <p className="mt-1 text-sm text-amber-700">
+                {isLocked
+                  ? "This assessment is locked and score entry is disabled."
+                  : "This assessment is no longer in draft status, so score entry is disabled."}
+              </p>
+            </div>
           </div>
         </div>
       )}
 
       {message && (
         <div
-          className={`mb-6 rounded-lg p-4 ${
+          className={`rounded-2xl border p-4 ${
             message.type === "success"
-              ? "border border-green-200 bg-green-50 text-green-700"
-              : "border border-red-200 bg-red-50 text-red-700"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+              : "border-red-200 bg-red-50 text-red-700"
           }`}
         >
-          <p className="text-sm font-medium">{message.text}</p>
+          <div className="flex items-start gap-3">
+            {message.type === "success" ? (
+              <CheckCircle2 className="mt-0.5 h-5 w-5" />
+            ) : (
+              <AlertCircle className="mt-0.5 h-5 w-5" />
+            )}
+            <p className="text-sm font-medium">{message.text}</p>
+          </div>
         </div>
       )}
 
+      <section className="grid gap-4 md:grid-cols-3">
+        <div className="border border-border bg-surface p-5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand/10 text-brand">
+            <Users className="h-5 w-5" />
+          </div>
+          <p className="mt-4 text-[11px] font-bold uppercase tracking-[.14em] text-muted">Learners</p>
+          <p className="mt-2 text-3xl font-semibold text-foreground">{pupils.length}</p>
+          <p className="mt-1 text-xs text-muted">Assigned to this assessment</p>
+        </div>
+
+        <div className="border border-border bg-surface p-5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
+            <CheckCircle2 className="h-5 w-5" />
+          </div>
+          <p className="mt-4 text-[11px] font-bold uppercase tracking-[.14em] text-muted">Completion</p>
+          <p className="mt-2 text-3xl font-semibold text-foreground">{completedRows}</p>
+          <p className="mt-1 text-xs text-muted">Rows with all scores entered</p>
+        </div>
+
+        <div className="border border-border bg-surface p-5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand/10 text-brand">
+            <BookOpen className="h-5 w-5" />
+          </div>
+          <p className="mt-4 text-[11px] font-bold uppercase tracking-[.14em] text-muted">Mode</p>
+          <p className="mt-2 text-3xl font-semibold text-foreground">{isDraft ? "Entry" : "Review"}</p>
+          <p className="mt-1 text-xs text-muted">{isDraft ? "Ready for updates" : "Locked for review"}</p>
+        </div>
+      </section>
+
+      <div className="border border-border bg-surface p-5">
+        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand">Scoring standard</p>
+            <h3 className="mt-1 text-lg font-semibold text-foreground">Assessment components</h3>
+            <p className="mt-1 text-sm text-muted">Each learner is scored against the configured component mix.</p>
+          </div>
+          <span className="text-xs font-semibold text-muted">{components.length} weighted components</span>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          {components.map((component) => (
+            <Badge key={component.id} variant="secondary" className="border border-brand/20 bg-brand/10 text-brand">
+              {component.name} ({component.maxScore})
+            </Badge>
+          ))}
+        </div>
+      </div>
+
       {pupils.length === 0 ? (
-        <div className="rounded-lg border border-border bg-surface p-8 text-center">
-          <p className="text-muted">No students assigned to this assessment</p>
+        <div className="rounded-2xl border border-dashed border-border bg-surface px-6 py-14 text-center">
+          <BookOpen className="mx-auto mb-4 h-12 w-12 text-muted" />
+          <h2 className="text-lg font-semibold text-foreground">No students assigned</h2>
+          <p className="mt-2 text-sm text-muted">There are no learners linked to this assessment yet.</p>
         </div>
       ) : (
         <>
-          <div className="mb-6 rounded-lg border border-border bg-surface overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="border-b border-border bg-background">
-                <tr>
-                  <th className="px-4 py-3 text-left font-semibold">Student Name</th>
-                  <th className="px-4 py-3 text-center font-semibold">Admission No</th>
-                  {components.map((component) => (
-                    <th key={component.id} className="px-4 py-3 text-center font-semibold">
-                      {component.name} ({component.maxScore})
-                    </th>
-                  ))}
-                  <th className="px-4 py-3 text-center font-semibold">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pupils.map((pupil, index) => {
-                  const score = scores[pupil.id];
-                  const total = calculateTotal(score?.caScore ?? null, score?.testScore ?? null, score?.examScore ?? null);
-                  return (
-                    <tr key={pupil.id} className={index % 2 === 0 ? "bg-surface" : "bg-background/50"}>
-                      <td className="px-4 py-3 font-medium">{pupil.name}</td>
-                      <td className="px-4 py-3 text-center text-xs text-muted">{pupil.admissionNo}</td>
-                      {components.map((component, componentIndex) => {
-                        const field = ["caScore", "testScore", "examScore"][componentIndex] as
-                          | "caScore"
-                          | "testScore"
-                          | "examScore";
+          <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+            <div className="border-b border-border bg-background px-5 py-4">
+              <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand">Gradebook</p>
+                  <h2 className="mt-1 text-lg font-semibold text-foreground">Student score entry</h2>
+                </div>
+                <span className="inline-flex items-center gap-2 self-start rounded-full border border-border bg-surface px-3 py-2 text-xs font-semibold text-muted sm:self-auto">
+                  <span className="h-2 w-2 rounded-full bg-brand" />
+                  {completedRows} of {pupils.length} rows complete
+                </span>
+              </div>
 
-                        return (
-                          <td key={component.id} className="px-4 py-3">
-                            <input
-                              type="number"
-                              min="0"
-                              max={component.maxScore}
-                              step="0.1"
-                              value={score?.[field] ?? ""}
-                              onChange={(e) => handleScoreChange(pupil.id, field, e.target.value)}
-                              disabled={!isDraft}
-                              className="w-full max-w-20 rounded border border-border bg-surface px-2 py-1 text-center text-sm disabled:bg-gray-100 disabled:text-gray-500"
-                            />
-                          </td>
-                        );
-                      })}
-                      <td className="px-4 py-3 text-center font-semibold">{total ?? "—"}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+              <div className="mt-4 h-2 overflow-hidden rounded-full bg-border">
+                <div
+                  className="h-full rounded-full bg-brand transition-all duration-300"
+                  style={{
+                    width: `${pupils.length ? Math.min(100, Math.round((completedRows / pupils.length) * 100)) : 0}%`,
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-border bg-background text-[10px] uppercase tracking-[.12em] text-muted">
+                  <tr>
+                    <th className="px-4 py-3 font-bold">Student</th>
+                    <th className="px-4 py-3 font-bold">Admission no</th>
+                    {components.map((component) => (
+                      <th key={component.id} className="px-4 py-3 text-center font-bold">
+                        {component.name} ({component.maxScore})
+                      </th>
+                    ))}
+                    <th className="px-4 py-3 text-center font-bold">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pupils.map((pupil, index) => {
+                    const score = scores[pupil.id];
+                    const total = calculateTotal(
+                      score?.caScore ?? null,
+                      score?.testScore ?? null,
+                      score?.examScore ?? null
+                    );
+
+                    return (
+                      <tr
+                        key={pupil.id}
+                        className={index % 2 === 0 ? "bg-surface" : "bg-background/60"}
+                      >
+                        <td className="px-4 py-3 text-sm font-semibold text-foreground">{pupil.name}</td>
+                        <td className="px-4 py-3 text-sm text-muted">{pupil.admissionNo}</td>
+                        {components.map((component, componentIndex) => {
+                          const field = ["caScore", "testScore", "examScore"][componentIndex] as
+                            | "caScore"
+                            | "testScore"
+                            | "examScore";
+
+                          return (
+                            <td key={component.id} className="border-l border-border px-4 py-3 text-center">
+                              <input
+                                type="number"
+                                min="0"
+                                max={component.maxScore}
+                                step="0.1"
+                                value={score?.[field] ?? ""}
+                                onChange={(e) => handleScoreChange(pupil.id, field, e.target.value)}
+                                disabled={!isDraft}
+                                className="w-20 rounded-lg border border-border bg-background px-2 py-2 text-center text-sm font-medium text-foreground shadow-sm transition focus:outline-none focus:ring-2 focus:ring-brand/30 disabled:cursor-not-allowed disabled:bg-muted/10"
+                              />
+                            </td>
+                          );
+                        })}
+                        <td className="px-4 py-3 text-center text-sm font-semibold text-foreground">
+                          {total ?? "—"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {isDraft && (
-            <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => router.push(`/teacher/results/${id}`)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSave} disabled={saving} className="gap-2 bg-brand hover:bg-brand-dark">
-                <Save className="w-4 h-4" />
-                {saving ? "Saving..." : "Save Scores"}
+            <div className="flex flex-col justify-end gap-3 sm:flex-row">
+              <Link href={`/teacher/results/${id}`}>
+                <Button variant="outline">Cancel</Button>
+              </Link>
+              <Button
+                onClick={handleSave}
+                disabled={saving}
+                className="bg-brand hover:bg-brand/90 text-white"
+              >
+                <Save className="mr-2 h-4 w-4" />
+                {saving ? "Saving..." : "Save scores"}
               </Button>
             </div>
           )}

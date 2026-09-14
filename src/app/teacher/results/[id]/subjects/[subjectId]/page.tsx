@@ -2,13 +2,21 @@
 
 import Link from "next/link";
 import { Fragment, use, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, Save, AlertCircle } from "lucide-react";
+import {
+  AlertCircle,
+  BookOpen,
+  CheckCircle2,
+  ChevronLeft,
+  Save,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
 import { getBackendUrl } from "@/lib/backend-url";
 import { ErrorModal } from "@/components/ui/error-modal";
 import AdminSkeleton from "@/components/ui/skeleton";
+import TeacherPageHeader from "@/components/teacher-page-header";
 
 interface ScoreEntry {
   pupilId: string;
@@ -77,8 +85,6 @@ export default function TeacherSubjectScoresPage({
   const [saveModalType, setSaveModalType] = useState<"success" | "error">("success");
   const [saveModalTitle, setSaveModalTitle] = useState("Scores saved");
   const [saveModalMessage, setSaveModalMessage] = useState("");
-
-  const router = useRouter();
 
   const fetchAssessment = async () => {
     try {
@@ -292,35 +298,95 @@ export default function TeacherSubjectScoresPage({
     }, new Map<string, { classId: string | null; className: string; results: AssessmentResult[] }>())
   ).sort((a, b) => a[1].className.localeCompare(b[1].className));
 
+  const completedEntries = Object.values(scores).filter(
+    (entry) => calculateTotal(entry.caScore, entry.testScore, entry.examScore) !== null
+  ).length;
+
   return (
-    <div className="mx-auto max-w-6xl px-3 py-4">
-      <Link
-        href={`/teacher/results/${id}/subjects`}
-        className="inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline mb-4"
+    <div className="mx-auto max-w-7xl space-y-6 px-3 py-6 sm:px-6 lg:px-8">
+      <TeacherPageHeader
+        icon={BookOpen}
+        title={subjectName}
+        description={`Score-entry workspace for ${assessment.name} · ${phaseLabel}`}
+        count={readOnly ? "Read only" : `${results.length} students`}
+        actionLabel="Subjects"
+        actionHref={`/teacher/results/${id}/subjects`}
       >
-        <ChevronLeft className="w-4 h-4" />
-        Back to Subjects
-      </Link>
+        {!readOnly && (
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            className="bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover"
+          >
+            <Save className="mr-2 h-4 w-4" />
+            {saving ? "Saving..." : "Save scores"}
+          </Button>
+        )}
+      </TeacherPageHeader>
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{assessment.name}</h1>
-          <p className="text-sm text-muted mt-1">Subject: {subjectName}</p>
-          <p className="text-xs text-muted mt-1">Phase: {phaseLabel}</p>
+      {(isPublished || isLocked) && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <div className="flex items-start gap-3">
+            <ShieldCheck className="mt-0.5 h-5 w-5 text-amber-700" />
+            <div>
+              <p className="text-sm font-semibold text-amber-900">
+                {isLocked ? "Assessment locked" : "Assessment published"}
+              </p>
+              <p className="mt-1 text-sm text-amber-700">
+                {isLocked
+                  ? "This assessment is locked and cannot be edited."
+                  : "This assessment is published and cannot be edited."}
+              </p>
+            </div>
+          </div>
         </div>
-        <Badge variant="secondary" className="bg-brand/10 text-brand border-brand/30">
-          West African Standard
-        </Badge>
-      </div>
+      )}
 
-      <div className="mb-6 rounded-lg border border-border bg-surface p-4">
-        <h3 className="text-sm font-semibold text-foreground mb-3">Scoring Standard</h3>
-        <div className="flex flex-wrap gap-2">
+      <section className="grid gap-4 md:grid-cols-3">
+        <div className="border border-border bg-surface p-5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand/10 text-brand">
+            <Users className="h-5 w-5" />
+          </div>
+          <p className="mt-4 text-[11px] font-bold uppercase tracking-[.14em] text-muted">Students</p>
+          <p className="mt-2 text-3xl font-semibold text-foreground">{results.length}</p>
+          <p className="mt-1 text-xs text-muted">Assigned to this subject</p>
+        </div>
+
+        <div className="border border-border bg-surface p-5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
+            <CheckCircle2 className="h-5 w-5" />
+          </div>
+          <p className="mt-4 text-[11px] font-bold uppercase tracking-[.14em] text-muted">Entry progress</p>
+          <p className="mt-2 text-3xl font-semibold text-foreground">{completedEntries}</p>
+          <p className="mt-1 text-xs text-muted">Rows completed with all scores entered</p>
+        </div>
+
+        <div className="border border-border bg-surface p-5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand/10 text-brand">
+            <BookOpen className="h-5 w-5" />
+          </div>
+          <p className="mt-4 text-[11px] font-bold uppercase tracking-[.14em] text-muted">Mode</p>
+          <p className="mt-2 text-3xl font-semibold text-foreground">{readOnly ? "Review" : "Entry"}</p>
+          <p className="mt-1 text-xs text-muted">{readOnly ? "Locked for editing" : "Ready for updates"}</p>
+        </div>
+      </section>
+
+      <div className="border border-border bg-surface p-5">
+        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand">Scoring framework</p>
+            <h3 className="mt-1 text-lg font-semibold text-foreground">Assessment components</h3>
+            <p className="mt-1 text-sm text-muted">Enter scores within each component&apos;s maximum.</p>
+          </div>
+          <span className="text-xs font-semibold text-muted">{results.length} learners</span>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
           {components.map((component) => (
             <Badge
               key={component.id}
               variant="secondary"
-              className="bg-brand/10 text-brand border-brand/30"
+              className="border border-brand/20 bg-brand/10 text-brand"
             >
               {getComponentDisplayName(component)} ({component.maxScore})
             </Badge>
@@ -337,72 +403,78 @@ export default function TeacherSubjectScoresPage({
         confirmLabel={saveModalType === "success" ? "Done" : "Review"}
       />
 
-      {(isPublished || isLocked) && (
-        <div className="mb-4 p-4 rounded-lg border border-amber-200 bg-amber-50">
-          <p className="text-sm text-amber-700">
-            {isLocked
-              ? "This assessment is locked and cannot be edited."
-              : "This assessment is published and cannot be edited."}
-          </p>
-        </div>
-      )}
-
       {results.length === 0 ? (
-        <div className="py-12 text-center rounded-lg border border-border bg-surface">
-          <p className="text-muted">No students found for this subject</p>
+        <div className="rounded-2xl border border-dashed border-border bg-surface px-6 py-14 text-center">
+          <BookOpen className="mx-auto mb-4 h-12 w-12 text-muted" />
+          <h2 className="text-lg font-semibold text-foreground">No students assigned</h2>
+          <p className="mt-2 text-sm text-muted">There are no learners linked to this subject in the current assessment.</p>
         </div>
       ) : (
         <>
-          <div className="rounded-lg border border-border overflow-hidden">
+          <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+            <div className="border-b border-border bg-background px-5 py-4">
+              <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand">Gradebook</p>
+                  <h2 className="mt-1 text-lg font-semibold text-foreground">Enter subject scores</h2>
+                  <p className="mt-1 text-sm text-muted">Record continuous assessment, tests, and examinations for each learner.</p>
+                </div>
+                <span className="inline-flex items-center gap-2 self-start rounded-full border border-border bg-surface px-3 py-2 text-xs font-semibold text-muted sm:self-auto">
+                  <span className="h-2 w-2 rounded-full bg-brand" />
+                  {completedEntries} of {results.length} rows complete
+                </span>
+              </div>
+
+              <div className="mt-4 h-2 overflow-hidden rounded-full bg-border">
+                <div
+                  className="h-full rounded-full bg-brand transition-all duration-300"
+                  style={{
+                    width: `${results.length ? Math.min(100, Math.round((completedEntries / results.length) * 100)) : 0}%`,
+                  }}
+                />
+              </div>
+            </div>
+
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-surface">
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">
-                      Student Name
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">
-                      Admission No
-                    </th>
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-border bg-background text-[10px] uppercase tracking-[.12em] text-muted">
+                  <tr>
+                    <th className="px-4 py-3 font-bold">Student</th>
+                    <th className="px-4 py-3 font-bold">Admission No</th>
                     {components.map((component) => (
-                      <th
-                        key={component.id}
-                        className="px-4 py-3 text-center text-sm font-semibold text-foreground"
-                      >
+                      <th key={component.id} className="px-4 py-3 text-center font-bold">
                         {getComponentDisplayName(component)} ({component.maxScore})
                       </th>
                     ))}
-                    <th className="px-4 py-3 text-center text-sm font-semibold text-foreground">
-                      Total
-                    </th>
+                    <th className="px-4 py-3 text-center font-bold">Total</th>
                   </tr>
                 </thead>
+
                 <tbody>
                   {groupedResults.map(([classKey, group], groupIndex) => (
                     <Fragment key={`class-${classKey}`}>
                       <tr
                         className={
                           groupIndex === 0
-                          ? "border-y-2 border-border bg-background"
-                          : "border-y-4 border-brand/40 bg-brand/5"
+                            ? "border-y-2 border-border bg-background"
+                            : "border-y-[1px] border-brand/20 bg-brand/5"
                         }
                       >
-                        <td
-                          colSpan={2 + components.length + 1}
-                        className="px-4 py-3"
-                        >
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-brand">
-                            Phase: {phaseLabel}
-                            {group.className && group.className !== 'Class not assigned' ? ` · Class: ${group.className}` : ''}
-                          </span>
-                          <div className="h-px flex-1 bg-brand/40" />
-                          <span className="text-[10px] font-medium normal-case tracking-normal text-muted whitespace-nowrap">
-                            {group.results.length} student{group.results.length === 1 ? "" : "s"}
-                          </span>
-                        </div>
+                        <td colSpan={2 + components.length + 1} className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-semibold uppercase tracking-[.18em] text-brand">
+                              {group.className && group.className !== "Class not assigned"
+                                ? `Class: ${group.className}`
+                                : "Unassigned class"}
+                            </span>
+                            <div className="h-px flex-1 bg-brand/30" />
+                            <span className="whitespace-nowrap text-[10px] font-medium normal-case tracking-normal text-muted">
+                              {group.results.length} student{group.results.length === 1 ? "" : "s"}
+                            </span>
+                          </div>
                         </td>
                       </tr>
+
                       {group.results.map((result) => {
                         const entry = scores[result.pupilId];
                         const total = calculateTotal(
@@ -414,14 +486,12 @@ export default function TeacherSubjectScoresPage({
                         return (
                           <tr
                             key={result.pupilId}
-                            className="border-b border-border hover:bg-surface/50"
+                            className="border-b border-border transition-colors hover:bg-brand-light/20"
                           >
-                            <td className="px-4 py-3 text-sm font-medium text-foreground">
+                            <td className="px-4 py-3 text-sm font-semibold text-foreground">
                               {result.pupilName}
                             </td>
-                            <td className="px-4 py-3 text-sm text-muted">
-                              {result.admissionNo}
-                            </td>
+                            <td className="px-4 py-3 text-sm text-muted">{result.admissionNo}</td>
                             {components.map((component, index) => {
                               const field = ["caScore", "testScore", "examScore"][index] as
                                 | "caScore"
@@ -429,7 +499,7 @@ export default function TeacherSubjectScoresPage({
                                 | "examScore";
 
                               return (
-                                <td key={component.id} className="px-4 py-3 text-center border border-border">
+                                <td key={component.id} className="border-l border-border px-4 py-3 text-center">
                                   <input
                                     type="text"
                                     inputMode="decimal"
@@ -441,13 +511,13 @@ export default function TeacherSubjectScoresPage({
                                       handleScoreChange(result.pupilId, field, e.target.value)
                                     }
                                     disabled={readOnly}
-                                    className="w-16 px-2 py-1 rounded border border-border bg-background text-center text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                                    className="w-16 rounded-lg border border-border bg-background px-2 py-2 text-center text-sm font-medium text-foreground shadow-sm transition focus:outline-none focus:ring-2 focus:ring-brand/30 disabled:cursor-not-allowed disabled:bg-muted/10"
                                   />
                                 </td>
                               );
                             })}
-                            <td className="px-4 py-3 text-center font-semibold text-foreground">
-                              {total || "-"}
+                            <td className="px-4 py-3 text-center text-sm font-semibold text-foreground">
+                              {total ?? "-"}
                             </td>
                           </tr>
                         );
@@ -459,7 +529,7 @@ export default function TeacherSubjectScoresPage({
             </div>
           </div>
 
-          <div className="mt-6 flex gap-3 justify-end">
+          <div className="flex flex-col justify-end gap-3 sm:flex-row">
             <Link href={`/teacher/results/${id}/subjects`}>
               <Button variant="outline">Cancel</Button>
             </Link>
@@ -468,7 +538,7 @@ export default function TeacherSubjectScoresPage({
               disabled={saving || readOnly}
               className="bg-brand hover:bg-brand/90 text-white"
             >
-              {saving ? "Saving..." : <Save className="w-4 h-4 mr-2" />}
+              {saving ? "Saving..." : <Save className="mr-2 h-4 w-4" />}
               Save Scores
             </Button>
           </div>

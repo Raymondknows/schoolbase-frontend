@@ -215,18 +215,24 @@ export default function TeacherAssessmentDetailPage({
       </div>
 
       <div className="overflow-hidden border border-border bg-surface">
-        <div className="flex items-center justify-between border-b border-border bg-background px-5 py-4"><div><p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand">Gradebook</p><h2 className="mt-1 text-lg font-semibold text-foreground">Student results</h2></div><span className="text-xs font-semibold text-muted">{enteredCount} entries recorded</span></div>
+        <div className="border-b border-border bg-background px-5 py-4">
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+            <div><p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand">Gradebook</p><h2 className="mt-1 text-lg font-semibold text-foreground">Student results</h2><p className="mt-1 text-sm text-muted">Review score components and completion status by subject.</p></div>
+            <span className="inline-flex items-center gap-2 self-start border border-border bg-surface px-3 py-2 text-xs font-semibold text-muted sm:self-auto"><span className="h-2 w-2 rounded-full bg-brand" /> {enteredCount} of {assessment.results.length} entries recorded</span>
+          </div>
+          <div className="mt-4 h-1.5 w-full overflow-hidden bg-border"><div className="h-full bg-brand transition-all" style={{ width: `${assessment.results.length ? Math.min(100, Math.round((enteredCount / assessment.results.length) * 100)) : 0}%` }} /></div>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-border bg-background text-muted">
+            <thead className="border-b border-border bg-background text-[10px] uppercase tracking-[.12em] text-muted">
               <tr>
-                <th className="px-4 py-3 font-medium">Student</th>
-              <th className="px-4 py-3 font-medium">Subject</th>
-              <th className="px-4 py-3 font-medium text-center">CA</th>
-              <th className="px-4 py-3 font-medium text-center">Test</th>
-              <th className="px-4 py-3 font-medium text-center">Exam</th>
-              <th className="px-4 py-3 font-medium text-center">Total</th>
-              <th className="px-4 py-3 font-medium text-center">Grade</th>
+                <th className="px-4 py-3 font-bold">Student</th>
+                <th className="px-4 py-3 font-bold">Subject</th>
+                <th className="px-4 py-3 text-center font-bold">CA</th>
+                <th className="px-4 py-3 text-center font-bold">Test</th>
+                <th className="px-4 py-3 text-center font-bold">Exam</th>
+                <th className="px-4 py-3 text-center font-bold">Total</th>
+                <th className="px-4 py-3 text-center font-bold">Grade</th>
               </tr>
             </thead>
             <tbody>
@@ -243,14 +249,14 @@ export default function TeacherAssessmentDetailPage({
                     return (
                       <tr
                         key={`${group.pupilId}-${result.subject}-${subjectIndex}`}
-                        className="border-t border-border hover:bg-background/50 transition-colors"
+                        className="border-t border-border transition-colors hover:bg-brand-light/20"
                       >
                         {subjectIndex === 0 ? (
                           <td rowSpan={collapsed ? 1 : group.subjects.length} className="px-4 py-3 align-top">
                             <button
                               type="button"
                               onClick={() => toggleCollapse(group.pupilId)}
-                              className="inline-flex items-center gap-2 rounded-md border border-border bg-surface px-3 py-2 text-left text-sm font-medium text-foreground transition hover:border-brand hover:bg-brand/5"
+                              className="inline-flex items-center gap-2 rounded-md px-2 py-2 text-left text-sm font-semibold text-foreground transition hover:bg-brand-light hover:text-brand"
                             >
                               {collapsed ? (
                                 <ChevronRight className="h-4 w-4" />
@@ -267,20 +273,20 @@ export default function TeacherAssessmentDetailPage({
                             ) : null}
                           </td>
                         ) : null}
-                        <td className="px-4 py-3 text-foreground">{result.subject || "—"}</td>
-                        <td className="px-4 py-3 text-center text-foreground">
+                        <td className="px-4 py-3 font-medium text-foreground">{result.subject || "—"}</td>
+                        <td className="px-4 py-3 text-center text-muted">
                           {result.caScore !== null ? result.caScore : "—"}
                         </td>
-                        <td className="px-4 py-3 text-center text-foreground">
+                        <td className="px-4 py-3 text-center text-muted">
                           {result.testScore !== null ? result.testScore : "—"}
                         </td>
-                        <td className="px-4 py-3 text-center text-foreground">
+                        <td className="px-4 py-3 text-center text-muted">
                           {result.examScore !== null ? result.examScore : "—"}
                         </td>
                         <td className="px-4 py-3 text-center font-semibold text-foreground">
-                          {total !== null ? total : "—"}
+                          {total !== null ? <span className="inline-flex min-w-10 justify-center bg-brand-light px-2 py-1 text-brand">{total}</span> : <span className="text-muted">—</span>}
                         </td>
-                        <td className="px-4 py-3 text-center text-foreground">{grade || "—"}</td>
+                        <td className="px-4 py-3 text-center">{grade ? <span className={`inline-flex min-w-8 justify-center px-2 py-1 text-xs font-bold ${grade === "F" ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}>{grade}</span> : <span className="text-muted">—</span>}</td>
                       </tr>
                     );
                   });
@@ -297,37 +303,6 @@ export default function TeacherAssessmentDetailPage({
         </div>
       </div>
 
-      {/* Statistics */}
-      {hasResults && (
-        <div className="mt-6 grid grid-cols-2 sm:grid-cols-5 gap-4">
-          <div className="rounded-lg border border-border bg-surface p-4">
-            <p className="text-xs text-muted font-medium">Total Students</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{uniqueStudentCount}</p>
-          </div>
-          <div className="rounded-lg border border-border bg-surface p-4">
-            <p className="text-xs text-muted font-medium">Results Entered</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{enteredCount}</p>
-          </div>
-          <div className="rounded-lg border border-border bg-surface p-4">
-            <p className="text-xs text-muted font-medium">Avg. Score</p>
-            <p className="text-2xl font-bold text-foreground mt-1">
-              {averageScore !== null ? averageScore.toFixed(1) : "—"}
-            </p>
-          </div>
-          <div className="rounded-lg border border-border bg-surface p-4">
-            <p className="text-xs text-muted font-medium">High Score</p>
-            <p className="text-2xl font-bold text-foreground mt-1">
-              {highScore !== null ? highScore : "—"}
-            </p>
-          </div>
-          {assessment.subjects && assessment.subjects.length > 0 && (
-            <div className="rounded-lg border border-border bg-surface p-4">
-              <p className="text-xs text-muted font-medium">Subjects Covered</p>
-              <p className="text-2xl font-bold text-foreground mt-1">{assessment.subjects.length}</p>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }

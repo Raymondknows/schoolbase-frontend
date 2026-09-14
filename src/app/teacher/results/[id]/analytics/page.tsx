@@ -2,9 +2,10 @@
 
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
-import { ChevronLeft, BarChart3, TrendingUp, AlertCircle, Award } from "lucide-react";
+import { ChevronLeft, BarChart3, AlertCircle, Award } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import AdminSkeleton from "@/components/ui/skeleton";
+import TeacherPageHeader from "@/components/teacher-page-header";
 
 interface StudentResult {
   pupilId: string;
@@ -129,61 +130,50 @@ export default function TeacherAnalyticsPage({
   const maxGradeCount = Math.max(...Object.values(statistics.gradeDistribution as Record<string, number>));
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <Link
-          href={`/teacher/results/${id}`}
-          className="inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline mb-4"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          Back to Assessment
-        </Link>
-        <h1 className="text-3xl font-bold mb-2">{assessment.name} - Analytics</h1>
-        <p className="text-muted">Comprehensive performance analysis and statistics</p>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-6 px-3 py-6 sm:px-6 lg:px-8">
+      <TeacherPageHeader icon={BarChart3} title={`${assessment.name} analytics`} description="Understand class performance, identify patterns, and support students with targeted follow-up." count={`${statistics.totalStudents} students`} actionLabel="Assessment" actionHref={`/teacher/results/${id}`} />
 
       {/* Key Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-lg border border-border bg-surface p-6">
-          <p className="text-sm text-muted font-medium mb-2">Average Score</p>
-          <p className="text-3xl font-bold text-foreground">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="group border border-border bg-surface p-5 transition hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-sm">
+          <p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Average score</p>
+          <p className="mt-3 text-3xl font-semibold tracking-tight text-brand">
             {statistics.averageScore.toFixed(1)}
           </p>
-          <p className="text-xs text-muted mt-2">Class Average</p>
+          <p className="mt-1 text-xs text-muted">Class average</p>
         </div>
 
-        <div className="rounded-lg border border-border bg-surface p-6">
-          <p className="text-sm text-muted font-medium mb-2">Median Score</p>
-          <p className="text-3xl font-bold text-foreground">
+        <div className="group border border-border bg-surface p-5 transition hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-sm">
+          <p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Median score</p>
+          <p className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
             {statistics.medianScore.toFixed(1)}
           </p>
-          <p className="text-xs text-muted mt-2">Middle Value</p>
+          <p className="mt-1 text-xs text-muted">Middle value</p>
         </div>
 
-        <div className="rounded-lg border border-border bg-surface p-6">
-          <p className="text-sm text-muted font-medium mb-2">Pass Rate</p>
-          <p className="text-3xl font-bold text-green-600">
+        <div className="group border border-emerald-200 bg-emerald-50 p-5 transition hover:-translate-y-0.5 hover:shadow-sm">
+          <p className="text-[11px] font-bold uppercase tracking-[.14em] text-emerald-800">Pass rate</p>
+          <p className="mt-3 text-3xl font-semibold tracking-tight text-emerald-700">
             {statistics.passRate}%
           </p>
-          <p className="text-xs text-muted mt-2">
+          <p className="mt-1 text-xs text-emerald-800">
             {statistics.passCount} of {statistics.totalResults} passed
           </p>
         </div>
 
-        <div className="rounded-lg border border-border bg-surface p-6">
-          <p className="text-sm text-muted font-medium mb-2">Std. Deviation</p>
-          <p className="text-3xl font-bold text-foreground">
+        <div className="group border border-border bg-surface p-5 transition hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-sm">
+          <p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Score variation</p>
+          <p className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
             {statistics.standardDeviation.toFixed(2)}
           </p>
-          <p className="text-xs text-muted mt-2">Score Variation</p>
+          <p className="mt-1 text-xs text-muted">Standard deviation</p>
         </div>
       </div>
 
       {/* Score Range Card */}
-      <div className="rounded-lg border border-border bg-surface p-6">
-        <h2 className="text-lg font-semibold mb-4">Score Range</h2>
-        <div className="grid grid-cols-3 gap-6">
+      <div className="border border-border bg-surface p-5 sm:p-6">
+        <div className="flex items-end justify-between gap-3"><div><p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand">Score profile</p><h2 className="mt-1 text-lg font-semibold text-foreground">Class score range</h2></div><span className="text-xs font-semibold text-muted">Spread {statistics.highestScore - statistics.lowestScore} points</span></div>
+        <div className="mt-5 grid grid-cols-3 gap-4">
           <div>
             <p className="text-sm text-muted mb-2">Highest Score</p>
             <p className="text-2xl font-bold text-green-600">
