@@ -9,10 +9,17 @@ function normalizeBackendUrl(url: string): string {
 }
 
 export function getBackendUrl(): string {
-  // Admin pages use same-origin proxy routes so the browser keeps the staff
-  // session cookie attached to settings and other protected requests.
-  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) {
-    return window.location.origin;
+  // Protected routes must stay on the same origin so the browser keeps the
+  // authenticated session cookie attached while the Next.js proxy forwards
+  // requests to the backend. This avoids direct backend calls from admin,
+  // accounting, teacher, parent, and platform-admin pages.
+  if (typeof window !== 'undefined') {
+    const protectedPrefixes = ['/admin', '/accounting', '/teacher', '/parent', '/schoolbase-admin'];
+    const pathname = window.location.pathname || '/';
+
+    if (protectedPrefixes.some((prefix) => pathname.startsWith(prefix))) {
+      return window.location.origin;
+    }
   }
 
   // First, check if explicitly set in environment
