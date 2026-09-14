@@ -90,7 +90,7 @@ export default function ResultPinsAllPage() {
   const loadPins = async (searchValue = search, nextPage = 1) => {
     try {
       setLoadingPins(true);
-      const response = await fetch(`${backendUrl}/api/result-pins/pins?search=${encodeURIComponent(searchValue)}&limit=${limit}&page=${nextPage}`, {
+      const response = await fetch(`/api/admin/result-pins/pins?search=${encodeURIComponent(searchValue)}&limit=${limit}&page=${nextPage}`, {
         credentials: "include",
       });
       if (!response.ok) throw new Error("Failed to load PIN records");

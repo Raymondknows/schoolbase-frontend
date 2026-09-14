@@ -141,7 +141,6 @@ export default function NewStudentClient() {
         formData.append("lastName", trimmedLastName);
         formData.append("firstName", trimmedFirstName);
         formData.append("middleName", middleName.trim());
-        formData.append("admissionNo", nextAdmissionNo);
         formData.append("classId", classId);
         formData.append("status", status);
         formData.append("admissionDate", admissionDate || new Date().toISOString().split("T")[0]);
@@ -173,7 +172,6 @@ export default function NewStudentClient() {
           lastName: trimmedLastName,
           firstName: trimmedFirstName,
           middleName: middleName.trim() || null,
-          admissionNo: nextAdmissionNo,
           classId: classId || null,
           status,
           admissionDate: admissionDate || new Date().toISOString().split("T")[0],

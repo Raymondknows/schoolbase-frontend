@@ -367,7 +367,7 @@ export default function ResultPinsPage() {
   const loadStatus = async () => {
     try {
       setLoadingStatus(true);
-      const response = await fetch(`${backendUrl}/api/result-pins/status`, {
+      const response = await fetch(`/api/admin/result-pins/status`, {
         credentials: "include",
       });
       if (!response.ok) throw new Error("Failed to load PIN settings");
@@ -451,7 +451,7 @@ export default function ResultPinsPage() {
     try {
       setLoadingPins(true);
       setCurrentPage(1);
-      const response = await fetch(`${backendUrl}/api/result-pins/pins?search=${encodeURIComponent(searchValue)}&limit=50`, {
+      const response = await fetch(`/api/admin/result-pins/pins?search=${encodeURIComponent(searchValue)}&limit=50`, {
         credentials: "include",
       });
       if (!response.ok) throw new Error("Failed to load PIN records");
@@ -755,9 +755,8 @@ export default function ResultPinsPage() {
     if (!selectedIds.length) return;
 
     try {
-      const backendUrl = getBackendUrl();
       if (confirmModal.kind === 'deactivate') {
-        const response = await fetch(`${backendUrl}/api/result-pins/pins/bulk/status`, {
+        const response = await fetch('/api/admin/result-pins/pins/bulk/status', {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
@@ -767,7 +766,7 @@ export default function ResultPinsPage() {
         if (!response.ok) throw new Error(data?.error || 'Failed to deactivate selected PINs');
         setStatusModal({ open: true, type: 'success', title: 'Deactivated', message: `Deactivated ${data.updated || selectedIds.length} PIN(s).` });
       } else if (confirmModal.kind === 'delete') {
-        const response = await fetch(`${backendUrl}/api/result-pins/pins/bulk/delete`, {
+        const response = await fetch('/api/admin/result-pins/pins/bulk/delete', {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
@@ -823,7 +822,7 @@ export default function ResultPinsPage() {
       if (pinFilterGeneratedBy && pinFilterGeneratedBy !== 'all') params.set('generatedBy', pinFilterGeneratedBy);
       if (pinFilterClass && pinFilterClass !== 'all') params.set('classId', pinFilterClass);
 
-      const response = await fetch(`${backendUrl}/api/result-pins/pins?${params.toString()}`, {
+      const response = await fetch(`/api/admin/result-pins/pins?${params.toString()}`, {
         credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to load generic PIN records');
@@ -859,7 +858,7 @@ export default function ResultPinsPage() {
     setSubmittingStudent(true);
 
     try {
-      const response = await fetch(`${backendUrl}/api/result-pins/generate/student`, {
+      const response = await fetch(`/api/admin/result-pins/generate/student`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -952,7 +951,7 @@ export default function ResultPinsPage() {
     }
 
     try {
-      const response = await fetch(`${backendUrl}/api/result-pins/generate/class`, {
+      const response = await fetch(`/api/admin/result-pins/generate/class`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -1031,7 +1030,7 @@ export default function ResultPinsPage() {
     setSubmittingBatch(true);
 
     try {
-      const response = await fetch(`${backendUrl}/api/result-pins/generate/batch`, {
+      const response = await fetch(`/api/admin/result-pins/generate/batch`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
