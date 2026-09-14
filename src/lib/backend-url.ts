@@ -5,7 +5,7 @@
  * - Server-side: use sensible defaults
  */
 function normalizeBackendUrl(url: string): string {
-  return url.trim().replace(/\/+$/, '');
+  return url.trim().replace(/\/+$/, '').replace(/\/api$/, '');
 }
 
 export function getBackendUrl(): string {
