@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronLeft, ChevronRight, PenSquare, FileText } from "lucide-react";
 import { resultStatusLabel } from "@/lib/format";
+import AdminSkeleton from "@/components/ui/skeleton";
 
 interface AssessmentResult {
   pupilId: string;
@@ -67,11 +68,7 @@ export default function TeacherAssessmentDetailPage({
   }, [id]);
 
   if (loading) {
-    return (
-      <div className="mx-auto max-w-6xl px-3 py-4">
-        <div className="text-center text-muted">Loading assessment details...</div>
-      </div>
-    );
+    return <AdminSkeleton />;
   }
 
   if (error || !assessment) {

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, FileText } from "lucide-react";
 import { WaecReportCard } from "@/components/teacher/waec-report-card";
 import { getTeacherDashboard } from "@/lib/teacher-utils";
+import AdminSkeleton from "@/components/ui/skeleton";
 
 interface Assessment {
   id: string;
@@ -120,11 +121,7 @@ export default function TeacherReportsPage({
   }, [id, selectedStudent]);
 
   if (loading) {
-    return (
-      <div className="mx-auto max-w-7xl px-3 py-4">
-        <div className="text-center text-muted">Loading assessment...</div>
-      </div>
-    );
+    return <AdminSkeleton />;
   }
 
   if (error || !assessment) {

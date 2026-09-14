@@ -27,6 +27,7 @@ import {
 import { SubscriptionBlockedError } from '@/lib/subscription-utils';
 import { playCloseTone, playOpenTone } from '@/lib/sounds';
 import SubscriptionModal from '@/components/subscription-modal';
+import AdminSkeleton from "@/components/ui/skeleton";
 
 type TeacherScheduleEntry = {
   id: string;
@@ -153,14 +154,7 @@ export default function TeacherDashboardPage() {
   }, [now, schedule, scheduleSnoozedUntil, selectedLesson]);
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center px-4">
-        <div className="text-center">
-          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-brand"></div>
-          <p className="mt-4 text-sm text-muted">Loading your dashboard...</p>
-        </div>
-      </div>
-    );
+    return <AdminSkeleton />;
   }
 
   if (subscriptionBlocked) {

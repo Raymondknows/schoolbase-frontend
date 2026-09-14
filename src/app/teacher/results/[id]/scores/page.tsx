@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, Save, AlertCircle } from "lucide-react";
 import { getBackendUrl } from "@/lib/backend-url";
+import AdminSkeleton from "@/components/ui/skeleton";
 
 interface ScoreEntry {
   pupilId: string;
@@ -195,11 +196,7 @@ export default function TeacherScoreEntryPage({
   };
 
   if (loading) {
-    return (
-      <div className="mx-auto max-w-7xl px-3 py-4">
-        <div className="text-center text-muted">Loading assessment...</div>
-      </div>
-    );
+    return <AdminSkeleton />;
   }
 
   if (error || !assessment) {

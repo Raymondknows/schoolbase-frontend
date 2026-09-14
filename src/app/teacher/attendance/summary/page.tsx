@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Calendar, Download, ChevronLeft, ChevronRight, AlertCircle, Loader2, BarChart2, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { getBackendUrl } from '@/lib/backend-url';
+import AdminSkeleton from '@/components/ui/skeleton';
 
 interface AttendanceData {
   date: string;
@@ -210,11 +211,7 @@ export default function AttendanceSummaryPage() {
   };
 
   if (loading && classes.length === 0) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-brand" />
-      </div>
-    );
+    return <AdminSkeleton />;
   }
 
   return (

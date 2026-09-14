@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import {
   AlertCircle,
-  Loader2,
   RefreshCw,
   CheckCircle,
   BookOpen,
@@ -12,6 +11,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { playCloseTone, playOpenTone } from '@/lib/sounds';
+import AdminSkeleton from '@/components/ui/skeleton';
 
 interface Transaction {
   id: string;
@@ -89,11 +89,8 @@ export default function CashbookPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-brand" />
-          <p className="text-sm text-muted">Loading cashbook...</p>
-        </div>
+      <div className="min-h-screen bg-background">
+        <AdminSkeleton />
       </div>
     );
   }

@@ -10,6 +10,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import AdminSkeleton from '@/components/ui/skeleton';
 
 interface UserSession {
   userId: string;
@@ -68,11 +69,8 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-brand" />
-          <p className="text-sm text-muted">Loading settings...</p>
-        </div>
+      <div className="min-h-screen bg-background">
+        <AdminSkeleton />
       </div>
     );
   }

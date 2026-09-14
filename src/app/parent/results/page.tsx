@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { AlertCircle, ChevronRight, Filter, GraduationCap, Lock } from "lucide-react";
 import { getBackendUrl } from "@/lib/backend-url";
 import ParentPageShell from "@/components/parent-page-shell";
+import ParentPageHeader from "@/components/parent-page-header";
 import { WaecReportCard } from "@/components/teacher/waec-report-card";
 
 interface Result {
@@ -361,12 +362,7 @@ const termParam = selectedTerm ? `&termId=${selectedTerm.id}` : "";
 
   return (
     <ParentPageShell onRefresh={loadData}>
-      <div className="flex flex-col justify-between gap-4 border-b border-border pb-5 print:hidden sm:flex-row sm:items-end">
-        <div><div className="flex items-center gap-2 text-sm font-medium text-brand"><GraduationCap className="h-4 w-4" /> Academic operations</div>
-        <h1 className="mt-2 text-3xl font-bold text-foreground">Academic Results</h1>
-        <p className="mt-1 text-sm text-muted">View your child&apos;s grades and assessment performance</p></div>
-        <Link href="/parent" className="inline-flex items-center gap-2 self-start rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand hover:bg-brand-light sm:self-auto">Dashboard <ChevronRight className="h-4 w-4" /></Link>
-      </div>
+      <div className="print:hidden"><ParentPageHeader icon={GraduationCap} eyebrow="Academic operations" title="Academic Results" description="View your child&apos;s grades and assessment performance." count={`${results.length} results`} /></div>
 
       <div className="overflow-hidden rounded-lg border border-border bg-surface print:hidden">
           <div className="flex items-center gap-2 border-b border-border bg-[#f6f8fa] px-4 py-3">

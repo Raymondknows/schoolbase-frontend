@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AlertCircle, ArrowDownRight, ArrowUpRight, BookOpen, CalendarDays, ChevronLeft, ChevronRight, Plus, RefreshCw, Wallet } from 'lucide-react';
+import AdminSkeleton from '@/components/ui/skeleton';
 
 interface OverviewTransaction {
   id: string;
@@ -107,7 +108,11 @@ export default function AccountingDashboard() {
   }, []);
 
   if (loading) {
-    return <div className="flex min-h-[60vh] items-center justify-center text-sm text-muted">Loading accounting overview...</div>;
+    return (
+      <div className="min-h-screen bg-background">
+        <AdminSkeleton />
+      </div>
+    );
   }
 
   const currency = overview?.currency || 'NGN';

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { AlertCircle, ClipboardCheck, Plus, Loader2 } from 'lucide-react';
 import { getBackendUrl } from '@/lib/backend-url';
+import AdminSkeleton from '@/components/ui/skeleton';
 
 interface Class {
   id: string;
@@ -44,14 +45,7 @@ export default function ExamsPage() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand mx-auto"></div>
-          <p className="mt-4 text-muted">Loading...</p>
-        </div>
-      </div>
-    );
+    return <AdminSkeleton />;
   }
 
   return (

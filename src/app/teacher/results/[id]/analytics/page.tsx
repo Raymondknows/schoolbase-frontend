@@ -4,6 +4,7 @@ import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { ChevronLeft, BarChart3, TrendingUp, AlertCircle, Award } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import AdminSkeleton from "@/components/ui/skeleton";
 
 interface StudentResult {
   pupilId: string;
@@ -89,11 +90,7 @@ export default function TeacherAnalyticsPage({
   }, [id]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center p-12">
-        <p className="text-muted">Loading analytics...</p>
-      </div>
-    );
+    return <AdminSkeleton />;
   }
 
   if (error || !statistics || !assessment) {

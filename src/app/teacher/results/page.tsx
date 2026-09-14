@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import TeacherResultsEnhancedClient from "./results-client";
 import { useAssessmentData } from "@/lib/hooks/useAssessmentData";
 import SubscriptionModal from "@/components/subscription-modal";
+import AdminSkeleton from "@/components/ui/skeleton";
 
 export default function ResultsPage() {
   const { data, loading, error, subscriptionBlocked } = useAssessmentData({
@@ -15,11 +16,7 @@ export default function ResultsPage() {
   const assessments = data?.assessments || [];
   const sessions = data?.sessions || [];
   if (loading) {
-    return (
-      <div className="flex items-center justify-center p-12">
-        <p className="text-muted">Loading results...</p>
-      </div>
-    );
+    return <AdminSkeleton />;
   }
 
   if (subscriptionBlocked) {

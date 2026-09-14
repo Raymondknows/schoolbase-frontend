@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { getBackendUrl } from '@/lib/backend-url';
 import { ErrorModal } from '@/components/ui/error-modal';
+import AdminSkeleton from '@/components/ui/skeleton';
 
 interface Class {
   id: string;
@@ -212,11 +213,7 @@ export default function AttendancePage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-brand" />
-      </div>
-    );
+    return <AdminSkeleton />;
   }
 
   const total = students.length;

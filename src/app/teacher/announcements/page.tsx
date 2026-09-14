@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { AlertCircle, Megaphone, Grid3x3, List, X } from 'lucide-react';
 import { getBackendUrl } from '@/lib/backend-url';
+import AdminSkeleton from '@/components/ui/skeleton';
 
 interface Announcement {
   id: string;
@@ -70,14 +71,7 @@ export default function AnnouncementsPage() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand mx-auto"></div>
-          <p className="mt-4 text-muted">Loading announcements...</p>
-        </div>
-      </div>
-    );
+    return <AdminSkeleton />;
   }
 
   const getExcerpt = (body: string | undefined, length: number = 150) => {

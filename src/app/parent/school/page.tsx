@@ -184,8 +184,10 @@ export default function SchoolPage() {
   return (
     <ParentPageShell onRefresh={loadData}>
       <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="mb-4 flex items-end gap-3">
+        <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-10 sm:px-8 sm:pb-8 sm:pt-12">
+          <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+          <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+            <div className="flex min-w-0 items-center gap-4">
           <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-2xl bg-background border border-border/30">
             {schoolLogoUrl ? (
               <img src={schoolLogoUrl} alt="School logo" className="h-full w-full object-contain p-2" />
@@ -199,32 +201,18 @@ export default function SchoolPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">School profile</p>
             <h1 className="mt-2 text-3xl font-semibold text-foreground truncate">{school.name}</h1>
           </div>
-        </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <button onClick={handleCallSchool} disabled={!school.phone || calling} className="inline-flex items-center gap-2 rounded-md bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"><Phone className="h-4 w-4" /> Call school</button>
+              <a href={school.email ? `mailto:${school.email}` : '#'} aria-disabled={!school.email} className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:border-brand hover:text-brand"><Mail className="h-4 w-4" /> Email school</a>
+            </div>
+          </div>
+        </header>
       </div>
 
         {school.tagline || school.motto ? (
           <p className="mb-6 text-sm leading-6 text-muted">{school.tagline || school.motto}</p>
         ) : null}
-
-        {/* Quick Actions */}
-        <div className="mb-6 flex gap-2">
-          <button
-            onClick={handleCallSchool}
-            disabled={!school.phone || calling}
-            className="flex-1 flex items-center justify-center gap-1 rounded-[12px] bg-brand px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <Phone className="h-4 w-4" />
-            Call
-          </button>
-          <a
-            href={school.email ? `mailto:${school.email}` : '#'}
-            className="flex-1 flex items-center justify-center gap-1 rounded-[12px] border border-border bg-surface px-3 py-2 text-sm font-semibold text-foreground transition hover:border-brand/40 hover:text-brand"
-            aria-disabled={!school.email}
-          >
-            <Mail className="h-4 w-4" />
-            Email
-          </a>
-        </div>
 
         {/* Main Card Container */}
         <div className="rounded-[12px] border border-border bg-surface p-6 shadow-sm space-y-6">

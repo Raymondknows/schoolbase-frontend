@@ -2,10 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { CreditCard, AlertCircle, Eye, Search, ChevronRight } from "lucide-react";
+import { CreditCard, AlertCircle, Eye, Search } from "lucide-react";
 import { formatMoney } from "@/lib/format";
 import { getBackendUrl } from "@/lib/backend-url";
 import ParentPageShell from "@/components/parent-page-shell";
+import ParentPageHeader from "@/components/parent-page-header";
 import { useEffectiveCurrency, useParentSchool } from "../parent-school-context";
 
 interface Invoice {
@@ -117,14 +118,7 @@ export default function InvoicesPage() {
   return (
     <ParentPageShell onRefresh={loadData}>
       <div className="w-full space-y-6 py-0">
-      <div className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-end">
-        <div>
-          <div className="flex items-center gap-2 text-sm font-medium text-brand"><CreditCard className="h-4 w-4" /> Finance operations</div>
-          <h1 className="mt-2 text-3xl font-bold text-foreground">Billing &amp; Invoices</h1>
-          <p className="mt-1 text-sm text-muted">Review school fees, payment status, and invoice history</p>
-        </div>
-        <button type="button" onClick={() => router.push('/parent')} className="inline-flex items-center gap-2 self-start rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand hover:bg-brand-light sm:self-auto">Dashboard <ChevronRight className="h-4 w-4" /></button>
-      </div>
+      <ParentPageHeader icon={CreditCard} eyebrow="Finance operations" title="Billing & Invoices" description="Review school fees, payment status, and invoice history." count={`${invoices.length} invoices`} />
 
       {error && (
         <div className="rounded-lg border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-[#a61b29] flex gap-3">

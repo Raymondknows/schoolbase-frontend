@@ -5,6 +5,7 @@ import { useEffect, useState, use } from "react";
 import { ChevronLeft, BookOpen, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import AdminSkeleton from "@/components/ui/skeleton";
 
 interface Subject {
   id: string;
@@ -40,11 +41,7 @@ export default function TeacherSubjectsPage({
   }, []);
 
   if (loading) {
-    return (
-      <div className="mx-auto max-w-6xl px-3 py-4">
-        <div className="text-center text-muted">Loading subjects...</div>
-      </div>
-    );
+    return <AdminSkeleton />;
   }
 
   if (error) {

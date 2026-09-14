@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { getBackendUrl } from '@/lib/backend-url';
 import StudentsPageClient from './students-client';
+import AdminSkeleton from '@/components/ui/skeleton';
 
 export default function StudentsPage() {
   const [pupils, setPupils] = useState<any[]>([]);
@@ -54,7 +55,7 @@ export default function StudentsPage() {
   }, []);
 
   if (loading) {
-    return <div className="p-6">Loading...</div>;
+    return <AdminSkeleton />;
   }
 
   if (error) {

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { BookOpen, AlertCircle, X } from "lucide-react";
 import { getBackendUrl } from "@/lib/backend-url";
 import ParentPageShell from "@/components/parent-page-shell";
+import ParentPageHeader from "@/components/parent-page-header";
 interface Announcement {
   id: string;
   title: string;
@@ -83,14 +84,7 @@ export default function PublicationsPage() {
   return (
     <ParentPageShell onRefresh={loadData}>
       <div className="w-full space-y-6 py-0">
-        <div className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-end">
-          <div>
-          <div className="flex items-center gap-2 text-sm font-medium text-brand"><BookOpen className="h-4 w-4" /> School communications</div>
-          <h1 className="mt-2 text-3xl font-bold text-foreground">School Publications</h1>
-          <p className="mt-1 text-sm text-muted">Latest news and updates from your school</p>
-          </div>
-          <span className="text-xs font-bold uppercase tracking-[.12em] text-muted">{announcements.length} updates</span>
-        </div>
+        <ParentPageHeader icon={BookOpen} eyebrow="School communications" title="School Publications" description="Stay informed with the latest news, notices, and updates from your school." count={`${announcements.length} updates`} />
 
       {error && (
         <div className="rounded-lg border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-[#a61b29] flex gap-3">

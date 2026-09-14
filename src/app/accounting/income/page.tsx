@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { playCloseTone, playOpenTone } from '@/lib/sounds';
+import AdminSkeleton from '@/components/ui/skeleton';
 
 interface Category {
   id: string;
@@ -151,11 +152,8 @@ export default function IncomePage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-brand" />
-          <p className="text-sm text-muted">Loading income...</p>
-        </div>
+      <div className="min-h-screen bg-background">
+        <AdminSkeleton />
       </div>
     );
   }

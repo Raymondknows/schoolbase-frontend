@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Bell, AlertCircle } from "lucide-react";
 import { getBackendUrl } from "@/lib/backend-url";
 import ParentPageShell from "@/components/parent-page-shell";
+import ParentPageHeader from "@/components/parent-page-header";
 interface Announcement {
   id: string;
   title: string;
@@ -63,10 +64,7 @@ export default function AnnouncementsPage() {
 
   return (
     <ParentPageShell onRefresh={loadData}>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">School Announcements</h1>
-        <p className="mt-1 text-muted">Latest updates from your school</p>
-      </div>
+      <ParentPageHeader icon={Bell} eyebrow="School communications" title="School Announcements" description="Important updates and messages from your school community." count={`${announcements.length} updates`} />
 
       {error && (
         <div className="rounded-lg border border-error bg-error/10 p-4 flex gap-3 mb-6">
