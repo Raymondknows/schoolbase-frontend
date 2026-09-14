@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   TrendingUp,
   TrendingDown,
@@ -18,9 +18,15 @@ import Link from 'next/link';
 
 interface DashboardOverview {
   cashPosition: number;
+  feeIncome: number;
+  otherIncome: number;
   monthlyIncome: number;
   monthlyExpenses: number;
   currency: string;
+  range?: {
+    startDate?: string;
+    endDate?: string;
+  };
   recentTransactions: Array<{
     id: string;
     type: 'INCOME' | 'EXPENSE';
@@ -41,11 +47,104 @@ export default function AccountingDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [periodFilter, setPeriodFilter] = useState<'THIS_MONTH' | 'LAST_3_MONTHS' | 'THIS_YEAR' | 'CUSTOM'>('THIS_MONTH');
+  const [academicYears, setAcademicYears] = useState<any[]>([]);
+  const [selectedAcademicYearId, setSelectedAcademicYearId] = useState('');
+  const [selectedTermId, setSelectedTermId] = useState('');
+
+  const filteredTerms = useMemo(() => {
+    if (!selectedAcademicYearId) return [] as any[];
+    const year = academicYears.find((item) => item.id === selectedAcademicYearId);
+    return (year?.terms || []).sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  }, [academicYears, selectedAcademicYearId]);
+
+  const monthOptions = [
+    { value: 'THIS_MONTH', label: 'This month' },
+    { value: 'LAST_3_MONTHS', label: 'Last 3 months' },
+    { value: 'THIS_YEAR', label: 'This year' },
+  ];
+
+  const buildDateRange = (period: typeof periodFilter) => {
+    const today = new Date();
+    const endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    if (period === 'LAST_3_MONTHS') {
+      const startDate = new Date(today.getFullYear(), today.getMonth() - 2, 1);
+      return { startDate: startDate.toISOString().slice(0, 10), endDate: endDate.toISOString().slice(0, 10) };
+    }
+
+    if (period === 'THIS_YEAR') {
+      const startDate = new Date(today.getFullYear(), 0, 1);
+      return { startDate: startDate.toISOString().slice(0, 10), endDate: endDate.toISOString().slice(0, 10) };
+    }
+
+    const startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    return { startDate: startDate.toISOString().slice(0, 10), endDate: endDate.toISOString().slice(0, 10) };
+  };
+
+  useEffect(() => {
+    const fetchAcademicYears = async () => {
+      try {
+        const response = await fetch('/api/admin/academic-years', {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const data = await response.json();
+        const years = (data.academicYears || []).sort((a: any, b: any) => {
+          if (a.isCurrent !== b.isCurrent) return a.isCurrent ? -1 : 1;
+          return b.name.localeCompare(a.name);
+        });
+
+        setAcademicYears(years);
+
+        const defaultYear = years.find((year: any) => year.isCurrent) || years[0];
+        if (defaultYear) {
+          setSelectedAcademicYearId(defaultYear.id);
+          setSelectedTermId(defaultYear.terms?.[0]?.id || '');
+        }
+      } catch (error) {
+        console.error('Failed to load academic years:', error);
+      }
+    };
+
+    fetchAcademicYears();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedAcademicYearId) {
+      setSelectedTermId('');
+      return;
+    }
+
+    const terms = filteredTerms;
+    if (terms.length > 0 && !terms.some((term: any) => term.id === selectedTermId)) {
+      setSelectedTermId(terms[0].id);
+    }
+  }, [selectedAcademicYearId, filteredTerms, selectedTermId]);
 
   async function loadData() {
     try {
       setError(null);
-      const response = await fetch('/api/bursar/overview', {
+      const range = buildDateRange(periodFilter);
+      const params = new URLSearchParams({
+        startDate: range.startDate,
+        endDate: range.endDate,
+      });
+
+      if (selectedAcademicYearId) {
+        params.set('academicYearId', selectedAcademicYearId);
+      }
+
+      if (selectedTermId) {
+        params.set('termId', selectedTermId);
+      }
+
+      const response = await fetch(`/api/bursar/overview?${params.toString()}`, {
         credentials: 'include',
       });
 
@@ -66,7 +165,7 @@ export default function AccountingDashboard() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [periodFilter, selectedAcademicYearId, selectedTermId]);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -129,22 +228,14 @@ export default function AccountingDashboard() {
   const netPosition = data.monthlyIncome - data.monthlyExpenses;
 
   return (
-    <div className="container mx-auto max-w-6xl px-4 py-8">
-      <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+    <div className="space-y-6">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <div className="flex items-center gap-2 text-sm font-medium text-brand">
-            <CreditCard size={17} /> Accounting
-          </div>
-          <h1 className="mt-2 text-3xl font-bold text-foreground">Accounting Dashboard</h1>
+          <h1 className="text-3xl font-bold text-foreground">Accounting Dashboard</h1>
           <p className="mt-1 text-sm text-muted">
-            Track fee income, school expenses, and the current cash position
+            School fee collections are the primary income source, with other inflows and operating expenses tracked separately.
           </p>
         </div>
-
-        <Button variant="outline" onClick={handleRefresh} disabled={refreshing} className="inline-flex items-center gap-2">
-          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-          {refreshing ? 'Refreshing...' : 'Refresh'}
-        </Button>
       </div>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -156,16 +247,25 @@ export default function AccountingDashboard() {
           <div className="text-3xl font-semibold text-foreground">
             {data.currency} {formatAmount(data.cashPosition)}
           </div>
-          <div className="mt-1 text-xs text-muted">Current balance</div>
+          <div className="mt-1 text-xs text-muted">Net cash after fees and expenses</div>
         </div>
 
         <div className="border border-border bg-surface p-5 transition-colors hover:bg-brand-light/40">
           <div className="mb-4 flex items-center gap-2 text-brand">
             <ArrowUpRight className="h-4 w-4 text-brand" />
-            <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">This Month Income</span>
+            <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">School Fees Collected</span>
           </div>
-          <div className="text-3xl font-semibold text-foreground">+{data.currency} {formatAmount(data.monthlyIncome)}</div>
-          <div className="mt-1 text-xs text-muted">Fee collections and inflows</div>
+          <div className="text-3xl font-semibold text-foreground">+{data.currency} {formatAmount(data.feeIncome)}</div>
+          <div className="mt-1 text-xs text-muted">Primary school income source</div>
+        </div>
+
+        <div className="border border-border bg-surface p-5 transition-colors hover:bg-brand-light/40">
+          <div className="mb-4 flex items-center gap-2 text-brand">
+            <TrendingUp className="h-4 w-4 text-brand" />
+            <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">Other Income</span>
+          </div>
+          <div className="text-3xl font-semibold text-foreground">+{data.currency} {formatAmount(data.otherIncome)}</div>
+          <div className="mt-1 text-xs text-muted">Miscellaneous inflows</div>
         </div>
 
         <div className="border border-border bg-surface p-5 transition-colors hover:bg-brand-light/40">
@@ -176,39 +276,89 @@ export default function AccountingDashboard() {
           <div className="text-3xl font-semibold text-foreground">-{data.currency} {formatAmount(data.monthlyExpenses)}</div>
           <div className="mt-1 text-xs text-muted">Operating costs and payouts</div>
         </div>
-
-        <div className="border border-border bg-surface p-5 transition-colors hover:bg-brand-light/40">
-          <div className="mb-4 flex items-center gap-2 text-brand">
-            <TrendingUp className="h-4 w-4 text-brand" />
-            <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">Net Position</span>
-          </div>
-          <div className={`text-3xl font-semibold ${netPosition >= 0 ? 'text-foreground' : 'text-red-600'}`}>
-            {netPosition >= 0 ? '+' : '-'}{data.currency} {formatAmount(Math.abs(netPosition))}
-          </div>
-          <div className="mt-1 text-xs text-muted">Income less expenses</div>
-        </div>
       </section>
 
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-        <div className="flex flex-wrap gap-2">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 rounded-md border border-[#0A66C2] bg-background px-2.5 py-1.5 text-sm text-foreground shadow-sm">
+            <select
+              value={periodFilter}
+              onChange={(event) => setPeriodFilter(event.target.value as 'THIS_MONTH' | 'LAST_3_MONTHS' | 'THIS_YEAR' | 'CUSTOM')}
+              className="bg-transparent text-sm text-foreground outline-none w-full sm:w-auto"
+            >
+              {monthOptions.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+
+            <select
+              value={selectedAcademicYearId}
+              onChange={(event) => setSelectedAcademicYearId(event.target.value)}
+              className="bg-transparent text-sm text-foreground outline-none w-full sm:w-auto"
+            >
+              {academicYears.map((year) => (
+                <option key={year.id} value={year.id}>{year.name}{year.isCurrent ? ' (Current)' : ''}</option>
+              ))}
+            </select>
+
+            <select
+              value={selectedTermId}
+              onChange={(event) => setSelectedTermId(event.target.value)}
+              disabled={!selectedAcademicYearId || filteredTerms.length === 0}
+              className="bg-transparent text-sm text-foreground outline-none w-full sm:w-auto disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {filteredTerms.length === 0 ? (
+                <option value="">No terms</option>
+              ) : (
+                filteredTerms.map((term: any) => (
+                  <option key={term.id} value={term.id}>{term.name}</option>
+                ))
+              )}
+            </select>
+          </div>
+
+          <Button
+            variant="primary"
+            onClick={() => {
+              setPeriodFilter('THIS_MONTH');
+              const defaultYear = academicYears.find((year) => year.isCurrent) || academicYears[0];
+              setSelectedAcademicYearId(defaultYear?.id || '');
+              setSelectedTermId(defaultYear?.terms?.[0]?.id || '');
+            }}
+            className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold"
+          >
+            Reset
+          </Button>
+
           <Link
             href="/accounting/income"
-            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
           >
             <TrendingUp className="h-4 w-4" />
             Record Income
           </Link>
+
           <Link
             href="/accounting/expenses"
-            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-semibold text-brand transition hover:bg-brand-light"
           >
             <ReceiptText className="h-4 w-4" />
             Record Expense
           </Link>
+
+          <Button
+            variant="outline"
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold"
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            {refreshing ? 'Refreshing...' : 'Refresh'}
+          </Button>
         </div>
       </div>
 
-      <div className="mt-6 rounded-lg border border-border bg-surface p-6">
+      <div className="rounded-lg border border-border bg-surface p-6">
         <div className="mb-4 flex items-center justify-between gap-3">
           <h2 className="text-lg font-semibold text-foreground">Recent Transactions</h2>
           <Link href="/accounting/cashbook" className="text-sm font-semibold text-brand hover:underline">
