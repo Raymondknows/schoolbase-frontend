@@ -20,17 +20,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "File and type are required" }, { status: 400 });
     }
 
-    if (!["signature", "stamp"].includes(type)) {
+    if (!["logo", "signature", "stamp"].includes(type)) {
       return NextResponse.json({ success: false, message: "Invalid type" }, { status: 400 });
     }
 
-    let url: string;
-    
-    if (type === "signature") {
-      url = await uploadSchoolAssetToBackend(file, "signature");
-    } else {
-      url = await uploadSchoolAssetToBackend(file, "stamp");
-    }
+    const url = await uploadSchoolAssetToBackend(file, type as "logo" | "signature" | "stamp");
 
     return NextResponse.json({ success: true, url });
   } catch (error) {

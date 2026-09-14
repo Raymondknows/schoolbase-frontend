@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { buildApiUrl } from '@/lib/api-client';
 
-async function forward(request: NextRequest) {
+async function forward(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
   try {
-    const backendUrl = buildApiUrl(`/admin/settings${request.nextUrl.search}`);
+    const { path } = await context.params;
+    const backendUrl = buildApiUrl(`/admin/${path.join('/')}${request.nextUrl.search}`);
     const headers = new Headers();
     const cookie = request.headers.get('cookie');
     const contentType = request.headers.get('content-type');
@@ -23,10 +24,13 @@ async function forward(request: NextRequest) {
       headers: { 'content-type': response.headers.get('content-type') || 'application/json' },
     });
   } catch (error) {
-    console.error('[settings proxy] Failed to forward request:', error);
-    return NextResponse.json({ error: 'Failed to forward settings request' }, { status: 502 });
+    console.error('[admin proxy] Failed to forward request:', error);
+    return NextResponse.json({ error: 'Failed to forward admin request' }, { status: 502 });
   }
 }
 
 export const GET = forward;
 export const POST = forward;
+export const PUT = forward;
+export const PATCH = forward;
+export const DELETE = forward;

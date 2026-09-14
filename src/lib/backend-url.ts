@@ -9,6 +9,12 @@ function normalizeBackendUrl(url: string): string {
 }
 
 export function getBackendUrl(): string {
+  // Admin pages use same-origin proxy routes so the browser keeps the staff
+  // session cookie attached to settings and other protected requests.
+  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) {
+    return window.location.origin;
+  }
+
   // First, check if explicitly set in environment
   if (process.env.NEXT_PUBLIC_API_URL) {
     return normalizeBackendUrl(process.env.NEXT_PUBLIC_API_URL);
