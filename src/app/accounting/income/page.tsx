@@ -46,6 +46,7 @@ export default function IncomePage() {
   const [formData, setFormData] = useState({
     categoryId: '',
     amount: '',
+    paymentMethod: 'CASH',
     description: '',
     referenceNumber: '',
     transactionDate: new Date().toISOString().split('T')[0],
@@ -81,7 +82,10 @@ export default function IncomePage() {
       ]);
 
       if (!categoriesRes.ok || !transactionsRes.ok) {
-        throw new Error('Failed to load data');
+        const failedResponse = !categoriesRes.ok ? categoriesRes : transactionsRes;
+        const failedEndpoint = !categoriesRes.ok ? 'categories' : 'income transactions';
+        const failedBody = await failedResponse.json().catch(() => ({}));
+        throw new Error(`Failed to load ${failedEndpoint} (${failedResponse.status}): ${failedBody.error || failedResponse.statusText}`);
       }
 
       const categoriesData = await categoriesRes.json();
@@ -114,6 +118,7 @@ export default function IncomePage() {
         body: JSON.stringify({
           categoryId: formData.categoryId,
           amount: parseFloat(formData.amount),
+          paymentMethod: formData.paymentMethod,
           description: formData.description,
           referenceNumber: formData.referenceNumber,
           transactionDate: formData.transactionDate,
@@ -128,6 +133,7 @@ export default function IncomePage() {
       setFormData({
         categoryId: '',
         amount: '',
+        paymentMethod: 'CASH',
         description: '',
         referenceNumber: '',
         transactionDate: new Date().toISOString().split('T')[0],
@@ -262,6 +268,17 @@ export default function IncomePage() {
                 required
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
               />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-foreground">Payment method</label>
+              <select value={formData.paymentMethod} onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })} disabled={submitting} required className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
+                <option value="CASH">Cash</option>
+                <option value="BANK_TRANSFER">Bank transfer</option>
+                <option value="CARD">Card</option>
+                <option value="ONLINE">Online</option>
+                <option value="OTHER">Other</option>
+              </select>
             </div>
 
             <div>
