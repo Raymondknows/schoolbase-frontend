@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { AlertCircle, Megaphone, Grid3x3, List } from 'lucide-react';
 import { getBackendUrl } from '@/lib/backend-url';
 import AdminSkeleton from '@/components/ui/skeleton';
+import TeacherPageHeader from '@/components/teacher-page-header';
 
 interface Announcement {
   id: string;
@@ -88,15 +89,8 @@ export default function AnnouncementsPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-4xl font-bold text-foreground">School Announcements</h1>
-          <p className="mt-2 text-muted">Important updates and news from your school</p>
-        </div>
-        
-        {/* View Toggle */}
-        <div className="flex items-center gap-2 bg-surface border border-border rounded-lg p-1">
+      <TeacherPageHeader icon={Megaphone} title="School Announcements" description="Important updates and news from your school." count={`${messages.length} updates`}>
+        <div className="flex items-center gap-2 border border-border bg-background p-1">
           <button
             onClick={() => setViewMode("grid")}
             className={`p-2 rounded transition-colors ${
@@ -120,7 +114,7 @@ export default function AnnouncementsPage() {
             <List className="h-5 w-5" />
           </button>
         </div>
-      </div>
+      </TeacherPageHeader>
 
       {error && (
         <div className="rounded-lg bg-red-50 border border-red-200 p-4 flex items-start gap-3">

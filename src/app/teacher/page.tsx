@@ -61,7 +61,7 @@ export default function TeacherDashboardPage() {
   const [selectedLesson, setSelectedLesson] = useState<TeacherScheduleEntry | null>(null);
   const [scheduleSnoozedUntil, setScheduleSnoozedUntil] = useState<number | null>(null);
   const [now, setNow] = useState(() => new Date());
-  const [selectedDay, setSelectedDay] = useState(() => {
+  const [selectedDay] = useState(() => {
     const day = new Date().getDay();
     return day >= 1 && day <= 5 ? day - 1 : 0;
   });
@@ -149,7 +149,7 @@ export default function TeacherDashboardPage() {
       });
 
     if (!selectedLesson && upcomingLesson && (!scheduleSnoozedUntil || Date.now() >= scheduleSnoozedUntil)) {
-      openLessonDrawer(upcomingLesson);
+      void Promise.resolve().then(() => openLessonDrawer(upcomingLesson));
     }
   }, [now, schedule, scheduleSnoozedUntil, selectedLesson]);
 
@@ -225,47 +225,37 @@ export default function TeacherDashboardPage() {
   return (
     <main className="min-h-screen pb-12">
       <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
-        <section className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
-          <div>
-            <div className="flex items-center gap-2 text-sm font-medium text-brand">
-              <CalendarDays className="h-[17px] w-[17px]" /> Teacher workspace
+        <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-10 sm:px-8 sm:pb-9 sm:pt-12">
+          <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+          <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand"><CalendarDays className="h-4 w-4" /> Teacher workspace</div>
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Good morning, {data.teacher.name}</h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Your teaching day at {data.school?.name}. Stay on top of classes, attendance, assessments, and student progress.</p>
+              <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-semibold text-muted"><span className="inline-flex items-center gap-2 border border-emerald-200 bg-emerald-50 px-3 py-2 text-emerald-800"><span className="h-2 w-2 rounded-full bg-emerald-500" /> Workspace active</span><span className="border border-border bg-background px-3 py-2">{schoolPhase.replace('_', ' ')}</span></div>
             </div>
-            <h1 className="mt-2 text-3xl font-bold text-foreground sm:text-4xl">Dashboard</h1>
-            <p className="mt-1 text-muted">Welcome back, {data.teacher.name} · {data.school?.name} · {schoolPhase}</p>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/teacher/timetable" className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:border-brand hover:text-brand"><CalendarDays className="h-4 w-4" /> Timetable</Link>
+              <button type="button" onClick={() => openLessonDrawer(todayEntries[0] || null)} disabled={!todayEntries.length} className="inline-flex items-center gap-2 rounded-md border border-brand/30 bg-brand-light px-4 py-2.5 text-sm font-semibold text-brand transition hover:border-brand/50 hover:bg-brand/10 disabled:cursor-not-allowed disabled:opacity-50"><CalendarDays className="h-4 w-4" /> Today&apos;s schedule</button>
+              <button type="button" onClick={() => { setRefreshing(true); window.location.reload(); }} disabled={refreshing} className="inline-flex items-center gap-2 rounded-md bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-wait disabled:opacity-70"><RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} /> {refreshing ? 'Refreshing...' : 'Refresh'}</button>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/teacher/timetable" className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light">
-              <CalendarDays className="h-4 w-4" /> View timetable
-            </Link>
-            <button
-              type="button"
-              onClick={() => openLessonDrawer(todayEntries[0] || null)}
-              disabled={!todayEntries.length}
-              className="inline-flex items-center gap-2 rounded-lg border border-brand/30 bg-brand-light px-4 py-2.5 text-sm font-semibold text-brand transition hover:border-brand/50 hover:bg-brand/10 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <CalendarDays className="h-4 w-4" /> Open schedule
-            </button>
-            <button type="button" onClick={() => { setRefreshing(true); window.location.reload(); }} disabled={refreshing} className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-wait disabled:opacity-70">
-              <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} /> {refreshing ? 'Refreshing...' : 'Refresh workspace'}
-            </button>
-          </div>
-        </section>
+        </header>
 
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {dashboardStats.map((stat) => {
             const IconComponent = stat.icon;
             return (
-              <article key={stat.label} className="border border-border bg-surface p-5 transition hover:border-brand/30">
-                <div className="flex items-center gap-3">
+              <article key={stat.label} className="group border border-border bg-surface p-5 transition hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-sm">
+                <div className="flex items-start justify-between gap-3">
                   <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${stat.bg} ${stat.tone}`}>
                     <IconComponent className="h-5 w-5" />
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold uppercase tracking-[.12em] text-muted">{stat.label}</p>
-                    <p className="mt-1 truncate text-xl font-bold text-foreground">{stat.value}</p>
-                  </div>
+                  <ArrowUpRight className="h-4 w-4 text-muted transition group-hover:text-brand" />
                 </div>
-                <p className="mt-3 truncate text-xs text-muted">{stat.detail}</p>
+                <p className="mt-5 text-[11px] font-bold uppercase tracking-[.14em] text-muted">{stat.label}</p>
+                <p className="mt-1 truncate text-2xl font-semibold tracking-tight text-foreground">{stat.value}</p>
+                <p className="mt-1 truncate text-xs text-muted">{stat.detail}</p>
               </article>
             );
           })}
@@ -330,23 +320,16 @@ export default function TeacherDashboardPage() {
         )}
 
         <section className="border-b border-border pb-6">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">Work shortcuts</h2>
-              <p className="mt-1 text-sm text-muted">Go straight to the tasks that keep your classes moving.</p>
-            </div>
-          </div>
+          <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground"><CheckCircle2 className="h-4 w-4 text-brand" /> Work shortcuts</div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {quickActions.map((action) => {
               const IconComponent = action.icon;
+              const detail = action.label === 'Attendance' ? 'Mark today&apos;s register' : action.label === 'Results' ? 'Enter and review scores' : action.label === 'Subjects' ? 'Open assigned subjects' : 'View class rosters';
               return (
-                <Link
-                  key={action.label}
-                  href={action.href}
-                  className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-brand px-4 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand/90 hover:shadow-md"
-                >
-                  <IconComponent className="h-4 w-4" />
-                  {action.label}
+                <Link key={action.label} href={action.href} className="group flex items-center gap-3 border border-border bg-surface px-4 py-4 transition hover:border-brand/50 hover:bg-brand-light/30">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand text-white"><IconComponent className="h-5 w-5" /></span>
+                  <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-foreground">{action.label}</span><span className="mt-0.5 block truncate text-xs text-muted">{detail}</span></span>
+                  <ArrowUpRight className="h-4 w-4 text-muted transition group-hover:text-brand" />
                 </Link>
               );
             })}

@@ -10,7 +10,6 @@ import {
   ChevronRight,
   Clock,
   Grid3X3,
-  Loader2,
   List,
   Search,
   Users,
@@ -19,6 +18,7 @@ import {
 import { getBackendUrl } from '@/lib/backend-url';
 import { ErrorModal } from '@/components/ui/error-modal';
 import AdminSkeleton from '@/components/ui/skeleton';
+import TeacherPageHeader from '@/components/teacher-page-header';
 
 interface Class {
   id: string;
@@ -226,15 +226,7 @@ export default function AttendancePage() {
   return (
     <main className="min-h-screen pb-12">
       <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
-        <header className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
-          <div>
-            <div className="flex items-center gap-2 text-sm font-medium text-brand">
-              <Users className="h-[17px] w-[17px]" /> Teacher workspace
-            </div>
-            <h1 className="mt-2 text-3xl font-bold text-foreground sm:text-4xl">Attendance</h1>
-            <p className="mt-1 text-muted">Mark and track student attendance by class and date.</p>
-          </div>
-        </header>
+        <TeacherPageHeader icon={Users} title="Attendance" description="Mark and track student attendance by class and date." actionLabel="Attendance summary" actionHref="/teacher/attendance/summary" />
 
         {(error || attendanceAlreadyTaken) && (
           <div className="space-y-3">

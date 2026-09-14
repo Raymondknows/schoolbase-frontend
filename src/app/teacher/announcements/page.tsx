@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { AlertCircle, Megaphone, Grid3x3, List, X } from 'lucide-react';
 import { getBackendUrl } from '@/lib/backend-url';
 import AdminSkeleton from '@/components/ui/skeleton';
+import TeacherPageHeader from '@/components/teacher-page-header';
 
 interface Announcement {
   id: string;
@@ -90,18 +91,8 @@ export default function AnnouncementsPage() {
   return (
     <main className="min-h-screen pb-12">
     <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
-      {/* Header */}
-      <div className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
-        <div>
-          <div className="flex items-center gap-2 text-sm font-medium text-brand">
-            <Megaphone className="h-[17px] w-[17px]" /> Teacher workspace
-          </div>
-          <h1 className="mt-2 text-3xl font-bold text-foreground sm:text-4xl">School Announcements</h1>
-          <p className="mt-1 text-muted">Important updates and news from your school.</p>
-        </div>
-        
-        {/* View Toggle */}
-        <div className="flex items-center gap-2 border border-border bg-surface p-1">
+      <TeacherPageHeader icon={Megaphone} title="School Announcements" description="Important updates and news from your school." count={`${messages.length} updates`}>
+        <div className="flex items-center gap-2 border border-border bg-background p-1">
           <button
             onClick={() => setViewMode("grid")}
             className={`p-2 rounded transition-colors ${
@@ -125,7 +116,7 @@ export default function AnnouncementsPage() {
             <List className="h-5 w-5" />
           </button>
         </div>
-      </div>
+      </TeacherPageHeader>
 
       {error && (
         <div className="border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 flex items-start gap-3">

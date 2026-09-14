@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { getBackendUrl } from '@/lib/backend-url';
 import { playCloseTone, playOpenTone } from '@/lib/sounds';
+import TeacherPageHeader from '@/components/teacher-page-header';
+import AdminSkeleton from '@/components/ui/skeleton';
 
 interface TeacherProfile {
   id: string;
@@ -159,18 +161,7 @@ export default function ProfilePage() {
   };
 
   if (loading) {
-    return (
-      <main className="min-h-screen pb-12">
-        <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
-          <div className="flex min-h-[60vh] items-center justify-center">
-            <div className="flex items-center gap-3 text-sm text-muted">
-              <Loader2 className="h-5 w-5 animate-spin text-brand" />
-              Loading your profile...
-            </div>
-          </div>
-        </div>
-      </main>
-    );
+    return <AdminSkeleton />;
   }
 
   if (error) {
@@ -224,16 +215,7 @@ export default function ProfilePage() {
 <main className="min-h-screen pb-12">
   <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
 
-        {/* Page heading */}
-        <div className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
-          <div>
-            <div className="flex items-center gap-2 text-sm font-medium text-brand">
-              <User className="h-[17px] w-[17px]" /> Teacher workspace
-            </div>
-            <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Profile</h1>
-            <p className="mt-1 text-muted">Manage your teacher account and security.</p>
-          </div>
-        </div>
+        <TeacherPageHeader icon={User} title="Profile" description="Manage your teacher account, contact details, and security." />
 
         {/* Main profile header */}
         <section className="border border-border bg-surface">

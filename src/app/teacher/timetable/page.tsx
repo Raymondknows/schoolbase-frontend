@@ -9,6 +9,7 @@ import {
   RefreshCw,
   Timer,
 } from "lucide-react";
+import TeacherPageHeader from "@/components/teacher-page-header";
 
 type Entry = {
   id: string;
@@ -132,27 +133,9 @@ export default function TeacherTimetablePage() {
   return (
     <main className="min-h-screen px-2 py-8 sm:px-8 lg:px-12">
       <div className="mx-auto max-w-7xl space-y-6">
-        <div className="flex flex-col justify-between gap-4 border-b border-border pb-7 sm:flex-row sm:items-end">
-          <div>
-            <div className="flex items-center gap-2 text-sm font-medium text-brand">
-              <CalendarDays size={17} /> Teacher workspace
-            </div>
-            <h1 className="mt-2 text-3xl font-bold text-foreground">
-              Timetable
-            </h1>
-            <p className="mt-1 text-muted">
-              View your published classes, subjects, and rooms for the week
-            </p>
-          </div>
-          <button
-            onClick={() => load(true)}
-            disabled={refreshing}
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand hover:bg-brand-light disabled:opacity-50"
-          >
-            <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />{" "}
-            Refresh
-          </button>
-        </div>
+        <TeacherPageHeader icon={CalendarDays} title="Timetable" description="Plan your teaching week with published classes, subjects, rooms, and live lesson timing." count={boardName}>
+          <button onClick={() => load(true)} disabled={refreshing} className="inline-flex items-center justify-center gap-2 rounded-md border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground hover:border-brand hover:text-brand disabled:opacity-50"><RefreshCw size={16} className={refreshing ? "animate-spin" : ""} /> Refresh</button>
+        </TeacherPageHeader>
         {error && (
           <div className="rounded-lg border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-error">
             {error}
@@ -210,17 +193,16 @@ export default function TeacherTimetablePage() {
                 </div>
               </div>
             ) : null}
-            <section className="border-b border-border pb-5">
-              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <section className="border border-border bg-surface">
+              <div className="flex flex-col justify-between gap-4 border-b border-border bg-background px-5 py-4 sm:flex-row sm:items-center">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[.12em] text-muted">
-                    Select a day
-                  </p>
+                  <p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand">Weekly plan</p>
                   <h2 className="mt-1 text-xl font-semibold text-foreground">
                     {days[selectedDay]}
                   </h2>
+                  <p className="mt-1 text-sm text-muted">Choose a day to review your scheduled lessons.</p>
                 </div>
-                <div className="flex items-center gap-2 rounded-lg bg-brand-light px-3 py-2 text-sm text-brand">
+                <div className="inline-flex items-center gap-2 self-start border border-brand/20 bg-brand-light px-3 py-2 text-sm text-brand sm:self-auto">
                   <Clock3 size={15} />
                   <span>
                     <span className="font-semibold">{todayEntries.length}</span>{" "}
@@ -228,7 +210,7 @@ export default function TeacherTimetablePage() {
                   </span>
                 </div>
               </div>
-              <div className="mt-4 grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-5 gap-2 p-4">
                 {days.map((day, index) => (
                   <button
                     key={day}
@@ -318,14 +300,13 @@ function Summary({
   detail: string;
 }) {
   return (
-    <div className="border border-border bg-surface p-5">
-      <div className="flex items-center gap-2 text-brand">
-        {icon}
-        <span className="text-xs font-bold uppercase tracking-[.12em] text-muted">
-          {label}
-        </span>
+    <div className="group border border-border bg-surface p-5 transition hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-brand/10 text-brand">{icon}</div>
+        <CalendarDays className="h-4 w-4 text-muted transition group-hover:text-brand" />
       </div>
-      <p className="mt-3 truncate text-xl font-bold text-foreground">{value}</p>
+      <p className="mt-5 text-[11px] font-bold uppercase tracking-[.14em] text-muted">{label}</p>
+      <p className="mt-1 truncate text-2xl font-semibold tracking-tight text-foreground">{value}</p>
       <p className="mt-1 text-xs text-muted">{detail}</p>
     </div>
   );

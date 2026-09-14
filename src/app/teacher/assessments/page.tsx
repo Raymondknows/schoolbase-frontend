@@ -2,8 +2,9 @@
 
 import { getBackendUrl } from '@/lib/backend-url';
 import { useState, useEffect } from 'react';
-import { AlertCircle, Plus, Loader2 } from 'lucide-react';
+import { AlertCircle, FileText, Plus, Loader2 } from 'lucide-react';
 import AdminSkeleton from '@/components/ui/skeleton';
+import TeacherPageHeader from '@/components/teacher-page-header';
 
 interface Class {
   id: string;
@@ -116,10 +117,7 @@ export default function AssessmentsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Assessments</h1>
-        <p className="mt-1 text-muted">Create and manage class assessments</p>
-      </div>
+      <TeacherPageHeader icon={FileText} title="Assessments" description="Create, organize, and manage assessments for your assigned classes." count={`${assessments.length} assessments`} actionLabel="Dashboard" />
 
       {error && (
         <div className="rounded-lg bg-red-50 border border-red-200 p-4 flex items-start gap-3">

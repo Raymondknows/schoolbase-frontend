@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Users, X } from "lucide-react";
 import { pupilName } from "@/lib/format";
 import { resolveFileUrl } from "@/lib/api-client";
+import TeacherPageHeader from "@/components/teacher-page-header";
 
 const PHASE_CONFIG = {
   EARLY_YEARS: { label: "Early Years", badge: "bg-amber-100 text-amber-800" },
@@ -16,7 +17,7 @@ const PHASE_ORDER = ["ALL", "EARLY_YEARS", "PRIMARY", "SECONDARY"];
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100] as const;
 const DEFAULT_ITEMS_PER_PAGE = 10;
 
-export default function StudentsPageClient({ pupils, classes }: { pupils: any[]; classes: any[] }) {
+export default function StudentsPageClient({ pupils }: { pupils: any[] }) {
   const [activePhase, setActivePhase] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -113,18 +114,10 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
   return (
     <main className="min-h-screen pb-12">
       <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
-        <header className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
-          <div>
-            <div className="flex items-center gap-2 text-sm font-medium text-brand">
-              <Users className="h-[17px] w-[17px]" /> Teacher workspace
-            </div>
-            <h1 className="mt-2 text-3xl font-bold text-foreground sm:text-4xl">Students</h1>
-            <p className="mt-1 text-muted">{pupils.length} student{pupils.length !== 1 ? "s" : ""} across {classes.length} assigned class{classes.length !== 1 ? "es" : ""}.</p>
-          </div>
-        </header>
+        <TeacherPageHeader icon={Users} title="Students" description="Review students across your assigned classes, search records, and open individual profiles." count={`${pupils.length} students`} />
 
         <section className="grid gap-4 sm:grid-cols-3">
-          <article className="border border-border bg-surface p-5">
+          <article className="group border border-border bg-surface p-5 transition hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-sm">
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
                 <Users className="h-5 w-5 text-blue-600" />
@@ -141,7 +134,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
             <p className="mt-3 text-sm text-muted">Students across all assigned classes.</p>
           </article>
 
-          <article className="border border-border bg-surface p-5">
+          <article className="group border border-border bg-surface p-5 transition hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-sm">
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-50">
                 <span className="text-sm font-semibold text-violet-600">P</span>
@@ -158,7 +151,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
             <p className="mt-3 text-sm text-muted">Primary phase students.</p>
           </article>
 
-          <article className="border border-border bg-surface p-5">
+          <article className="group border border-border bg-surface p-5 transition hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-sm">
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-50">
                 <span className="text-sm font-semibold text-amber-600">S</span>
@@ -176,10 +169,12 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
           </article>
         </section>
 
-        <section className="border-b border-border pb-5">
+        <section className="border border-border bg-surface p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-2">
-              <p className="text-xs uppercase tracking-[0.18em] text-muted">Search & filters</p>
+              <p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand">Roster directory</p>
+              <h2 className="text-lg font-semibold text-foreground">Find a student</h2>
+              <p className="text-sm text-muted">Search by name or admission number, then narrow the directory by school phase.</p>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <input
                   type="text"

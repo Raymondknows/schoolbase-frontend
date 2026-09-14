@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { resultStatusLabel, type ResultStatus } from "@/lib/format";
+import TeacherPageHeader from "@/components/teacher-page-header";
 
 const PHASE_CONFIG = {
   EARLY_YEARS: { label: "Early Years", color: "bg-purple-100 text-purple-800" },
@@ -226,16 +227,7 @@ export default function TeacherResultsEnhancedClient({
   return (
     <main className="min-h-screen pb-12">
     <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
-      {/* Header */}
-      <div className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
-        <div>
-          <div className="flex items-center gap-2 text-sm font-medium text-brand">
-            <FileText className="h-[17px] w-[17px]" /> Teacher workspace
-          </div>
-          <h1 className="mt-2 text-3xl font-bold text-foreground sm:text-4xl">Assessment Results</h1>
-          <p className="mt-1 text-muted">Review, enter, and follow up on student assessment results.</p>
-        </div>
-      </div>
+      <TeacherPageHeader icon={FileText} title="Assessment Results" description="Review, enter, and follow up on student assessment results across your classes." count={`${assessments.length} assessments`} />
 
       {filteredAssessments.length === 0 && (searchQuery || initialSubject) && (
         <div className="border border-[#f0d58a] bg-[#fff9e8] px-4 py-3">
@@ -247,43 +239,16 @@ export default function TeacherResultsEnhancedClient({
         </div>
       )}
 
-      {/* Quick Stats Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="border border-border bg-surface p-5">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium text-muted">Pending Entry</p>
-            <Clock className="w-5 h-5 text-blue-600" />
-          </div>
-          <p className="text-3xl font-bold text-blue-900">{stats.pending}</p>
-          <p className="text-xs text-blue-700 mt-1">Awaiting score entry</p>
-        </div>
-
-        <div className="border border-border bg-surface p-5">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium text-muted">Incomplete</p>
-            <AlertCircle className="w-5 h-5 text-orange-600" />
-          </div>
-          <p className="text-3xl font-bold text-orange-900">{stats.incomplete}</p>
-          <p className="text-xs text-orange-700 mt-1">Partial entries</p>
-        </div>
-
-        <div className="border border-border bg-surface p-5">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium text-muted">Ready to Publish</p>
-            <CheckCircle2 className="w-5 h-5 text-amber-600" />
-          </div>
-          <p className="text-3xl font-bold text-amber-900">{stats.readyToPublish}</p>
-          <p className="text-xs text-amber-700 mt-1">Approved by admin</p>
-        </div>
-
-        <div className="border border-border bg-surface p-5">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium text-muted">Published</p>
-            <TrendingUp className="w-5 h-5 text-green-600" />
-          </div>
-          <p className="text-3xl font-bold text-green-900">{stats.published}</p>
-          <p className="text-xs text-green-700 mt-1">Live for parents</p>
-        </div>
+        {[
+          { label: "Pending entry", value: stats.pending, detail: "Awaiting score entry", icon: Clock, tone: "text-brand", bg: "bg-brand/10" },
+          { label: "Incomplete", value: stats.incomplete, detail: "Partial entries", icon: AlertCircle, tone: "text-orange-700", bg: "bg-orange-50" },
+          { label: "Ready to publish", value: stats.readyToPublish, detail: "Approved by admin", icon: CheckCircle2, tone: "text-amber-700", bg: "bg-amber-50" },
+          { label: "Published", value: stats.published, detail: "Live for parents", icon: TrendingUp, tone: "text-emerald-700", bg: "bg-emerald-50" },
+        ].map((stat) => {
+          const Icon = stat.icon;
+          return <article key={stat.label} className="group border border-border bg-surface p-5 transition hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-sm"><div className="flex items-start justify-between gap-3"><div className={`flex h-9 w-9 items-center justify-center rounded-md ${stat.bg}`}><Icon className={`h-4 w-4 ${stat.tone}`} /></div><TrendingUp className="h-4 w-4 text-muted transition group-hover:text-brand" /></div><p className="mt-5 text-[11px] font-bold uppercase tracking-[.14em] text-muted">{stat.label}</p><p className={`mt-1 text-2xl font-semibold tracking-tight ${stat.tone}`}>{stat.value}</p><p className="mt-1 text-xs text-muted">{stat.detail}</p></article>;
+        })}
       </div>
 
       {/* Search Bar */}

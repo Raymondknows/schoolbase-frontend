@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AlertCircle, ClipboardCheck, Plus, Loader2 } from 'lucide-react';
+import { AlertCircle, ClipboardCheck, Plus } from 'lucide-react';
 import { getBackendUrl } from '@/lib/backend-url';
 import AdminSkeleton from '@/components/ui/skeleton';
+import TeacherPageHeader from '@/components/teacher-page-header';
 
 interface Class {
   id: string;
@@ -50,10 +51,7 @@ export default function ExamsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Exams</h1>
-        <p className="mt-1 text-muted">Create and manage exams for your classes</p>
-      </div>
+      <TeacherPageHeader icon={ClipboardCheck} title="Exams" description="Create and manage exams for your assigned classes." count={`${exams.length} exams`} />
 
       {error && (
         <div className="rounded-lg bg-red-50 border border-red-200 p-4 flex items-start gap-3">

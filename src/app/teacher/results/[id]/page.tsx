@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useEffect, useState, use } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronLeft, ChevronRight, PenSquare, FileText } from "lucide-react";
 import { resultStatusLabel } from "@/lib/format";
 import AdminSkeleton from "@/components/ui/skeleton";
+import TeacherPageHeader from "@/components/teacher-page-header";
 
 interface AssessmentResult {
   pupilId: string;
@@ -157,55 +157,11 @@ export default function TeacherAssessmentDetailPage({
   const highScore = subjectTotals.length > 0 ? Math.max(...subjectTotals) : null;
 
   return (
-    <div className="mx-auto max-w-6xl px-3 py-4">
-      <Link href="/teacher/results" className="inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline mb-4">
-        <ChevronLeft className="w-4 h-4" />
-        Results
-      </Link>
-
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{assessment.name}</h1>
-          <p className="text-sm text-muted mt-1">Phase: {assessment.phase}</p>
-          {assessment.subjects && assessment.subjects.length > 0 && (
-            <div className="mt-2">
-              <Badge variant="outline" className="bg-brand/5 text-brand border-brand/30">
-                Subject-based scoring enabled
-              </Badge>
-            </div>
-          )}
-        </div>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Badge
-            variant={
-              isPublished ? "success" : assessment.status === "APPROVED" ? "brand" : "default"
-            }
-          >
-            {resultStatusLabel(assessment.status as "DRAFT" | "APPROVED" | "PUBLISHED")}
-          </Badge>
-          {canEdit && (
-            <>
-              <Link href={`/teacher/results/${id}/subjects`}>
-                <Button className="gap-2">
-                  <PenSquare className="w-4 h-4" />
-                  Enter Scores by Subject
-                </Button>
-              </Link>
-              <Link href={`/teacher/results/${id}/subjects`}>
-                <Button variant="outline" className="gap-2">
-                  Select Subject
-                </Button>
-              </Link>
-            </>
-          )}
-          <Link href={`/teacher/results/${id}/reports`}>
-            <Button variant="outline" className="gap-2">
-              <FileText className="w-4 h-4" />
-              View Reports
-            </Button>
-          </Link>
-        </div>
-      </div>
+    <div className="mx-auto max-w-6xl space-y-6 px-3 py-6 sm:px-6 lg:px-8">
+      <TeacherPageHeader icon={FileText} title={assessment.name} description={`Assessment workspace · ${assessment.phase} phase${assessment.subjects?.length ? ` · ${assessment.subjects.length} subjects` : ""}`} count={resultStatusLabel(assessment.status as "DRAFT" | "APPROVED" | "PUBLISHED")}>
+        {canEdit && <Link href={`/teacher/results/${id}/subjects`} className="inline-flex items-center gap-2 rounded-md border border-brand/30 bg-brand-light px-4 py-2.5 text-sm font-semibold text-brand hover:border-brand/50"><PenSquare className="h-4 w-4" /> Enter scores</Link>}
+        <Link href={`/teacher/results/${id}/reports`} className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground hover:border-brand hover:text-brand"><FileText className="h-4 w-4" /> Reports</Link>
+      </TeacherPageHeader>
 
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-3 mb-6">
@@ -214,23 +170,26 @@ export default function TeacherAssessmentDetailPage({
       )}
 
       {isPublished && (
-        <div className="rounded-lg border border-green-200 bg-green-50 p-4 mb-6">
-          <p className="text-sm text-green-700 font-medium">✓ Published to Parents</p>
-          <p className="text-sm text-green-600 mt-1">
+        <div className="border border-emerald-200 bg-emerald-50 p-4">
+          <p className="text-sm font-semibold text-emerald-800">Published to parents</p>
+          <p className="mt-1 text-sm text-emerald-700">
             Results have been published and are visible to parents.
           </p>
         </div>
       )}
 
       {isLocked && (
-        <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
+        <div className="mb-6 border border-amber-200 bg-amber-50 p-4">
           <p className="text-sm font-medium text-amber-800">This assessment is locked and cannot be edited.</p>
         </div>
       )}
 
       {/* Subject Context Header */}
-      <div className="mb-6 rounded-lg border border-border bg-surface p-4">
-        <h3 className="text-sm font-semibold text-foreground mb-3">Subjects in this assessment</h3>
+      <div className="border border-border bg-surface p-5">
+        <div className="flex items-end justify-between gap-3">
+          <div><p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand">Assessment scope</p><h3 className="mt-1 text-lg font-semibold text-foreground">Subjects in this assessment</h3></div>
+          <span className="text-xs font-semibold text-muted">{assessment.subjects?.length || 0} subjects</span>
+        </div>
         {assessment.subjects && assessment.subjects.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {assessment.subjects.map((subject) => (
@@ -241,13 +200,22 @@ export default function TeacherAssessmentDetailPage({
           </div>
         ) : (
           <p className="text-sm text-muted">
-            Subject-based entry available via "Enter Scores by Subject" flow
+            Subject-based entry available via &quot;Enter Scores by Subject&quot; flow
           </p>
         )}
       </div>
 
-      {/* Results Table */}
-      <div className="rounded-lg border border-border bg-surface overflow-hidden">
+      <div className="grid gap-4 sm:grid-cols-4">
+        {[
+          ["Students", uniqueStudentCount, "Learners in this assessment"],
+          ["Results entered", enteredCount, `${assessment.results.length} subject records`],
+          ["Average score", averageScore !== null ? averageScore.toFixed(1) : "—", "Across entered scores"],
+          ["Highest score", highScore !== null ? highScore : "—", "Best entered result"],
+        ].map(([label, value, detail]) => <div key={String(label)} className="border border-border bg-surface p-4"><p className="text-[11px] font-bold uppercase tracking-[.12em] text-muted">{label}</p><p className="mt-2 text-2xl font-semibold text-foreground">{value}</p><p className="mt-1 text-xs text-muted">{detail}</p></div>)}
+      </div>
+
+      <div className="overflow-hidden border border-border bg-surface">
+        <div className="flex items-center justify-between border-b border-border bg-background px-5 py-4"><div><p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand">Gradebook</p><h2 className="mt-1 text-lg font-semibold text-foreground">Student results</h2></div><span className="text-xs font-semibold text-muted">{enteredCount} entries recorded</span></div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-border bg-background text-muted">

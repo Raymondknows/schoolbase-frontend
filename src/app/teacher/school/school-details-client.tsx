@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowLeft, Building2, CreditCard, Globe2, MapPin, Phone, ShieldCheck } from "lucide-react";
+import { Building2, CreditCard, Globe2, MapPin, Phone, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
+import TeacherPageHeader from "@/components/teacher-page-header";
 
 type TeacherSchoolDetailsProps = {
   school: {
@@ -63,30 +63,12 @@ export function TeacherSchoolDetailsContent({ school }: TeacherSchoolDetailsProp
   return (
     <main className="min-h-screen pb-12">
       <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
-      <div className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
-        <div>
-          <div className="flex items-center gap-2 text-sm font-medium text-brand">
-            <Building2 className="h-[17px] w-[17px]" /> Teacher workspace
-          </div>
-          <h1 className="mt-2 text-3xl font-bold text-foreground sm:text-4xl">School details</h1>
-          <p className="mt-1 text-muted">Key school information for your teaching work.</p>
-        </div>
-        <Link
-          href="/teacher"
-          aria-label="Back to teacher dashboard"
-          className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"
-        >
-          <ArrowLeft className="h-5 w-5" />
-          Dashboard
-        </Link>
-      </div>
+      <TeacherPageHeader icon={Building2} title={school.name} description={school.tagline || "Key school information for your teaching work."} count={school.country || "School profile"} />
 
       <div className="border border-border bg-surface">
-        <div className="border-b border-border bg-background px-5 py-3 text-xs font-bold uppercase tracking-[.12em] text-muted">School identity</div>
-        <div className="space-y-5 p-5 sm:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-20 w-20 items-center justify-center rounded-lg border border-border bg-muted overflow-hidden">
+        <div className="flex flex-col gap-5 border-b border-border bg-background px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <div className="flex items-center gap-4">
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-surface">
                 {school.logoUrl ? (
                   <img
                     src={school.logoUrl}
@@ -98,31 +80,32 @@ export function TeacherSchoolDetailsContent({ school }: TeacherSchoolDetailsProp
                 )}
               </div>
               <div className="min-w-0">
-                <p className="text-xs uppercase tracking-[0.28em] text-muted">School</p>
-                <p className="mt-1 text-lg font-semibold text-foreground truncate">{school.name}</p>
-                {school.tagline ? <p className="mt-1 text-sm text-muted truncate">{school.tagline}</p> : null}
+                <p className="text-[11px] font-bold uppercase tracking-[.16em] text-brand">Institution profile</p>
+                <p className="mt-1 text-lg font-semibold text-foreground">{school.name}</p>
+                <p className="mt-1 text-sm text-muted">{[school.city, school.country].filter(Boolean).join(" · ") || "Location not set"}</p>
               </div>
             </div>
 
-            {school.initials ? (
-              <div className="border border-border px-3 py-1 text-xs font-semibold uppercase text-foreground">
-                {school.initials}
-              </div>
-            ) : null}
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-2 border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800"><span className="h-2 w-2 rounded-full bg-emerald-500" /> Teacher access</span>
+              {school.initials ? <span className="border border-border px-3 py-2 text-xs font-bold uppercase text-muted">{school.initials}</span> : null}
+            </div>
           </div>
 
+        <div className="space-y-5 p-5 sm:p-6">
+
           <div className="grid gap-4 border-t border-border pt-5 sm:grid-cols-2">
-            <div className="border border-border bg-background p-4">
+            <div className="border border-border bg-background p-5">
               <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-muted"><Phone className="h-4 w-4 text-brand" /> Contact</p>
               <div className="mt-3 space-y-2 text-sm text-foreground">
-                <div>Phone: {school.phone || "Not set"}</div><div>Email: {school.email || "Not set"}</div>
+                <div className="font-medium">{school.phone || "Phone not set"}</div><div className="font-medium">{school.email || "Email not set"}</div>
               </div>
             </div>
-            <div className="border border-border bg-background p-4">
+            <div className="border border-border bg-background p-5">
               <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-muted"><MapPin className="h-4 w-4 text-brand" /> Location</p>
               <div className="mt-3 space-y-2 text-sm text-foreground">
-                <div>Address: {school.address || "Not set"}</div>
-                <div>City / Country: {[school.city, school.country].filter(Boolean).join(" • ") || "Not set"}</div>
+                <div className="font-medium">{school.address || "Address not set"}</div>
+                <div className="font-medium">{[school.city, school.country].filter(Boolean).join(" · ") || "Location not set"}</div>
               </div>
             </div>
           </div>

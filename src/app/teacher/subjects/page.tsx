@@ -14,6 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import { getBackendUrl } from '@/lib/backend-url';
+import TeacherPageHeader from '@/components/teacher-page-header';
 
 interface Subject {
   id: string;
@@ -133,15 +134,7 @@ export default function SubjectsPage() {
   return (
     <main className="min-h-screen pb-12">
       <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
-        <header className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
-          <div>
-            <div className="flex items-center gap-2 text-sm font-medium text-brand">
-              <BookOpen className="h-[17px] w-[17px]" /> Teacher workspace
-            </div>
-            <h1 className="mt-2 text-3xl font-bold text-foreground sm:text-4xl">Your Subjects</h1>
-            <p className="mt-1 text-muted">View and manage the subjects assigned to you.</p>
-          </div>
-        </header>
+        <TeacherPageHeader icon={BookOpen} title="Your Subjects" description="Find your assigned subjects quickly and move directly into the results workflow." count={`${subjects.length} subjects`} />
 
         {error && (
           <div className="flex items-start gap-3 border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3">
@@ -154,7 +147,7 @@ export default function SubjectsPage() {
         )}
 
         <section className="grid gap-4 sm:grid-cols-2">
-          <article className="border border-border bg-surface p-5">
+          <article className="group border border-border bg-surface p-5 transition hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-sm">
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
                 <BookOpen className="h-5 w-5 text-blue-600" />
@@ -167,7 +160,7 @@ export default function SubjectsPage() {
             <p className="mt-3 text-sm text-muted">Subjects currently assigned to you.</p>
           </article>
 
-          <article className="border border-border bg-surface p-5">
+          <article className="group border border-border bg-surface p-5 transition hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-sm">
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
                 <BookOpen className="h-5 w-5 text-blue-600" />
@@ -181,23 +174,20 @@ export default function SubjectsPage() {
           </article>
         </section>
 
-        <section className="border-b border-border pb-5">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">Subjects</h2>
-              <p className="mt-1 text-sm text-muted">View and search subjects assigned to you.</p>
-            </div>
-
-            <div className="text-sm text-muted">
-              <span className="font-semibold text-foreground">{subjects.length}</span>{' '}
-              {subjects.length === 1 ? 'subject' : 'subjects'}
+        <section className="border border-border bg-surface">
+          <div className="border-b border-border px-5 py-4">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand">Teaching directory</p>
+                <h2 className="mt-1 text-lg font-semibold text-foreground">Find a subject</h2>
+                <p className="mt-1 text-sm text-muted">Search by subject name or code, then open its results workspace.</p>
+              </div>
+              <span className="text-xs font-semibold text-muted">{filteredSubjects.length} matching</span>
             </div>
           </div>
 
-          <div className="mt-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-2">
-              <p className="text-xs uppercase tracking-[0.18em] text-muted">Search & filters</p>
-              <div className="relative w-full sm:w-[420px]">
+          <div className="flex flex-col gap-4 bg-background/50 p-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="relative min-w-0 flex-1 lg:max-w-2xl">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
                 <input
                   type="text"
@@ -220,7 +210,6 @@ export default function SubjectsPage() {
                     <X className="h-4 w-4" />
                   </button>
                 ) : null}
-              </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
@@ -270,7 +259,7 @@ export default function SubjectsPage() {
             </div>
           </div>
 
-          <div className="mt-4 flex flex-col gap-1 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-1 border-t border-border px-5 py-3 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
             <p>
               Showing {startItem}–{endItem} of {filteredSubjects.length} subject{filteredSubjects.length !== 1 ? 's' : ''}
               {searchQuery ? ` matching "${searchQuery}"` : ''}
@@ -305,12 +294,12 @@ export default function SubjectsPage() {
                   >
                     View results
                   </Link>
-                  <button
-                    type="button"
-                    className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-surface"
-                  >
-                    Manage
-                  </button>
+                          <Link
+                            href={`/teacher/results?subject=${encodeURIComponent(subject.name)}`}
+                            className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-surface"
+                          >
+                            Open workspace
+                          </Link>
                 </div>
               </div>
             ))}
@@ -347,12 +336,12 @@ export default function SubjectsPage() {
                           >
                             View results
                           </Link>
-                          <button
-                            type="button"
+                          <Link
+                            href={`/teacher/results?subject=${encodeURIComponent(subject.name)}`}
                             className="rounded-lg border border-border bg-background px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-surface"
                           >
-                            Manage
-                          </button>
+                            Open workspace
+                          </Link>
                         </div>
                       </td>
                     </tr>
@@ -379,12 +368,12 @@ export default function SubjectsPage() {
                     >
                       View results
                     </Link>
-                    <button
-                      type="button"
-                      className="rounded-lg border border-border bg-background px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-surface"
-                    >
-                      Manage
-                    </button>
+                      <Link
+                        href={`/teacher/results?subject=${encodeURIComponent(subject.name)}`}
+                        className="rounded-lg border border-border bg-background px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-surface"
+                      >
+                        Open workspace
+                      </Link>
                   </div>
                 </div>
               ))}

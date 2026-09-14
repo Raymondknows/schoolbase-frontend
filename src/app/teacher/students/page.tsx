@@ -7,7 +7,6 @@ import AdminSkeleton from '@/components/ui/skeleton';
 
 export default function StudentsPage() {
   const [pupils, setPupils] = useState<any[]>([]);
-  const [classes, setClasses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,8 +21,6 @@ export default function StudentsPage() {
         });
         if (!classesRes.ok) throw new Error('Failed to load classes');
         const classesData = await classesRes.json();
-        setClasses(classesData.classes || []);
-
         // Load all students from all assigned classes
         if (classesData.classes && classesData.classes.length > 0) {
           const allStudents: any[] = [];
@@ -62,5 +59,7 @@ export default function StudentsPage() {
     return <div className="p-6 text-red-600">{error}</div>;
   }
 
-  return <StudentsPageClient pupils={pupils} classes={classes} />;
+  return (
+    <StudentsPageClient pupils={pupils} />
+  );
 }

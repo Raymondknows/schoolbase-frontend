@@ -7,6 +7,7 @@ import { ChevronLeft, FileText } from "lucide-react";
 import { WaecReportCard } from "@/components/teacher/waec-report-card";
 import { getTeacherDashboard } from "@/lib/teacher-utils";
 import AdminSkeleton from "@/components/ui/skeleton";
+import TeacherPageHeader from "@/components/teacher-page-header";
 
 interface Assessment {
   id: string;
@@ -198,23 +199,18 @@ export default function TeacherReportsPage({
         Back to Assessment
       </Link>
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 print:hidden">
-        <div>
-          <h1 className="text-3xl font-bold">{assessment.name}</h1>
-          <p className="text-sm text-muted mt-1">Professional student report cards</p>
-        </div>
-        <div className="flex gap-2">
-          <Badge variant={isPublished ? "success" : "secondary"}>
-            {isPublished ? "Published" : assessment.status}
-          </Badge>
-        </div>
+      <div className="mb-6 print:hidden">
+        <TeacherPageHeader icon={FileText} title="Report cards" description={`Generate and review professional report cards for ${assessment.name}.`} count={`${uniqueStudents.length} students`}>
+          <Badge variant={isPublished ? "success" : "secondary"} className="px-3 py-2">{isPublished ? "Published" : assessment.status}</Badge>
+        </TeacherPageHeader>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 print:block print:space-y-0">
         {/* Student Selector Sidebar */}
-        <div className="lg:col-span-1 print:hidden">
-          <div className="rounded-lg border border-border bg-surface p-4 sticky top-4">
-            <h2 className="text-sm font-semibold mb-3">Students ({uniqueStudents.length})</h2>
+          <div className="lg:col-span-1 print:hidden">
+          <div className="sticky top-4 border border-border bg-surface">
+            <div className="border-b border-border bg-background px-5 py-4"><p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand">Report queue</p><h2 className="mt-1 text-lg font-semibold text-foreground">Select a student</h2><p className="mt-1 text-xs text-muted">Choose a learner to preview or download their report card.</p></div>
+            <div className="p-5">
             <label className="block text-xs font-semibold text-gray-600 mb-2" htmlFor="student-search">
               Search student
             </label>
@@ -246,7 +242,9 @@ export default function TeacherReportsPage({
                 ))
               )}
             </select>
+            <div className="mt-4 flex items-center justify-between border-t border-border pt-4 text-xs text-muted"><span>Available reports</span><span className="font-semibold text-foreground">{filteredStudents.length}</span></div>
           </div>
+        </div>
         </div>
 
         {/* Report Card Viewer */}
