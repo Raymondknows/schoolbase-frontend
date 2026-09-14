@@ -366,6 +366,23 @@ export default function SettingsPageClient({
     }
   };
 
+  const savePanelSettings = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    if (isSaving) return;
+    setError(null);
+    setIsSaving(true);
+    try {
+      await saveSettings();
+      setShowSuccessModal(true);
+      setSuccessModalTitle("Settings Saved");
+      setSuccessModalMessage("Your school settings were updated successfully.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save settings");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleChangePassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -580,9 +597,11 @@ export default function SettingsPageClient({
         {/* School Profile Section */}
         <div className="border border-border bg-surface overflow-hidden">
           <div className="border-b border-border bg-surface px-6 py-4">
-            <button
-              type="button"
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => togglePanel('profile')}
+              onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') togglePanel('profile'); }}
               className="flex w-full items-center justify-between gap-3 text-left"
               aria-expanded={openPanels.profile}
               aria-controls="school-profile-panel"
@@ -594,8 +613,13 @@ export default function SettingsPageClient({
                   <p className="text-xs text-muted">Name, location, and identification</p>
                 </div>
               </div>
-              <ChevronRight className={`h-4 w-4 text-muted transition-transform duration-200 ${openPanels.profile ? 'rotate-90 text-foreground' : 'rotate-0'}`} />
-            </button>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={savePanelSettings} disabled={isSaving} aria-label="Save school profile" title="Save school profile" className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border text-brand transition hover:bg-brand-light disabled:opacity-50">
+                  {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                </button>
+                <ChevronRight className={`h-4 w-4 text-muted transition-transform duration-200 ${openPanels.profile ? 'rotate-90 text-foreground' : 'rotate-0'}`} />
+              </div>
+            </div>
           </div>
 
           {openPanels.profile && (
@@ -737,9 +761,11 @@ export default function SettingsPageClient({
         {/* Principal Section */}
         <div className="border border-border bg-surface overflow-hidden">
           <div className="border-b border-border bg-surface px-6 py-4">
-            <button
-              type="button"
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => togglePanel('principal')}
+              onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') togglePanel('principal'); }}
               className="flex w-full items-center justify-between gap-3 text-left"
               aria-expanded={openPanels.principal}
               aria-controls="principal-information-panel"
@@ -751,8 +777,13 @@ export default function SettingsPageClient({
                   <p className="text-xs text-muted">Details for documents and result sheets</p>
                 </div>
               </div>
-              <ChevronRight className={`h-4 w-4 text-muted transition-transform duration-200 ${openPanels.principal ? 'rotate-90 text-foreground' : 'rotate-0'}`} />
-            </button>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={savePanelSettings} disabled={isSaving} aria-label="Save principal information" title="Save principal information" className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border text-brand transition hover:bg-brand-light disabled:opacity-50">
+                  {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                </button>
+                <ChevronRight className={`h-4 w-4 text-muted transition-transform duration-200 ${openPanels.principal ? 'rotate-90 text-foreground' : 'rotate-0'}`} />
+              </div>
+            </div>
           </div>
 
           {openPanels.principal && (
@@ -908,9 +939,11 @@ export default function SettingsPageClient({
         {/* Report Signatories Section */}
         <div className="border border-border bg-surface overflow-hidden">
           <div className="border-b border-border bg-surface px-6 py-4">
-            <button
-              type="button"
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => togglePanel('signatories')}
+              onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') togglePanel('signatories'); }}
               className="flex w-full items-center justify-between gap-3 text-left"
               aria-expanded={openPanels.signatories}
               aria-controls="report-signatories-panel"
@@ -922,8 +955,13 @@ export default function SettingsPageClient({
                   <p className="text-xs text-muted">These signatures appear on student reports for each academic phase.</p>
                 </div>
               </div>
-              <ChevronRight className={`h-4 w-4 text-muted transition-transform duration-200 ${openPanels.signatories ? 'rotate-90 text-foreground' : 'rotate-0'}`} />
-            </button>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={savePanelSettings} disabled={isSaving} aria-label="Save report signatories" title="Save report signatories" className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border text-brand transition hover:bg-brand-light disabled:opacity-50">
+                  {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                </button>
+                <ChevronRight className={`h-4 w-4 text-muted transition-transform duration-200 ${openPanels.signatories ? 'rotate-90 text-foreground' : 'rotate-0'}`} />
+              </div>
+            </div>
           </div>
 
           {openPanels.signatories && (
@@ -936,9 +974,11 @@ export default function SettingsPageClient({
         {/* Admissions Settings Section */}
         <div className="border border-border bg-surface overflow-hidden">
           <div className="border-b border-border bg-surface px-6 py-4">
-            <button
-              type="button"
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => togglePanel('admissions')}
+              onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') togglePanel('admissions'); }}
               className="flex w-full items-center justify-between gap-3 text-left"
               aria-expanded={openPanels.admissions}
               aria-controls="online-admissions-panel"
@@ -950,8 +990,13 @@ export default function SettingsPageClient({
                   <p className="text-xs text-muted">Enable and configure the public admissions portal, application dates, guidance text, requirements, and contact details for families.</p>
                 </div>
               </div>
-              <ChevronRight className={`h-4 w-4 text-muted transition-transform duration-200 ${openPanels.admissions ? 'rotate-90 text-foreground' : 'rotate-0'}`} />
-            </button>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={savePanelSettings} disabled={isSaving} aria-label="Save admissions settings" title="Save admissions settings" className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border text-brand transition hover:bg-brand-light disabled:opacity-50">
+                  {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                </button>
+                <ChevronRight className={`h-4 w-4 text-muted transition-transform duration-200 ${openPanels.admissions ? 'rotate-90 text-foreground' : 'rotate-0'}`} />
+              </div>
+            </div>
           </div>
 
           {openPanels.admissions && (
@@ -1049,9 +1094,11 @@ export default function SettingsPageClient({
         {/* Result Access PIN Section */}
         <div className="border border-border bg-surface overflow-hidden">
           <div className="border-b border-border bg-surface px-6 py-4">
-            <button
-              type="button"
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => togglePanel('resultAccess')}
+              onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') togglePanel('resultAccess'); }}
               className="flex w-full items-center justify-between gap-3 text-left"
               aria-expanded={openPanels.resultAccess}
               aria-controls="result-access-panel"
@@ -1063,8 +1110,13 @@ export default function SettingsPageClient({
                   <p className="text-xs text-muted">Optional school-managed result access control for parents and public checker pages</p>
                 </div>
               </div>
-              <ChevronRight className={`h-4 w-4 text-muted transition-transform duration-200 ${openPanels.resultAccess ? 'rotate-90 text-foreground' : 'rotate-0'}`} />
-            </button>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={savePanelSettings} disabled={isSaving} aria-label="Save result access settings" title="Save result access settings" className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border text-brand transition hover:bg-brand-light disabled:opacity-50">
+                  {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                </button>
+                <ChevronRight className={`h-4 w-4 text-muted transition-transform duration-200 ${openPanels.resultAccess ? 'rotate-90 text-foreground' : 'rotate-0'}`} />
+              </div>
+            </div>
           </div>
 
           {openPanels.resultAccess && (
@@ -1147,9 +1199,11 @@ export default function SettingsPageClient({
         {/* Security Section */}
         <div className="border border-border bg-surface overflow-hidden">
           <div className="border-b border-border bg-surface px-6 py-4">
-            <button
-              type="button"
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => togglePanel('security')}
+              onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') togglePanel('security'); }}
               className="flex w-full items-center justify-between gap-3 text-left"
               aria-expanded={openPanels.security}
               aria-controls="security-panel"
@@ -1161,8 +1215,13 @@ export default function SettingsPageClient({
                   <p className="text-xs text-muted">Change your administrator password securely without leaving this settings page.</p>
                 </div>
               </div>
-              <ChevronRight className={`h-4 w-4 text-muted transition-transform duration-200 ${openPanels.security ? 'rotate-90 text-foreground' : 'rotate-0'}`} />
-            </button>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={savePanelSettings} disabled={isSaving} aria-label="Save security settings" title="Save security settings" className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border text-brand transition hover:bg-brand-light disabled:opacity-50">
+                  {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                </button>
+                <ChevronRight className={`h-4 w-4 text-muted transition-transform duration-200 ${openPanels.security ? 'rotate-90 text-foreground' : 'rotate-0'}`} />
+              </div>
+            </div>
           </div>
 
           {openPanels.security && (
@@ -1191,9 +1250,11 @@ export default function SettingsPageClient({
         {/* Payment Section */}
         <div className="border border-border bg-surface overflow-hidden">
           <div className="border-b border-border bg-surface px-6 py-4">
-            <button
-              type="button"
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => togglePanel('payment')}
+              onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') togglePanel('payment'); }}
               className="flex w-full items-center justify-between gap-3 text-left"
               aria-expanded={openPanels.payment}
               aria-controls="payment-information-panel"
@@ -1205,8 +1266,13 @@ export default function SettingsPageClient({
                   <p className="text-xs text-muted">Manual payment details for invoices</p>
                 </div>
               </div>
-              <ChevronRight className={`h-4 w-4 text-muted transition-transform duration-200 ${openPanels.payment ? 'rotate-90 text-foreground' : 'rotate-0'}`} />
-            </button>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={savePanelSettings} disabled={isSaving} aria-label="Save payment settings" title="Save payment settings" className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border text-brand transition hover:bg-brand-light disabled:opacity-50">
+                  {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                </button>
+                <ChevronRight className={`h-4 w-4 text-muted transition-transform duration-200 ${openPanels.payment ? 'rotate-90 text-foreground' : 'rotate-0'}`} />
+              </div>
+            </div>
           </div>
 
           {openPanels.payment && (

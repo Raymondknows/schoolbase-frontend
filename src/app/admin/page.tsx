@@ -482,9 +482,9 @@ export default function AdminDashboardPage() {
             <Users className="h-4 w-4" />
             Students
           </Link>
-          <Link href="/admin/teachers" className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-hover">
+          <Link href="/admin/staff" className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-hover">
             <BookOpen className="h-4 w-4" />
-            Teachers
+            Staff
           </Link>
           <Link href="/admin/website" className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-hover">
             <MessageSquare className="h-4 w-4" />
@@ -562,14 +562,14 @@ export default function AdminDashboardPage() {
           </Link>
         </div>
 
-        {/* Latest Teachers */}
+        {/* Latest Staff */}
         <div className={`rounded-lg border p-6 shadow-sm transition-shadow flex flex-col ${dashboardSectionThemes[0].shell}`}>
           <div className="mb-4 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className={`flex h-10 w-10 items-center justify-center rounded-full ${dashboardSectionThemes[0].iconWrap}`}>
                 <BookOpen className={`h-5 w-5 ${dashboardSectionThemes[0].iconColor}`} />
               </div>
-              <h2 className="font-semibold text-foreground">Latest teachers</h2>
+              <h2 className="font-semibold text-foreground">Latest staff</h2>
             </div>
             <span className={`rounded-full border px-2.5 py-1 text-[10px] uppercase tracking-wider font-medium ${dashboardSectionThemes[0].badge}`}>
               New
@@ -577,7 +577,7 @@ export default function AdminDashboardPage() {
           </div>
           <ul className="mt-4 divide-y divide-border/70 flex-1">
             {!dashboardData?.recentTeachers || dashboardData.recentTeachers.length === 0 ? (
-              <li className="py-3 text-sm text-muted">No recent teachers yet.</li>
+              <li className="py-3 text-sm text-muted">No recent staff yet.</li>
             ) : (
               dashboardData.recentTeachers.slice(0, 3).map((teacher: any, idx: number) => (
                 <li key={idx} className={`flex items-center justify-between gap-2 px-3 py-2.5 first:pt-2.5 last:pb-2.5 ${dashboardSectionThemes[0].row}`}>
@@ -587,7 +587,7 @@ export default function AdminDashboardPage() {
               ))
             )}
           </ul>
-          <Link href="/admin/teachers" className={`mt-4 flex justify-end items-center gap-1 text-sm font-semibold transition ${dashboardSectionThemes[0].link}`}>
+          <Link href="/admin/staff" className={`mt-4 flex justify-end items-center gap-1 text-sm font-semibold transition ${dashboardSectionThemes[0].link}`}>
             View all <ArrowUpRight className="h-3 w-3" />
           </Link>
         </div>

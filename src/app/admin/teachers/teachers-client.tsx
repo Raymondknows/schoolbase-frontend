@@ -25,35 +25,35 @@ function parseApiErrorMessage(body: any, status: number): string {
 }
 
 const TEACHER_GUIDE = {
-  title: "Teachers Management",
-  overview: "Manage teacher profiles, class assignments, and subject allocations. Teachers can mark attendance, enter results, and communicate with parents.",
+  title: "Staff Management",
+  overview: "Manage teacher and bursar profiles, class assignments, and staff allocations. Staff can mark attendance, enter results, manage finances, and communicate with parents.",
   steps: [
-    "Click 'Add teacher' to create a new teacher account",
-    "Fill in teacher details: name, email, and password",
-    "Assign the teacher to classes and subjects",
-    "Teacher account is created and they receive login credentials via email",
-    "Click 'Details' on any teacher to view or edit their assignments"
+    "Click 'Add teacher' or 'Add bursar' to create a staff account",
+    "Fill in staff details: name, email, and password",
+    "Assign teachers to classes and subjects when needed",
+    "Staff account is created and they receive login credentials via email",
+    "Click 'Details' on any staff member to view or edit their assignments"
   ],
   commonTasks: [
     {
-      title: "Add a new teacher",
-      description: "Use a professional email (not personal Gmail) for better email deliverability. Include the teacher's phone number in the form if available."
+      title: "Add a new staff member",
+      description: "Use a professional email (not personal Gmail) for better email deliverability. Include the staff member's phone number in the form if available."
     },
     {
       title: "Assign a teacher to a class",
       description: "Teachers can be assigned to multiple classes and subjects. This allows flexibility for specialists or part-time teachers."
     },
     {
-      title: "Edit teacher assignments",
-      description: "Click 'Details' on any teacher row to view their current classes and subjects. Make updates and save."
+      title: "Edit staff assignments",
+      description: "Click 'Details' on any staff row to view their current classes and subjects. Make updates and save."
     },
     {
-      title: "Search for a teacher",
-      description: "Use the search bar to find teachers by name, email, class name, or subject. Searches are case-insensitive."
+      title: "Search for staff",
+      description: "Use the search bar to find staff by name, email, class name, or subject. Searches are case-insensitive."
     },
     {
-      title: "View teacher statistics",
-      description: "The header shows total teachers assigned to classes and subjects. This helps track staffing levels."
+      title: "View staffing statistics",
+      description: "The header shows total staff assigned to classes and subjects. This helps track staffing levels."
     }
   ],
   faqs: [
@@ -111,6 +111,7 @@ export default function TeachersPageClient({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [formRole, setFormRole] = useState<"TEACHER" | "BURSAR">("TEACHER");
   const [selectedTeacher, setSelectedTeacher] = useState<any | null>(null);
   const [teacherList, setTeacherList] = useState(() => teachers.map(normalizeTeacher));
   const [isTransitioning, startTransition] = useTransition();
@@ -246,9 +247,9 @@ export default function TeachersPageClient({
 
       <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-3xl font-bold text-foreground">Teachers</h1>
+          <h1 className="text-3xl font-bold text-foreground">Staff</h1>
           <p className="mt-2 text-sm text-muted sm:text-base">
-            {teacherList.length} teacher{teacherList.length === 1 ? "" : "s"} assigned to classes and subjects.
+            {teacherList.length} staff member{teacherList.length === 1 ? "" : "s"} assigned to classes and subjects.
           </p>
         </div>
 
@@ -271,18 +272,33 @@ export default function TeachersPageClient({
             className="h-9 w-full rounded-md border border-[#0A66C2] bg-[#0A66C2] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0858a8] sm:w-auto"
           >
             <Search className="h-4 w-4" />
-            {isSearchOpen ? "Close Search" : "Search Teacher"}
+            {isSearchOpen ? "Close Search" : "Search Staff"}
           </Button>
-          <Button
-            onClick={() => {
-              setIsOpen(true);
-              playOpenTone();
-            }}
-            className="h-9 w-full rounded-md border border-[#0A66C2] bg-[#0A66C2] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0858a8] sm:w-auto"
-          >
-            <UserPlus className="h-4 w-4" />
-            Add teacher
-          </Button>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <Button
+              onClick={() => {
+                setFormRole("TEACHER");
+                setIsOpen(true);
+                playOpenTone();
+              }}
+              className="h-9 w-full rounded-md border border-[#0A66C2] bg-[#0A66C2] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0858a8] sm:w-auto"
+            >
+              <UserPlus className="h-4 w-4" />
+              Add teacher
+            </Button>
+            <Button
+              onClick={() => {
+                setFormRole("BURSAR");
+                setIsOpen(true);
+                playOpenTone();
+              }}
+              variant="secondary"
+              className="h-9 w-full rounded-md border border-[#0A66C2] bg-white px-3 py-1.5 text-sm font-semibold text-[#0A66C2] transition hover:bg-blue-50 sm:w-auto"
+            >
+              <UserPlus className="h-4 w-4" />
+              Add bursar
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -341,7 +357,7 @@ export default function TeachersPageClient({
             ) : (
               <tr>
                 <td colSpan={5} className="px-4 py-4 text-center text-sm text-muted">
-                  No teachers found.
+                  No staff found.
                 </td>
               </tr>
             )}
@@ -375,7 +391,7 @@ export default function TeachersPageClient({
             ))
           ) : (
             <div className="text-center text-sm text-muted py-8">
-              No teachers found.
+              No staff found.
             </div>
           )}
         </div>
@@ -395,9 +411,13 @@ export default function TeachersPageClient({
             <div className="border-b border-border/70 bg-brand/10 px-6 py-5">
               <div className="mb-0 flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-semibold text-foreground">Add teacher</h2>
+                  <h2 className="text-xl font-semibold text-foreground">
+                    {formRole === "BURSAR" ? "Add bursar / accountant" : "Add teacher"}
+                  </h2>
                   <p className="mt-2 text-sm text-muted">
-                    Create a teacher account and assign classes and subjects in one place.
+                    {formRole === "BURSAR"
+                      ? "Create a bursar account with the same school login flow."
+                      : "Create a teacher account and assign classes and subjects in one place."}
                   </p>
                 </div>
                 <button
@@ -407,7 +427,7 @@ export default function TeachersPageClient({
                     setIsOpen(false);
                   }}
                   className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-foreground transition-colors hover:bg-surface focus:outline-none focus:ring-2 focus:ring-brand/30"
-                  aria-label="Close add teacher modal"
+                  aria-label="Close add staff modal"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -427,6 +447,7 @@ export default function TeachersPageClient({
                   return;
                 }
 
+                const role = formRole;
                 const name = nameInput.value.trim();
                 const email = emailInput.value.trim();
                 const password = passwordInput.value.trim();
@@ -462,7 +483,7 @@ export default function TeachersPageClient({
                 const backendUrl = getBackendUrl();
                 setIsSaving(true);
                 try {
-                  console.log('Creating teacher:', { name, email, classIds, subjectIds });
+                  console.log('Creating staff:', { name, email, role, classIds, subjectIds });
 
                   const response = await fetch(`${backendUrl}/api/admin/teachers`, {
                     method: 'POST',
@@ -472,8 +493,9 @@ export default function TeachersPageClient({
                       name,
                       email,
                       password,
-                      classIds,
-                      subjectIds,
+                      role,
+                      classIds: role === 'TEACHER' ? classIds : [],
+                      subjectIds: role === 'TEACHER' ? subjectIds : [],
                     }),
                   });
 
@@ -483,23 +505,27 @@ export default function TeachersPageClient({
                   }
 
                   const data = await response.json();
-                  console.log('Teacher created:', data);
+                  console.log('Staff created:', data);
                   const createdTeacher = data?.teacher ?? data;
                   if (!createdTeacher || !createdTeacher.id) {
-                    throw new Error('Unexpected response from server when creating teacher.');
+                    throw new Error('Unexpected response from server when creating staff.');
                   }
-                  setTeacherList((current) => [
-                    ...current,
-                    normalizeTeacher({
-                      ...createdTeacher,
-                      teacherClasses: assignedTeacherClasses,
-                      teacherSubjects: assignedTeacherSubjects,
-                    }),
-                  ]);
+
+                  if (role === 'TEACHER') {
+                    setTeacherList((current) => [
+                      ...current,
+                      normalizeTeacher({
+                        ...createdTeacher,
+                        teacherClasses: assignedTeacherClasses,
+                        teacherSubjects: assignedTeacherSubjects,
+                      }),
+                    ]);
+                  }
+
                   setIsOpen(false);
                   setErrorMessage(null);
-                  setSuccessModalTitle('Teacher added');
-                  setSuccessModalMessage(`${createdTeacher?.name || name} has been added successfully.`);
+                  setSuccessModalTitle(role === 'BURSAR' ? 'Bursar added' : 'Teacher added');
+                  setSuccessModalMessage(`${createdTeacher?.name || name} has been added successfully as ${role === 'BURSAR' ? 'Bursar / Accountant' : 'Teacher'}.`);
                   setShowSuccessModal(true);
                 } catch (error: unknown) {
                   if (error instanceof Error) {
@@ -536,51 +562,69 @@ export default function TeachersPageClient({
                 </label>
               </div>
 
-              <label className="text-sm font-medium">
-                Password
-                <input
-                  name="password"
-                  type="password"
-                  required
-                  placeholder="Create a secure password"
-                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-                />
-              </label>
-
               <div className="grid gap-4 sm:grid-cols-2">
-                <fieldset className="text-sm font-medium">
-                  <legend>Assign classes</legend>
-                  <div className="mt-1 max-h-32 space-y-2 overflow-y-auto rounded-lg border border-border bg-background p-3">
-                    {classes.map((classItem) => (
-                      <label key={classItem.id} className="flex cursor-pointer items-center gap-2 font-normal text-foreground">
-                        <input
-                          type="checkbox"
-                          name="classIds"
-                          value={classItem.id}
-                          className="h-4 w-4 accent-brand"
-                        />
-                        <span>{classItem.name}{classItem.arm ? ` ${classItem.arm}` : ""}</span>
-                      </label>
-                    ))}
+                <label className="text-sm font-medium">
+                  Password
+                  <input
+                    name="password"
+                    type="password"
+                    required
+                    placeholder="Create a secure password"
+                    className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                  />
+                </label>
+
+                {formRole === 'BURSAR' && (
+                  <div className="flex items-end">
+                    <div className="w-full rounded-lg border border-dashed border-border bg-background/40 px-3 py-3 text-sm text-muted">
+                      This account will use the same school login and redirect to the accounting portal.
+                    </div>
                   </div>
-                </fieldset>
-                <fieldset className="text-sm font-medium">
-                  <legend>Assign subjects</legend>
-                  <div className="mt-1 max-h-32 space-y-2 overflow-y-auto rounded-lg border border-border bg-background p-3">
-                    {subjects.map((subject) => (
-                      <label key={subject.id} className="flex cursor-pointer items-center gap-2 font-normal text-foreground">
-                        <input
-                          type="checkbox"
-                          name="subjectIds"
-                          value={subject.id}
-                          className="h-4 w-4 accent-brand"
-                        />
-                        <span>{subject.name}</span>
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
+                )}
               </div>
+
+              {formRole === "TEACHER" && (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <fieldset className="text-sm font-medium">
+                    <legend>Assign classes</legend>
+                    <div className="mt-1 max-h-32 space-y-2 overflow-y-auto rounded-lg border border-border bg-background p-3">
+                      {classes.map((classItem) => (
+                        <label key={classItem.id} className="flex cursor-pointer items-center gap-2 font-normal text-foreground">
+                          <input
+                            type="checkbox"
+                            name="classIds"
+                            value={classItem.id}
+                            className="h-4 w-4 accent-brand"
+                          />
+                          <span>{classItem.name}{classItem.arm ? ` ${classItem.arm}` : ""}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+                  <fieldset className="text-sm font-medium">
+                    <legend>Assign subjects</legend>
+                    <div className="mt-1 max-h-32 space-y-2 overflow-y-auto rounded-lg border border-border bg-background p-3">
+                      {subjects.map((subject) => (
+                        <label key={subject.id} className="flex cursor-pointer items-center gap-2 font-normal text-foreground">
+                          <input
+                            type="checkbox"
+                            name="subjectIds"
+                            value={subject.id}
+                            className="h-4 w-4 accent-brand"
+                          />
+                          <span>{subject.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+                </div>
+              )}
+
+              {formRole === "BURSAR" && (
+                <div className="rounded-xl border border-dashed border-border bg-background/40 p-4 text-sm text-muted">
+                  Bursar / accountant roles are created for financial management and will access the accounting portal after login.
+                </div>
+              )}
 
               <div className="flex justify-end">
                 <Button type="submit" disabled={isSaving} className="inline-flex items-center gap-2">
@@ -590,7 +634,7 @@ export default function TeachersPageClient({
                       Saving...
                     </>
                   ) : (
-                    "Save teacher"
+                    formRole === "BURSAR" ? "Save bursar" : "Save teacher"
                   )}
                 </Button>
               </div>
@@ -613,9 +657,9 @@ export default function TeachersPageClient({
             <div className="border-b border-border/70 bg-brand/10 px-6 py-5">
               <div className="mb-0 flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-semibold text-foreground">Edit teacher</h2>
+                  <h2 className="text-xl font-semibold text-foreground">Edit staff</h2>
                   <p className="mt-2 text-sm text-muted">
-                    Update teacher information and assign classes and subjects.
+                    Update staff information and assign classes and subjects.
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -623,7 +667,7 @@ export default function TeachersPageClient({
                     type="button"
                     onClick={() => openDeleteModal(selectedTeacher)}
                     className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-foreground transition-colors hover:bg-surface focus:outline-none focus:ring-2 focus:ring-brand/30"
-                    aria-label="Delete teacher"
+                    aria-label="Delete staff member"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -812,7 +856,7 @@ export default function TeachersPageClient({
                   <AlertCircle className="h-6 w-6 text-error" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-foreground">Delete Teacher?</h2>
+                  <h2 className="text-lg font-semibold text-foreground">Delete staff member?</h2>
                   <p className="mt-1 text-sm text-muted">This action cannot be undone.</p>
                 </div>
               </div>
@@ -824,7 +868,7 @@ export default function TeachersPageClient({
               </p>
               <div className="mt-4 rounded-lg border border-error/20 bg-error/10 p-3">
                 <p className="text-xs text-error">
-                  <strong>Warning:</strong> This will remove the teacher from assigned classes and subjects.
+                  <strong>Warning:</strong> This will remove the staff member from assigned classes and subjects.
                 </p>
               </div>
             </div>
@@ -867,7 +911,7 @@ export default function TeachersPageClient({
           setShowErrorModal(false);
           setErrorMessage(null);
         }}
-        title="Unable to Add Teacher"
+        title="Unable to Add Staff"
         message={errorMessage ?? "An unexpected error occurred. Please try again."}
         type="error"
         confirmLabel="Close"

@@ -116,6 +116,7 @@ export default function FeesPageClient({
   outstanding = 0,
   currency = "NGN",
   terms = [],
+  basePath = "/admin/fees",
   onIssueBills = async () => {},
   onSendReminders = async () => {},
   whatsAppConnected = null,
@@ -125,6 +126,7 @@ export default function FeesPageClient({
   outstanding?: number;
   currency?: string;
   terms?: TermItem[];
+  basePath?: string;
   onIssueBills?: (termId: string, bulkApproval?: boolean) => Promise<void>;
   onSendReminders?: (invoiceId?: string) => Promise<void>;
   whatsAppConnected?: boolean | null;
@@ -431,6 +433,7 @@ export default function FeesPageClient({
   }, [filteredInvoices]);
 
   const formatStatMoney = (amount: number) => formatMoney(amount, currency);
+  const feeSchedulesHref = `${basePath}/schedules`;
 
   return (
     <>
@@ -493,7 +496,7 @@ export default function FeesPageClient({
                   setSelectedPaymentItems({});
                 setPaymentMethod("CASH");
                 setPaymentReference("");
-                router.push(`/admin/fees?paymentRecorded=1`);
+                router.push(`${basePath}?paymentRecorded=1`);
               } catch (error) {
                 setIsSubmittingPayment(false);
                 const message = error instanceof Error ? error.message : "Failed to record payment";
@@ -897,7 +900,7 @@ export default function FeesPageClient({
             </form>
 
             <Button
-              href="/admin/fees/schedules"
+              href={feeSchedulesHref}
               variant="primary"
               className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
             >
@@ -1012,7 +1015,7 @@ export default function FeesPageClient({
                         <td className={`px-4 py-2 text-right font-semibold ${invoiceStatusClass(inv.status)}`}>{formatStatMoney(balance)}</td>
                         <td className="px-4 py-2"><Badge variant={inv.status === "PAID" ? "success" : inv.status === "OVERDUE" ? "error" : inv.status === "PART_PAID" ? "warning" : "secondary"}>{invoiceStatusLabel(inv.status)}</Badge></td>
                         <td className="px-4 py-2 flex flex-wrap gap-1">
-                          <Link href={`/admin/fees/${inv.id}`} className="rounded-full border border-[#0A66C2] bg-[#0A66C2] px-2 py-0.5 text-xs font-semibold text-white transition hover:bg-[#0A66C2]/90">View</Link>
+                          <Link href={`${basePath}/${inv.id}`} className="rounded-full border border-[#0A66C2] bg-[#0A66C2] px-2 py-0.5 text-xs font-semibold text-white transition hover:bg-[#0A66C2]/90">View</Link>
                           {balance > 0 ? (
                             <>
                               <button
@@ -1075,7 +1078,7 @@ export default function FeesPageClient({
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <Link href={`/admin/fees/${inv.id}`} className="rounded-full border border-[#0A66C2] bg-[#0A66C2] px-1.5 py-0.5 text-xs font-semibold text-white transition hover:bg-[#0A66C2]/90">
+                      <Link href={`${basePath}/${inv.id}`} className="rounded-full border border-[#0A66C2] bg-[#0A66C2] px-1.5 py-0.5 text-xs font-semibold text-white transition hover:bg-[#0A66C2]/90">
                         View
                       </Link>
                       {balance > 0 ? (

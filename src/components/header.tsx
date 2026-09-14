@@ -7,6 +7,7 @@ export default async function Header() {
   const staff = await getStaffSession();
   const parent = await getParentSession();
   const isLoggedIn = Boolean(staff || parent);
+
   if (isLoggedIn) return null;
 
   return (

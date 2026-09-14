@@ -1,24 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getBackendUrl } from "@/lib/backend-url";
 
-export async function POST(request: NextRequest) {
+async function proxyVerify(request: NextRequest) {
   try {
     const backendUrl = getBackendUrl();
     const cookieHeader = request.headers.get("cookie");
+    const method = request.method || "GET";
 
-    // Pass the request to the backend, including cookies
     const response = await fetch(`${backendUrl}/api/auth/verify`, {
-      method: "POST",
+      method,
       headers: {
         "Content-Type": "application/json",
         ...(cookieHeader && { Cookie: cookieHeader }),
       },
       credentials: "include",
+      ...(method !== "GET" && method !== "HEAD" ? { body: await request.text() || "{}" } : {}),
     });
 
-    const data = await response.json();
+    const data = await response.json().catch(async () => {
+      const text = await response.text();
+      return { text };
+    });
 
-    // Forward the response with the same status code
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
     console.error("Verify endpoint error:", error);
@@ -27,4 +30,12 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+export async function GET(request: NextRequest) {
+  return proxyVerify(request);
+}
+
+export async function POST(request: NextRequest) {
+  return proxyVerify(request);
 }

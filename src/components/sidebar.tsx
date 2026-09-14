@@ -44,7 +44,7 @@ import { WhatsAppIcon } from "@/components/ui/icons";
 type NavItem = {
   href: string;
   label: string;
-  icon: string;
+  icon: string | ComponentType<{ className?: string }>;
   section?: string;
 };
 
@@ -140,6 +140,7 @@ export default function Sidebar({
       <nav className="flex-1 space-y-2 p-2 overflow-y-auto">
         {navItemsWithSectionVisibility.map(({ href, label, icon, section, showSection }) => {
           const isActive = pathname === href || pathname.startsWith(`${href}/`);
+          const IconComponent = typeof icon === "string" ? icons[icon] : icon;
 
           return (
             <div key={href}>
@@ -179,7 +180,7 @@ export default function Sidebar({
                       <Sparkles className="absolute h-3 w-3 text-brand" />
                     )}
                   </div>
-                ) : icons[icon] ? createElement(icons[icon], { className: "h-4 w-4" }) : null}
+                ) : IconComponent ? createElement(IconComponent, { className: "h-4 w-4" }) : null}
                 {label}
                 {href === "/admin/timetable" ? (
                   <span className="ml-auto rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">

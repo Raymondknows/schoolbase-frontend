@@ -91,9 +91,9 @@ function buildSteps(
       hint: "Academic setup",
     },
     {
-      title: "Add teachers",
-      description: "Bring your teaching team into the system and assign the right roles so staff can work at full strength.",
-      href: "/admin/teachers",
+      title: "Add staff",
+      description: "Bring your teaching and finance team into the system and assign the right roles so staff can work at full strength.",
+      href: "/admin/staff",
       complete: counts.teacherCount > 0,
       icon: Users,
       hint: "Team setup",

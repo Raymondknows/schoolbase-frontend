@@ -30,7 +30,7 @@ import {
 import AdminSkeleton from "@/components/ui/skeleton";
 import { getBackendUrl } from "@/lib/backend-url";
 import { resolveSchoolAssetUrl } from "@/lib/asset-urls";
-import { announceSupportAlert, stopSupportAlertSpeech } from "@/lib/sounds";
+import { announceSupportAlert, playCloseTone, playOpenTone, stopSupportAlertSpeech } from "@/lib/sounds";
 
 function getActivityTitle(log: any) {
   const raw = (log?.event ?? log?.action ?? "").toString().trim().toUpperCase();
@@ -392,7 +392,7 @@ export default function PlatformOverviewPage() {
           <h1 className="mt-2 text-3xl font-bold text-foreground">Platform Overview</h1>
           <p className="mt-1 text-muted">Manage schools, monitor platform health, and respond to support activity</p>
         </div>
-        <button type="button" onClick={() => { setIsPanelOpen(true); setExpandedSections((current) => ({ ...current, activity: true })); }} className="inline-flex items-center justify-center gap-2 self-start rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover sm:self-auto">
+        <button type="button" onClick={() => { setIsPanelOpen(true); setExpandedSections((current) => ({ ...current, activity: true })); playOpenTone(); }} className="inline-flex items-center justify-center gap-2 self-start rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover sm:self-auto">
           <ShieldCheck className="h-4 w-4" /> Open admin panel
         </button>
       </div>
@@ -554,28 +554,35 @@ export default function PlatformOverviewPage() {
       {isPanelOpen ? (
         <div className="fixed inset-0 z-50 flex">
           <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 cursor-pointer"
-            onClick={() => setIsPanelOpen(false)}
+            className="absolute inset-0 bg-slate-950/35 backdrop-blur-[2px] transition-opacity duration-300 cursor-pointer"
+            onClick={() => { setIsPanelOpen(false); playCloseTone(); }}
           />
-          <div className={`relative ml-auto flex h-full w-full max-w-3xl flex-col overflow-hidden border-l border-border bg-surface shadow-2xl transition-transform duration-300 ease-out ${
+          <div className={`relative ml-auto flex h-full w-full max-w-md flex-col overflow-hidden border-l border-border bg-surface shadow-2xl transition-transform duration-300 ease-out ${
             isPanelOpen ? 'translate-x-0' : 'translate-x-full'
           }`}>
-            <div className="flex items-center justify-between border-b border-border px-6 py-5">
-              <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-muted">Feature panel</p>
-                <h2 className="text-2xl font-semibold text-foreground">Admin insights</h2>
+            <div className="flex items-start justify-between gap-4 border-b border-border bg-surface px-6 py-5">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand/10">
+                  <LifeBuoy className="h-5 w-5 text-brand" />
+                </div>
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-[.12em] text-muted">Platform operations</p>
+                  <h2 className="mt-1 text-xl font-semibold text-foreground">Admin insights</h2>
+                  <p className="mt-1 text-sm text-muted">Monitor the platform and respond to schools.</p>
+                </div>
               </div>
               <button
                 type="button"
-                onClick={() => setIsPanelOpen(false)}
-                className="rounded-full p-2 text-muted transition hover:bg-border hover:text-foreground cursor-pointer"
+                onClick={() => { setIsPanelOpen(false); playCloseTone(); }}
+                aria-label="Close admin insights"
+                className="rounded-lg p-2 text-muted transition hover:bg-background hover:text-foreground cursor-pointer"
               >
                 ✕
               </button>
             </div>
-            <div className="overflow-y-auto p-6">
-              <div className="space-y-2.5">
-                <section className="border border-border bg-surface p-2.5">
+            <div className="overflow-y-auto bg-background p-4 sm:p-6">
+              <div className="space-y-3">
+                <section className="rounded-lg border border-border bg-surface p-3">
                   <button
                     type="button"
                     onClick={() => setExpandedSections((current) => ({ ...current, activity: !current.activity }))}
@@ -630,7 +637,7 @@ export default function PlatformOverviewPage() {
                   ) : null}
                 </section>
 
-                <section className="border border-border bg-surface p-2.5">
+                <section className="rounded-lg border border-border bg-surface p-3">
                   <button
                     type="button"
                     onClick={() => setExpandedSections((current) => ({ ...current, emails: !current.emails }))}
@@ -678,7 +685,7 @@ export default function PlatformOverviewPage() {
                   ) : null}
                 </section>
 
-                <section className="border border-border bg-surface p-2.5">
+                <section className="rounded-lg border border-border bg-surface p-3">
                   <button
                     type="button"
                     onClick={() => setExpandedSections((current) => ({ ...current, trials: !current.trials }))}
@@ -728,7 +735,7 @@ export default function PlatformOverviewPage() {
                   ) : null}
                 </section>
 
-                <section className="border border-border bg-surface p-2.5">
+                <section className="rounded-lg border border-border bg-surface p-3">
                   <button
                     type="button"
                     onClick={() => setExpandedSections((current) => ({ ...current, support: !current.support }))}

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/header";
 import FooterWrapper from "@/components/footer-wrapper";
+import PublicShellGate from "@/components/public-shell-gate";
 import PwaInstallPrompt from "@/components/pwa-install-prompt";
 
 export const metadata: Metadata = {
@@ -85,9 +86,13 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
-        <Header />
+        <PublicShellGate>
+          <Header />
+        </PublicShellGate>
         <main className="flex-1">{children}</main>
-        <FooterWrapper />
+        <PublicShellGate>
+          <FooterWrapper />
+        </PublicShellGate>
         <PwaInstallPrompt />
       </body>
     </html>

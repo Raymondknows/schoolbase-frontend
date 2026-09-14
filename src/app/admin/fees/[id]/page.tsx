@@ -15,6 +15,7 @@ const LIGHT_GRAY = "#F3F4F6";
 const BORDER_GRAY = "#E5E7EB";
 
 export default function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const basePath = typeof window !== "undefined" && window.location.pathname.startsWith("/accounting") ? "/accounting/fees" : "/admin/fees";
   const [invoiceId, setInvoiceId] = useState<string>("");
   const [invoice, setInvoice] = useState<any>(null);
   const [school, setSchool] = useState<any>(null);
@@ -317,7 +318,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
     return (
       <div className="min-h-screen p-4 sm:p-8">
         <div className="mx-auto max-w-4xl">
-          <Link href="/admin/fees" className="inline-flex items-center gap-2 text-sm font-medium mb-6 hover:opacity-70 transition" style={{ color: BRAND_BLUE }}>
+          <Link href={basePath} className="inline-flex items-center gap-2 text-sm font-medium mb-6 hover:opacity-70 transition" style={{ color: BRAND_BLUE }}>
             <ChevronLeft size={16} />
             Back to Fees
           </Link>
@@ -375,7 +376,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
       <div className="mx-auto max-w-4xl">
         {/* Navigation */}
         <div className="flex items-center justify-between mb-6 print:hidden">
-          <Link href="/admin/fees" className="inline-flex items-center gap-2 text-sm font-medium hover:opacity-70 transition" style={{ color: BRAND_BLUE }}>
+          <Link href={basePath} className="inline-flex items-center gap-2 text-sm font-medium hover:opacity-70 transition" style={{ color: BRAND_BLUE }}>
             <ChevronLeft size={16} />
             Back to Fees
           </Link>

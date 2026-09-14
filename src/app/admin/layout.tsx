@@ -12,7 +12,7 @@ const baseNav = [
   { href: "/admin/fees", label: "Fees", icon: "CreditCard" },
   { href: "/admin/students", label: "Students", icon: "Users" },
   { href: "/admin/classes", label: "Classes", icon: "Layers" },
-  { href: "/admin/teachers", label: "Teachers", icon: "Users" },
+  { href: "/admin/staff", label: "Staff", icon: "Users" },
   // { href: "/admin/teacher-assignments", label: "Assignments", icon: "BookOpen" },
   { href: "/admin/subjects", label: "Subjects", icon: "BookOpen" },
   { href: "/admin/results", label: "Results", icon: "GraduationCap" },

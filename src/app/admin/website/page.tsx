@@ -7,7 +7,7 @@ import { getBackendUrl } from "@/lib/backend-url";
 import { playCloseTone, playOpenTone } from "@/lib/sounds";
 import { Button } from "@/components/ui/button";
 import { ErrorModal } from "@/components/ui/error-modal";
-import { PlusCircle, Search, Trash2 } from "lucide-react";
+import { CalendarDays, GraduationCap, LayoutGrid, List, Megaphone, PlusCircle, Search, Trash2 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { UserGuide, type PageHelpGuide } from "@/components/ui/user-guide";
 import SubscriptionModal from "@/components/subscription-modal";
@@ -128,7 +128,11 @@ export default function WebsitePage() {
   const [selectedSessionId, setSelectedSessionId] = useState("ALL");
   const [selectedTermId, setSelectedTermId] = useState("ALL");
   const [sortMode, setSortMode] = useState("date-desc");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [whatsAppConnected, setWhatsAppConnected] = useState<boolean | null>(null);
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   interface AnnouncementTermGroup {
     termId: string;
@@ -208,6 +212,16 @@ export default function WebsitePage() {
       });
   }, [announcements, selectedStatus, selectedSessionId, selectedTermId, searchQuery, sortMode]);
 
+  const totalPages = Math.max(1, Math.ceil(filteredAnnouncements.length / itemsPerPage));
+  const paginatedAnnouncements = useMemo(
+    () => filteredAnnouncements.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
+    [filteredAnnouncements, currentPage, itemsPerPage]
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedStatus, selectedSessionId, selectedTermId, sortMode, itemsPerPage]);
+
   const groupedAnnouncements = useMemo<AnnouncementSessionGroup[]>(() => {
     const sessions = new Map<
       string,
@@ -225,7 +239,7 @@ export default function WebsitePage() {
       }
     >();
 
-    for (const announcement of filteredAnnouncements) {
+    for (const announcement of paginatedAnnouncements) {
       const sessionId = announcement.term?.academicYear?.id || announcement.academicYear?.id || "unassigned";
       const sessionName =
         announcement.term?.academicYear?.name || announcement.academicYear?.name || "No session assigned";
@@ -256,7 +270,7 @@ export default function WebsitePage() {
       ...session,
       terms: Array.from(session.terms.values()),
     }));
-  }, [filteredAnnouncements]);
+  }, [paginatedAnnouncements]);
 
   const resetFilters = () => {
     setSearchQuery("");
@@ -264,9 +278,12 @@ export default function WebsitePage() {
     setSelectedSessionId("ALL");
     setSelectedTermId("ALL");
     setSortMode("date-desc");
+    setCurrentPage(1);
   };
 
   const selectedCount = filteredAnnouncements.length;
+  const firstVisible = selectedCount === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+  const lastVisible = Math.min(currentPage * itemsPerPage, selectedCount);
   const totalCount = announcements.length;
 
   useEffect(() => {
@@ -424,6 +441,16 @@ export default function WebsitePage() {
     }
   };
 
+  const openAnnouncement = (announcement: Announcement) => {
+    setSelectedAnnouncement(announcement);
+    playOpenTone();
+  };
+
+  const closeAnnouncement = () => {
+    setSelectedAnnouncement(null);
+    playCloseTone();
+  };
+
   return (
     <>
       <div className="space-y-6">
@@ -460,6 +487,24 @@ export default function WebsitePage() {
                 <span className="inline sm:hidden">New</span>
               </Button>
             </Link>
+            <div className="flex rounded-lg border border-border bg-surface p-1 text-sm">
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                aria-label="List view"
+                className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 font-semibold ${viewMode === "list" ? "bg-brand text-white" : "text-muted hover:bg-background"}`}
+              >
+                <List className="h-4 w-4" /> List
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("grid")}
+                aria-label="Grid view"
+                className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 font-semibold ${viewMode === "grid" ? "bg-brand text-white" : "text-muted hover:bg-background"}`}
+              >
+                <LayoutGrid className="h-4 w-4" /> Grid
+              </button>
+            </div>
           </div>
         </div>
 
@@ -482,7 +527,7 @@ export default function WebsitePage() {
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
               <div className="min-w-0">
                 <p className="text-sm text-muted">
-                  Showing {selectedCount} of {totalCount} announcement{totalCount !== 1 ? "s" : ""}
+                  Showing {firstVisible}–{lastVisible} of {selectedCount} filtered announcement{selectedCount !== 1 ? "s" : ""} ({totalCount} total)
                 </p>
                 {searchQuery ? (
                   <p className="mt-1 text-sm text-muted">Search results for "{searchQuery}"</p>
@@ -570,6 +615,16 @@ export default function WebsitePage() {
                     Reset
                   </button>
                 )}
+                <label className="flex items-center gap-2 text-sm text-muted">
+                  <span className="hidden sm:inline">Rows</span>
+                  <select
+                    value={itemsPerPage}
+                    onChange={(event) => setItemsPerPage(Number(event.target.value))}
+                    className="rounded-lg border border-border bg-transparent px-2.5 py-2 text-sm text-foreground focus:border-brand focus:outline-none"
+                  >
+                    {[10, 20, 50].map((size) => <option key={size} value={size}>{size}</option>)}
+                  </select>
+                </label>
               </div>
             </div>
 
@@ -598,51 +653,57 @@ export default function WebsitePage() {
                     <div className="space-y-4">
                       {session.terms.map((term) => (
                         <div key={term.termId} className="space-y-3">
-                          <div className="grid gap-3 md:grid-cols-2">
+                          <div className={viewMode === "grid" ? "grid gap-4 sm:grid-cols-2 xl:grid-cols-3" : "divide-y divide-border overflow-hidden border border-border bg-surface"}>
                             {term.announcements.map((announcement) => (
                               <div
                                 key={announcement.id}
-                                className="rounded-lg border border-border bg-surface p-4 hover:shadow-sm transition-shadow"
+                                onClick={() => openAnnouncement(announcement)}
+                                className={viewMode === "grid" ? "flex min-h-[220px] cursor-pointer flex-col rounded-lg border border-border bg-surface p-4 transition-shadow hover:shadow-sm" : "flex cursor-pointer items-start justify-between gap-4 px-4 py-4 transition-colors hover:bg-background"}
                               >
-                                <div className="flex items-start justify-between gap-4">
-                                  <div className="flex-1">
-                                    <div className="mb-3 flex flex-wrap gap-2">
-                                      <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
-                                        {session.sessionName}
+                                <div className="flex min-w-0 flex-1 items-start justify-between gap-4">
+                                  {viewMode === "list" ? (
+                                    <div className="grid min-w-0 flex-1 grid-cols-1 gap-1 text-sm sm:grid-cols-[minmax(180px,1.5fr)_110px_130px_minmax(120px,1fr)_minmax(100px,1fr)] sm:items-center sm:gap-4">
+                                      <span className="flex min-w-0 items-center gap-2 truncate font-semibold text-foreground">
+                                        <Megaphone className="h-4 w-4 shrink-0 text-brand" />
+                                        <span className="truncate">{announcement.title}</span>
                                       </span>
-                                      <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
-                                        {term.termName}
-                                      </span>
-                                    </div>
-                                    <h2 className="text-lg font-semibold text-foreground">{announcement.title}</h2>
-                                    <p className="mt-1 text-sm text-muted line-clamp-2">{announcement.body}</p>
-                                    <div className="mt-3 flex flex-wrap items-center gap-2">
-                                      <span
-                                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
-                                          announcement.published
-                                            ? "bg-green-100 text-green-800"
-                                            : "bg-gray-100 text-gray-800"
-                                        }`}
-                                      >
+                                      <span className={`inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${announcement.published ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-700"}`}>
                                         {announcement.published ? "Published" : "Draft"}
                                       </span>
-                                      <span className="text-xs text-muted">
-                                        {announcement.publishedAt
-                                          ? new Date(announcement.publishedAt).toLocaleDateString("en-US", {
-                                              month: "short",
-                                              day: "numeric",
-                                              year: "numeric",
-                                            })
-                                          : new Date(announcement.createdAt || "").toLocaleDateString("en-US", {
-                                              month: "short",
-                                              day: "numeric",
-                                              year: "numeric",
-                                            })}
+                                      <span className="flex items-center gap-1.5 text-muted">
+                                        <CalendarDays className="h-3.5 w-3.5 shrink-0" />
+                                        {new Date(announcement.publishedAt || announcement.createdAt || "").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                                      </span>
+                                      <span className="flex min-w-0 items-center gap-1.5 truncate text-muted">
+                                        <GraduationCap className="h-3.5 w-3.5 shrink-0" />
+                                        <span className="truncate">{session.sessionName}</span>
+                                      </span>
+                                      <span className="flex min-w-0 items-center gap-1.5 truncate text-muted">
+                                        <CalendarDays className="h-3.5 w-3.5 shrink-0" />
+                                        <span className="truncate">{term.termName}</span>
                                       </span>
                                     </div>
-                                  </div>
+                                  ) : (
+                                    <div className={viewMode === "grid" ? "flex min-w-0 flex-1 flex-col" : "min-w-0 flex-1"}>
+                                      <div className="mb-3 flex flex-wrap gap-2">
+                                        <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">{session.sessionName}</span>
+                                        <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">{term.termName}</span>
+                                      </div>
+                                      <h2 className="truncate text-lg font-semibold text-foreground">{announcement.title}</h2>
+                                      <p className="mt-1 line-clamp-3 text-sm text-muted">{announcement.body}</p>
+                                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                                        <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${announcement.published ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}>
+                                          {announcement.published ? "Published" : "Draft"}
+                                        </span>
+                                        <span className="text-xs text-muted">{new Date(announcement.publishedAt || announcement.createdAt || "").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                                      </div>
+                                    </div>
+                                  )}
                                   <button
-                                    onClick={() => openDeleteModal(announcement)}
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      openDeleteModal(announcement);
+                                    }}
                                     disabled={isDeletingAnnouncement && deletingAnnouncementId === announcement.id}
                                     className="flex-shrink-0 rounded-lg p-2 text-muted hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-50"
                                     title="Delete announcement"
@@ -660,6 +721,29 @@ export default function WebsitePage() {
                 ))}
               </div>
             )}
+            {selectedCount > 0 && totalPages > 1 && (
+              <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-muted">Page {currentPage} of {totalPages}</p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                    disabled={currentPage === 1}
+                    className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                    disabled={currentPage === totalPages}
+                    className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
@@ -675,6 +759,62 @@ export default function WebsitePage() {
         type={statusModalType}
         confirmLabel={statusModalType === 'success' ? 'Okay' : 'Review'}
       />
+
+      {selectedAnnouncement && (
+        <div
+          className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/50 px-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="announcement-detail-title"
+          onClick={closeAnnouncement}
+        >
+          <div
+            className="w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-surface shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-border bg-brand/10 px-6 py-5">
+              <div className="min-w-0">
+                <p className="text-xs font-bold uppercase tracking-wide text-brand">Announcement details</p>
+                <h2 id="announcement-detail-title" className="mt-2 text-xl font-bold text-foreground">
+                  {selectedAnnouncement.title}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={closeAnnouncement}
+                aria-label="Close announcement details"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:bg-background hover:text-foreground"
+              >
+                ×
+              </button>
+            </div>
+            <div className="space-y-5 px-6 py-5">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
+                <span className={`rounded-full px-2.5 py-1 font-semibold ${selectedAnnouncement.published ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-700"}`}>
+                  {selectedAnnouncement.published ? "Published" : "Draft"}
+                </span>
+                <span>{selectedAnnouncement.term?.academicYear?.name || selectedAnnouncement.academicYear?.name || "No session"}</span>
+                <span>•</span>
+                <span>{selectedAnnouncement.term?.name || "No term"}</span>
+                <span>•</span>
+                <span>{new Date(selectedAnnouncement.publishedAt || selectedAnnouncement.createdAt || "").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+              </div>
+              <div className="whitespace-pre-wrap text-sm leading-7 text-foreground">
+                {selectedAnnouncement.body}
+              </div>
+            </div>
+            <div className="flex justify-end border-t border-border bg-background px-6 py-4">
+              <button
+                type="button"
+                onClick={closeAnnouncement}
+                className="rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {deleteModalOpen && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 px-4">

@@ -14,7 +14,7 @@ import BellScheduler from "@/components/bell-scheduler";
 export type NavItem = {
   href: string;
   label: string;
-  icon: string;
+  icon: React.ComponentType<any> | string;
   section?: string;
 };
 

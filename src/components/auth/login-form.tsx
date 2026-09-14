@@ -79,9 +79,12 @@ export function LoginForm({ redirectTo }: { redirectTo: string }) {
       } else if (data.session?.role === "PLATFORM_ADMIN") {
         redirectUrl = "/schoolbase-admin";
         console.log('Platform admin login detected, redirecting to /schoolbase-admin');
-      } else if (data.session?.role === "SCHOOL_ADMIN" || data.session?.role === "BURSAR") {
+      } else if (data.session?.role === "SCHOOL_ADMIN") {
         redirectUrl = "/admin?onboarding=1";
-        console.log('School admin/bursar login detected, redirecting to /admin?onboarding=1');
+        console.log('School admin login detected, redirecting to /admin?onboarding=1');
+      } else if (data.session?.role === "BURSAR") {
+        redirectUrl = "/accounting";
+        console.log('Bursar login detected, redirecting to /accounting');
       }
       
       console.log('Performing full page redirect to:', redirectUrl);
