@@ -254,7 +254,7 @@ export default function ClassPage() {
   if (loading) {
     return (
       <main className="min-h-screen pb-12">
-        <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+        <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
           <div className="space-y-2">
             <div className="h-7 w-32 animate-pulse rounded-lg bg-surface" />
             <div className="h-4 w-72 animate-pulse rounded bg-surface" />
@@ -272,15 +272,57 @@ export default function ClassPage() {
 
   return (
     <main className="min-h-screen pb-12">
-      <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+      <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
       {/* Header */}
-      <header className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
+      <header className="flex flex-col justify-between gap-5 border-b border-border pb-6 sm:flex-row sm:items-start">
         <div>
           <div className="flex items-center gap-2 text-sm font-medium text-brand">
             <BookOpen className="h-[17px] w-[17px]" /> Teacher workspace
           </div>
           <h1 className="mt-2 text-3xl font-bold text-foreground sm:text-4xl">My Class</h1>
           <p className="mt-1 text-muted">View your students and manage your class roster.</p>
+        </div>
+        <div className="w-full border border-border bg-surface p-4 sm:max-w-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">Selected Class</p>
+              {selectedClass ? (
+                <>
+                  <h2 className="mt-1 truncate text-xl font-semibold text-foreground">{selectedClass.name}</h2>
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                    {selectedClass.arm && <span className="rounded-full border border-brand/30 bg-brand/10 px-2.5 py-1 text-xs font-medium text-brand">{selectedClass.arm}</span>}
+                    {selectedClass.phase && <span className="rounded-full border border-brand/30 bg-brand/10 px-2.5 py-1 text-xs font-medium text-brand">{selectedClass.phase}</span>}
+                    <span className="rounded-full border border-brand/30 bg-brand/10 px-2.5 py-1 text-xs font-medium text-brand">{selectedClass.studentCount} students</span>
+                  </div>
+                </>
+              ) : (
+                <h2 className="mt-1 text-lg font-semibold text-foreground">No class selected</h2>
+              )}
+            </div>
+            <Users className="mt-1 h-5 w-5 shrink-0 text-brand" />
+          </div>
+          {classes.length > 1 && (
+            <div className="mt-3 border-t border-border pt-3">
+              <label htmlFor="class-selector" className="mb-1.5 block text-xs font-medium text-muted">Switch class</label>
+              <select
+                id="class-selector"
+                value={selectedClass?.id || ''}
+                onChange={(event) => {
+                  const cls = classes.find((item) => item.id === event.target.value);
+                  setSelectedClass(cls || null);
+                  setSearchQuery('');
+                  setCurrentPage(1);
+                }}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm font-semibold text-foreground outline-none transition focus:border-brand"
+              >
+                {classes.map((cls) => (
+                  <option key={cls.id} value={cls.id}>
+                    {cls.name}{cls.arm ? ` - ${cls.arm}` : ''}{cls.phase ? ` - ${cls.phase}` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       </header>
 
@@ -298,84 +340,6 @@ export default function ClassPage() {
           </div>
         </div>
       )}
-
-      {/* Class selector / class identity */}
-      <section className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-center">
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
-            Selected Class
-          </p>
-
-          {selectedClass ? (
-            <>
-              <h2 className="mt-1 text-xl font-semibold text-foreground">
-                {selectedClass.name}
-              </h2>
-
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                {selectedClass.arm && (
-                  <span className="rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-sm font-medium text-brand">
-                    {selectedClass.arm}
-                  </span>
-                )}
-                {selectedClass.phase && (
-                  <span className="rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-sm font-medium text-brand">
-                    {selectedClass.phase}
-                  </span>
-                )}
-                <span className="rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-sm font-medium text-brand">
-                  {selectedClass.studentCount} students
-                </span>
-              </div>
-            </>
-          ) : (
-            <h2 className="mt-1 text-lg font-semibold text-foreground">
-              No class selected
-            </h2>
-          )}
-        </div>
-
-        {classes.length > 1 && (
-            <div className="w-full sm:w-64">
-              <label
-                htmlFor="class-selector"
-                className="mb-1.5 block text-xs font-medium text-muted"
-              >
-                Class
-              </label>
-
-              <div className="relative">
-                <select
-                  id="class-selector"
-                  value={selectedClass?.id || ''}
-                  onChange={(event) => {
-                    const cls = classes.find(
-                      (item) => item.id === event.target.value,
-                    );
-
-                    setSelectedClass(cls || null);
-                    setSearchQuery('');
-                    setCurrentPage(1);
-                  }}
-                    className="w-full appearance-none rounded-lg border border-border bg-surface px-3 py-2.5 pr-10 text-sm font-semibold text-foreground outline-none transition focus:border-brand"
-                >
-                  {classes.map((cls) => (
-                    <option key={cls.id} value={cls.id}>
-                      {cls.name}
-                      {cls.arm ? ` - ${cls.arm}` : ''}
-                    </option>
-                  ))}
-                </select>
-
-                <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-muted">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          )}
-      </section>
 
       {/* Stats */}
       {selectedClass && (

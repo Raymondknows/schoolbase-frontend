@@ -130,7 +130,7 @@ export default function TeacherTimetablePage() {
     .size;
 
   return (
-    <main className="min-h-screen px-5 py-8 sm:px-8 lg:px-12">
+    <main className="min-h-screen px-2 py-8 sm:px-8 lg:px-12">
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col justify-between gap-4 border-b border-border pb-7 sm:flex-row sm:items-end">
           <div>

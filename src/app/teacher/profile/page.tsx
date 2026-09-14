@@ -161,7 +161,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <main className="min-h-screen pb-12">
-        <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+        <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
           <div className="flex min-h-[60vh] items-center justify-center">
             <div className="flex items-center gap-3 text-sm text-muted">
               <Loader2 className="h-5 w-5 animate-spin text-brand" />
@@ -176,7 +176,7 @@ export default function ProfilePage() {
   if (error) {
     return (
       <main className="min-h-screen pb-12">
-        <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+        <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
           <div className="flex items-start gap-3 border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3">
             <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
             <div>
@@ -193,8 +193,8 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <div className="px-3 py-4 sm:px-4 lg:px-6 lg:py-6">
-        <div className="mx-auto max-w-7xl space-y-6 px-5 py-20 text-center">
+      <div className="px-2 py-4 sm:px-4 lg:px-6 lg:py-6">
+        <div className="mx-auto max-w-7xl space-y-6 px-2 py-20 text-center">
           <User className="mx-auto h-10 w-10 text-muted/40" />
           <p className="mt-3 text-sm text-muted">
             No profile information available.
@@ -222,7 +222,7 @@ export default function ProfilePage() {
 
   return (
 <main className="min-h-screen pb-12">
-  <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+  <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
 
         {/* Page heading */}
         <div className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">

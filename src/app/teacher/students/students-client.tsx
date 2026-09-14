@@ -112,7 +112,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
 
   return (
     <main className="min-h-screen pb-12">
-      <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+      <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
         <header className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
           <div>
             <div className="flex items-center gap-2 text-sm font-medium text-brand">

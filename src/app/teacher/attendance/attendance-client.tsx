@@ -31,7 +31,7 @@ export default function TeacherAttendancePageClient({
   );
 
   return (
-    <div className="px-3 py-4 sm:px-4 lg:px-6 lg:py-6">
+    <div className="px-2 py-4 sm:px-4 lg:px-6 lg:py-6">
       <div className="mx-auto max-w-6xl space-y-4 sm:space-y-5">
         <header>
           <div className="flex items-start gap-3">

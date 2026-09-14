@@ -225,7 +225,7 @@ export default function TeacherResultsEnhancedClient({
 
   return (
     <main className="min-h-screen pb-12">
-    <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
       {/* Header */}
       <div className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
         <div>

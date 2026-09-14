@@ -16,6 +16,7 @@ import {
   RefreshCw,
   Timer,
   Users2,
+  X,
 } from 'lucide-react';
 import {
   getTeacherDashboard,
@@ -24,6 +25,7 @@ import {
   detectSchoolPhase,
 } from '@/lib/teacher-utils';
 import { SubscriptionBlockedError } from '@/lib/subscription-utils';
+import { playCloseTone, playOpenTone } from '@/lib/sounds';
 import SubscriptionModal from '@/components/subscription-modal';
 
 type TeacherScheduleEntry = {
@@ -35,7 +37,6 @@ type TeacherScheduleEntry = {
 };
 
 const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-const dayAccents = ['#0a66c2', '#0b7a75', '#7a5af8', '#c2410c', '#b42318'];
 
 function formatCountdown(startsAt: string, now: Date) {
   const [hours, minutes] = startsAt.split(':').map(Number);
@@ -56,11 +57,26 @@ export default function TeacherDashboardPage() {
   const [schedule, setSchedule] = useState<TeacherScheduleEntry[]>([]);
   const [boardName, setBoardName] = useState('Published timetable');
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedLesson, setSelectedLesson] = useState<TeacherScheduleEntry | null>(null);
+  const [scheduleSnoozedUntil, setScheduleSnoozedUntil] = useState<number | null>(null);
   const [now, setNow] = useState(() => new Date());
   const [selectedDay, setSelectedDay] = useState(() => {
     const day = new Date().getDay();
     return day >= 1 && day <= 5 ? day - 1 : 0;
   });
+
+  function openLessonDrawer(lesson: TeacherScheduleEntry | null) {
+    if (!lesson) return;
+    setSelectedLesson(lesson);
+    setScheduleSnoozedUntil(null);
+    playOpenTone();
+  }
+
+  function closeLessonDrawer() {
+    setSelectedLesson(null);
+    setScheduleSnoozedUntil(Date.now() + 120000);
+    playCloseTone();
+  }
 
   useEffect(() => {
     async function loadData(isRefresh = false) {
@@ -104,6 +120,37 @@ export default function TeacherDashboardPage() {
     const timer = window.setInterval(() => setNow(new Date()), 30000);
     return () => window.clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (!selectedLesson) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeLessonDrawer();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedLesson]);
+
+  useEffect(() => {
+    const currentDay = new Date().getDay();
+    if (currentDay < 1 || currentDay > 5) return;
+
+    const upcomingLesson = schedule
+      .filter((entry) => entry.period.dayOfWeek === currentDay)
+      .sort((a, b) => a.period.startsAt.localeCompare(b.period.startsAt))
+      .find((entry) => {
+        const [hours, minutes] = entry.period.startsAt.split(':').map(Number);
+        const start = new Date(now);
+        start.setHours(hours, minutes, 0, 0);
+        const minutesUntilStart = (start.getTime() - now.getTime()) / 60000;
+        return minutesUntilStart >= 0 && minutesUntilStart <= 15;
+      });
+
+    if (!selectedLesson && upcomingLesson && (!scheduleSnoozedUntil || Date.now() >= scheduleSnoozedUntil)) {
+      openLessonDrawer(upcomingLesson);
+    }
+  }, [now, schedule, scheduleSnoozedUntil, selectedLesson]);
 
   if (loading) {
     return (
@@ -183,7 +230,7 @@ export default function TeacherDashboardPage() {
 
   return (
     <main className="min-h-screen pb-12">
-      <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+      <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
         <section className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
           <div>
             <div className="flex items-center gap-2 text-sm font-medium text-brand">
@@ -196,6 +243,14 @@ export default function TeacherDashboardPage() {
             <Link href="/teacher/timetable" className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light">
               <CalendarDays className="h-4 w-4" /> View timetable
             </Link>
+            <button
+              type="button"
+              onClick={() => openLessonDrawer(todayEntries[0] || null)}
+              disabled={!todayEntries.length}
+              className="inline-flex items-center gap-2 rounded-lg border border-brand/30 bg-brand-light px-4 py-2.5 text-sm font-semibold text-brand transition hover:border-brand/50 hover:bg-brand/10 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <CalendarDays className="h-4 w-4" /> Open schedule
+            </button>
             <button type="button" onClick={() => { setRefreshing(true); window.location.reload(); }} disabled={refreshing} className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-wait disabled:opacity-70">
               <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} /> {refreshing ? 'Refreshing...' : 'Refresh workspace'}
             </button>
@@ -222,61 +277,63 @@ export default function TeacherDashboardPage() {
           })}
         </section>
 
-        <section className="border-b border-border pb-5">
-          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-            <div>
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.12em] text-muted">
-                <CalendarDays className="h-4 w-4 text-brand" /> Today · {weekDays[todayIndex]}
-              </div>
-              <h2 className="mt-1 text-xl font-semibold text-foreground">Your teaching schedule</h2>
-              <p className="mt-1 text-sm text-muted">{todayEntries.length} {todayEntries.length === 1 ? 'lesson' : 'lessons'} scheduled from your published board.</p>
-            </div>
-            {nextLesson && (
-              <div className="flex items-center gap-3 rounded-lg bg-amber-50 px-3 py-2 text-amber-800">
-                <Timer className="h-5 w-5" />
+        {selectedLesson && (
+          <div className="fixed inset-0 z-50 flex" role="dialog" aria-modal="true" aria-labelledby="lesson-drawer-title">
+            <button
+              type="button"
+              aria-label="Close lesson details"
+              onClick={closeLessonDrawer}
+              className="absolute inset-0 cursor-pointer bg-slate-950/35 backdrop-blur-[2px]"
+            />
+            <aside className="relative ml-auto flex h-full w-full max-w-md flex-col overflow-hidden border-l border-border bg-surface shadow-2xl animate-in slide-in-from-right duration-300">
+              <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[.1em]">Next lesson</p>
-                  <p className="text-sm font-semibold">{nextLesson.subject?.name || 'Lesson'} · in {formatCountdown(nextLesson.period.startsAt, now)}</p>
+                  <p className="text-[11px] font-bold uppercase tracking-[.12em] text-muted">{weekDays[selectedLesson.period.dayOfWeek - 1]} schedule</p>
+                  <h2 id="lesson-drawer-title" className="mt-1 text-xl font-semibold text-foreground">Lesson details</h2>
+                  <p className="mt-1 text-sm text-muted">{boardName}</p>
                 </div>
+                <button
+                  type="button"
+                  onClick={closeLessonDrawer}
+                  aria-label="Close lesson details"
+                  className="rounded-lg p-2 text-muted transition hover:bg-background hover:text-foreground"
+                >
+                  <X className="h-5 w-5" />
+                </button>
               </div>
-            )}
-          </div>
-          <div className="mt-5 grid grid-cols-5 gap-2">
-            {weekDays.map((day, index) => (
-              <button
-                key={day}
-                type="button"
-                onClick={() => setSelectedDay(index)}
-                className={`rounded-lg border px-2 py-3 text-sm font-semibold transition-colors ${selectedDay === index ? 'border-brand bg-brand text-white' : 'border-border bg-surface text-muted hover:border-brand hover:text-brand'}`}
-              >
-                <span className="hidden sm:inline">{day}</span>
-                <span className="sm:hidden">{day.slice(0, 3)}</span>
-                <span className="mt-1 block text-xs font-normal opacity-75">
-                  {schedule.filter((entry) => entry.period.dayOfWeek === index + 1).length} lessons
-                </span>
-              </button>
-            ))}
-          </div>
-          <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-            {todayEntries.map((entry) => (
-              <article key={entry.id} className="rounded-lg border border-border bg-background p-4" style={{ borderTop: `3px solid ${dayAccents[todayIndex]}` }}>
-                <div className="flex items-start justify-between gap-3">
+              <div className="overflow-y-auto bg-background p-5 sm:p-6">
+                <div className="mb-4 flex items-center justify-between gap-3 border border-border bg-surface px-4 py-3">
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-[.1em] text-muted">{entry.period.name}</p>
-                    <h3 className="mt-1 font-bold text-foreground">{entry.subject?.name || 'Lesson'}</h3>
+                    <p className="text-xs font-bold uppercase tracking-[.1em] text-muted">Today · {weekDays[todayIndex]}</p>
+                    <p className="mt-1 text-sm text-muted">{todayEntries.length} {todayEntries.length === 1 ? 'lesson' : 'lessons'} scheduled from your published board.</p>
                   </div>
-                  <span className="rounded-full bg-brand-light px-2 py-1 text-xs font-bold text-brand">{entry.period.startsAt}</span>
+                  {nextLesson && <span className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-amber-700"><Timer className="h-4 w-4" /> {formatCountdown(nextLesson.period.startsAt, now)}</span>}
                 </div>
-                <p className="mt-3 text-sm font-medium text-muted">{entry.class?.name || 'Class'}{entry.class?.arm ? ` · ${entry.class.arm}` : ''}</p>
-                <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 border-t border-border pt-3 text-xs text-muted">
-                  <span className="inline-flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" /> {entry.period.startsAt} - {entry.period.endsAt}</span>
-                  {entry.room && <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {entry.room}</span>}
+                <div className="border border-border bg-surface p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[.1em] text-muted">{selectedLesson.period.name}</p>
+                      <h3 className="mt-2 text-2xl font-bold text-foreground">{selectedLesson.subject?.name || 'Lesson'}</h3>
+                    </div>
+                    <span className="rounded-full bg-brand-light px-3 py-1.5 text-sm font-bold text-brand">{selectedLesson.period.startsAt}</span>
+                  </div>
+                  <div className="mt-6 space-y-4 border-t border-border pt-5">
+                    <div className="flex items-start gap-3">
+                      <Clock3 className="mt-0.5 h-5 w-5 text-brand" />
+                      <div><p className="text-xs font-bold uppercase tracking-[.1em] text-muted">Time</p><p className="mt-1 font-semibold text-foreground">{selectedLesson.period.startsAt} - {selectedLesson.period.endsAt}</p></div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <Users2 className="mt-0.5 h-5 w-5 text-brand" />
+                      <div><p className="text-xs font-bold uppercase tracking-[.1em] text-muted">Class</p><p className="mt-1 font-semibold text-foreground">{selectedLesson.class?.name || 'Class'}{selectedLesson.class?.arm ? ` · ${selectedLesson.class.arm}` : ''}</p></div>
+                    </div>
+                    {selectedLesson.room && <div className="flex items-start gap-3"><MapPin className="mt-0.5 h-5 w-5 text-brand" /><div><p className="text-xs font-bold uppercase tracking-[.1em] text-muted">Room</p><p className="mt-1 font-semibold text-foreground">{selectedLesson.room}</p></div></div>}
+                  </div>
                 </div>
-              </article>
-            ))}
-            {!todayEntries.length && <div className="rounded-lg border border-dashed border-[#9ac7ea] bg-[#f3f9fe] p-8 text-center text-sm text-muted md:col-span-2 lg:col-span-3">No lessons scheduled for {weekDays[todayIndex]}. Open your timetable to review the full week.</div>}
+                <Link href="/teacher/timetable" onClick={closeLessonDrawer} className="mt-4 inline-flex w-full items-center justify-center rounded-lg bg-brand px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-hover">Open full timetable</Link>
+              </div>
+            </aside>
           </div>
-        </section>
+        )}
 
         <section className="border-b border-border pb-6">
           <div className="mb-4 flex items-center justify-between">

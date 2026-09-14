@@ -108,8 +108,8 @@ export default function SubjectsPage() {
 
   if (loading) {
     return (
-      <div className="px-3 py-4 sm:px-4 lg:px-6 lg:py-6">
-        <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+      <div className="px-2 py-4 sm:px-4 lg:px-6 lg:py-6">
+        <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
           <div className="space-y-2">
             <div className="h-7 w-32 animate-pulse rounded-lg bg-surface" />
             <div className="h-4 w-72 animate-pulse rounded bg-surface" />
@@ -132,7 +132,7 @@ export default function SubjectsPage() {
 
   return (
     <main className="min-h-screen pb-12">
-      <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+      <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
         <header className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
           <div>
             <div className="flex items-center gap-2 text-sm font-medium text-brand">

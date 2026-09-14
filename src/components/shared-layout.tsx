@@ -963,7 +963,7 @@ export default function SharedLayout({
           <h1 className="text-sm font-semibold text-foreground">{school?.name}</h1>
         </div>
 
-        <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-6 md:p-8 print:overflow-visible print:p-0">{children}</main>
+        <main className={`flex-1 min-w-0 overflow-y-auto overflow-x-hidden ${logoHref === "/teacher" ? "p-2" : "p-6"} md:p-8 print:overflow-visible print:p-0`}>{children}</main>
 
 
         <div

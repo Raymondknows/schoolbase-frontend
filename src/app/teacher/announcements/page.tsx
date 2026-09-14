@@ -95,7 +95,7 @@ export default function AnnouncementsPage() {
 
   return (
     <main className="min-h-screen pb-12">
-    <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
       {/* Header */}
       <div className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
         <div>
@@ -139,17 +139,6 @@ export default function AnnouncementsPage() {
           <p className="text-red-800">{error}</p>
         </div>
       )}
-
-      {/* Announcements List */}
-      <section className="border-b border-border pb-5">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[.12em] text-muted">School communications</p>
-            <h2 className="mt-1 text-xl font-semibold text-foreground">Latest announcements</h2>
-          </div>
-          <span className="text-sm font-semibold text-muted">{messages.length} {messages.length === 1 ? 'update' : 'updates'}</span>
-        </div>
-      </section>
 
       {messages.length === 0 ? (
         <div className="rounded-lg border border-dashed border-[#9ac7ea] bg-[#f3f9fe] p-16 text-center">
