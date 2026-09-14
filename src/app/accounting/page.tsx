@@ -231,7 +231,10 @@ export default function AccountingDashboard() {
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Accounting Dashboard</h1>
+          <div className="flex items-center gap-2 text-sm font-medium text-brand">
+            <CreditCard size={17} /> Finance overview
+          </div>
+          <h1 className="mt-2 text-3xl font-bold text-foreground">Accounting Dashboard</h1>
           <p className="mt-1 text-sm text-muted">
             School fee collections are the primary income source, with other inflows and operating expenses tracked separately.
           </p>
@@ -358,8 +361,8 @@ export default function AccountingDashboard() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-border bg-surface p-6">
-        <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="rounded-lg border border-border bg-surface">
+        <div className="flex items-center justify-between gap-3 border-b border-border bg-background px-4 py-3 sm:px-6">
           <h2 className="text-lg font-semibold text-foreground">Recent Transactions</h2>
           <Link href="/accounting/cashbook" className="text-sm font-semibold text-brand hover:underline">
             View full cashbook
@@ -367,43 +370,43 @@ export default function AccountingDashboard() {
         </div>
 
         {data.recentTransactions.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border bg-background p-8 text-center text-sm text-muted">
+          <div className="border-t border-border bg-background px-4 py-8 text-center text-sm text-muted sm:px-6">
             No transactions yet
           </div>
         ) : (
           <>
-            <div className="hidden sm:block overflow-hidden rounded-lg border border-border bg-background">
+            <div className="hidden overflow-x-auto sm:block">
               <table className="w-full text-left text-sm">
-                <thead className="border-b border-border bg-surface text-muted">
+                <thead className="border-b border-border bg-background text-muted">
                   <tr>
-                    <th className="px-4 py-3 font-medium">Date</th>
-                    <th className="px-4 py-3 font-medium">Category</th>
-                    <th className="px-4 py-3 font-medium">Description</th>
-                    <th className="px-4 py-3 font-medium text-right">Amount</th>
-                    <th className="px-4 py-3 font-medium">Recorded By</th>
+                    <th className="px-4 py-2 font-medium">Date</th>
+                    <th className="px-4 py-2 font-medium">Category</th>
+                    <th className="px-4 py-2 font-medium">Description</th>
+                    <th className="px-4 py-2 font-medium text-right">Amount</th>
+                    <th className="px-4 py-2 font-medium">Recorded By</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.recentTransactions.map((transaction) => (
-                    <tr key={transaction.id} className="border-t border-border hover:bg-surface/60 transition-colors">
-                      <td className="px-4 py-3 text-muted">{formatDate(transaction.transactionDate)}</td>
-                      <td className="px-4 py-3">
+                    <tr key={transaction.id} className="border-t border-border hover:bg-background/50 transition-colors">
+                      <td className="px-4 py-2 text-muted">{formatDate(transaction.transactionDate)}</td>
+                      <td className="px-4 py-2">
                         <span className="inline-flex rounded-full border border-border bg-surface px-2 py-1 text-[10px] font-semibold uppercase tracking-[.08em] text-muted">
                           {transaction.category.name}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-foreground">{transaction.description || '—'}</td>
-                      <td className={`px-4 py-3 text-right font-semibold ${transaction.type === 'INCOME' ? 'text-green-600' : 'text-red-600'}`}>
+                      <td className="px-4 py-2 text-foreground">{transaction.description || '—'}</td>
+                      <td className={`px-4 py-2 text-right font-semibold ${transaction.type === 'INCOME' ? 'text-green-600' : 'text-red-600'}`}>
                         {transaction.type === 'INCOME' ? '+' : '-'}{data.currency} {formatAmount(transaction.amount)}
                       </td>
-                      <td className="px-4 py-3 text-muted">{transaction.createdByUser.name}</td>
+                      <td className="px-4 py-2 text-muted">{transaction.createdByUser.name}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
 
-            <div className="space-y-3 sm:hidden">
+            <div className="space-y-3 p-3 sm:hidden">
               {data.recentTransactions.map((transaction) => (
                 <div key={transaction.id} className="rounded-lg border border-border bg-background p-3">
                   <div className="flex items-start justify-between gap-3">
