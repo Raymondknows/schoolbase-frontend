@@ -349,10 +349,10 @@ export default function TeacherDashboardPage() {
                 <Link
                   key={action.label}
                   href={action.href}
-                  className="group inline-flex w-full cursor-pointer items-center justify-between border border-border bg-surface px-4 py-3 text-sm font-semibold text-foreground transition hover:border-brand/40 hover:bg-brand-light"
+                  className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-brand px-4 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand/90 hover:shadow-md"
                 >
-                  <span className="inline-flex items-center gap-2"><IconComponent className="h-4 w-4 text-brand" />{action.label}</span>
-                  <ArrowUpRight className="h-4 w-4 text-muted transition group-hover:text-brand" />
+                  <IconComponent className="h-4 w-4" />
+                  {action.label}
                 </Link>
               );
             })}

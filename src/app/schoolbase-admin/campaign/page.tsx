@@ -157,7 +157,7 @@ export default function CampaignPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-2 py-6 sm:px-8 sm:py-8 lg:px-12">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <div className="flex items-center gap-2 text-sm font-medium text-brand"><Send size={17} /> Campaign operations</div>

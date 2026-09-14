@@ -91,6 +91,16 @@ export default function SharedLayout({
   const toolsTouchMovedRef = useRef(false);
   const audioTouchMovedRef = useRef(false);
 
+  function openMobileSidebar() {
+    setMobileMenuOpen(true);
+    playOpenTone();
+  }
+
+  function closeMobileSidebar() {
+    setMobileMenuOpen(false);
+    playCloseTone();
+  }
+
   const DEFAULT_JINGLES = [
     { name: "SchoolBase Jingle 1", src: "/audio-jingles/SchoolBase%20_%20Simple%20On%20Your%20Screen.mp3" },
     { name: "SchoolBase Jingle 2", src: "/audio-jingles/SchoolBase%20_%20Simple%20On%20Your%20Screen%202.mp3" },
@@ -924,7 +934,7 @@ export default function SharedLayout({
       {mobileMenuOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/50 md:hidden print:hidden"
-          onClick={() => setMobileMenuOpen(false)}
+          onClick={closeMobileSidebar}
         />
       )}
 
@@ -942,7 +952,7 @@ export default function SharedLayout({
           logoHref={logoHref}
           logoutRedirectUrl={logoutRedirectUrl}
           isMobile
-          onClose={() => setMobileMenuOpen(false)}
+          onClose={closeMobileSidebar}
         />
       </div>
 
@@ -951,7 +961,7 @@ export default function SharedLayout({
         <div className="border-b border-border bg-surface px-4 py-3 md:hidden flex items-center gap-2 print:hidden">
           <Button
             variant="ghost"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            onClick={mobileMenuOpen ? closeMobileSidebar : openMobileSidebar}
             className="md:hidden p-1 h-auto w-auto"
           >
             {mobileMenuOpen ? (

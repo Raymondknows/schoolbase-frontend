@@ -89,7 +89,7 @@ export default function PaymentsPage() {
   if (loading) {
     return (
       <ParentPageShell onRefresh={loadData}>
-        <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+        <div className="w-full space-y-6 py-0">
           <div className="space-y-2">
             <div className="h-10 w-48 bg-slate-200 rounded-lg animate-pulse"></div>
             <div className="h-5 w-64 bg-slate-100 rounded animate-pulse"></div>
@@ -123,7 +123,7 @@ export default function PaymentsPage() {
 
   return (
     <ParentPageShell onRefresh={loadData}>
-      <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+      <div className="w-full space-y-6 py-0">
         <div className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-end">
           <div>
           <div className="flex items-center gap-2 text-sm font-medium text-brand"><CreditCard className="h-4 w-4" /> Finance operations</div>

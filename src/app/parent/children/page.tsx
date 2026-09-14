@@ -143,7 +143,7 @@ export default function ChildrenPage() {
   if (loading) {
     return (
       <ParentPageShell onRefresh={loadData}>
-        <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+        <div className="w-full space-y-6 py-0">
           {/* Header skeleton */}
           <div className="space-y-2">
             <div className="h-10 w-48 bg-slate-200 rounded-lg animate-pulse"></div>
@@ -222,7 +222,7 @@ export default function ChildrenPage() {
 
   return (
     <ParentPageShell onRefresh={loadData}>
-        <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+        <div className="w-full space-y-6 py-0">
         <div className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-end">
           <div>
           <div className="flex items-center gap-2 text-sm font-medium text-brand"><Users className="h-4 w-4" /> Family records</div>

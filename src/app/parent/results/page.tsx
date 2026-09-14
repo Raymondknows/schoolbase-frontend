@@ -246,7 +246,7 @@ const termParam = selectedTerm ? `&termId=${selectedTerm.id}` : "";
   if (loading) {
     return (
       <ParentPageShell onRefresh={loadData}>
-        <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+        <div className="w-full space-y-6 py-0">
           <div className="space-y-2">
             <div className="h-10 w-48 bg-slate-200 rounded-lg animate-pulse"></div>
             <div className="h-5 w-64 bg-slate-100 rounded animate-pulse"></div>

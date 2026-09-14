@@ -68,7 +68,7 @@ export default function ParentDashboardPage() {
   if (loading) {
     return (
       <ParentPageShell onRefresh={loadData}>
-        <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+        <div className="w-full space-y-6 py-0">
           <div className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-end">
             <div className="space-y-3">
               <div className="h-4 w-32 animate-pulse bg-slate-200"></div>
@@ -108,7 +108,7 @@ export default function ParentDashboardPage() {
   if (error) {
     return (
       <ParentPageShell onRefresh={loadData}>
-        <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:px-12">
+        <div className="w-full py-0">
         <div className="rounded-lg border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-[#a61b29]">
           <AlertCircle className="h-5 w-5 text-error flex-shrink-0 mt-0.5" />
           <div>
@@ -154,7 +154,7 @@ export default function ParentDashboardPage() {
 
   return (
     <ParentPageShell onRefresh={loadData}>
-      <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+      <div className="w-full space-y-6 py-0">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <div className="flex items-center gap-2 text-sm font-medium text-brand">

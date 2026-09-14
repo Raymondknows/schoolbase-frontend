@@ -75,7 +75,7 @@ export default function PendingSignupsPage() {
 
   return (
     <main className="min-h-screen pb-12">
-      <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+      <div className="mx-auto max-w-7xl space-y-6 px-2 py-6 sm:px-8 sm:py-8 lg:px-12">
         <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div><div className="flex items-center gap-2 text-sm font-medium text-brand"><ClipboardCheck size={17} /> Platform operations</div><h1 className="mt-2 text-3xl font-bold text-foreground">Pending signups</h1><p className="mt-1 text-muted">Follow up with schools that started registration but have not verified their email.</p></div>
           <div className="flex flex-wrap gap-3"><button onClick={() => { setPreviewTarget(previewTarget || signups[0] || null); playOpenTone(); }} disabled={!signups.length} className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand hover:bg-brand-light disabled:opacity-50"><Mail size={16} /> Email preview</button><button onClick={() => sendReminder()} disabled={sendingAll || !signups.length} className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-50"><Send size={16} /> {sendingAll ? "Sending..." : "Remind all"}</button></div>
