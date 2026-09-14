@@ -8,9 +8,10 @@ import {
   RefreshCw,
   CheckCircle,
   TrendingUp,
-  CreditCard,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { playCloseTone, playOpenTone } from '@/lib/sounds';
 
 interface Category {
   id: string;
@@ -40,6 +41,7 @@ export default function IncomePage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     categoryId: '',
@@ -48,6 +50,27 @@ export default function IncomePage() {
     referenceNumber: '',
     transactionDate: new Date().toISOString().split('T')[0],
   });
+
+  function openIncomeForm() {
+    setIsFormOpen(true);
+    playOpenTone();
+  }
+
+  function closeIncomeForm() {
+    setIsFormOpen(false);
+    playCloseTone();
+  }
+
+  useEffect(() => {
+    if (!isFormOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeIncomeForm();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFormOpen]);
 
   async function loadData() {
     try {
@@ -110,6 +133,7 @@ export default function IncomePage() {
         transactionDate: new Date().toISOString().split('T')[0],
       });
 
+      closeIncomeForm();
       await loadData();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -146,7 +170,7 @@ export default function IncomePage() {
   };
 
   return (
-    <div className="container mx-auto max-w-6xl px-4 py-8">
+    <div className="w-full">
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <div className="flex items-center gap-2 text-sm font-medium text-brand">
@@ -158,18 +182,23 @@ export default function IncomePage() {
           </p>
         </div>
 
-        <Button
-          variant="outline"
-          onClick={() => {
-            setRefreshing(true);
-            loadData();
-          }}
-          disabled={refreshing}
-          className="inline-flex items-center gap-2"
-        >
-          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-          {refreshing ? 'Refreshing...' : 'Refresh'}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" onClick={openIncomeForm} className="inline-flex items-center gap-2">
+            <Plus className="h-4 w-4" /> Record income
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setRefreshing(true);
+              loadData();
+            }}
+            disabled={refreshing}
+            className="inline-flex items-center gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            {refreshing ? 'Refreshing...' : 'Refresh'}
+          </Button>
+        </div>
       </div>
 
       {error && (
@@ -179,11 +208,15 @@ export default function IncomePage() {
         </div>
       )}
 
-      <div className="mb-8 rounded-lg border border-border bg-surface p-6">
-        <div className="mb-6 flex items-center gap-2 text-brand">
-          <CreditCard className="h-4 w-4" />
-          <h2 className="text-lg font-semibold text-foreground">New Income Entry</h2>
-        </div>
+      {isFormOpen && (
+        <div className="fixed inset-0 z-50 flex" role="dialog" aria-modal="true" aria-labelledby="new-income-title">
+          <button type="button" aria-label="Close new income form" onClick={closeIncomeForm} className="absolute inset-0 cursor-pointer bg-slate-950/35 backdrop-blur-[2px]" />
+          <aside className="relative ml-auto flex h-full w-full max-w-md flex-col overflow-hidden border-l border-border bg-surface shadow-2xl animate-in slide-in-from-right duration-300">
+            <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
+              <div className="flex items-start gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50"><TrendingUp className="h-5 w-5 text-emerald-700" /></div><div><p className="text-[11px] font-bold uppercase tracking-[.12em] text-muted">Accounting</p><h2 id="new-income-title" className="mt-1 text-xl font-semibold text-foreground">New income entry</h2><p className="mt-1 text-sm text-muted">Record money received by the school.</p></div></div>
+              <button type="button" onClick={closeIncomeForm} aria-label="Close new income form" className="rounded-lg p-2 text-muted transition hover:bg-background hover:text-foreground"><X className="h-5 w-5" /></button>
+            </div>
+            <div className="overflow-y-auto bg-background p-5 sm:p-6">
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -272,7 +305,10 @@ export default function IncomePage() {
             </Button>
           </div>
         </form>
-      </div>
+            </div>
+          </aside>
+        </div>
+      )}
 
       <div className="rounded-lg border border-border bg-surface p-6">
         <h2 className="mb-4 text-lg font-semibold text-foreground">Income Entries</h2>

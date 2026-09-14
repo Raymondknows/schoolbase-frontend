@@ -14,7 +14,7 @@ export default async function AccountingLayout({
     redirect("/login");
   }
 
-  if (session.role !== "BURSAR") {
+  if (session.role !== "BURSAR" && session.role !== "SCHOOL_ADMIN") {
     redirect("/login");
   }
 

@@ -8,6 +8,7 @@ import {
   CheckCircle,
   BookOpen,
   CreditCard,
+  RotateCcw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -42,6 +43,7 @@ export default function CashbookPage() {
   const [typeFilter, setTypeFilter] = useState<'ALL' | 'INCOME' | 'EXPENSE'>('ALL');
   const [skip, setSkip] = useState(0);
   const [take, setTake] = useState(50);
+  const [reversingId, setReversingId] = useState<string | null>(null);
 
   async function loadData() {
     try {
@@ -102,11 +104,33 @@ export default function CashbookPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  async function reverseTransaction(transaction: Transaction) {
+    const reason = window.prompt('Why is this transaction being reversed?');
+    if (!reason?.trim()) return;
+
+    setReversingId(transaction.id);
+    try {
+      const response = await fetch(`/api/bursar/transactions/${transaction.id}/reverse`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: reason.trim() }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || 'Failed to reverse transaction');
+      await loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to reverse transaction');
+    } finally {
+      setReversingId(null);
+    }
+  }
+
   const totalPages = data ? Math.ceil(data.total / take) : 0;
   const currentPage = data ? Math.floor(data.skip / take) + 1 : 1;
 
   return (
-    <div className="container mx-auto max-w-6xl px-4 py-8">
+    <div className="w-full">
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <div className="flex items-center gap-2 text-sm font-medium text-brand">
@@ -199,6 +223,7 @@ export default function CashbookPage() {
                     <th className="px-4 py-3 text-right font-medium">Amount</th>
                     <th className="px-4 py-3 font-medium">Status</th>
                     <th className="px-4 py-3 font-medium">Recorded By</th>
+                    <th className="px-4 py-3 text-right font-medium">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -240,6 +265,7 @@ export default function CashbookPage() {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-muted">{transaction.createdByUser.name}</td>
+                      <td className="px-4 py-3 text-right">{transaction.status === 'POSTED' ? <button type="button" onClick={() => reverseTransaction(transaction)} disabled={reversingId === transaction.id} className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1.5 text-xs font-medium text-muted transition hover:border-red-300 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50" title="Reverse transaction"><RotateCcw className="h-3.5 w-3.5" />{reversingId === transaction.id ? 'Reversing...' : 'Reverse'}</button> : <span className="text-xs text-muted">—</span>}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -265,6 +291,7 @@ export default function CashbookPage() {
                     </span>
                     <span className="text-xs text-muted">{transaction.referenceNumber || '—'}</span>
                   </div>
+                  {transaction.status === 'POSTED' && <button type="button" onClick={() => reverseTransaction(transaction)} disabled={reversingId === transaction.id} className="mt-3 inline-flex items-center gap-1 rounded-md border border-border px-2 py-1.5 text-xs font-medium text-muted transition hover:border-red-300 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"><RotateCcw className="h-3.5 w-3.5" />{reversingId === transaction.id ? 'Reversing...' : 'Reverse transaction'}</button>}
                 </div>
               ))}
             </div>
