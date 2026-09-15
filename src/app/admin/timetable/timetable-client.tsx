@@ -358,7 +358,7 @@ export default function TimetableClient() {
           }
         }
       `}</style>
-      <div className="mx-auto max-w-7xl space-y-6 px-3 py-5 sm:px-8 sm:py-8 lg:px-12">
+      <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
         {config && (
           <div className="timetable-print-header hidden">
             <div className="text-xl font-bold text-black">{config.name}</div>
@@ -374,16 +374,18 @@ export default function TimetableClient() {
             </div>
           </div>
         )}
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+          <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+          <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <div>
-            <div className="flex items-center gap-2 text-sm font-medium text-brand">
-              <CalendarDays size={17} /> Academic operations
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand">
+              <CalendarDays size={16} /> Academic operations
             </div>
-            <h1 className="mt-2 text-3xl font-bold text-foreground">
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               Timetable
             </h1>
-            <p className="mt-1 text-muted">
-              Create and manage class schedules by term, teacher, and subject
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
+              Build reliable class schedules by term, teacher, subject, and room.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -420,7 +422,8 @@ export default function TimetableClient() {
               <Plus size={17} /> New timetable
             </button>
           </div>
-        </div>
+          </div>
+        </header>
         <AdminBellManager isOpen={bellModalOpen} onClose={closeBellModal} />
         <AdminPeriodsManager
           isOpen={periodsModalOpen}
@@ -470,7 +473,7 @@ export default function TimetableClient() {
           />
         </section>
 
-        <section className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-center">
+        <section className="flex flex-col justify-between gap-4 border border-border bg-surface p-4 sm:flex-row sm:items-center sm:p-5">
           <div className="flex flex-wrap items-center gap-3">
             <select
               value={config?.id || ""}
@@ -852,7 +855,7 @@ function ActionConfirmationModal({ configName, action, saving, onCancel, onConfi
     unpublish: { title: "Return timetable to draft?", detail: "Teachers and parents will no longer see this timetable until it is published again.", button: "Return to draft", icon: <Undo2 className="h-4 w-4" /> },
     deleteLesson: { title: "Delete lesson?", detail: "This lesson will be removed from the timetable.", button: "Delete lesson", icon: <Trash2 className="h-4 w-4" /> },
   }[action];
-  return <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4"><style>{`@keyframes timetable_confirm_enter { from { transform: translateX(36px) scale(.98); opacity: 0 } to { transform: translateX(0) scale(1); opacity: 1 } }`}</style><div className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]" style={{ animation: "timetable_confirm_enter 320ms cubic-bezier(.2,.9,.2,1)" }}><div className="border-b border-border px-6 py-5" style={{ background: "linear-gradient(90deg, rgba(10,102,194,0.12), rgba(10,102,194,0.04))" }}><div className="flex items-start gap-3"><div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/70 bg-brand/10 text-brand shadow-sm"><AlertCircle className="h-6 w-6" /></div><div><h2 className="text-lg font-semibold text-slate-900">{labels.title}</h2><p className="mt-1 text-sm text-slate-600">Review this action before continuing.</p></div></div></div><div className="px-6 py-5"><p className="text-sm leading-6 text-slate-700">You are about to {action === "deleteLesson" ? "delete the lesson from" : action === "unpublish" ? "return" : action === "archive" ? "archive" : "permanently delete"} <strong>“{configName}”</strong>.</p><div className="mt-4 rounded-lg border border-brand/15 bg-brand/5 p-3"><p className="text-xs text-foreground"><strong>Important:</strong> {labels.detail}</p></div></div><div className="flex gap-3 border-t border-border bg-surface px-6 py-4"><button onClick={onCancel} disabled={saving} className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-background disabled:opacity-50">Cancel</button><button onClick={onConfirm} disabled={saving} className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-hover disabled:opacity-50">{saving ? <><div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> Processing...</> : <>{labels.icon} {labels.button}</>}</button></div></div></div>;
+  return <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4"><style>{`@keyframes timetable_confirm_enter { from { transform: translateX(36px) scale(.98); opacity: 0 } to { transform: translateX(0) scale(1); opacity: 1 } }`}</style><div className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]" style={{ animation: "timetable_confirm_enter 320ms cubic-bezier(.2,.9,.2,1)" }}><div className="border-b border-border/70 bg-brand/10 px-4 py-4 sm:px-6 sm:py-5"><div className="flex items-start gap-3"><div className="flex h-11 w-11 shrink-0 items-center justify-center border border-brand/20 bg-brand/10 text-brand"><AlertCircle className="h-5 w-5" /></div><div><h2 className="text-lg font-semibold text-foreground">{labels.title}</h2><p className="mt-1 text-sm text-muted">Review this action before continuing.</p></div></div></div><div className="px-4 py-4 sm:px-6 sm:py-5"><p className="text-sm leading-6 text-foreground">You are about to {action === "deleteLesson" ? "delete the lesson from" : action === "unpublish" ? "return" : action === "archive" ? "archive" : "permanently delete"} <strong>“{configName}”</strong>.</p><div className="mt-4 border border-brand/15 bg-brand/5 p-3"><p className="text-xs text-foreground"><strong>Important:</strong> {labels.detail}</p></div></div><div className="flex gap-3 border-t border-border bg-surface/80 px-6 py-4"><button onClick={onCancel} disabled={saving} className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-background disabled:opacity-50">Cancel</button><button onClick={onConfirm} disabled={saving} className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-hover disabled:opacity-50">{saving ? <><div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> Processing...</> : <>{labels.icon} {labels.button}</>}</button></div></div></div>;
 }
 
 function ConfigActionModal({
@@ -875,14 +878,14 @@ function ConfigActionModal({
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
       <style>{`@keyframes timetable_action_enter { from { transform: translateX(36px) scale(.98); opacity: 0 } to { transform: translateX(0) scale(1); opacity: 1 } } @keyframes timetable_action_exit { from { transform: translateX(0) scale(1); opacity: 1 } to { transform: translateX(36px) scale(.98); opacity: 0 } }`}</style>
       <div
-        className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(220,38,38,0.16)]"
+        className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(220,38,38,0.16)]"
         style={{
           animation: `${animateState === "enter" ? "timetable_action_enter" : "timetable_action_exit"} 320ms cubic-bezier(.2,.9,.2,1)`,
         }}
       >
         <div className="border-b border-border/70 bg-error/10 px-6 py-5">
           <div className="flex items-start gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-error/20 bg-error/10 shadow-sm">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-error/20 bg-error/10">
               {published ? (
                 <Archive className="h-6 w-6 text-error" />
               ) : (
@@ -901,12 +904,12 @@ function ConfigActionModal({
             </div>
           </div>
         </div>
-        <div className="px-6 py-5">
+        <div className="px-4 py-4 sm:px-6 sm:py-5">
           <p className="text-sm leading-6 text-muted">
             You are about to {published ? "archive" : "permanently delete"}{" "}
             <strong>“{configName}”</strong>.
           </p>
-          <div className="mt-4 rounded-lg border border-error/20 bg-error/10 p-3">
+          <div className="mt-4 border border-error/20 bg-error/10 p-3">
             <p className="text-xs text-error">
               <strong>{published ? "History retained:" : "Warning:"}</strong>{" "}
               {published
@@ -915,7 +918,7 @@ function ConfigActionModal({
             </p>
           </div>
         </div>
-        <div className="flex gap-3 border-t border-border/70 bg-background px-6 py-4">
+        <div className="flex gap-3 border-t border-border bg-surface/80 px-6 py-4">
           <button
             type="button"
             onClick={onCancel}
@@ -956,21 +959,21 @@ function PublishModal({ configName, success, saving, onCancel, onConfirm }: { co
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
       <style>{`@keyframes timetable_publish_enter { from { transform: translateX(36px) scale(.98); opacity: 0 } to { transform: translateX(0) scale(1); opacity: 1 } }`}</style>
-      <div className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]" style={{ animation: "timetable_publish_enter 320ms cubic-bezier(.2,.9,.2,1)" }}>
-        <div className="border-b border-border px-6 py-5" style={{ background: "linear-gradient(90deg, rgba(10,102,194,0.12), rgba(10,102,194,0.04))" }}>
+      <div className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]" style={{ animation: "timetable_publish_enter 320ms cubic-bezier(.2,.9,.2,1)" }}>
+        <div className="border-b border-border/70 bg-brand/10 px-4 py-4 sm:px-6 sm:py-5">
           <div className="flex items-start gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/70 bg-emerald-500/10 shadow-sm">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-brand/20 bg-brand/10">
               {success ? <Check className="h-6 w-6 text-brand" /> : <Send className="h-6 w-6 text-brand" />}
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-slate-900">{success ? "Timetable published" : "Publish timetable?"}</h2>
-              <p className="mt-1 text-sm text-slate-600">{success ? "Your schedule is now available to the school." : "Review before making this schedule visible."}</p>
+              <h2 className="text-lg font-semibold text-foreground">{success ? "Timetable published" : "Publish timetable?"}</h2>
+              <p className="mt-1 text-sm text-muted">{success ? "Your schedule is now available to the school." : "Review before making this schedule visible."}</p>
             </div>
           </div>
         </div>
-        <div className="px-6 py-5">
-          <p className="text-sm leading-6 text-slate-700">{success ? <><strong>{configName}</strong> has been published successfully. Teachers and parents can now view it.</> : <>You are about to publish <strong>“{configName}”</strong>. Teachers and parents will see the schedule after publishing.</>}</p>
-          {!success && <div className="mt-4 rounded-lg border border-brand/15 bg-brand/5 p-3"><p className="text-xs text-foreground"><strong>Tip:</strong> You can return the timetable to draft later if you need to make corrections.</p></div>}
+        <div className="px-4 py-4 sm:px-6 sm:py-5">
+          <p className="text-sm leading-6 text-foreground">{success ? <><strong>{configName}</strong> has been published successfully. Teachers and parents can now view it.</> : <>You are about to publish <strong>“{configName}”</strong>. Teachers and parents will see the schedule after publishing.</>}</p>
+          {!success && <div className="mt-4 border border-brand/15 bg-brand/5 p-3"><p className="text-xs text-foreground"><strong>Tip:</strong> You can return the timetable to draft later if you need to make corrections.</p></div>}
         </div>
         <div className="border-t border-border bg-surface px-6 py-4">
           {success ? <button onClick={onCancel} className="w-full rounded-lg bg-brand px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-hover">Done</button> : <div className="flex gap-3"><button onClick={onCancel} disabled={saving} className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-background disabled:opacity-50">Cancel</button><button onClick={onConfirm} disabled={saving} className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-hover disabled:opacity-50">{saving ? <><div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> Publishing...</> : <><Send className="h-4 w-4" /> Publish</>}</button></div>}
@@ -1045,7 +1048,7 @@ function LessonEditor({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
       <form
         onSubmit={submit}
-        className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
+        className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
       >
         <div className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-6 py-5">
           <div>
@@ -1053,7 +1056,7 @@ function LessonEditor({
               {isEditing ? <Edit3 size={15} /> : <ListPlus size={15} />}{" "}
               {isEditing ? "Edit lesson" : "Add lesson"}
             </div>
-            <h2 className="mt-2 text-2xl font-bold text-foreground">
+            <h2 className="mt-2 text-2xl font-semibold text-foreground">
               {isEditing
                 ? "Update timetable assignment"
                 : "Add a lesson to this timetable"}
@@ -1077,7 +1080,7 @@ function LessonEditor({
             <X size={20} />
           </button>
         </div>
-        <div className="mx-6 mt-6 rounded-lg border border-border bg-background p-4">
+        <div className="mx-6 mt-6 border border-border bg-background p-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">
               Already added lessons

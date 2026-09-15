@@ -129,6 +129,8 @@ export default function ParentLayout({
         navItems={nav}
         school={school}
         session={session}
+        logoHref="/parent"
+        logoutRedirectUrl="/parent/login"
       >
         {children}
       </SharedLayout>

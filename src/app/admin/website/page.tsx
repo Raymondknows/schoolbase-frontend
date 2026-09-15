@@ -7,7 +7,7 @@ import { getBackendUrl } from "@/lib/backend-url";
 import { playCloseTone, playOpenTone } from "@/lib/sounds";
 import { Button } from "@/components/ui/button";
 import { ErrorModal } from "@/components/ui/error-modal";
-import { CalendarDays, GraduationCap, LayoutGrid, List, Megaphone, PlusCircle, Search, Trash2 } from "lucide-react";
+import { CalendarDays, CheckCircle2, Clock3, FileText, GraduationCap, LayoutGrid, List, Megaphone, PlusCircle, Search, Trash2 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { UserGuide, type PageHelpGuide } from "@/components/ui/user-guide";
 import SubscriptionModal from "@/components/subscription-modal";
@@ -285,6 +285,8 @@ export default function WebsitePage() {
   const firstVisible = selectedCount === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
   const lastVisible = Math.min(currentPage * itemsPerPage, selectedCount);
   const totalCount = announcements.length;
+  const publishedCount = announcements.filter((announcement) => announcement.published).length;
+  const draftCount = totalCount - publishedCount;
 
   useEffect(() => {
     async function fetchAnnouncements() {
@@ -453,12 +455,15 @@ export default function WebsitePage() {
 
   return (
     <>
-      <div className="space-y-6">
+      <main className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
         {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Announcements</h1>
-            <p className="mt-1 text-muted">Manage your school's public announcements</p>
+            <div className="text-xs font-bold uppercase tracking-[.16em] text-brand">School communications</div>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Announcements</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Manage public school updates and keep parents, teachers, and students informed.</p>
           </div>
           <div className="flex flex-wrap items-center gap-3 sm:ml-auto">
             {whatsAppConnected !== null && (
@@ -507,6 +512,29 @@ export default function WebsitePage() {
             </div>
           </div>
         </div>
+        </header>
+
+        <section className="grid gap-4 sm:grid-cols-3">
+          {[
+            { label: "Total updates", value: totalCount, detail: "Across all sessions", icon: FileText },
+            { label: "Published", value: publishedCount, detail: "Visible to your community", icon: CheckCircle2 },
+            { label: "Drafts", value: draftCount, detail: "Ready for review", icon: Clock3 },
+          ].map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <article key={stat.label} className="border border-border bg-surface p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center bg-brand/10 text-brand">
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <span className="text-2xl font-semibold tracking-tight text-foreground">{stat.value}</span>
+                </div>
+                <p className="mt-5 text-[11px] font-bold uppercase tracking-[.14em] text-muted">{stat.label}</p>
+                <p className="mt-1 text-xs text-muted">{stat.detail}</p>
+              </article>
+            );
+          })}
+        </section>
 
         {/* Error message */}
         {error && (
@@ -524,7 +552,8 @@ export default function WebsitePage() {
 
         {!loading && (
           <>
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
+            <section className="border border-border bg-surface p-4 sm:p-5">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
               <div className="min-w-0">
                 <p className="text-sm text-muted">
                   Showing {firstVisible}–{lastVisible} of {selectedCount} filtered announcement{selectedCount !== 1 ? "s" : ""} ({totalCount} total)
@@ -721,6 +750,7 @@ export default function WebsitePage() {
                 ))}
               </div>
             )}
+            </section>
             {selectedCount > 0 && totalPages > 1 && (
               <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm text-muted">Page {currentPage} of {totalPages}</p>
@@ -746,7 +776,7 @@ export default function WebsitePage() {
             )}
           </>
         )}
-      </div>
+      </main>
 
       {/* Help & Guide */}
       <UserGuide guide={HELP_GUIDE} />
@@ -769,7 +799,7 @@ export default function WebsitePage() {
           onClick={closeAnnouncement}
         >
           <div
-            className="w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-surface shadow-2xl"
+            className="w-full max-w-2xl overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4 border-b border-border bg-brand/10 px-6 py-5">
@@ -824,14 +854,14 @@ export default function WebsitePage() {
           `}</style>
 
           <div
-            className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_50px_rgba(220,38,38,0.16)]"
+            className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(220,38,38,0.16)]"
             style={{
               animation: `${deleteAnimateState === "enter" ? "sb_modal_enter" : "sb_modal_exit"} 320ms cubic-bezier(.2,.9,.2,1)`,
             }}
           >
-            <div className="border-b border-slate-100 px-6 py-5" style={{ background: "linear-gradient(90deg, rgba(220,38,38,0.12), rgba(220,38,38,0.04))" }}>
+            <div className="border-b border-border/70 bg-error/10 px-6 py-5">
               <div className="flex items-start gap-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/70 shadow-sm" style={{ background: "rgba(220,38,38,0.12)" }}>
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-error/20 bg-error/10">
                   <Trash2 className="h-6 w-6" style={{ color: "#DC2626" }} />
                 </div>
                 <div>

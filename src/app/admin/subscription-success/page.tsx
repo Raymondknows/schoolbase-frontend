@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
+import { AlertTriangle, CheckCircle2, CreditCard } from "lucide-react";
 
 async function ActivateSchoolServer({ reference }: { reference: string }) {
   try {
@@ -13,9 +14,14 @@ async function ActivateSchoolServer({ reference }: { reference: string }) {
     const data = await response.json();
     if (!data.success) {
       return (
-        <div className="rounded-3xl border border-red-200 bg-red-50 p-8 shadow-sm">
-          <h2 className="text-xl font-semibold text-red-900">Verification Failed</h2>
+        <div className="border border-red-200 bg-red-50 p-8">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 text-red-700" />
+            <div>
+          <h2 className="text-xl font-semibold text-red-900">Verification failed</h2>
           <p className="mt-3 text-sm text-red-800">{data.error || "Could not verify payment."}</p>
+            </div>
+          </div>
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             <Button href="/admin" className="w-full">
               Go to Dashboard
@@ -29,15 +35,15 @@ async function ActivateSchoolServer({ reference }: { reference: string }) {
     }
 
     return (
-      <div className="rounded-3xl border border-border bg-surface p-8 shadow-sm">
-        <div className="rounded-3xl border border-green-200 bg-green-50 p-6">
+      <div className="border border-border bg-surface p-6 sm:p-8">
+        <div className="border border-emerald-200 bg-emerald-50 p-6">
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-700">
-              <span className="text-xl">✓</span>
+            <div className="flex h-12 w-12 items-center justify-center bg-emerald-100 text-emerald-700">
+              <CheckCircle2 className="h-6 w-6" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-green-900">Subscription Activated</h2>
-              <p className="mt-2 text-sm text-green-800">
+              <h2 className="text-xl font-semibold text-emerald-900">Subscription activated</h2>
+              <p className="mt-2 text-sm text-emerald-800">
                 Your payment has been confirmed and your school can now access SchoolBase.
               </p>
             </div>
@@ -45,19 +51,19 @@ async function ActivateSchoolServer({ reference }: { reference: string }) {
         </div>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl border border-border bg-background p-5">
+          <div className="border border-border bg-background p-5">
             <p className="text-xs uppercase tracking-[0.24em] text-muted">School</p>
             <p className="mt-2 font-medium text-foreground">{data.school?.name || "—"}</p>
           </div>
-          <div className="rounded-2xl border border-border bg-background p-5">
+          <div className="border border-border bg-background p-5">
             <p className="text-xs uppercase tracking-[0.24em] text-muted">Plan</p>
             <p className="mt-2 font-medium text-foreground">{data.school?.plan || "—"}</p>
           </div>
-          <div className="rounded-2xl border border-border bg-background p-5">
+          <div className="border border-border bg-background p-5">
             <p className="text-xs uppercase tracking-[0.24em] text-muted">Status</p>
             <p className="mt-2 font-medium text-foreground">{data.school?.status || "—"}</p>
           </div>
-          <div className="rounded-2xl border border-border bg-background p-5">
+          <div className="border border-border bg-background p-5">
             <p className="text-xs uppercase tracking-[0.24em] text-muted">Reference</p>
             <p className="mt-2 font-medium text-foreground break-all">{data.reference || reference}</p>
           </div>
@@ -75,11 +81,16 @@ async function ActivateSchoolServer({ reference }: { reference: string }) {
     );
   } catch (err) {
     return (
-      <div className="rounded-3xl border border-red-200 bg-red-50 p-8 shadow-sm">
-        <h2 className="text-xl font-semibold text-red-900">Error</h2>
+      <div className="border border-red-200 bg-red-50 p-8">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="mt-0.5 h-5 w-5 text-red-700" />
+          <div>
+        <h2 className="text-xl font-semibold text-red-900">Verification error</h2>
         <p className="mt-3 text-sm text-red-800">
           {err instanceof Error ? err.message : "An error occurred while verifying your payment."}
         </p>
+          </div>
+        </div>
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
           <Button href="/admin" className="w-full">
             Go to Dashboard
@@ -111,8 +122,19 @@ export default function SubscriptionSuccessPage({
     searchParams.transaction_id;
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-6 py-10">
-      <div className="rounded-3xl border border-border bg-surface p-10 shadow-sm">
+    <main className="min-h-screen pb-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+        <div className="relative flex items-center gap-3">
+          <CreditCard className="h-5 w-5 text-brand" />
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[.16em] text-brand">Billing and plans</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground">Payment confirmation</h1>
+          </div>
+        </div>
+      </header>
+      <div className="border border-border bg-surface p-6 sm:p-8">
         {reference ? (
           <Suspense
             fallback={
@@ -127,8 +149,8 @@ export default function SubscriptionSuccessPage({
             <ActivateSchoolServer reference={reference} />
           </Suspense>
         ) : (
-          <div className="rounded-3xl border border-yellow-200 bg-yellow-50 p-8">
-            <h2 className="text-xl font-semibold text-yellow-900">Missing Payment Reference</h2>
+            <div className="border border-yellow-200 bg-yellow-50 p-8">
+            <h2 className="text-xl font-semibold text-yellow-900">Missing payment reference</h2>
             <p className="mt-3 text-sm text-yellow-800">
               We could not detect a valid payment reference in the URL. Please return to the subscription page and try again, or contact support if this persists.
             </p>
@@ -144,5 +166,6 @@ export default function SubscriptionSuccessPage({
         )}
       </div>
     </div>
+    </main>
   );
 }

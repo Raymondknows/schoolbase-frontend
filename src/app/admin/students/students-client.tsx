@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Search, UserPlus, X, Upload, Download } from "lucide-react";
+import { Search, UserPlus, X, Upload, Download, Users } from "lucide-react";
 import { playCloseTone, playOpenTone } from "@/lib/sounds";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { Pagination } from "@/components/ui/pagination";
@@ -502,13 +502,21 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
 
   return (
     <>
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <main className="min-h-screen pb-12">
+      <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-10 sm:px-8 sm:pb-8 sm:pt-12">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+        <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Students</h1>
-          <p className="mt-2 text-sm text-muted">
-            {pupils.length} active student{pupils.length !== 1 ? "s" : ""} across all phases
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand">
+            <Users className="h-4 w-4" /> Student records
+          </div>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Students</h1>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            {pupils.length} active student{pupils.length !== 1 ? "s" : ""} across all phases.
           </p>
         </div>
+        <div>
         <div className="flex flex-wrap gap-2 sm:justify-end sm:items-center">
           {whatsAppConnected !== null && (
             <div className="inline-flex items-center gap-2.5 self-start rounded-full border border-border bg-surface px-2.5 py-1.5 shadow-sm sm:self-auto" title={whatsAppConnected ? 'WhatsApp connected — Ready to send school messages' : 'WhatsApp disconnected — Reconnect via settings'}>
@@ -564,12 +572,15 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
             </Button>
           </div>
         </div>
+        </div>
+      </header>
 
         {successModalMessage ? (
           <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 px-4 py-8">
-            <div className="w-full max-w-xl rounded-3xl border border-border bg-surface p-8 shadow-2xl">
+            <div className="w-full max-w-xl overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]">
+              <div className="border-b border-border bg-brand/10 px-4 py-4 sm:px-6 sm:py-5">
               <div className="flex items-start gap-4">
-                <div className="mt-1 rounded-2xl bg-success/10 p-3 text-success">
+                <div className="mt-1 rounded-md bg-success/10 p-3 text-success">
                   ✓
                 </div>
                 <div>
@@ -577,8 +588,9 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                   <p className="mt-2 text-sm text-muted">{successModalMessage}</p>
                 </div>
               </div>
+              </div>
 
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <div className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:justify-end sm:px-6">
                 <Button type="button" variant="secondary" onClick={() => setSuccessModalMessage(null)}>
                   Close
                 </Button>
@@ -591,7 +603,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
         ) : null}
 
         {emailErrorMessage ? (
-          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
+          <div className="border border-amber-200 bg-amber-50 p-4 text-amber-950">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold">Student registered, but guardian email failed to send.</p>
@@ -603,7 +615,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
               <button
                 type="button"
                 onClick={() => setEmailErrorMessage(null)}
-                className="rounded-full p-1 text-amber-700 transition hover:bg-amber-100"
+                className="rounded-md p-1 text-amber-700 transition hover:bg-amber-100"
                 aria-label="Dismiss notification"
               >
                 <X size={16} />
@@ -613,7 +625,8 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
         ) : null}
 
         {/* Phase tabs + filters */}
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
+        <div className="border border-border bg-surface p-3 sm:p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap gap-1 sm:gap-2">
             {PHASE_ORDER.map((phase) => {
               const count = getPhaseStats(phase);
@@ -651,7 +664,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
               <select
                 value={sortMode}
                 onChange={handleSortChange}
-                className="rounded-lg border border-border bg-transparent px-2.5 py-1.5 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+                className="rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
               >
                 <option value="alphabet-asc">A–Z</option>
                 <option value="alphabet-desc">Z–A</option>
@@ -667,7 +680,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
               <select
                 value={selectedClassId}
                 onChange={handleClassChange}
-                className="rounded-lg border border-border bg-transparent px-2.5 py-1.5 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+                className="rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
               >
                 <option value="ALL">All classes</option>
                 {classOptions.map((cls) => (
@@ -683,7 +696,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
               <select
                 value={selectedLetter}
                 onChange={handleLetterChange}
-                className="rounded-lg border border-border bg-transparent px-2.5 py-1.5 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+                className="rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
               >
                 {alphabetOptions.map((letter) => (
                   <option key={letter} value={letter}>
@@ -698,7 +711,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
               <select
                 value={itemsPerPage}
                 onChange={handlePageSizeChange}
-                className="rounded-lg border border-border bg-transparent px-2.5 py-1.5 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+                className="rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
               >
                 {PAGE_SIZE_OPTIONS.map((size) => (
                   <option key={size} value={size}>
@@ -712,19 +725,20 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
               <button
                 type="button"
                 onClick={resetAdvancedFilters}
-                className="rounded-lg border border-border px-2.5 py-1.5 text-sm font-medium text-foreground transition hover:bg-background"
+                className="rounded-md border border-border px-2.5 py-1.5 text-sm font-medium text-foreground transition hover:bg-background"
               >
                 Reset
               </button>
             )}
           </div>
         </div>
+        </div>
 
       {/* Table */}
       {paginatedPupils.length > 0 ? (
         <>
           {/* Desktop Table View */}
-          <div className="hidden sm:block overflow-hidden rounded-lg border border-border bg-surface">
+          <div className="hidden sm:block overflow-hidden border border-border bg-surface">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-border bg-background text-muted">
                 <tr>
@@ -776,7 +790,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                         <button
                           type="button"
                           onClick={() => router.push(`/admin/students/${p.id}`)}
-                          className="rounded-lg bg-brand px-2 py-1 text-xs font-semibold text-white transition hover:bg-brand/90"
+                          className="rounded-md bg-brand px-2 py-1 text-xs font-semibold text-white transition hover:bg-brand-hover"
                         >
                           View
                         </button>
@@ -801,7 +815,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
               return (
                 <div
                   key={p.id}
-                  className="rounded-lg border border-border bg-surface px-3 py-2 hover:bg-background/50 transition-colors"
+                  className="border border-border bg-surface px-3 py-2 hover:bg-background/50 transition-colors"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
@@ -814,14 +828,14 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                       <button
                         type="button"
                         onClick={() => router.push(`/admin/students/${p.id}`)}
-                        className="rounded-lg bg-brand px-2 py-1 text-xs font-semibold text-white transition hover:bg-brand/90"
+                        className="rounded-md bg-brand px-2 py-1 text-xs font-semibold text-white transition hover:bg-brand-hover"
                       >
                         View
                       </button>
                       <button
                         type="button"
                         onClick={() => router.push(`/admin/students/${p.id}/edit`)}
-                        className="rounded-full border border-border bg-surface px-1.5 py-0.5 text-xs font-semibold text-foreground transition hover:bg-background"
+                        className="rounded-md border border-border bg-surface px-1.5 py-0.5 text-xs font-semibold text-foreground transition hover:bg-background"
                       >
                         Edit
                       </button>
@@ -884,7 +898,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
           )}
         </>
       ) : (
-        <div className="rounded-lg border border-border bg-surface px-6 py-12 text-center">
+        <div className="border border-border bg-surface px-6 py-12 text-center">
           <p className="text-muted">
             {searchQuery
               ? `No students found matching "${searchQuery}"`
@@ -900,10 +914,10 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
           `}</style>
 
           <div
-            className="w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
+            className="w-full max-w-2xl overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
             style={{ animation: `students_import_modal_enter 320ms cubic-bezier(.2,.9,.2,1)` }}
           >
-            <div className="border-b border-slate-100 px-6 py-5" style={{ background: "linear-gradient(90deg, rgba(10,102,194,0.12), rgba(10,102,194,0.04))" }}>
+            <div className="border-b border-border bg-brand/10 px-4 py-4 sm:px-6 sm:py-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-2xl font-bold text-foreground">Import students from CSV</h2>
@@ -916,7 +930,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                     setIsImportModalOpen(false);
                     resetImportState();
                   }}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border hover:bg-background transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border hover:bg-background transition-colors"
                   aria-label="Close import dialog"
                 >
                   ✕
@@ -924,8 +938,8 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
               </div>
             </div>
 
-            <div className="space-y-5 px-6 py-6">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+            <div className="space-y-5 px-4 py-4 sm:px-6 sm:py-6">
+              <div className="rounded-md border border-border bg-background p-4 text-sm text-muted">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="font-semibold text-foreground">Use the template below to prepare your file.</p>
@@ -934,7 +948,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                   <button
                     type="button"
                     onClick={handleDownloadImportTemplate}
-                    className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#0A66C2] bg-white px-3 py-2 text-sm font-semibold text-[#0A66C2] transition hover:bg-slate-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-md border border-brand bg-surface px-3 py-2 text-sm font-semibold text-brand transition hover:bg-brand-light"
                   >
                     <Download className="h-4 w-4" />
                     Download template
@@ -968,7 +982,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                       setIsImportModalOpen(false);
                       resetImportState();
                     }}
-                    className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition hover:bg-background"
+                    className="rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground transition hover:bg-background"
                   >
                     Cancel
                   </button>
@@ -1033,8 +1047,8 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
 
       {isProfileOpen && profileStudent ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-5xl overflow-hidden rounded-[32px] bg-white shadow-2xl ring-1 ring-slate-200">
-            <div className="flex flex-col gap-4 border-b border-border px-6 py-5 sm:flex-row sm:items-start sm:justify-between">
+          <div className="w-full max-w-5xl overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]">
+            <div className="flex flex-col gap-4 border-b border-border bg-brand/10 px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6 sm:py-5">
               <div>
                 <p className="text-xs uppercase tracking-[0.24em] text-muted">Student Transcript</p>
                 <h2 className="mt-2 text-3xl font-semibold text-foreground">{[profileStudent.lastName, profileStudent.firstName].filter(Boolean).join(" ")}</h2>
@@ -1043,7 +1057,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
               <button
                 type="button"
                 onClick={closeProfileModal}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-foreground transition hover:bg-surface"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-border bg-background text-foreground transition hover:bg-surface"
                 aria-label="Close student details"
               >
                 <X className="h-4 w-4" />
@@ -1162,6 +1176,8 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
         </div>
       ) : null}
 
+      </div>
+      </main>
       <UserGuide guide={HELP_GUIDE} />
     </>
   );

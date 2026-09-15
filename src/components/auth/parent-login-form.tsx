@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Globe2, Phone, UserRound } from "lucide-react";
 
 export function ParentLoginForm() {
   const router = useRouter();
@@ -56,39 +57,39 @@ export function ParentLoginForm() {
       onSubmit={handleSubmit}
     >
       {error && (
-        <p className="rounded-lg bg-error/10 px-4 py-3 text-sm text-error border border-error/20">
+        <p className="border border-error/20 bg-error/10 px-4 py-3 text-sm text-error">
           {error}
         </p>
       )}
       <label className="block text-sm font-medium text-foreground">
-        School slug (optional)
+        <span className="flex items-center gap-2"><Globe2 className="h-4 w-4 text-brand" /> School slug <span className="text-xs font-normal text-muted">optional</span></span>
         <input
           name="schoolSlug"
           type="text"
           placeholder="greenfield"
-          className="mt-2 w-full rounded-lg border border-border bg-surface px-4 py-2.5 text-sm placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand"
+          className="mt-2 w-full border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
         />
       </label>
       <label className="block text-sm font-medium text-foreground">
-        Phone (WhatsApp)
+        <span className="flex items-center gap-2"><Phone className="h-4 w-4 text-brand" /> Phone (WhatsApp)</span>
         <input
           name="phone"
           type="tel"
           required
           placeholder="+2348098765432"
-          className="mt-2 w-full rounded-lg border border-border bg-surface px-4 py-2.5 text-sm placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand"
+          className="mt-2 w-full border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
         />
       </label>
       <label className="block text-sm font-medium text-foreground">
-        Child admission no.
+        <span className="flex items-center gap-2"><UserRound className="h-4 w-4 text-brand" /> Child admission no.</span>
         <input
           name="admissionNo"
           required
           placeholder="GFA-2041"
-          className="mt-2 w-full rounded-lg border border-border bg-surface px-4 py-2.5 text-sm placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand"
+          className="mt-2 w-full border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
         />
       </label>
-      <Button type="submit" className="w-full mt-6" disabled={pending}>
+      <Button type="submit" className="mt-6 w-full bg-brand py-3 font-semibold hover:bg-brand-hover" disabled={pending}>
         {pending ? "Signing in…" : "View my child"}
       </Button>
     </form>

@@ -199,9 +199,9 @@ export default function SignatoriesClient({ noCard }: { noCard?: boolean } = {})
 
       {/* Modal */}
       {modalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
           <style>{`@keyframes signatory_modal_enter { from { transform: translateY(12px) scale(.995); opacity: 0 } to { transform: translateY(0) scale(1); opacity: 1 } }`}</style>
-          <div className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-surface shadow-lg" style={{ animation: `signatory_modal_enter 240ms cubic-bezier(.2,.9,.2,1)` }}>
+          <div className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]" style={{ animation: `signatory_modal_enter 240ms cubic-bezier(.2,.9,.2,1)` }}>
             <div className="border-b border-border px-6 py-4 flex items-start justify-between">
               <div>
                 <h3 className="text-lg font-semibold">{editing ? 'Edit Report Signatory' : 'Add Report Signatory'}</h3>

@@ -153,15 +153,19 @@ export default function CashbookPage() {
   const currentPage = data ? Math.floor(data.skip / take) + 1 : 1;
 
   return (
-    <div className="w-full">
-      <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+    <main className="min-h-screen pb-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+        <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <div className="flex items-center gap-2 text-sm font-medium text-brand">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand">
             <BookOpen size={17} /> Accounting
           </div>
-          <h1 className="mt-2 text-3xl font-bold text-foreground">Cashbook</h1>
-          <p className="mt-1 text-sm text-muted">
-            Review every posted income and expense entry across the school
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Cashbook</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
+            Review every income and expense entry across the school with a clear audit trail.
           </p>
         </div>
 
@@ -178,6 +182,8 @@ export default function CashbookPage() {
           {refreshing ? 'Refreshing...' : 'Refresh'}
         </Button>
       </div>
+      </div>
+      </header>
 
       {error && (
         <div className="mb-6 flex gap-3 rounded-lg border border-destructive/30 bg-destructive/10 p-4">
@@ -186,7 +192,8 @@ export default function CashbookPage() {
         </div>
       )}
 
-      <div className="mb-6 flex flex-wrap items-end gap-4 rounded-lg border border-border bg-surface p-4">
+      <section className="border border-border bg-surface p-4 sm:p-5">
+      <div className="flex flex-wrap items-end gap-4">
         <div>
           <label className="mb-2 block text-sm font-medium text-foreground">Type</label>
           <select
@@ -220,12 +227,13 @@ export default function CashbookPage() {
           </select>
         </div>
       </div>
+      </section>
 
-      <div className="mb-6 rounded-lg border border-border bg-surface p-6">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-foreground">
+      <section className="border border-border bg-surface">
+        <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
+          <div><p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Audit ledger</p><h2 className="mt-1 text-lg font-semibold text-foreground">
             Transactions {data && `(${data.total} total)`}
-          </h2>
+          </h2></div>
         </div>
 
         {!data || data.transactions.length === 0 ? (
@@ -344,18 +352,18 @@ export default function CashbookPage() {
             )}
           </>
         )}
-      </div>
+      </section>
 
       {reverseTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="reverse-transaction-title">
           <button type="button" aria-label="Close reversal dialog" onClick={closeReverseModal} className="absolute inset-0 cursor-pointer" />
-          <form onSubmit={(event) => { event.preventDefault(); void reverseTransaction(); }} className="relative w-full max-w-lg overflow-hidden rounded-lg border border-border bg-surface shadow-2xl">
-            <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
+          <form onSubmit={(event) => { event.preventDefault(); void reverseTransaction(); }} className="relative w-full max-w-lg overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(220,38,38,0.16)]">
+            <div className="flex items-start justify-between gap-4 border-b border-border/70 bg-error/10 px-4 py-4 sm:px-6 sm:py-5">
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50 text-red-700"><RotateCcw className="h-5 w-5" /></div>
-                <div><p className="text-[11px] font-bold uppercase tracking-[.12em] text-muted">Accounting control</p><h2 id="reverse-transaction-title" className="mt-1 text-xl font-semibold text-foreground">Reverse transaction</h2><p className="mt-1 text-sm text-muted">The original record will remain in the audit history.</p></div>
+                <div className="flex h-11 w-11 items-center justify-center border border-error/20 bg-error/10 text-error"><RotateCcw className="h-5 w-5" /></div>
+                <div><p className="text-[11px] font-bold uppercase tracking-[.12em] text-error">Accounting control</p><h2 id="reverse-transaction-title" className="mt-1 text-xl font-semibold text-foreground">Reverse transaction</h2><p className="mt-1 text-sm text-muted">The original record will remain in the audit history.</p></div>
               </div>
-              <button type="button" onClick={closeReverseModal} aria-label="Close reversal dialog" className="rounded-lg p-2 text-muted transition hover:bg-background hover:text-foreground"><X className="h-5 w-5" /></button>
+              <button type="button" onClick={closeReverseModal} aria-label="Close reversal dialog" className="rounded-md border border-border p-2 text-muted transition hover:bg-background hover:text-foreground"><X className="h-5 w-5" /></button>
             </div>
             <div className="space-y-4 px-6 py-5">
               <div className="rounded-lg border border-border bg-background px-4 py-3 text-sm"><p className="font-semibold text-foreground">{reverseTarget.category.name}</p><p className="mt-1 text-muted">{reverseTarget.description || reverseTarget.referenceNumber || 'Posted transaction'}</p><p className="mt-1 font-semibold text-foreground">{formatAmount(reverseTarget.amount)}</p></div>
@@ -366,5 +374,6 @@ export default function CashbookPage() {
         </div>
       )}
     </div>
+    </main>
   );
 }

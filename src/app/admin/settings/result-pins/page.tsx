@@ -1194,7 +1194,8 @@ export default function ResultPinsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
+    <main className="min-h-screen pb-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
       <ErrorModal
         isOpen={statusModal.open}
         onClose={() => setStatusModal((prev) => ({ ...prev, open: false }))}
@@ -1229,13 +1230,15 @@ export default function ResultPinsPage() {
           }}
         />
       ) : null}
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+      <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+      <div className="relative flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
         <div>
-          <div className="flex items-center gap-2 text-sm font-medium text-brand">
-            <KeyRound size={17} /> Results operations
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand">
+            <KeyRound className="h-4 w-4" /> Results operations
           </div>
-          <h1 className="mt-2 text-3xl font-bold text-foreground">Result Access PINs</h1>
-          <p className="mt-1 text-muted">Generate, print, and manage secure PINs for result publishing</p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Result access PINs</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Generate, print, and manage secure PINs for result publishing.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Link href="/admin/settings" className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-background">
@@ -1284,6 +1287,7 @@ export default function ResultPinsPage() {
           </button>
         </div>
       </div>
+      </header>
 
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
         <div className="flex flex-wrap items-center gap-3">
@@ -1610,8 +1614,8 @@ export default function ResultPinsPage() {
           </div>
 
         {notifyModal.open ? (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-4">
-            <div className="w-full max-w-md rounded-2xl border border-border bg-background p-6 shadow-2xl">
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
+            <div className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full border border-brand/20 bg-brand/10 text-brand">
                   <RefreshCw className="h-5 w-5 animate-spin" />
@@ -2137,6 +2141,7 @@ export default function ResultPinsPage() {
           <UserGuide guide={HELP_GUIDE} />
       </div>
     </div>
+    </main>
 
   );
 }

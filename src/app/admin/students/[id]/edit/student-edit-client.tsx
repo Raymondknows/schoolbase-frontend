@@ -9,7 +9,7 @@ import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Loader2, Upload, ChevronDown, ChevronLeft } from "lucide-react";
+import { Loader2, Upload, ChevronDown, ChevronLeft, UserRound } from "lucide-react";
 import { pupilName } from "@/lib/format";
 import { resolveFileUrl } from "@/lib/api-client";
 
@@ -187,39 +187,32 @@ export default function StudentEditClient({ studentId }: { studentId: string }) 
   };
 
   if (loading) {
-    return <div className="p-6">Loading student information...</div>;
+    return <div className="min-h-screen bg-background p-6 text-muted">Loading student information...</div>;
   }
 
   if (error && !student) {
-    return <div className="p-6 text-red-600">{error}</div>;
+    return <div className="min-h-screen bg-background p-6 text-red-600">{error}</div>;
   }
 
   return (
-    <div className="mx-auto max-w-[1400px] px-6 pb-16 pt-0">
-      <div className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-sm py-1.5 -mx-6 px-6 mb-4">
-        <div className="flex items-center gap-3">
-          <Link href={`/admin/students/${studentId}`}>
-            <ChevronLeft className="h-5 w-5 text-muted hover:text-foreground transition" />
-          </Link>
-          <div className="flex-1">
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Edit Student</h1>
-            <p className="mt-0.5 text-sm text-muted">Update {student?.firstName} {student?.lastName}'s information</p>
+    <main className="min-h-screen pb-12">
+      <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+        <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-10 sm:px-8 sm:pb-8 sm:pt-12">
+          <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+          <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand"><UserRound className="h-4 w-4" /> Student records</div>
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Edit student</h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Update {student?.firstName} {student?.lastName}'s academic, guardian, and profile information.</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link href={`/admin/students/${studentId}`} className="inline-flex items-center gap-2 text-sm font-semibold text-brand hover:text-brand-hover"><ChevronLeft className="h-4 w-4" /> Back to profile</Link>
+              <Button type="submit" form="edit-student-form" disabled={isSubmitting} className="rounded-md">
+                {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</> : "Save changes"}
+              </Button>
+            </div>
           </div>
-          <Button variant="secondary" href={`/admin/students/${studentId}`}>
-            Cancel
-          </Button>
-          <Button type="submit" form="edit-student-form" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              "Save changes"
-            )}
-          </Button>
-        </div>
-      </div>
+        </header>
 
       <form id="edit-student-form" onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Error Alert */}
@@ -231,7 +224,7 @@ export default function StudentEditClient({ studentId }: { studentId: string }) 
 
         {/* Left: photo card (sticky) */}
         <div className="lg:col-span-1">
-          <div className="rounded-xl border border-border bg-surface p-4 shadow-sm lg:sticky lg:top-28">
+          <div className="border border-border bg-surface p-4 lg:sticky lg:top-6">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold text-foreground">Profile photo</p>
@@ -242,11 +235,11 @@ export default function StudentEditClient({ studentId }: { studentId: string }) 
               </div>
             </div>
 
-            <div className="mt-5 rounded-3xl border border-dashed border-border/70 bg-surface/80 p-4 text-center">
+            <div className="mt-5 rounded-md border border-dashed border-border/70 bg-background p-4 text-center">
               {photoPreview ? (
-                <img src={photoPreview} alt="Selected student photo" className="mx-auto h-40 w-40 rounded-3xl object-cover" />
+                <img src={photoPreview} alt="Selected student photo" className="mx-auto h-40 w-40 rounded-md object-cover" />
               ) : (
-                <div className="flex h-40 items-center justify-center rounded-3xl bg-surface/80 text-muted">
+                <div className="flex h-40 items-center justify-center rounded-md bg-surface/80 text-muted">
                   <span className="text-sm">No photo selected</span>
                 </div>
               )}
@@ -270,7 +263,7 @@ export default function StudentEditClient({ studentId }: { studentId: string }) 
         {/* Right: main form fields */}
         <div className="lg:col-span-2 space-y-2">
           {/* Admission Details */}
-          <div className="rounded-lg border border-border bg-surface p-4">
+          <div className="border border-border bg-surface p-4">
             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
               <label className="text-sm font-semibold text-foreground">
                 Class *
@@ -300,7 +293,7 @@ export default function StudentEditClient({ studentId }: { studentId: string }) 
           </div>
 
           {/* Student Information */}
-          <div className="rounded-lg border border-border bg-surface p-4 mb-3">
+          <div className="border border-border bg-surface p-4 mb-3">
             <h3 className="text-lg font-semibold text-foreground mb-4">Student information</h3>
             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
               <label className="text-sm font-semibold text-foreground">
@@ -349,7 +342,7 @@ export default function StudentEditClient({ studentId }: { studentId: string }) 
           </div>
 
           {/* Parent / Guardian Information */}
-          <div className="rounded-lg border border-border bg-surface p-4 mb-3">
+          <div className="border border-border bg-surface p-4 mb-3">
             <h3 className="text-lg font-semibold text-foreground mb-4">Parent / Guardian information</h3>
             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
               <label className="text-sm font-semibold text-foreground">
@@ -396,7 +389,7 @@ export default function StudentEditClient({ studentId }: { studentId: string }) 
           </div>
 
           {/* Medical Information (collapsible) */}
-          <div className="rounded-lg border border-border bg-surface p-0 mb-3">
+          <div className="border border-border bg-surface p-0 mb-3">
             <button type="button" onClick={() => setMedicalOpen((v) => !v)} className="w-full flex items-center justify-between p-4 text-left hover:bg-surface/90 transition">
               <div className="flex items-center gap-3">
                 <ChevronDown className={`h-5 w-5 text-muted transition-transform ${medicalOpen ? "rotate-180" : ""}`} />
@@ -430,7 +423,7 @@ export default function StudentEditClient({ studentId }: { studentId: string }) 
           </div>
 
           {/* Previous School (collapsible) */}
-          <div className="rounded-lg border border-border bg-surface p-0 mb-3">
+          <div className="border border-border bg-surface p-0 mb-3">
             <button type="button" onClick={() => setPreviousOpen((v) => !v)} className="w-full flex items-center justify-between p-4 text-left hover:bg-surface/90 transition">
               <div className="flex items-center gap-3">
                 <ChevronDown className={`h-5 w-5 text-muted transition-transform ${previousOpen ? "rotate-180" : ""}`} />
@@ -460,5 +453,6 @@ export default function StudentEditClient({ studentId }: { studentId: string }) 
         </div>
       </form>
     </div>
+    </main>
   );
 }

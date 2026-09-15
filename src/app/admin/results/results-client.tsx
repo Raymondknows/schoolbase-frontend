@@ -413,16 +413,18 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
   return (
     <>
       <main className="min-h-screen pb-12">
-        <div className="w-full space-y-6">
-        <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
+        <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+        <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+          <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+          <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 text-sm font-medium text-brand">
-              <GraduationCap size={17} /> Academic operations
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand">
+              <GraduationCap className="h-4 w-4" /> Academic operations
             </div>
-            <h1 className="mt-2 text-3xl font-bold text-foreground">Results</h1>
-            <p className="mt-1 text-muted">Create, review, and publish student results by assessment and term</p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Results</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Create, review, approve, and publish student results by assessment and term.</p>
           </div>
-          <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:flex-wrap lg:w-auto lg:max-w-[760px] lg:justify-end">
+          <div className="relative grid w-full grid-cols-2 gap-2 sm:flex sm:flex-wrap lg:w-auto lg:max-w-[760px] lg:justify-end">
             {/* Animated Search Panel - slides out on same line */}
             <div className={`col-span-2 overflow-hidden transition-all duration-300 ease-out sm:col-auto ${isSearchOpen ? "w-full opacity-100 translate-x-0 sm:w-72" : "h-0 w-0 opacity-0 translate-x-full sm:h-auto"}`}>
               <input
@@ -438,7 +440,7 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
               type="button"
               variant="primary"
               onClick={() => setIsSearchOpen((open) => !open)}
-              className="h-auto w-full px-3 py-2.5 text-xs font-semibold sm:w-auto sm:px-4 sm:text-sm"
+              className="h-auto w-full border border-border bg-background px-3 py-2.5 text-xs font-semibold text-brand sm:w-auto sm:px-4 sm:text-sm"
             >
               <Search className="h-4 w-4" />
               {isSearchOpen ? "Close Search" : "Search Results"}
@@ -446,7 +448,7 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
             <Button
               variant="primary"
               href="/admin/settings/result-pins"
-              className="h-auto w-full px-3 py-2.5 text-xs font-semibold sm:w-auto sm:px-4 sm:text-sm"
+              className="h-auto w-full border border-border bg-background px-3 py-2.5 text-xs font-semibold text-brand sm:w-auto sm:px-4 sm:text-sm"
             >
               <KeyRound className="h-4 w-4" />
               Pin
@@ -462,7 +464,7 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
             <Button
               variant="primary"
               href="/admin/promotions"
-              className="h-auto w-full px-3 py-2.5 text-xs font-semibold sm:w-auto sm:px-4 sm:text-sm"
+              className="h-auto w-full border border-border bg-background px-3 py-2.5 text-xs font-semibold text-brand sm:w-auto sm:px-4 sm:text-sm"
             >
               <TrendingUp className="h-4 w-4" />
               Promote
@@ -482,7 +484,8 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
               </button>
             </div>
           </div>
-        </div>
+          </div>
+        </header>
 
       {/* Filters - Phase Tabs and Status Dropdown */}
       <div className="border border-border bg-surface p-4 sm:p-5">
@@ -507,10 +510,10 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
                 <button
                   key={phase}
                   onClick={() => handlePhaseChange(phase)}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                  className={`border px-3 py-1.5 text-xs font-semibold transition ${
                     isActive
                       ? "bg-brand text-white"
-                      : "bg-background text-muted hover:bg-surface"
+                      : "border-border bg-background text-muted hover:border-brand/40 hover:text-brand"
                   }`}
                 >
                   {config.label}
@@ -626,7 +629,7 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
                             {a.sessionName ? `${a.sessionName}` : "Session not set"}
                             {a.term?.name ? ` • ${a.term.name}` : ""}
                           </p>
-                          <span className={`mt-2 inline-flex rounded-full px-2 py-1 text-[10px] font-semibold ${PHASE_CONFIG[a.phase as keyof typeof PHASE_CONFIG]?.color || "bg-background text-foreground"}`}>
+                            <span className={`mt-2 inline-flex border px-2 py-1 text-[10px] font-semibold ${PHASE_CONFIG[a.phase as keyof typeof PHASE_CONFIG]?.color || "border-border bg-background text-foreground"}`}>
                             {PHASE_CONFIG[a.phase as keyof typeof PHASE_CONFIG]?.label || a.phase}
                           </span>
                         </div>
@@ -659,7 +662,7 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
                         <div className="flex items-center gap-2 flex-wrap">
                           <Link
                             href={`/admin/results/${a.id}`}
-                            className={`${isPublished ? 'border border-border bg-background text-foreground hover:bg-surface' : 'bg-brand text-white hover:bg-brand-dark'} text-xs sm:text-sm font-medium flex items-center gap-1 px-3 py-1.5 rounded-lg transition`}
+                            className={`${isPublished ? 'border border-border bg-background text-foreground hover:bg-surface' : 'bg-brand text-white hover:bg-brand-dark'} text-xs sm:text-sm font-medium flex items-center gap-1 px-3 py-1.5 rounded-md transition`}
                           >
                             {isPublished ? "View" : "Manage"}
                             <ChevronRight className="w-3 h-3" />
@@ -715,7 +718,7 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
                             <button
                               type="button"
                               onClick={() => openDeleteModal(a.id, a.name)}
-                              className="text-xs sm:text-sm font-medium flex items-center gap-1 px-3 py-1.5 rounded-lg transition border border-red-300 bg-red-50 text-red-600 hover:bg-red-100"
+                              className="text-xs sm:text-sm font-medium flex items-center gap-1 px-3 py-1.5 rounded-md transition border border-red-300 bg-red-50 text-red-600 hover:bg-red-100"
                             >
                               <Trash2 className="w-3 h-3" />
                               Delete
@@ -743,7 +746,7 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
                 <Link
                   key={a.id}
                   href={`/admin/results/${a.id}`}
-                  className={`block rounded-lg border border-border px-4 py-2 transition-colors ${index % 2 === 0 ? 'bg-background' : 'bg-surface'} hover:bg-surface/80`}
+                  className={`block border border-border px-4 py-3 transition-colors ${index % 2 === 0 ? 'bg-background' : 'bg-surface'} hover:bg-brand-light/20`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
@@ -753,7 +756,7 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
                           {a.sessionName ? `${a.sessionName}` : "Session not set"}
                           {a.term?.name ? ` • ${a.term.name}` : ""}
                         </p>
-                        <span className={`mt-2 inline-flex rounded-full px-2 py-1 text-[10px] font-semibold ${PHASE_CONFIG[a.phase as keyof typeof PHASE_CONFIG]?.color || "bg-background text-foreground"}`}>
+                        <span className={`mt-2 inline-flex border px-2 py-1 text-[10px] font-semibold ${PHASE_CONFIG[a.phase as keyof typeof PHASE_CONFIG]?.color || "border-border bg-background text-foreground"}`}>
                           {PHASE_CONFIG[a.phase as keyof typeof PHASE_CONFIG]?.label || a.phase}
                         </span>
                       </div>
@@ -847,33 +850,31 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
 
       {/* Delete Confirmation Modal */}
       {deleteModalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
           <style>{`
             @keyframes sb_modal_enter { from { transform: translateX(36px) scale(.98); opacity: 0 } to { transform: translateX(0) scale(1); opacity: 1 } }
             @keyframes sb_modal_exit  { from { transform: translateX(0) scale(1); opacity: 1 } to { transform: translateX(36px) scale(.98); opacity: 0 } }
           `}</style>
 
           <div
-            className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(220,38,38,0.16)]"
+            className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(220,38,38,0.16)]"
             style={{
               animation: `${deleteAnimateState === "enter" ? "sb_modal_enter" : "sb_modal_exit"} 320ms cubic-bezier(.2,.9,.2,1)`,
             }}
           >
             {/* Header */}
             <div
-              className="border-b border-border px-6 py-5"
-              style={{ background: "linear-gradient(90deg, rgba(220,38,38,0.12), rgba(220,38,38,0.04))" }}
+              className="border-b border-border/70 bg-error/10 px-6 py-5"
             >
               <div className="flex items-start gap-3">
                 <div
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/70 shadow-sm"
-                  style={{ background: "rgba(220,38,38,0.12)" }}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center border border-error/20 bg-error/10"
                 >
                   <AlertCircle className="h-6 w-6" style={{ color: "#DC2626" }} />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-slate-900">Delete Assessment?</h2>
-                  <p className="mt-1 text-sm text-slate-600">
+                  <h2 className="text-lg font-semibold text-foreground">Delete Assessment?</h2>
+                  <p className="mt-1 text-sm text-muted">
                     This action cannot be undone.
                   </p>
                 </div>
@@ -882,11 +883,11 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
 
             {/* Content */}
             <div className="px-6 py-5">
-              <p className="text-sm leading-6 text-slate-700">
+              <p className="text-sm leading-6 text-muted">
                 You are about to permanently delete <strong>"{deletingAssessmentName}"</strong>.
               </p>
-              <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3">
-                <p className="text-xs text-red-700">
+              <div className="mt-4 border border-error/20 bg-error/10 p-3">
+                <p className="text-xs text-error">
                   <strong>Warning:</strong> The assessment will be completely removed from the system.
                 </p>
               </div>
@@ -905,7 +906,7 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
                   }, 320);
                 }}
                 disabled={isDeleting}
-                className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-background disabled:opacity-50 text-foreground"
+                className="flex-1 rounded-md border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-background disabled:opacity-50 text-foreground"
               >
                 Cancel
               </button>
@@ -913,10 +914,7 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
                 type="button"
                 onClick={handleDeleteAssessment}
                 disabled={isDeleting}
-                className="flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors text-white disabled:opacity-50 flex items-center justify-center gap-2"
-                style={{ background: "#DC2626", "--hover-color": "#991B1B" } as any}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "#991B1B")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "#DC2626")}
+                className="flex flex-1 items-center justify-center gap-2 rounded-md bg-error px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-error/90 disabled:opacity-50"
               >
                 {isDeleting ? (
                   <>
@@ -937,27 +935,25 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
 
       {/* Status Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
           <style>{`
             @keyframes sb_modal_enter { from { transform: translateX(36px) scale(.98); opacity: 0 } to { transform: translateX(0) scale(1); opacity: 1 } }
             @keyframes sb_modal_exit  { from { transform: translateX(0) scale(1); opacity: 1 } to { transform: translateX(36px) scale(.98); opacity: 0 } }
           `}</style>
 
           <div
-            className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
+            className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
             style={{
               animation: `sb_modal_enter 320ms cubic-bezier(.2,.9,.2,1)`,
             }}
           >
             {/* Header */}
             <div
-              className="border-b border-border px-6 py-5"
-              style={{ background: "linear-gradient(90deg, rgba(10,102,194,0.12), rgba(10,102,194,0.04))" }}
+              className="border-b border-border/70 bg-brand/10 px-6 py-5"
             >
               <div className="flex items-start gap-3">
                 <div
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/70 shadow-sm"
-                  style={{ background: modalType === 'success' ? "rgba(16,185,129,0.12)" : "rgba(10,102,194,0.12)" }}
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center border ${modalType === 'success' ? 'border-emerald-200 bg-emerald-100' : 'border-brand/20 bg-brand/10'}`}
                 >
                   {modalType === 'success' ? (
                     <Sparkles className="h-6 w-6" style={{ color: "#0A66C2" }} />
@@ -966,10 +962,10 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
                   )}
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-slate-900">
+                  <h2 className="text-lg font-semibold text-foreground">
                     {modalTitle || (modalType === 'success' ? 'All set' : 'Something went wrong')}
                   </h2>
-                  <p className="mt-1 text-sm text-slate-600">
+                  <p className="mt-1 text-sm text-muted">
                     {modalType === 'success' ? 'Your request was completed successfully.' : 'Please review the details below.'}
                   </p>
                 </div>
@@ -978,9 +974,9 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
 
             {/* Content */}
             <div className="px-6 py-5">
-              <p className="text-sm leading-6 text-slate-700">{modalMessage}</p>
+              <p className="text-sm leading-6 text-muted">{modalMessage}</p>
               {modalDetails && (
-                <div className="mt-4 rounded-lg border border-border bg-surface p-3">
+                <div className="mt-4 border border-border bg-background p-3">
                   <p className="text-xs text-foreground">{modalDetails}</p>
                 </div>
               )}
@@ -990,10 +986,7 @@ export default function ResultsPageClient({ assessments, sessions = [] }: { asse
             <div className="border-t border-border bg-surface px-6 py-4">
               <button
                 onClick={() => setModalOpen(false)}
-                className="w-full rounded-lg px-4 py-2.5 font-medium text-sm transition-colors text-white"
-                style={{ background: "#0A66C2" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "#084B8A")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "#0A66C2")}
+                className="w-full rounded-md bg-brand px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-hover"
               >
                 OK
               </button>

@@ -174,14 +174,18 @@ export default function IncomePage() {
   };
 
   return (
-    <div className="w-full">
-      <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+    <main className="min-h-screen pb-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+        <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <div className="flex items-center gap-2 text-sm font-medium text-brand">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand">
             <TrendingUp size={17} /> Accounting
           </div>
-          <h1 className="mt-2 text-3xl font-bold text-foreground">Record Income</h1>
-          <p className="mt-1 text-sm text-muted">
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Record income</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
             Add school income entries and track the inflow of cash
           </p>
         </div>
@@ -204,6 +208,8 @@ export default function IncomePage() {
           </Button>
         </div>
       </div>
+      </div>
+      </header>
 
       {error && (
         <div className="mb-6 flex gap-3 rounded-lg border border-destructive/30 bg-destructive/10 p-4">
@@ -216,9 +222,9 @@ export default function IncomePage() {
         <div className="fixed inset-0 z-50 flex" role="dialog" aria-modal="true" aria-labelledby="new-income-title">
           <button type="button" aria-label="Close new income form" onClick={closeIncomeForm} className="absolute inset-0 cursor-pointer bg-slate-950/35 backdrop-blur-[2px]" />
           <aside className="relative ml-auto flex h-full w-full max-w-md flex-col overflow-hidden border-l border-border bg-surface shadow-2xl animate-in slide-in-from-right duration-300">
-            <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
-              <div className="flex items-start gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50"><TrendingUp className="h-5 w-5 text-emerald-700" /></div><div><p className="text-[11px] font-bold uppercase tracking-[.12em] text-muted">Accounting</p><h2 id="new-income-title" className="mt-1 text-xl font-semibold text-foreground">New income entry</h2><p className="mt-1 text-sm text-muted">Record money received by the school.</p></div></div>
-              <button type="button" onClick={closeIncomeForm} aria-label="Close new income form" className="rounded-lg p-2 text-muted transition hover:bg-background hover:text-foreground"><X className="h-5 w-5" /></button>
+            <div className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-4 py-4 sm:px-6 sm:py-5">
+              <div className="flex items-start gap-3"><div className="flex h-11 w-11 items-center justify-center border border-emerald-200 bg-emerald-50"><TrendingUp className="h-5 w-5 text-emerald-700" /></div><div><p className="text-[11px] font-bold uppercase tracking-[.12em] text-brand">Accounting</p><h2 id="new-income-title" className="mt-1 text-xl font-semibold text-foreground">New income entry</h2><p className="mt-1 text-sm text-muted">Record money received by the school.</p></div></div>
+              <button type="button" onClick={closeIncomeForm} aria-label="Close new income form" className="rounded-md border border-border p-2 text-muted transition hover:bg-background hover:text-foreground"><X className="h-5 w-5" /></button>
             </div>
             <div className="overflow-y-auto bg-background p-5 sm:p-6">
 
@@ -325,8 +331,8 @@ export default function IncomePage() {
         </div>
       )}
 
-      <div className="rounded-lg border border-border bg-surface p-6">
-        <h2 className="mb-4 text-lg font-semibold text-foreground">Income Entries</h2>
+      <section className="border border-border bg-surface">
+        <div className="border-b border-border px-5 py-4"><p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Ledger</p><h2 className="mt-1 text-lg font-semibold text-foreground">Income entries</h2><p className="mt-1 text-sm text-muted">Posted income received by the school.</p></div>
 
         {transactions.length === 0 ? (
           <div className="rounded-lg border border-dashed border-border bg-background p-8 text-center text-sm text-muted">
@@ -371,7 +377,8 @@ export default function IncomePage() {
             </table>
           </div>
         )}
-      </div>
+      </section>
     </div>
+    </main>
   );
 }

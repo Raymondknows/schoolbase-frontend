@@ -97,8 +97,10 @@ export default function AdminStaffPage() {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-        <p className="text-sm text-red-700">Error: {error}</p>
+      <div className="mx-auto max-w-7xl px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+        <div className="border border-error/20 bg-error/10 p-4">
+          <p className="text-sm text-error">Error: {error}</p>
+        </div>
       </div>
     );
   }

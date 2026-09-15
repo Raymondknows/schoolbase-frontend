@@ -407,20 +407,23 @@ export default function AcademicYearsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+    <main className="min-h-screen pb-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+      <div className="relative flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
         <div>
-          <div className="flex items-center gap-2 text-sm font-medium text-brand"><CalendarDays size={17} /> Academic operations</div>
-          <h1 className="mt-2 text-3xl font-bold text-foreground">Academic Years &amp; Terms</h1>
-          <p className="mt-1 text-muted">Manage school years, term dates, and the active academic cycle</p>
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand"><CalendarDays className="h-4 w-4" /> Academic operations</div>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Academic years &amp; terms</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Manage school years, term dates, and the active academic cycle.</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="relative flex flex-wrap items-center gap-3">
           <Button
             onClick={() => setShowNewTermModal(true)}
             variant="secondary"
             disabled={academicYears.length === 0}
-            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"
+            className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"
           >
             <PlusCircle className="h-4 w-4" />
             Add Term
@@ -435,6 +438,7 @@ export default function AcademicYearsPage() {
           </Button>
         </div>
       </div>
+      </header>
 
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">
@@ -600,33 +604,33 @@ export default function AcademicYearsPage() {
           `}</style>
 
           <div
-            className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_50px_rgba(220,38,38,0.16)]"
+            className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(220,38,38,0.16)]"
             style={{ animation: `${deleteAnimateState === "enter" ? "ay_delete_enter" : "ay_delete_exit"} 320ms cubic-bezier(.2,.9,.2,1)` }}
           >
-            <div className="border-b border-slate-100 px-6 py-5" style={{ background: "linear-gradient(90deg, rgba(220,38,38,0.12), rgba(220,38,38,0.04))" }}>
+            <div className="border-b border-border/70 bg-error/10 px-6 py-5">
               <div className="flex items-start gap-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/70 bg-red-100 shadow-sm">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-error/20 bg-error/10">
                   <AlertCircle className="h-6 w-6 text-red-600" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-slate-900">{deleteModalType === "YEAR" ? "Delete Academic Year?" : "Delete Term?"}</h2>
-                  <p className="mt-1 text-sm text-slate-600">This action cannot be undone.</p>
+                  <h2 className="text-lg font-semibold text-foreground">{deleteModalType === "YEAR" ? "Delete Academic Year?" : "Delete Term?"}</h2>
+                  <p className="mt-1 text-sm text-muted">This action cannot be undone.</p>
                 </div>
               </div>
             </div>
 
             <div className="px-6 py-5">
-              <p className="text-sm leading-6 text-slate-700">
+              <p className="text-sm leading-6 text-muted">
                 You are about to permanently delete <strong>“{deletingItemName}”</strong>.
               </p>
-              <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3">
-                <p className="text-xs text-red-700">
+              <div className="mt-4 border border-error/20 bg-error/10 p-3">
+                <p className="text-xs text-error">
                   <strong>Warning:</strong> {deleteModalType === "YEAR" ? "This will remove the academic year and all associated terms." : "This will remove the term from the academic year."}
                 </p>
               </div>
             </div>
 
-            <div className="flex gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4">
+            <div className="flex gap-3 border-t border-border/70 bg-background px-6 py-4">
               <button
                 type="button"
                 onClick={() => {
@@ -641,7 +645,7 @@ export default function AcademicYearsPage() {
                   }, 320);
                 }}
                 disabled={saving}
-                className="flex-1 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium transition-colors hover:bg-slate-100 disabled:opacity-50 text-slate-700"
+                className="flex-1 rounded-md border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-surface disabled:opacity-50 text-foreground"
               >
                 Cancel
               </button>
@@ -649,10 +653,7 @@ export default function AcademicYearsPage() {
                 type="button"
                 onClick={deleteModalType === "YEAR" ? confirmDeleteYear : confirmDeleteTerm}
                 disabled={saving}
-                className="flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition-colors disabled:opacity-50"
-                style={{ background: "#DC2626" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "#991B1B")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "#DC2626")}
+                className="flex flex-1 items-center justify-center gap-2 rounded-md bg-error px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-error/90 disabled:opacity-50"
               >
                 {saving ? (
                   <>
@@ -673,16 +674,21 @@ export default function AcademicYearsPage() {
 
       {/* Create Year Modal */}
       {showNewYearModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-lg border border-border bg-surface p-6 shadow-2xl">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]">
+            <div className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-4 py-4 sm:px-6 sm:py-5">
+              <div>
             <h2 className="text-xl font-semibold text-foreground">
               Create Academic Year
             </h2>
             <p className="mt-2 text-sm text-muted">
               Add a new academic year to the system.
             </p>
+              </div>
+              <button type="button" onClick={() => setShowNewYearModal(false)} className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background text-muted hover:bg-surface" aria-label="Close create academic year modal">×</button>
+            </div>
 
-            <form onSubmit={handleCreateYear} className="mt-6 space-y-4">
+            <form onSubmit={handleCreateYear} className="space-y-4 px-4 py-4 sm:px-6 sm:py-6">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
                   Academic Year Name
@@ -719,20 +725,20 @@ export default function AcademicYearsPage() {
                 </span>
               </label>
 
-              <div className="flex gap-2 pt-4">
+              <div className="flex gap-2 border-t border-border pt-4">
                 <Button
                   type="submit"
                   disabled={saving}
                   variant="primary"
-                  className="flex-1 rounded-lg border border-[#0A66C2] bg-[#0A66C2] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#0858a8]"
+                  className="flex-1 rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
                 >
                   {saving ? "Creating..." : "Create Year"}
                 </Button>
                 <Button
                   type="button"
-                  variant="primary"
+                  variant="outline"
                   onClick={() => setShowNewYearModal(false)}
-                  className="flex-1 rounded-lg border border-[#0A66C2] bg-[#0A66C2] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#0858a8]"
+                  className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground transition hover:bg-surface"
                 >
                   Cancel
                 </Button>
@@ -744,12 +750,17 @@ export default function AcademicYearsPage() {
 
       {/* Create Term Modal */}
       {showNewTermModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-lg border border-border bg-surface p-6 shadow-2xl">
-            <h2 className="text-xl font-semibold text-foreground">Add Term</h2>
-            <p className="mt-2 text-sm text-muted">Create a new term in an academic year.</p>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]">
+            <div className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-4 py-4 sm:px-6 sm:py-5">
+              <div>
+                <h2 className="text-xl font-semibold text-foreground">Add Term</h2>
+                <p className="mt-2 text-sm text-muted">Create a new term in an academic year.</p>
+              </div>
+              <button type="button" onClick={() => setShowNewTermModal(false)} className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background text-muted hover:bg-surface" aria-label="Close add term modal">×</button>
+            </div>
 
-            <form onSubmit={handleCreateTerm} className="mt-6 space-y-4">
+            <form onSubmit={handleCreateTerm} className="space-y-4 px-4 py-4 sm:px-6 sm:py-6">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
                   Academic Year
@@ -828,20 +839,20 @@ export default function AcademicYearsPage() {
                 </div>
               </div>
 
-              <div className="flex gap-2 pt-4">
+              <div className="flex gap-2 border-t border-border pt-4">
                 <Button
                   type="submit"
                   disabled={saving}
                   variant="primary"
-                  className="flex-1 rounded-lg border border-[#0A66C2] bg-[#0A66C2] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#0858a8]"
+                  className="flex-1 rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
                 >
                   {saving ? "Creating..." : "Create Term"}
                 </Button>
                 <Button
                   type="button"
-                  variant="primary"
+                  variant="outline"
                   onClick={() => setShowNewTermModal(false)}
-                  className="flex-1 rounded-lg border border-[#0A66C2] bg-[#0A66C2] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#0858a8]"
+                  className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground transition hover:bg-surface"
                 >
                   Cancel
                 </Button>
@@ -853,8 +864,8 @@ export default function AcademicYearsPage() {
 
       {/* Edit Term Modal */}
       {editingTermId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-lg border border-border bg-surface p-6 shadow-2xl">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface p-6 shadow-[0_16px_50px_rgba(10,102,194,0.16)]">
             <h2 className="text-xl font-semibold text-foreground">Edit Term</h2>
             <p className="mt-2 text-sm text-muted">Update term details.</p>
 
@@ -935,6 +946,7 @@ export default function AcademicYearsPage() {
         </div>
       )}
     </div>
+    </main>
   );
 }
 

@@ -89,18 +89,24 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="w-full">
-      <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+    <main className="min-h-screen pb-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+        <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+      <div className="mb-0 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <div className="flex items-center gap-2 text-sm font-medium text-brand">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand">
             <FileText size={17} /> Accounting
           </div>
-          <h1 className="mt-2 text-3xl font-bold text-foreground">Financial Reports</h1>
-          <p className="mt-1 text-sm text-muted">
-            Review school income, expense trends, and net position by period
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Financial reports</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
+            Review income, expense trends, and net position across a reporting period.
           </p>
         </div>
       </div>
+      </div>
+      </header>
 
       {error && (
         <div className="mb-6 flex gap-3 rounded-lg border border-destructive/30 bg-destructive/10 p-4">
@@ -109,8 +115,9 @@ export default function ReportsPage() {
         </div>
       )}
 
-      <div className="mb-8 rounded-lg border border-border bg-surface p-6">
-        <h2 className="mb-4 text-lg font-semibold text-foreground">Report Period</h2>
+      <section className="border border-border bg-surface p-5 sm:p-6">
+        <p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Reporting workspace</p>
+        <h2 className="mt-1 text-lg font-semibold text-foreground">Report period</h2>
 
         <form onSubmit={handleGenerateReport} className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -153,7 +160,7 @@ export default function ReportsPage() {
             </Button>
           </div>
         </form>
-      </div>
+      </section>
 
       {report && (
         <>
@@ -189,12 +196,12 @@ export default function ReportsPage() {
           </div>
 
           {Object.keys(report.incomeByCategory).length > 0 && (
-            <div className="mb-8 rounded-lg border border-border bg-surface p-6">
-              <h2 className="mb-4 text-lg font-semibold text-foreground">Income by Category</h2>
+            <section className="mb-8 border border-border bg-surface p-5 sm:p-6">
+              <p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Inflow detail</p><h2 className="mt-1 mb-4 text-lg font-semibold text-foreground">Income by category</h2>
 
               <div className="space-y-3">
                 {Object.entries(report.incomeByCategory).map(([category, amount]) => (
-                  <div key={category} className="flex items-center justify-between rounded-lg bg-background px-3 py-2">
+                  <div key={category} className="flex items-center justify-between border border-border bg-background px-3 py-2.5">
                     <span className="text-sm text-foreground">{category}</span>
                     <span className="font-medium text-green-600">+{formatAmount(amount)}</span>
                   </div>
@@ -205,16 +212,16 @@ export default function ReportsPage() {
                 <span className="text-foreground">Total Income</span>
                 <span className="text-green-600">+{formatAmount(report.totalIncome)}</span>
               </div>
-            </div>
+            </section>
           )}
 
           {Object.keys(report.expenseByCategory).length > 0 && (
-            <div className="rounded-lg border border-border bg-surface p-6">
-              <h2 className="mb-4 text-lg font-semibold text-foreground">Expenses by Category</h2>
+            <section className="border border-border bg-surface p-5 sm:p-6">
+              <p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Outflow detail</p><h2 className="mt-1 mb-4 text-lg font-semibold text-foreground">Expenses by category</h2>
 
               <div className="space-y-3">
                 {Object.entries(report.expenseByCategory).map(([category, amount]) => (
-                  <div key={category} className="flex items-center justify-between rounded-lg bg-background px-3 py-2">
+                  <div key={category} className="flex items-center justify-between border border-border bg-background px-3 py-2.5">
                     <span className="text-sm text-foreground">{category}</span>
                     <span className="font-medium text-red-600">-{formatAmount(amount)}</span>
                   </div>
@@ -225,10 +232,11 @@ export default function ReportsPage() {
                 <span className="text-foreground">Total Expenses</span>
                 <span className="text-red-600">-{formatAmount(report.totalExpenses)}</span>
               </div>
-            </div>
+            </section>
           )}
         </>
       )}
     </div>
+    </main>
   );
 }

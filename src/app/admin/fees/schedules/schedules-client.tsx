@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect, useRef } from "react";
 import { playOpenTone, playCloseTone } from "@/lib/sounds";
 import { ErrorModal } from "@/components/ui/error-modal";
 import { useRouter } from "next/navigation";
-import { X, TrendingUp, CheckCircle, AlertCircle, ArrowUpRight, Edit2, Trash2, Search, CalendarDays } from "lucide-react";
+import { X, TrendingUp, CheckCircle, AlertCircle, ArrowUpRight, Edit2, Trash2, Search, CalendarDays, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserGuide, type PageHelpGuide } from "@/components/ui/user-guide";
 import { formatMoney } from "@/lib/format";
@@ -393,33 +393,39 @@ export default function FeeSchedulesPageClient({
         confirmLabel="Okay"
       />
 
-      <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <div>
-            <div className="flex items-center gap-2 text-sm font-medium text-brand">
-              <CalendarDays size={17} /> Academic operations
+      <main className="min-h-screen pb-12">
+      <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+        <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-10 sm:px-8 sm:pb-8 sm:pt-12">
+          <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+          <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand">
+                <CalendarDays className="h-4 w-4" /> Academic operations
+              </div>
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Fee schedules</h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Create and manage fee schedules by term, class, and billing category.</p>
             </div>
-            <h1 className="mt-2 text-3xl font-bold text-foreground">Fee schedules</h1>
-            <p className="mt-1 text-muted">Create and manage fee schedules by term, class, and billing category</p>
-          </div>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => setIsSearchOpen((open) => !open)}
-              className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"
+              aria-label={isSearchOpen ? "Close search" : "Search fee schedules"}
+              title={isSearchOpen ? "Close search" : "Search fee schedules"}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background text-brand transition hover:border-brand hover:bg-brand-light sm:h-auto sm:w-auto sm:gap-2 sm:px-3 sm:py-2"
             >
-              <Search size={16} /> Search
+              <Search className="h-4 w-4" /> <span className="hidden sm:inline">{isSearchOpen ? "Close" : "Search"}</span>
             </button>
             <button
               type="button"
               onClick={() => { setShowModal(true); playOpenTone(); }}
-              className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover"
+              className="inline-flex items-center gap-2 rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-hover"
             >
-              <span className="text-base leading-none">+</span> New schedule
+              <Plus className="h-4 w-4" /> New schedule
             </button>
           </div>
-        </div>
+          </div>
+        </header>
 
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Stat
@@ -448,25 +454,25 @@ export default function FeeSchedulesPageClient({
           />
         </section>
 
-        <section className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-center">
+        <section className="flex flex-col justify-between gap-3 border border-border bg-surface p-3 sm:flex-row sm:items-center sm:p-4">
           <div className="flex flex-wrap items-center gap-3">
-            <div className={`overflow-hidden transition-all duration-300 ease-out ${isSearchOpen ? "w-72 opacity-100" : "w-0 opacity-0"}`}>
+            <div className={`overflow-hidden transition-all duration-300 ease-out ${isSearchOpen ? "w-full opacity-100 sm:w-72" : "w-0 opacity-0"}`}>
               <input
                 ref={searchInputRef}
                 type="text"
                 placeholder="Search by name, term, year, or class..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground placeholder-muted outline-none focus:border-brand"
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder-muted outline-none focus:border-brand"
               />
             </div>
 
-            <div className="flex items-center gap-2 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-sm text-foreground">
+            <div className="flex min-w-0 items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1.5 text-sm text-foreground">
               <CalendarDays className="h-4 w-4 text-brand" />
               <select
                 value={selectedAcademicYearName}
                 onChange={(e) => setSelectedAcademicYearName(e.target.value)}
-                className="bg-transparent text-sm text-foreground outline-none"
+                className="min-w-0 max-w-[8.5rem] bg-transparent text-xs text-foreground outline-none sm:text-sm"
               >
                 <option value="">Session</option>
                 {yearOptions.map((year) => (
@@ -476,7 +482,7 @@ export default function FeeSchedulesPageClient({
               <select
                 value={termFilter}
                 onChange={(e) => setTermFilter(e.target.value)}
-                className="bg-transparent text-sm text-foreground outline-none"
+                className="min-w-0 max-w-[6.5rem] bg-transparent text-xs text-foreground outline-none sm:text-sm"
               >
                 <option value="ALL">Select term</option>
                 {filteredTerms.map((term) => (
@@ -486,7 +492,7 @@ export default function FeeSchedulesPageClient({
             </div>
           </div>
 
-          <div className="flex rounded-lg border border-border bg-surface p-1 text-sm">
+          <div className="flex rounded-md border border-border bg-background p-1 text-sm">
             <button type="button" className="rounded-md bg-brand px-3 py-1.5 font-semibold text-white">All schedules</button>
           </div>
         </section>
@@ -497,7 +503,7 @@ export default function FeeSchedulesPageClient({
             <div className="rounded-lg border border-border bg-background p-6 text-center text-sm text-muted">No fee schedules found for the selected filters</div>
           ) : (
             filteredSchedules.map((schedule) => (
-              <div key={schedule.id} className="rounded-lg border border-border bg-surface p-4">
+              <div key={schedule.id} className="border border-border bg-surface p-4">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="font-medium text-foreground">{schedule.name}</p>
@@ -512,24 +518,24 @@ export default function FeeSchedulesPageClient({
 
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {(schedule.items ?? []).slice(0, 3).map((item) => (
-                    <span key={item.id} className="rounded-full border border-border bg-surface px-2 py-1 text-[10px] font-medium text-muted">
+                    <span key={item.id} className="rounded-md border border-border bg-background px-2 py-1 text-[10px] font-medium text-muted">
                       {item.name}
                     </span>
                   ))}
                   {(schedule.items?.length ?? 0) > 3 && (
-                    <span className="rounded-full border border-border bg-surface px-2 py-1 text-[10px] font-medium text-muted">
+                    <span className="rounded-md border border-border bg-background px-2 py-1 text-[10px] font-medium text-muted">
                       +{(schedule.items?.length ?? 0) - 3}
                     </span>
                   )}
                 </div>
 
                 <div className="mt-3 flex gap-2">
-                  <button onClick={() => startEdit(schedule)} className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg border border-border px-3 py-2 text-sm">
+                  <button onClick={() => startEdit(schedule)} className="flex-1 inline-flex items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
                     <Edit2 className="h-4 w-4" /> Edit
                   </button>
                   <button
                     onClick={() => { setDeleteAnimateState("enter"); setDeleteId(schedule.id); playOpenTone(); }}
-                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm"
+                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-md border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm"
                   >
                     Delete
                   </button>
@@ -540,7 +546,7 @@ export default function FeeSchedulesPageClient({
         </div>
 
         {/* Table (desktop only) */}
-        <div className="hidden sm:block overflow-hidden rounded-lg border border-border bg-background">
+        <div className="hidden sm:block overflow-hidden border border-border bg-background">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="border-b border-border bg-surface text-muted">
@@ -573,12 +579,12 @@ export default function FeeSchedulesPageClient({
                           {(schedule.items?.length ?? 0) > 0 && (
                             <div className="mt-1 flex flex-wrap gap-1">
                               {schedule.items!.slice(0, 3).map((item) => (
-                                <span key={item.id} className="rounded-full border border-brand/20 bg-brand/5 px-2 py-0.5 text-[10px] font-medium text-brand">
+                                <span key={item.id} className="rounded-md border border-brand/20 bg-brand/5 px-2 py-0.5 text-[10px] font-medium text-brand">
                                   {item.name}
                                 </span>
                               ))}
                               {(schedule.items!.length > 3) && (
-                                <span className="rounded-full border border-border bg-surface px-2 py-0.5 text-[10px] font-medium text-muted">
+                                <span className="rounded-md border border-border bg-surface px-2 py-0.5 text-[10px] font-medium text-muted">
                                   +{schedule.items!.length - 3}
                                 </span>
                               )}
@@ -609,7 +615,7 @@ export default function FeeSchedulesPageClient({
                           <div className="flex items-center gap-2 justify-end">
                             <button
                               onClick={() => startEdit(schedule)}
-                              className="flex items-center gap-2 inline-flex px-3 py-1.5 rounded-lg border border-border bg-surface hover:bg-background text-sm font-medium transition-colors"
+                              className="flex items-center gap-2 inline-flex px-3 py-1.5 rounded-md border border-border bg-surface hover:bg-background text-sm font-medium transition-colors"
                             >
                               <Edit2 className="h-3.5 w-3.5" />
                               Edit
@@ -621,7 +627,7 @@ export default function FeeSchedulesPageClient({
                                 setDeleteId(schedule.id);
                                 playOpenTone();
                               }}
-                              className="inline-flex px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-medium transition-colors"
+                              className="inline-flex px-3 py-1.5 rounded-md border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-medium transition-colors"
                             >
                               Delete
                             </button>
@@ -635,6 +641,7 @@ export default function FeeSchedulesPageClient({
           </div>
         </div>
       </div>
+      </main>
 
       {/* Create Modal */}
       {showModal && (
@@ -645,10 +652,10 @@ export default function FeeSchedulesPageClient({
           `}</style>
 
           <div
-            className="w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
+            className="w-full max-w-2xl overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
             style={{ animation: `classes_modal_enter 320ms cubic-bezier(.2,.9,.2,1)` }}
           >
-            <div className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-6 py-5">
+            <div className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-4 py-4 sm:px-6 sm:py-5">
               <div>
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.12em] text-brand">
                   <CalendarDays size={15} /> Academic operations
@@ -664,13 +671,13 @@ export default function FeeSchedulesPageClient({
                   setError(null);
                   setCreateDraftItems([]);
                 }}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-border transition-colors hover:bg-background"
+                className="flex h-8 w-8 items-center justify-center rounded-md border border-border transition-colors hover:bg-background"
               >
                 <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} noValidate className="space-y-6 px-6 py-6">
+            <form onSubmit={handleSubmit} noValidate className="space-y-5 px-4 py-4 sm:space-y-6 sm:px-6 sm:py-6">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-sm font-medium text-foreground">Term *</label>
@@ -786,10 +793,10 @@ export default function FeeSchedulesPageClient({
           `}</style>
 
           <div
-            className="w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
+            className="w-full max-w-2xl overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
             style={{ animation: `classes_modal_enter 320ms cubic-bezier(.2,.9,.2,1)` }}
           >
-            <div className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-6 py-5">
+            <div className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-4 py-4 sm:px-6 sm:py-5">
               <div>
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.12em] text-brand">
                   <CalendarDays size={15} /> Academic operations
@@ -807,14 +814,14 @@ export default function FeeSchedulesPageClient({
                   setEditError(null);
                   setEditDraftItems([]);
                 }}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-border transition-colors hover:bg-background"
+                className="flex h-8 w-8 items-center justify-center rounded-md border border-border transition-colors hover:bg-background"
               >
                 <X size={18} />
               </button>
             </div>
 
             {editScheduleContext && (
-              <div className="mx-6 mt-6 grid gap-3 rounded-lg border border-border bg-background p-4 sm:grid-cols-3">
+              <div className="mx-4 mt-4 grid gap-3 rounded-md border border-border bg-background p-3 sm:mx-6 sm:mt-6 sm:grid-cols-3 sm:p-4">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wide text-muted">Term</p>
                   <p className="mt-2 text-sm font-semibold text-foreground">{editScheduleContext.termName}</p>
@@ -830,7 +837,7 @@ export default function FeeSchedulesPageClient({
               </div>
             )}
 
-            <form onSubmit={handleEditSubmit} noValidate className="space-y-6 px-6 py-6">
+            <form onSubmit={handleEditSubmit} noValidate className="space-y-5 px-4 py-4 sm:space-y-6 sm:px-6 sm:py-6">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-sm font-medium text-foreground">Class (optional)</label>
@@ -991,12 +998,12 @@ export default function FeeSchedulesPageClient({
           `}</style>
 
           <div
-            className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(220,38,38,0.16)]"
+            className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(220,38,38,0.16)]"
             style={{
               animation: `${deleteAnimateState === "enter" ? "classes_delete_enter" : "classes_delete_exit"} 320ms cubic-bezier(.2,.9,.2,1)`,
             }}
           >
-            <div className="border-b border-border/70 bg-error/10 px-6 py-5">
+            <div className="border-b border-border/70 bg-error/10 px-4 py-4 sm:px-6 sm:py-5">
               <div className="flex items-start gap-3">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-error/20 bg-error/10 shadow-sm">
                   <AlertCircle className="h-6 w-6 text-error" />
@@ -1008,7 +1015,7 @@ export default function FeeSchedulesPageClient({
               </div>
             </div>
 
-            <div className="px-6 py-5">
+            <div className="px-4 py-4 sm:px-6 sm:py-5">
               {deleteError && (
                 <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3">
                   <p className="text-sm text-red-800">{deleteError}</p>
@@ -1080,14 +1087,17 @@ function Stat({
   detail: string;
 }) {
   return (
-    <div className="border border-border bg-surface p-5">
-      <div className="mb-4 flex items-center gap-2 text-brand">
-        {icon}
-        <span className="text-xs font-bold uppercase tracking-[.12em] text-muted">
-          {label}
-        </span>
+    <div className="border border-border bg-surface p-5 transition hover:border-brand/40 hover:bg-brand-light/20">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex h-10 w-10 items-center justify-center bg-brand/10 text-brand">
+          {icon}
+        </div>
+        <ArrowUpRight className="h-4 w-4 text-muted" />
       </div>
-      <div className="text-3xl font-semibold text-foreground">{value}</div>
+      <div className="mt-5 text-[11px] font-bold uppercase tracking-[.14em] text-muted">
+          {label}
+      </div>
+      <div className="mt-2 text-3xl font-semibold tracking-tight text-foreground">{value}</div>
       <div className="mt-1 text-xs text-muted">{detail}</div>
     </div>
   );

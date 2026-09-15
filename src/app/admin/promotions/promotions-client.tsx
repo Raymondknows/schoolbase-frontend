@@ -5,7 +5,7 @@ import { getBackendUrl } from "../../../lib/backend-url";
 import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
 import { ErrorModal } from "../../../components/ui/error-modal";
-import { GraduationCap, RefreshCw, Sparkles } from "lucide-react";
+import { GraduationCap, RefreshCw, CheckCircle2, Users, X } from "lucide-react";
 
 type Term = {
   id: string;
@@ -323,16 +323,23 @@ export default function PromotionsPageClient({
   }, [selectedAcademicYearId, currentTermId, selectedClassId, handlePreview]);
 
   return (
-    <div className="space-y-5">
-      <div className="space-y-4">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-1">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">Promotions</p>
-            <h1 className="text-2xl font-bold text-foreground">Review and apply class promotions</h1>
-            <p className="text-sm text-muted">Choose the class and review the loaded pupils automatically.</p>
+    <main className="min-h-screen pb-12">
+      <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+        <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand">
+              <GraduationCap className="h-4 w-4" /> Academic operations
+            </div>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Student promotions</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Review end-of-term outcomes, apply class movements, and keep a clear audit trail for every decision.</p>
+          </div>
+          <div className="flex items-center gap-2 border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground">
+            <span className="h-2 w-2 bg-emerald-500" /> {currentSessionLabel}
           </div>
         </div>
-      </div>
+      </header>
 
 
       {error && (
@@ -351,15 +358,16 @@ export default function PromotionsPageClient({
 
       {previewData ? (
         <div className="space-y-4">
-          <div className="rounded-2xl border border-border/70 bg-surface p-4">
+          <section className="border border-border bg-surface p-5">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
-                <p className="text-sm font-semibold text-foreground">{previewData.class.name}</p>
-                <p className="text-sm text-muted">{currentSessionLabel}</p>
+                <p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Review workspace</p>
+                <h2 className="mt-1 text-lg font-semibold text-foreground">{previewData.class.name}</h2>
+                <p className="mt-0.5 text-sm text-muted">{currentSessionLabel} · Select an action for the current roster.</p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Badge variant="brand">{previewData.pupils.length} pupils</Badge>
-                <Badge variant="secondary">{selectedPupilIds.length} selected</Badge>
+                <span className="border border-border bg-background px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[.1em] text-muted">{previewData.pupils.length} pupils</span>
+                <span className="border border-brand/20 bg-brand/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[.1em] text-brand">{selectedPupilIds.length} selected</span>
               </div>
             </div>
 
@@ -367,7 +375,7 @@ export default function PromotionsPageClient({
               <label className="space-y-1 max-w-[220px]">
                 <span className="block text-xs font-medium uppercase tracking-wide text-muted">Current class</span>
                 <select
-                  className="w-full rounded-lg border border-border bg-background px-2 py-1.5 text-sm max-w-[220px]"
+                  className="w-full border border-border bg-background px-3 py-2 text-sm max-w-[220px]"
                   value={selectedClassId}
                   onChange={(event) => {
                     const newClassId = event.target.value;
@@ -384,7 +392,7 @@ export default function PromotionsPageClient({
               <label className="space-y-1 max-w-[220px]">
                 <span className="block text-xs font-medium uppercase tracking-wide text-muted">Target class</span>
                 <select
-                  className="w-full rounded-lg border border-border bg-background px-2 py-1.5 text-sm max-w-[220px]"
+                  className="w-full border border-border bg-background px-3 py-2 text-sm max-w-[220px]"
                   value={bulkTargetClassId}
                   onChange={(event) => setBulkTargetClassId(event.target.value)}
                 >
@@ -398,7 +406,7 @@ export default function PromotionsPageClient({
               <label className="space-y-1 max-w-[220px]">
                 <span className="block text-xs font-medium uppercase tracking-wide text-muted">Bulk action</span>
                 <select
-                  className="w-full rounded-lg border border-border bg-background px-2 py-1.5 text-sm max-w-[220px]"
+                  className="w-full border border-border bg-background px-3 py-2 text-sm max-w-[220px]"
                   value={bulkDecision}
                   onChange={(event) => setBulkDecision(event.target.value)}
                 >
@@ -423,7 +431,7 @@ export default function PromotionsPageClient({
 
             {isRationaleModalOpen && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                <div className="w-full max-w-2xl rounded-2xl bg-surface p-6 shadow-xl">
+                <div className="w-full max-w-2xl border border-border bg-surface p-6 shadow-xl">
                   <div className="mb-4 flex items-center justify-between gap-4">
                     <div>
                       <h2 className="text-lg font-semibold text-foreground">Rationale</h2>
@@ -432,9 +440,10 @@ export default function PromotionsPageClient({
                     <button
                       type="button"
                       onClick={() => setIsRationaleModalOpen(false)}
-                      className="text-sm font-semibold text-muted transition hover:text-foreground"
+                      className="inline-flex h-8 w-8 items-center justify-center border border-border text-muted transition hover:bg-background hover:text-foreground"
+                      title="Close rationale dialog"
                     >
-                      Close
+                      <X className="h-4 w-4" />
                     </button>
                   </div>
 
@@ -443,21 +452,21 @@ export default function PromotionsPageClient({
                     value={bulkRationale}
                     onChange={(event) => setBulkRationale(event.target.value)}
                     placeholder="Type the rationale here..."
-                    className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition focus:border-brand focus:bg-background"
+                    className="w-full border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition focus:border-brand focus:bg-background"
                   />
 
                   <div className="mt-4 flex justify-end gap-3">
                     <button
                       type="button"
                       onClick={() => setIsRationaleModalOpen(false)}
-                      className="inline-flex h-10 items-center justify-center rounded-full border border-border px-4 text-sm font-semibold text-foreground transition hover:bg-surface"
+                      className="inline-flex h-10 items-center justify-center border border-border px-4 text-sm font-semibold text-foreground transition hover:bg-background"
                     >
                       Cancel
                     </button>
                     <button
                       type="button"
                       onClick={() => setIsRationaleModalOpen(false)}
-                      className="inline-flex h-10 items-center justify-center rounded-full border border-[#0A66C2] bg-[#0A66C2] px-4 text-sm font-semibold text-white transition hover:bg-[#0858a8]"
+                      className="inline-flex h-10 items-center justify-center bg-brand px-4 text-sm font-semibold text-white transition hover:bg-brand-hover"
                     >
                       Save rationale
                     </button>
@@ -465,12 +474,15 @@ export default function PromotionsPageClient({
                 </div>
               </div>
             )}
-          </div>
+          </section>
 
-          <div className="rounded-2xl border border-border/70 bg-surface p-3">
+          <section className="border border-border bg-surface p-5">
             <div className="mb-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
               <div>
-                <p className="font-semibold text-foreground">Select pupils</p>
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-brand" />
+                  <p className="font-semibold text-foreground">Select pupils</p>
+                </div>
                 <p className="text-sm text-muted">Use the checkboxes to choose who should receive the bulk action.</p>
               </div>
               <label className="flex items-center gap-2 text-sm text-muted">
@@ -493,7 +505,7 @@ export default function PromotionsPageClient({
               {previewData.pupils.map((pupil: PromotionPreviewPupil) => (
                 <label
                   key={pupil.id}
-                  className={`flex items-center justify-between rounded-xl border px-3 py-2 text-sm transition ${selectedPupilIds.includes(pupil.id) ? "border-brand bg-brand/10" : "border-border/70 bg-background"}`}
+                  className={`flex items-center justify-between border px-3 py-3 text-sm transition ${selectedPupilIds.includes(pupil.id) ? "border-brand bg-brand/10" : "border-border/70 bg-background"}`}
                 >
                   <span>
                     <span className="block font-medium text-foreground">{pupil.firstName} {pupil.lastName}</span>
@@ -526,7 +538,7 @@ export default function PromotionsPageClient({
                 Apply selected actions
               </Button>
             </div>
-          </div>
+          </section>
         </div>
       ) : (
         <div className="rounded-2xl border border-dashed border-border/70 bg-surface p-5 text-sm text-muted">
@@ -534,12 +546,12 @@ export default function PromotionsPageClient({
         </div>
       )}
 
-      <div className="rounded-2xl border border-border/70 bg-surface p-4 shadow-sm">
+      <section className="border border-border bg-surface p-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-brand" />
-              <h2 className="text-lg font-semibold text-foreground">Recent promotion history</h2>
+              <CheckCircle2 className="h-4 w-4 text-brand" />
+              <h2 className="text-lg font-semibold text-foreground">Promotion history</h2>
             </div>
             <p className="text-sm text-muted">A compact view of what was approved for the current session.</p>
           </div>
@@ -560,9 +572,9 @@ export default function PromotionsPageClient({
         {historyLoading ? (
           <p className="mt-4 text-sm text-muted">Loading history...</p>
         ) : history.length > 0 ? (
-          <div className="mt-4 space-y-2">
+            <div className="mt-4 space-y-2">
             {history.map((record) => (
-              <div key={record.id} className="flex flex-col gap-2 rounded-lg border border-border/70 bg-surface/70 p-3 md:flex-row md:items-center md:justify-between">
+              <div key={record.id} className="flex flex-col gap-2 border-l-2 border-l-brand/70 bg-brand-light/20 px-3 py-3 md:flex-row md:items-center md:justify-between">
                 <div>
                   <p className="font-semibold text-foreground">{record.pupilName}</p>
                   <p className="text-sm text-muted">{new Date(record.decidedAt).toLocaleDateString()} · {record.fromClassName || "Unknown"} → {record.toClassName || "-"}</p>
@@ -577,7 +589,8 @@ export default function PromotionsPageClient({
         ) : (
           <p className="mt-4 text-sm text-muted">No promotion history loaded yet.</p>
         )}
+      </section>
       </div>
-    </div>
+    </main>
   );
 }

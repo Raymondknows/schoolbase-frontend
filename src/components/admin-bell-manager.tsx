@@ -61,17 +61,18 @@ export default function AdminBellManager({ isOpen, onClose }: { isOpen: boolean;
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 px-4 py-6 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-labelledby="bell-modal-title">
-      <section className="w-full max-w-lg rounded-2xl border border-border bg-surface p-5 shadow-2xl sm:p-6">
-        <header className="flex items-start justify-between gap-4">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="bell-modal-title">
+      <style>{`@keyframes timetable_bell_modal_enter { from { transform: translateX(36px) scale(.98); opacity: 0 } to { transform: translateX(0) scale(1); opacity: 1 } }`}</style>
+      <section className="w-full max-w-lg overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]" style={{ animation: "timetable_bell_modal_enter 320ms cubic-bezier(.2,.9,.2,1)" }}>
+        <header className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-4 py-4 sm:px-6 sm:py-5">
           <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600"><Bell className="h-5 w-5" /></div>
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-brand/20 bg-brand/10 text-brand"><Bell className="h-5 w-5" /></div>
             <div><h2 id="bell-modal-title" className="text-lg font-semibold text-foreground">School bell settings</h2><p className="mt-1 text-sm text-muted">Use the published timetable periods as your school bell.</p></div>
           </div>
-          <button type="button" onClick={onClose} className="inline-flex h-9 w-9 items-center justify-center rounded-full text-muted hover:bg-background hover:text-foreground" aria-label="Close school bell settings" title="Close"><X className="h-4 w-4" /></button>
+          <button type="button" onClick={onClose} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted hover:bg-background hover:text-foreground" aria-label="Close school bell settings" title="Close"><X className="h-4 w-4" /></button>
         </header>
 
-        <label className="mt-6 flex cursor-pointer items-center justify-between gap-4 rounded-2xl border border-border bg-background p-4">
+        <label className="mx-4 mt-5 flex cursor-pointer items-center justify-between gap-4 border border-border bg-background p-4 sm:mx-6">
           <span><span className="block text-sm font-semibold text-foreground">Play on every period</span><span className="mt-1 block text-xs text-muted">Ring when each published period begins.</span></span>
           <input type="checkbox" checked={enabled} onChange={(event) => updateEnabled(event.target.checked)} className="h-5 w-5 accent-brand" />
         </label>
@@ -81,17 +82,17 @@ export default function AdminBellManager({ isOpen, onClose }: { isOpen: boolean;
             <span>Bell tone<span className="mt-1 block text-xs font-normal text-muted">Choose the sound.</span></span>
             <Volume2 className="h-4 w-4 text-brand" />
           </label>
-          <select id="bell-tone" value={tone} onChange={(event) => updateTone(event.target.value as BellTone)} className="mt-3 w-full rounded-xl border border-border bg-background px-3 py-3 text-sm font-semibold text-foreground outline-none focus:border-brand">
+          <select id="bell-tone" value={tone} onChange={(event) => updateTone(event.target.value as BellTone)} className="mt-3 w-full rounded-md border border-border bg-background px-3 py-3 text-sm font-semibold text-foreground outline-none focus:border-brand">
             {tones.map((option) => <option key={option.value} value={option.value}>{option.label} - {option.detail}</option>)}
           </select>
         </div>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          <label htmlFor="bell-ring-mode" className="text-sm font-semibold text-foreground">Ring pattern<span className="mt-1 block text-xs font-normal text-muted">Choose ring pattern.</span><select id="bell-ring-mode" value={ringMode} onChange={(event) => updateRingMode(event.target.value as BellRingMode)} className="mt-3 w-full rounded-xl border border-border bg-background px-3 py-3 text-sm font-semibold text-foreground outline-none focus:border-brand"><option value="count">A set number of times</option><option value="continuous">Continuous for 30 seconds</option></select></label>
-          <label htmlFor="bell-ring-count" className="text-sm font-semibold text-foreground">Number of rings<span className="mt-1 block text-xs font-normal text-muted">Used when a set number is selected.</span><select id="bell-ring-count" value={ringCount} disabled={ringMode === "continuous"} onChange={(event) => updateRingCount(Number(event.target.value))} className="mt-3 w-full rounded-xl border border-border bg-background px-3 py-3 text-sm font-semibold text-foreground outline-none focus:border-brand disabled:cursor-not-allowed disabled:opacity-50"><option value={1}>1 ring</option><option value={2}>2 rings</option><option value={3}>3 rings</option><option value={4}>4 rings</option><option value={5}>5 rings</option></select></label>
+          <label htmlFor="bell-ring-mode" className="text-sm font-semibold text-foreground">Ring pattern<span className="mt-1 block text-xs font-normal text-muted">Choose ring pattern.</span><select id="bell-ring-mode" value={ringMode} onChange={(event) => updateRingMode(event.target.value as BellRingMode)} className="mt-3 w-full rounded-md border border-border bg-background px-3 py-3 text-sm font-semibold text-foreground outline-none focus:border-brand"><option value="count">A set number of times</option><option value="continuous">Continuous for 30 seconds</option></select></label>
+          <label htmlFor="bell-ring-count" className="text-sm font-semibold text-foreground">Number of rings<span className="mt-1 block text-xs font-normal text-muted">Used when a set number is selected.</span><select id="bell-ring-count" value={ringCount} disabled={ringMode === "continuous"} onChange={(event) => updateRingCount(Number(event.target.value))} className="mt-3 w-full rounded-md border border-border bg-background px-3 py-3 text-sm font-semibold text-foreground outline-none focus:border-brand disabled:cursor-not-allowed disabled:opacity-50"><option value={1}>1 ring</option><option value={2}>2 rings</option><option value={3}>3 rings</option><option value={4}>4 rings</option><option value={5}>5 rings</option></select></label>
         </div>
 
-        <footer className="mt-6 flex items-center justify-between gap-3 border-t border-border pt-4"><span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${enabled ? "text-[#137333]" : "text-muted"}`}>{enabled ? <Check className="h-3.5 w-3.5" /> : null}{enabled ? "Bell enabled" : "Bell disabled"}</span><div className="flex gap-2"><button type="button" onClick={testTone} className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground hover:bg-surface"><Play className="h-4 w-4" /> Test tone</button><button type="button" onClick={onClose} className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand/90">Done</button></div></footer>
+        <footer className="mt-6 flex items-center justify-between gap-3 border-t border-border bg-surface/80 px-4 py-4 sm:px-6"><span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${enabled ? "text-[#137333]" : "text-muted"}`}>{enabled ? <Check className="h-3.5 w-3.5" /> : null}{enabled ? "Bell enabled" : "Bell disabled"}</span><div className="flex gap-2"><button type="button" onClick={testTone} className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground hover:bg-surface"><Play className="h-4 w-4" /> Test tone</button><button type="button" onClick={onClose} className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-hover">Done</button></div></footer>
       </section>
     </div>
   );

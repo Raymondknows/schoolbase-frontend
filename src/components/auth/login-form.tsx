@@ -104,7 +104,7 @@ export function LoginForm({ redirectTo }: { redirectTo: string }) {
   return (
     <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
       {error && (
-        <div className="rounded-lg bg-error/10 px-3 py-2 text-sm text-error">
+        <div className="border border-error/20 bg-error/10 px-3 py-2 text-sm text-error">
           <p className="mb-2">{error}</p>
           {pendingEmail && (
             <button
@@ -119,7 +119,7 @@ export function LoginForm({ redirectTo }: { redirectTo: string }) {
       )}
 
       {notice && (
-        <p className="rounded-lg bg-success/10 px-3 py-2 text-sm text-success">
+        <p className="border border-success/20 bg-success/10 px-3 py-2 text-sm text-success">
           {notice}
         </p>
       )}
@@ -134,7 +134,7 @@ export function LoginForm({ redirectTo }: { redirectTo: string }) {
           required
           placeholder=" "
           aria-label="Email"
-          className="peer mt-1 w-full rounded-xl border border-border bg-background px-3 pl-10 py-3 text-sm text-foreground placeholder-transparent transition focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+          className="peer mt-1 w-full border border-border bg-background px-3 pl-10 py-3 text-sm text-foreground placeholder-transparent transition focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
         />
         <label className="absolute left-10 top-3 text-sm text-muted transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-xs">
           Email
@@ -151,7 +151,7 @@ export function LoginForm({ redirectTo }: { redirectTo: string }) {
           required
           placeholder=" "
           aria-label="Password"
-          className="peer mt-1 w-full rounded-xl border border-border bg-background px-3 pl-10 py-3 text-sm text-foreground placeholder-transparent transition focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+          className="peer mt-1 w-full border border-border bg-background px-3 pl-10 py-3 text-sm text-foreground placeholder-transparent transition focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
         />
 
         <label className="absolute left-10 top-3 text-sm text-muted transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-xs">
@@ -186,7 +186,7 @@ export function LoginForm({ redirectTo }: { redirectTo: string }) {
 
       <Button
         type="submit"
-        className="w-full rounded-xl bg-brand text-white px-4 py-3 font-medium shadow-md hover:bg-brand-hover transition disabled:opacity-50"
+        className="w-full bg-brand px-4 py-3 font-semibold text-white transition hover:bg-brand-hover disabled:opacity-50"
         disabled={pending}
       >
         {pending ? "Signing in…" : "Sign in"}

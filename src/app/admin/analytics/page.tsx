@@ -567,13 +567,17 @@ export default function AnalyticsPage() {
   });
 
   return (
-    <div className="space-y-6 pb-8">
+    <main className="min-h-screen pb-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
       {/* Header with Academic Year, Term, and Class Dropdowns */}
-      <div className="border-b border-border pb-6">
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+      <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between mb-4">
           <div>
-            <h1 className="text-4xl font-bold text-foreground">School Analytics</h1>
-            <p className="mt-1 text-sm text-muted">Real-time performance insights and academic metrics</p>
+            <div className="text-xs font-bold uppercase tracking-[.16em] text-brand">Academic analytics</div>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">School analytics</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Real-time performance insights and academic metrics across your school.</p>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 w-full lg:w-auto lg:max-w-[720px]">
             <div>
@@ -634,12 +638,13 @@ export default function AnalyticsPage() {
           </div>
         </div>
       </div>
+      </header>
 
       {/* Quick Action Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="group rounded-lg border border-border bg-surface p-5 shadow-sm transition hover:border-brand/50 hover:shadow-md">
+        <div className="group border border-border bg-surface p-5 transition hover:border-brand/40">
           <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand/10 text-brand">
+            <div className="flex h-10 w-10 items-center justify-center bg-brand/10 text-brand">
               <TrendingUp className="h-5 w-5" />
             </div>
             <div className="min-w-0">
@@ -650,9 +655,9 @@ export default function AnalyticsPage() {
           <p className="mt-4 text-xs text-muted">Out of 100</p>
         </div>
 
-        <div className="group rounded-lg border border-border bg-surface p-5 shadow-sm transition hover:border-brand/50 hover:shadow-md">
+        <div className="group border border-border bg-surface p-5 transition hover:border-brand/40">
           <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand/10 text-brand">
+            <div className="flex h-10 w-10 items-center justify-center bg-brand/10 text-brand">
               <Activity className="h-5 w-5" />
             </div>
             <div className="min-w-0">
@@ -663,9 +668,9 @@ export default function AnalyticsPage() {
           <p className="mt-4 text-xs text-muted">Passing students</p>
         </div>
 
-        <div className="group rounded-lg border border-border bg-surface p-5 shadow-sm transition hover:border-brand/50 hover:shadow-md">
+        <div className="group border border-border bg-surface p-5 transition hover:border-brand/40">
           <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand/10 text-brand">
+            <div className="flex h-10 w-10 items-center justify-center bg-brand/10 text-brand">
               <BarChart3 className="h-5 w-5" />
             </div>
             <div className="min-w-0">
@@ -676,9 +681,9 @@ export default function AnalyticsPage() {
           <p className="mt-4 text-xs text-muted">Published assessments</p>
         </div>
 
-        <div className="group rounded-lg border border-border bg-surface p-5 shadow-sm transition hover:border-brand/50 hover:shadow-md">
+        <div className="group border border-border bg-surface p-5 transition hover:border-brand/40">
           <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand/10 text-brand">
+            <div className="flex h-10 w-10 items-center justify-center bg-brand/10 text-brand">
               <BookOpen className="h-5 w-5" />
             </div>
             <div className="min-w-0">
@@ -720,7 +725,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Grade Distribution */}
-      <div className="rounded-lg border border-border bg-surface p-6 hover:shadow-sm transition-shadow">
+      <div className="border border-border bg-surface p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <BarChart3 className="h-5 w-5 text-muted" />
@@ -759,7 +764,7 @@ export default function AnalyticsPage() {
       {/* Classes and Subjects Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Classes Overview with Filters */}
-        <div className="group rounded-lg border border-border bg-surface shadow-sm transition hover:border-brand/50 hover:shadow-md overflow-hidden">
+        <div className="group overflow-hidden border border-border bg-surface transition hover:border-brand/40">
           <div className="bg-surface px-6 py-4 border-b border-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -816,7 +821,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Subjects Overview */}
-        <div className="rounded-lg border border-border bg-surface overflow-hidden shadow-sm transition hover:shadow-md">
+        <div className="overflow-hidden border border-border bg-surface transition hover:border-brand/40">
           <div className="bg-background px-6 py-4 border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-3">
               <BookOpen className="h-5 w-5 text-muted" />
@@ -845,7 +850,7 @@ export default function AnalyticsPage() {
       {/* Top Performers & Struggling Students */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Performers */}
-        <div className="rounded-lg border border-border bg-background p-6 hover:shadow-sm transition-shadow">
+        <div className="border border-border bg-surface p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <TrendingUp className="h-5 w-5 text-green-600" />
@@ -876,7 +881,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Struggling Students */}
-        <div className="rounded-lg border border-border bg-background p-6 hover:shadow-sm transition-shadow">
+        <div className="border border-border bg-surface p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <AlertCircle className="h-5 w-5 text-orange-600" />
@@ -907,5 +912,6 @@ export default function AnalyticsPage() {
         </div>
       </div>
     </div>
+    </main>
   );
 }

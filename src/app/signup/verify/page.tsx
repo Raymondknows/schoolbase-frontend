@@ -5,7 +5,7 @@ import { AppLogo } from "@/components/app-logo";
 function VerifyLoadingFallback() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
-      <div className="w-full max-w-xl rounded-xl border border-border bg-surface p-8 shadow-sm">
+      <div className="w-full max-w-xl border border-border bg-surface p-8">
         <div className="mb-6 flex justify-center">
           <AppLogo href="/" size="lg" />
         </div>

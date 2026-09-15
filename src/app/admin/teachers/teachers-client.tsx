@@ -1,13 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState, useTransition, useRef, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ErrorModal } from "@/components/ui/error-modal";
 import { UserGuide } from "@/components/ui/user-guide";
 import { getBackendUrl } from "@/lib/backend-url";
-import { X, Plus, Search, UserPlus, AlertCircle, Trash2 } from "lucide-react";
+import { X, Plus, Search, UserPlus, AlertCircle, Trash2, Users, ArrowUpRight } from "lucide-react";
 
 function parseApiErrorMessage(body: any, status: number): string {
   if (!body) return `Server error: ${status}`;
@@ -102,6 +101,7 @@ export default function TeachersPageClient({
 }) {
   const normalizeTeacher = (teacher: any) => ({
     ...teacher,
+    role: teacher.role ?? "TEACHER",
     id: teacher.id ?? teacher._id ?? teacher.email ?? `teacher-${Math.random().toString(36).slice(2, 10)}`,
     teacherClasses: teacher.teacherClasses ?? [],
     teacherSubjects: teacher.teacherSubjects ?? [],
@@ -238,22 +238,20 @@ export default function TeachersPageClient({
 
   return (
     <>
-      <div className="w-full">
-      <div className="mb-4 text-sm text-brand">
-        <Link href="/admin" className="hover:underline">
-          ← Admin
-        </Link>
-      </div>
-
-      <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
+      <main className="min-h-screen pb-12">
+      <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+        <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
         <div className="min-w-0">
-          <h1 className="text-3xl font-bold text-foreground">Staff</h1>
-          <p className="mt-2 text-sm text-muted sm:text-base">
-            {teacherList.length} staff member{teacherList.length === 1 ? "" : "s"} assigned to classes and subjects.
-          </p>
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand">
+            <Users className="h-4 w-4" /> People operations
+          </div>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Staff</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Manage teachers, bursars, assignments, and staff access from one central workspace.</p>
         </div>
 
-        <div className="flex flex-col gap-2 w-full sm:w-auto sm:flex-row sm:items-center">
+        <div className="relative flex flex-col gap-2 w-full sm:w-auto sm:flex-row sm:items-center">
           {/* Animated Search Panel - slides out on same line */}
           <div className={`overflow-hidden transition-all duration-300 ease-out flex-shrink-0 ${isSearchOpen ? "w-72 opacity-100 translate-x-0" : "w-0 opacity-0 translate-x-full"}`}>
             <input
@@ -262,14 +260,14 @@ export default function TeachersPageClient({
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Search by name, email, class, or subject..."
-              className="w-full rounded-lg border-2 border-[#0A66C2] bg-background px-4 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
+              className="w-full border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder-muted outline-none focus:border-brand"
             />
           </div>
           <Button
             type="button"
             variant="primary"
             onClick={() => setIsSearchOpen((open) => !open)}
-            className="h-9 w-full rounded-md border border-[#0A66C2] bg-[#0A66C2] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0858a8] sm:w-auto"
+            className="h-9 w-full border border-border bg-background px-3 py-1.5 text-sm font-semibold text-brand transition hover:bg-brand-light sm:w-auto"
           >
             <Search className="h-4 w-4" />
             {isSearchOpen ? "Close Search" : "Search Staff"}
@@ -281,7 +279,7 @@ export default function TeachersPageClient({
                 setIsOpen(true);
                 playOpenTone();
               }}
-              className="h-9 w-full rounded-md border border-[#0A66C2] bg-[#0A66C2] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0858a8] sm:w-auto"
+              className="h-9 w-full bg-brand px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-brand-hover sm:w-auto"
             >
               <UserPlus className="h-4 w-4" />
               Add teacher
@@ -293,22 +291,29 @@ export default function TeachersPageClient({
                 playOpenTone();
               }}
               variant="secondary"
-              className="h-9 w-full rounded-md border border-[#0A66C2] bg-white px-3 py-1.5 text-sm font-semibold text-[#0A66C2] transition hover:bg-blue-50 sm:w-auto"
+              className="h-9 w-full border border-border bg-background px-3 py-1.5 text-sm font-semibold text-brand transition hover:bg-brand-light sm:w-auto"
             >
               <UserPlus className="h-4 w-4" />
               Add bursar
             </Button>
           </div>
         </div>
+        </div>
+      </header>
+
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs text-muted">{teacherList.length} staff member{teacherList.length === 1 ? "" : "s"} across teaching and finance roles.</p>
+        <span className="hidden items-center gap-1 text-xs font-semibold text-brand sm:inline-flex">Staff directory <ArrowUpRight className="h-3 w-3" /></span>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-border bg-surface">
+      <div className="overflow-hidden border border-border bg-surface">
         {/* Desktop Table */}
         <table className="hidden sm:table w-full text-left text-sm">
           <thead className="border-b border-border bg-background text-muted">
             <tr>
               <th className="px-4 py-2 font-medium">Name</th>
               <th className="px-4 py-2 font-medium">Email</th>
+              <th className="px-4 py-2 font-medium">Role</th>
               <th className="px-4 py-2 font-medium">Classes</th>
               <th className="px-4 py-2 font-medium">Subjects</th>
               <th className="px-4 py-2 font-medium">Action</th>
@@ -325,6 +330,11 @@ export default function TeachersPageClient({
                     </div>
                   </td>
                   <td className="px-4 py-2 text-muted">{teacher.email}</td>
+                  <td className="px-4 py-2">
+                    <span className="border border-border bg-background px-2 py-1 text-[10px] font-semibold uppercase tracking-[.1em] text-muted">
+                      {teacher.role === "BURSAR" ? "Bursar" : "Teacher"}
+                    </span>
+                  </td>
                   <td className="px-4 py-2 text-sm text-muted">
                     { (teacher.teacherClasses?.length ?? 0) > 0 ? (
                       <span>{teacher.teacherClasses.length} class{teacher.teacherClasses.length === 1 ? "" : "es"}</span>
@@ -356,7 +366,7 @@ export default function TeachersPageClient({
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="px-4 py-4 text-center text-sm text-muted">
+                <td colSpan={6} className="px-4 py-4 text-center text-sm text-muted">
                   No staff found.
                 </td>
               </tr>
@@ -379,7 +389,10 @@ export default function TeachersPageClient({
                 <div className="flex items-center justify-between">
                   <div className="flex min-w-0 items-center gap-3">
                     {renderTeacherAvatar(teacher)}
-                    <p className="truncate text-sm font-medium">{teacher.name}</p>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{teacher.name}</p>
+                      <p className="truncate text-xs text-muted">{teacher.role === "BURSAR" ? "Bursar" : "Teacher"}</p>
+                    </div>
                   </div>
                   <div className="flex-shrink-0 text-right ml-2">
                     <p className="text-xs text-muted">
@@ -396,6 +409,8 @@ export default function TeachersPageClient({
           )}
         </div>
       </div>
+      </div>
+      </main>
 
       {isOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
@@ -405,7 +420,7 @@ export default function TeachersPageClient({
           `}</style>
 
           <div
-            className="w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
+            className="w-full max-w-2xl overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
             style={{ animation: `teachers_modal_enter 320ms cubic-bezier(.2,.9,.2,1)` }}
           >
             <div className="border-b border-border/70 bg-brand/10 px-6 py-5">
@@ -426,7 +441,7 @@ export default function TeachersPageClient({
                     playCloseTone();
                     setIsOpen(false);
                   }}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-foreground transition-colors hover:bg-surface focus:outline-none focus:ring-2 focus:ring-brand/30"
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background text-foreground transition-colors hover:bg-surface focus:outline-none focus:ring-2 focus:ring-brand/30"
                   aria-label="Close add staff modal"
                 >
                   <X className="h-4 w-4" />
@@ -511,16 +526,15 @@ export default function TeachersPageClient({
                     throw new Error('Unexpected response from server when creating staff.');
                   }
 
-                  if (role === 'TEACHER') {
-                    setTeacherList((current) => [
-                      ...current,
-                      normalizeTeacher({
-                        ...createdTeacher,
-                        teacherClasses: assignedTeacherClasses,
-                        teacherSubjects: assignedTeacherSubjects,
-                      }),
-                    ]);
-                  }
+                  setTeacherList((current) => [
+                    ...current,
+                    normalizeTeacher({
+                      ...createdTeacher,
+                      role,
+                      teacherClasses: assignedTeacherClasses,
+                      teacherSubjects: assignedTeacherSubjects,
+                    }),
+                  ]);
 
                   setIsOpen(false);
                   setErrorMessage(null);
@@ -651,13 +665,13 @@ export default function TeachersPageClient({
           `}</style>
 
           <div
-            className="w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
+            className="w-full max-w-2xl overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
             style={{ animation: `teachers_modal_enter 320ms cubic-bezier(.2,.9,.2,1)` }}
           >
             <div className="border-b border-border/70 bg-brand/10 px-6 py-5">
               <div className="mb-0 flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-semibold text-foreground">Edit staff</h2>
+                  <h2 className="text-xl font-semibold text-foreground">Edit {selectedTeacher.role === "BURSAR" ? "bursar" : "teacher"}</h2>
                   <p className="mt-2 text-sm text-muted">
                     Update staff information and assign classes and subjects.
                   </p>
@@ -666,7 +680,7 @@ export default function TeachersPageClient({
                   <button
                     type="button"
                     onClick={() => openDeleteModal(selectedTeacher)}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-foreground transition-colors hover:bg-surface focus:outline-none focus:ring-2 focus:ring-brand/30"
+                    className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background text-foreground transition-colors hover:bg-surface focus:outline-none focus:ring-2 focus:ring-brand/30"
                     aria-label="Delete staff member"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -677,7 +691,7 @@ export default function TeachersPageClient({
                       playCloseTone();
                       setSelectedTeacher(null);
                     }}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-foreground transition-colors hover:bg-surface focus:outline-none focus:ring-2 focus:ring-brand/30"
+                    className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background text-foreground transition-colors hover:bg-surface focus:outline-none focus:ring-2 focus:ring-brand/30"
                     aria-label="Close modal"
                   >
                     <X className="h-4 w-4" />
@@ -792,7 +806,7 @@ export default function TeachersPageClient({
                 />
               </label>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              {selectedTeacher.role !== "BURSAR" && <div className="grid gap-4 sm:grid-cols-2">
                 <fieldset className="text-sm font-medium">
                   <legend>Assign classes</legend>
                   <div className="mt-1 max-h-32 space-y-2 overflow-y-auto rounded-lg border border-border bg-background p-3">
@@ -827,10 +841,10 @@ export default function TeachersPageClient({
                     ))}
                   </div>
                 </fieldset>
-              </div>
+              </div>}
 
               <div className="flex justify-end">
-                <Button type="submit">Save teacher</Button>
+                <Button type="submit">Save {selectedTeacher.role === "BURSAR" ? "bursar" : "teacher"}</Button>
               </div>
             </form>
           </div>
@@ -845,14 +859,14 @@ export default function TeachersPageClient({
           `}</style>
 
           <div
-            className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(220,38,38,0.16)]"
+            className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(220,38,38,0.16)]"
             style={{
               animation: `${deleteAnimateState === "enter" ? "teacher_delete_enter" : "teacher_delete_exit"} 320ms cubic-bezier(.2,.9,.2,1)`,
             }}
           >
             <div className="border-b border-border/70 bg-error/10 px-6 py-5">
               <div className="flex items-start gap-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-error/20 bg-error/10 shadow-sm">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-error/20 bg-error/10">
                   <AlertCircle className="h-6 w-6 text-error" />
                 </div>
                 <div>
@@ -866,7 +880,7 @@ export default function TeachersPageClient({
               <p className="text-sm leading-6 text-muted">
                 You are about to permanently delete <strong>“{deletingTeacherName}”</strong>.
               </p>
-              <div className="mt-4 rounded-lg border border-error/20 bg-error/10 p-3">
+              <div className="mt-4 border border-error/20 bg-error/10 p-3">
                 <p className="text-xs text-error">
                   <strong>Warning:</strong> This will remove the staff member from assigned classes and subjects.
                 </p>
@@ -878,7 +892,7 @@ export default function TeachersPageClient({
                 type="button"
                 onClick={closeDeleteModal}
                 disabled={isDeleting}
-                className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-surface disabled:opacity-50 text-foreground"
+                className="flex-1 rounded-md border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-surface disabled:opacity-50 text-foreground"
               >
                 Cancel
               </button>
@@ -886,7 +900,7 @@ export default function TeachersPageClient({
                 type="button"
                 onClick={handleDeleteTeacher}
                 disabled={isDeleting}
-                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-error px-4 py-2.5 text-sm font-medium text-white hover:bg-error/90 transition-colors disabled:opacity-50"
+                className="flex flex-1 items-center justify-center gap-2 rounded-md bg-error px-4 py-2.5 text-sm font-medium text-white hover:bg-error/90 transition-colors disabled:opacity-50"
               >
                 {isDeleting ? (
                   <>
@@ -925,7 +939,6 @@ export default function TeachersPageClient({
         type="success"
         confirmLabel="Okay"
       />
-      </div>
       <UserGuide guide={TEACHER_GUIDE} />
     </>
   );

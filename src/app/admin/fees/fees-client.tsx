@@ -38,6 +38,8 @@ import {
   SendHorizonal,
   ScrollText,
   CreditCard,
+  Eye,
+  Bell,
   X,
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/ui/icons";
@@ -732,20 +734,23 @@ export default function FeesPageClient({
       )}
 
       {/* Main Page */}
-      <div className="space-y-6">
+      <main className="min-h-screen pb-12">
+      <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
         {/* Header */}
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <div>
-            <div className="flex items-center gap-2 text-sm font-medium text-brand">
-              <CreditCard size={17} /> Fee management
+        <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-10 sm:px-8 sm:pb-8 sm:pt-12">
+          <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+          <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand">
+                <CreditCard className="h-4 w-4" /> Fee management
+              </div>
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                Fees & invoices
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
+                Manage student invoices and track fee payments by phase, term, and class.
+              </p>
             </div>
-            <h1 className="mt-2 text-3xl font-bold text-foreground">
-              Fees & Invoices
-            </h1>
-            <p className="mt-1 text-muted">
-              Manage student invoices and track fee payments by phase, term, and class
-            </p>
-          </div>
 
           <div className="ml-auto flex items-center gap-2">
             {whatsAppConnected !== null && (
@@ -765,11 +770,12 @@ export default function FeesPageClient({
               </div>
             )}
           </div>
-        </div>
+          </div>
+        </header>
 
         {/* Summary Cards */}
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="border border-border bg-surface p-5 transition-colors hover:bg-brand-light/40">
+          <div className="border border-border bg-surface p-5 transition-colors hover:border-brand/40 hover:bg-brand-light/20">
             <div className="mb-4 flex items-center gap-2 text-brand">
               <TrendingUp className="h-4 w-4 text-brand" />
               <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">
@@ -780,7 +786,7 @@ export default function FeesPageClient({
             <div className="mt-1 text-xs text-muted">{summaryStats.count} invoice{summaryStats.count !== 1 ? "s" : ""}</div>
           </div>
 
-          <div className="border border-border bg-surface p-5 transition-colors hover:bg-brand-light/40">
+          <div className="border border-border bg-surface p-5 transition-colors hover:border-brand/40 hover:bg-brand-light/20">
             <div className="mb-4 flex items-center gap-2 text-brand">
               <CheckCircle className="h-4 w-4 text-brand" />
               <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">
@@ -791,7 +797,7 @@ export default function FeesPageClient({
             <div className="mt-1 text-xs text-muted">{summaryStats.byStatus.PAID} fully paid</div>
           </div>
 
-          <div className="border border-border bg-surface p-5 transition-colors hover:bg-brand-light/40">
+          <div className="border border-border bg-surface p-5 transition-colors hover:border-brand/40 hover:bg-brand-light/20">
             <div className="mb-4 flex items-center gap-2 text-brand">
               <AlertCircle className="h-4 w-4 text-brand" />
               <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">
@@ -802,7 +808,7 @@ export default function FeesPageClient({
             <div className="mt-1 text-xs text-muted">{summaryStats.byStatus.OVERDUE} overdue</div>
           </div>
 
-          <div className="border border-border bg-surface p-5 transition-colors hover:bg-brand-light/40">
+          <div className="border border-border bg-surface p-5 transition-colors hover:border-brand/40 hover:bg-brand-light/20">
             <div className="mb-4 flex items-center gap-2 text-brand">
               <Clock className="h-4 w-4 text-brand" />
               <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">
@@ -817,7 +823,8 @@ export default function FeesPageClient({
         {/* Mobile Summary Cards hidden, using single grid layout above */}
 
         {/* Actions & Search Bar */}
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+        <section className="border border-border bg-surface p-3 sm:p-4">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           {/* Buttons - Right */}
           <div className="flex flex-wrap gap-2 items-center">
             {/* Animated Search Panel - slides out on same line */}
@@ -828,26 +835,28 @@ export default function FeesPageClient({
                 placeholder="Search by student name, invoice number, or class..."
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="w-full rounded-lg border-2 border-[#0A66C2] bg-background px-4 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
+                className="w-full rounded-md border border-brand bg-background px-4 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-brand/20"
               />
             </div>
             <Button
               type="button"
               variant="primary"
               onClick={() => setIsSearchOpen((open) => !open)}
-              className="inline-flex items-center gap-2 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
+              aria-label={isSearchOpen ? "Close search" : "Search invoices"}
+              title={isSearchOpen ? "Close search" : "Search invoices"}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-brand p-0 text-sm font-semibold text-white transition hover:bg-brand-hover sm:h-auto sm:w-auto sm:gap-2 sm:px-3 sm:py-2"
             >
               <Search className="h-4 w-4" />
-              {isSearchOpen ? "Close" : "Search"}
+              <span className="hidden sm:inline">{isSearchOpen ? "Close" : "Search"}</span>
             </Button>
-            <form onSubmit={handleIssueBillsSubmit} className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <div className="flex items-center gap-2 rounded-md border border-[#0A66C2] bg-background px-2.5 py-1.5 text-sm text-foreground shadow-sm w-full sm:w-auto">
+            <form onSubmit={handleIssueBillsSubmit} className="flex min-w-0 flex-1 flex-wrap items-center gap-2 sm:flex-none">
+              <div className="flex min-w-0 flex-1 items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1.5 text-sm text-foreground sm:flex-none">
                 <CalendarDays className="h-4 w-4 text-[#0A66C2]" />
-                <div className="flex items-center gap-2">
+                <div className="flex min-w-0 items-center gap-1.5">
                   <select
                     value={selectedAcademicYearId}
                     onChange={(e) => setSelectedAcademicYearId(e.target.value)}
-                    className="bg-transparent text-sm text-foreground outline-none w-full sm:w-auto"
+                    className="min-w-0 max-w-[8.5rem] bg-transparent text-xs text-foreground outline-none sm:text-sm"
                   >
                     <option value="">Session</option>
                     {academicYears.map((y) => (
@@ -861,7 +870,7 @@ export default function FeesPageClient({
                     value={selectedTermId}
                     onChange={(e) => setSelectedTermId(e.target.value)}
                     required
-                    className="bg-transparent text-sm text-foreground outline-none w-full sm:w-auto"
+                    className="min-w-0 max-w-[6.5rem] bg-transparent text-xs text-foreground outline-none sm:text-sm"
                   >
                     <option value="">Select term</option>
                     {filteredTerms.map((term: any) => (
@@ -876,12 +885,13 @@ export default function FeesPageClient({
                 type="submit"
                 disabled={issuingBills}
                 variant="primary"
-                className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
+                className="inline-flex items-center gap-2 rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
               >
                 <ReceiptText className="h-4 w-4" />
-                {issuingBills ? "Issuing..." : "Issue Bills"}
+                <span className="sm:hidden">{issuingBills ? "..." : "Issue"}</span>
+                <span className="hidden sm:inline">{issuingBills ? "Issuing..." : "Issue Bills"}</span>
               </Button>
-              <label className="flex items-center gap-2 text-xs text-muted sm:max-w-[220px]">
+              <label className="flex w-full items-center gap-2 text-[11px] text-muted sm:w-auto sm:max-w-[220px] sm:text-xs">
                 <input type="checkbox" checked={bulkApproval} onChange={(e) => setBulkApproval(e.target.checked)} />
                 Approve WhatsApp delivery to eligible guardians
               </label>
@@ -892,23 +902,27 @@ export default function FeesPageClient({
                 type="submit"
                 disabled={sendingReminders}
                 variant="primary"
-                className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
+                className="inline-flex items-center gap-2 rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
               >
                 <SendHorizonal className="h-4 w-4" />
-                {sendingReminders ? "Sending..." : "Send Reminders"}
+                <span className="sm:hidden">{sendingReminders ? "..." : "Remind"}</span>
+                <span className="hidden sm:inline">{sendingReminders ? "Sending..." : "Send Reminders"}</span>
               </Button>
             </form>
 
             <Button
               href={feeSchedulesHref}
               variant="primary"
-              className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
+              aria-label="Manage fee schedules"
+              title="Manage fee schedules"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-brand p-0 text-sm font-semibold text-white transition hover:bg-brand-hover sm:h-auto sm:w-auto sm:gap-2 sm:px-3 sm:py-2"
             >
               <ScrollText className="h-4 w-4" />
-              Fee Schedules
+              <span className="hidden sm:inline">Fee Schedules</span>
             </Button>
           </div>
         </div>
+        </section>
 
         {/* Filters */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -918,10 +932,10 @@ export default function FeesPageClient({
               <button
                 key={option.value}
                 onClick={() => handlePhaseChange(option.value)}
-                className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                className={`rounded-md border px-3 py-1 text-xs font-semibold transition ${
                   activePhase === option.value
-                    ? "bg-brand text-white"
-                    : "bg-background text-muted hover:bg-surface"
+                    ? "border-brand bg-brand text-white"
+                    : "border-border bg-background text-muted hover:border-brand/40 hover:bg-surface"
                 }`}
               >
                 {option.label}
@@ -934,10 +948,10 @@ export default function FeesPageClient({
               <button
                 key={status}
                 onClick={() => handleStatusChange(status)}
-                className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                className={`rounded-md border px-3 py-1 text-xs font-semibold transition ${
                   activeStatus === status
-                    ? "bg-brand text-white"
-                    : "bg-background text-muted hover:bg-surface"
+                    ? "border-brand bg-brand text-white"
+                    : "border-border bg-background text-muted hover:border-brand/40 hover:bg-surface"
                 }`}
               >
                 {STATUS_CONFIG[status as keyof typeof STATUS_CONFIG].label}
@@ -973,7 +987,7 @@ export default function FeesPageClient({
         {paginatedInvoices.length > 0 ? (
           <>
             {/* Desktop Table */}
-            <div className="hidden sm:block overflow-x-auto rounded-lg border border-border bg-surface mb-6">
+            <div className="hidden sm:block overflow-x-auto border border-border bg-surface mb-6">
               <table className="w-full text-left text-sm">
                 <thead className="border-b border-border bg-background text-muted">
                   <tr>
@@ -1014,27 +1028,35 @@ export default function FeesPageClient({
                         <td className="px-4 py-2 text-right font-semibold text-green-600">{formatStatMoney(inv.amountPaid)}</td>
                         <td className={`px-4 py-2 text-right font-semibold ${invoiceStatusClass(inv.status)}`}>{formatStatMoney(balance)}</td>
                         <td className="px-4 py-2"><Badge variant={inv.status === "PAID" ? "success" : inv.status === "OVERDUE" ? "error" : inv.status === "PART_PAID" ? "warning" : "secondary"}>{invoiceStatusLabel(inv.status)}</Badge></td>
-                        <td className="px-4 py-2 flex flex-wrap gap-1">
-                          <Link href={`${basePath}/${inv.id}`} className="rounded-full border border-[#0A66C2] bg-[#0A66C2] px-2 py-0.5 text-xs font-semibold text-white transition hover:bg-[#0A66C2]/90">View</Link>
+                        <td className="px-4 py-2">
+                          <div className="flex items-center gap-1">
+                          <Link href={`${basePath}/${inv.id}`} aria-label={`View invoice for ${pupilFullName}`} title="View invoice" className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-brand bg-brand text-white transition hover:bg-brand-hover">
+                            <Eye className="h-3.5 w-3.5" />
+                          </Link>
                           {balance > 0 ? (
                             <>
                               <button
                                 type="button"
                                 onClick={() => handleSendReminderForInvoice(inv)}
                                 disabled={sendingReminderInvoiceId === inv.id}
-                                className="rounded-full border border-[#0A66C2] bg-white px-2 py-0.5 text-xs font-semibold text-[#0A66C2] transition hover:bg-[#0A66C2]/5 disabled:cursor-not-allowed disabled:opacity-60"
+                                aria-label={`Send reminder for ${pupilFullName}`}
+                                title="Send reminder"
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-brand bg-white text-brand transition hover:bg-brand/5 disabled:cursor-not-allowed disabled:opacity-60"
                               >
-                                {sendingReminderInvoiceId === inv.id ? "Sending..." : "Remind"}
+                                <Bell className="h-3.5 w-3.5" />
                               </button>
                               <button
                                 type="button"
                                 onClick={() => selectInvoiceForPayment(inv)}
-                                className="rounded-full border border-[#0A66C2] bg-white px-2 py-0.5 text-xs font-semibold text-[#0A66C2] transition hover:bg-[#0A66C2]/5"
+                                aria-label={`Record payment for ${pupilFullName}`}
+                                title="Record payment"
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-brand bg-white text-brand transition hover:bg-brand/5"
                               >
-                                Pay
+                                <CreditCard className="h-3.5 w-3.5" />
                               </button>
                             </>
                           ) : null}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1056,7 +1078,7 @@ export default function FeesPageClient({
                 return (
                   <div
                     key={inv.id || `invoice-${idx}`}
-                    className="rounded-lg border border-border bg-surface px-3 py-2 hover:bg-background/50 transition-colors"
+                    className="border border-border bg-surface px-3 py-2 hover:bg-background/50 transition-colors"
                   >
                     <div className="flex items-center justify-between gap-3 mb-2">
                       <div className="min-w-0 flex-1">
@@ -1078,8 +1100,8 @@ export default function FeesPageClient({
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <Link href={`${basePath}/${inv.id}`} className="rounded-full border border-[#0A66C2] bg-[#0A66C2] px-1.5 py-0.5 text-xs font-semibold text-white transition hover:bg-[#0A66C2]/90">
-                        View
+                      <Link href={`${basePath}/${inv.id}`} aria-label={`View invoice for ${pupilFullName}`} title="View invoice" className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-brand bg-brand text-white transition hover:bg-brand-hover">
+                        <Eye className="h-3.5 w-3.5" />
                       </Link>
                       {balance > 0 ? (
                         <>
@@ -1087,16 +1109,20 @@ export default function FeesPageClient({
                             type="button"
                             onClick={() => handleSendReminderForInvoice(inv)}
                             disabled={sendingReminderInvoiceId === inv.id}
-                            className="rounded-full border border-[#0A66C2] bg-white px-1.5 py-0.5 text-xs font-semibold text-[#0A66C2] transition hover:bg-[#0A66C2]/5 disabled:cursor-not-allowed disabled:opacity-60"
+                            aria-label={`Send reminder for ${pupilFullName}`}
+                            title="Send reminder"
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-brand bg-white text-brand transition hover:bg-brand/5 disabled:cursor-not-allowed disabled:opacity-60"
                           >
-                            {sendingReminderInvoiceId === inv.id ? "Sending..." : "Remind"}
+                            <Bell className="h-3.5 w-3.5" />
                           </button>
                           <button
                             type="button"
                             onClick={() => selectInvoiceForPayment(inv)}
-                            className="rounded-full border border-[#0A66C2] bg-white px-1.5 py-0.5 text-xs font-semibold text-[#0A66C2] transition hover:bg-[#0A66C2]/5"
+                            aria-label={`Record payment for ${pupilFullName}`}
+                            title="Record payment"
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-brand bg-white text-brand transition hover:bg-brand/5"
                           >
-                            Pay
+                            <CreditCard className="h-3.5 w-3.5" />
                           </button>
                         </>
                       ) : null}
@@ -1109,13 +1135,14 @@ export default function FeesPageClient({
             <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
           </>
         ) : (
-          <div className="rounded-lg border border-border bg-surface px-4 py-8 text-center sm:px-6 sm:py-12">
+          <div className="border border-border bg-surface px-4 py-8 text-center sm:px-6 sm:py-12">
             <p className="text-sm text-muted">
               {searchQuery ? `No invoices found matching "${searchQuery}"` : "No invoices to display"}
             </p>
           </div>
         )}
       </div>
+      </main>
 
       <UserGuide guide={HELP_GUIDE} />
     </>

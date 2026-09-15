@@ -168,13 +168,13 @@ export default function TimetableSetupWizard({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]">
-        <header className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-6 py-5 sm:px-7">
+      <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]">
+        <header className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-4 py-4 sm:px-6 sm:py-5">
           <div>
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.12em] text-brand">
               <CalendarDays size={15} /> Timetable setup
             </div>
-            <h2 className="mt-2 text-2xl font-bold text-foreground">
+            <h2 className="mt-2 text-2xl font-semibold text-foreground">
               {step === 1
                 ? "Create your school board"
                 : "Add lessons to your board"}
@@ -198,7 +198,7 @@ export default function TimetableSetupWizard({
           <div
             className={`flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-semibold ${step === 1 ? "border-brand text-brand" : "border-transparent text-muted"}`}
           >
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand text-xs text-white">
+            <span className="flex h-6 w-6 items-center justify-center bg-brand text-xs text-white">
               1
             </span>{" "}
             Board details
@@ -207,7 +207,7 @@ export default function TimetableSetupWizard({
             className={`ml-6 flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-semibold ${step === 2 ? "border-brand text-brand" : "border-transparent text-muted"}`}
           >
             <span
-              className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${step === 2 ? "bg-brand text-white" : "bg-background text-muted"}`}
+              className={`flex h-6 w-6 items-center justify-center text-xs ${step === 2 ? "bg-brand text-white" : "bg-background text-muted"}`}
             >
               2
             </span>{" "}
@@ -268,7 +268,7 @@ export default function TimetableSetupWizard({
             </div>
             <form
               onSubmit={addLesson}
-              className="grid gap-4 rounded-lg border border-border bg-background p-4 sm:grid-cols-2 lg:grid-cols-3"
+              className="grid gap-4 border border-border bg-background p-4 sm:grid-cols-2 lg:grid-cols-3"
             >
               <Field label="Day and period">
                 <select
@@ -380,7 +380,7 @@ export default function TimetableSetupWizard({
                   You can continue adding lessons after closing
                 </span>
               </div>
-              <div className="mt-3 divide-y divide-border rounded-lg border border-border bg-surface">
+              <div className="mt-3 divide-y divide-border border border-border bg-surface">
                 {lessons.map((item, index) => {
                   const period = periods.find(
                     (entry) => entry.id === item.periodId,

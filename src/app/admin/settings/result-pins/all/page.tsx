@@ -205,32 +205,35 @@ export default function ResultPinsAllPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <main className="min-h-screen pb-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+      <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+      <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <Link href="/admin/settings/result-pins" className="inline-flex items-center gap-2 text-sm font-medium text-brand hover:text-brand/80">
-            <ArrowLeft className="h-4 w-4" />
             Back to registry
           </Link>
-          <h1 className="mt-3 text-3xl font-bold text-foreground">All Result PINs</h1>
-          <p className="mt-2 text-sm text-muted">Browse the full PIN registry from a dedicated page.</p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">All result PINs</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Browse the full PIN registry from a dedicated workspace.</p>
         </div>
         <button
           type="button"
           onClick={() => void loadPins()}
           disabled={loadingPins}
-          className="inline-flex items-center gap-2 rounded-lg border border-[#0A66C2] bg-[#0A66C2] px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0858a8] disabled:cursor-not-allowed disabled:opacity-70"
+          className="inline-flex items-center gap-2 rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-70"
         >
           <span className={`transition ${loadingPins ? "animate-spin" : ""}`}>↻</span>
           {loadingPins ? "Refreshing..." : "Refresh list"}
         </button>
       </div>
+      </header>
 
       {error ? (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>
       ) : null}
 
-      <div className="rounded-3xl border border-border bg-surface p-5 shadow-sm">
+      <div className="border border-border bg-surface p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="text-sm text-muted">{loadingPins ? "Loading records..." : `${filteredPins.length} PIN${filteredPins.length === 1 ? "" : "s"} shown`}</div>
           <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2">
@@ -345,49 +348,49 @@ export default function ResultPinsAllPage() {
       </div>
 
       {isModalOpen && selectedPin ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-6">
-          <div className="w-full max-w-lg rounded-3xl border border-border bg-surface p-6 shadow-2xl">
-            <div className="flex items-start justify-between gap-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4 py-6">
+          <div className="w-full max-w-lg overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]">
+            <div className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-4 py-4 sm:px-6 sm:py-5">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">PIN preview</p>
                 <h3 className="mt-2 text-xl font-semibold text-foreground">Result access sheet details</h3>
               </div>
-              <button type="button" onClick={() => { setSelectedPin(null); setIsModalOpen(false); }} className="rounded-full border border-border bg-background p-2 text-foreground hover:bg-muted/30">
+              <button type="button" onClick={() => { setSelectedPin(null); setIsModalOpen(false); }} className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background text-foreground hover:bg-muted/30">
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="mt-6 space-y-3 text-sm text-muted">
-              <div className="rounded-2xl border border-border bg-background p-4">
+            <div className="space-y-3 px-4 py-4 text-sm text-muted sm:px-6 sm:py-5">
+              <div className="border border-border bg-background p-4">
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-medium text-foreground">School code</span>
                   <span className="font-semibold text-foreground">{schoolMeta?.slug || schoolMeta?.initials || "school-code"}</span>
                 </div>
               </div>
-              <div className="rounded-2xl border border-border bg-background p-4">
+              <div className="border border-border bg-background p-4">
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-medium text-foreground">Student</span>
                   <span className="font-semibold text-foreground">{selectedPin.student ? `${selectedPin.student.firstName || ""} ${selectedPin.student.lastName || ""}`.trim() : "Unassigned"}</span>
                 </div>
               </div>
-              <div className="rounded-2xl border border-border bg-background p-4">
+              <div className="border border-border bg-background p-4">
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-medium text-foreground">Admission number</span>
                   <span className="font-semibold text-foreground">{selectedPin.student?.admissionNo || "—"}</span>
                 </div>
               </div>
-              <div className="rounded-2xl border border-border bg-background p-4">
+              <div className="border border-border bg-background p-4">
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-medium text-foreground">PIN</span>
                   <span className="font-semibold tracking-[0.3em] text-brand">{selectedPin.pinValue || "—"}</span>
                 </div>
               </div>
-              <div className="rounded-2xl border border-border bg-background p-4">
+              <div className="border border-border bg-background p-4">
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-medium text-foreground">Session</span>
                   <span className="font-semibold text-foreground">{selectedPin.term?.academicYear?.name || "—"}</span>
                 </div>
               </div>
-              <div className="rounded-2xl border border-border bg-background p-4">
+              <div className="border border-border bg-background p-4">
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-medium text-foreground">Term</span>
                   <span className="font-semibold text-foreground">{selectedPin.term?.name || "—"}</span>
@@ -407,5 +410,6 @@ export default function ResultPinsAllPage() {
         </div>
       ) : null}
     </div>
+    </main>
   );
 }

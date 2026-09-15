@@ -541,15 +541,17 @@ const subjectId = result.subjectRef?.id ?? null;
   );
 
   return (
-    <div className="mx-auto max-w-7xl px-3 py-4">
-      <Link href="/admin/results" className="text-sm font-medium text-brand hover:underline print:hidden">
-        ← Results
-      </Link>
-
-      <div className="mt-4 flex flex-wrap items-start justify-between gap-4 print:hidden">
+    <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+      <div className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-6 sm:px-8 sm:pb-8 sm:pt-8 print:hidden">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+        <Link href="/admin/results" className="relative text-sm font-medium text-brand hover:underline">
+          ← Results
+        </Link>
+      <div className="relative mt-4 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">{assessment.name}</h1>
-          <p className="text-muted">{assessment.term.name}</p>
+          <div className="text-xs font-bold uppercase tracking-[.16em] text-brand">Academic operations</div>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">{assessment.name}</h1>
+          <p className="mt-2 text-sm text-muted">{assessment.term.name}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {workflowState === 'LOCKED' && (
@@ -566,6 +568,7 @@ const subjectId = result.subjectRef?.id ?? null;
             {assessment.status}
           </Badge>
         </div>
+      </div>
       </div>
 
       {error && (
@@ -589,14 +592,14 @@ const subjectId = result.subjectRef?.id ?? null;
       )}
 
       {/* Tab Navigation */}
-      <div className="mt-6 border-b border-gray-200 print:hidden">
+      <div className="border-b border-border bg-surface print:hidden">
         <div className="flex gap-4 overflow-x-auto">
           <button
             onClick={() => setActiveTab("overview")}
             className={`px-4 py-3 font-medium text-sm border-b-2 transition ${
               activeTab === "overview"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-600 hover:text-gray-900"
+                ? "border-brand text-brand"
+                : "border-transparent text-muted hover:text-foreground"
             }`}
           >
             Overview
@@ -605,8 +608,8 @@ const subjectId = result.subjectRef?.id ?? null;
             onClick={() => setActiveTab("scores")}
             className={`px-4 py-3 font-medium text-sm border-b-2 transition ${
               activeTab === "scores"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-600 hover:text-gray-900"
+                ? "border-brand text-brand"
+                : "border-transparent text-muted hover:text-foreground"
             }`}
           >
             Scores
@@ -615,8 +618,8 @@ const subjectId = result.subjectRef?.id ?? null;
             onClick={() => setActiveTab("statistics")}
             className={`px-4 py-3 font-medium text-sm border-b-2 transition ${
               activeTab === "statistics"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-600 hover:text-gray-900"
+                ? "border-brand text-brand"
+                : "border-transparent text-muted hover:text-foreground"
             }`}
           >
             Statistics
@@ -625,8 +628,8 @@ const subjectId = result.subjectRef?.id ?? null;
             onClick={() => setActiveTab("audit")}
             className={`px-4 py-3 font-medium text-sm border-b-2 transition ${
               activeTab === "audit"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-600 hover:text-gray-900"
+                ? "border-brand text-brand"
+                : "border-transparent text-muted hover:text-foreground"
             }`}
           >
             Audit Trail
@@ -635,8 +638,8 @@ const subjectId = result.subjectRef?.id ?? null;
             onClick={() => setActiveTab("reports")}
             className={`px-4 py-3 font-medium text-sm border-b-2 transition ${
               activeTab === "reports"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-600 hover:text-gray-900"
+                ? "border-brand text-brand"
+                : "border-transparent text-muted hover:text-foreground"
             }`}
           >
             Reports

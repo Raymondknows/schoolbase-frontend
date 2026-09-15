@@ -104,11 +104,22 @@ export default function Sidebar({
   const pathname = usePathname();
   const schoolLogo = school?.logoUrl ? resolveSchoolAssetUrl(school.logoUrl) : null;
   const schoolName = school?.name || "SchoolBase";
+  const portalName = logoHref.startsWith("/parent")
+    ? "Parent portal"
+    : logoHref.startsWith("/accounting")
+      ? "Finance workspace"
+      : logoHref.startsWith("/teacher")
+        ? "Teacher workspace"
+        : logoHref.startsWith("/schoolbase-admin")
+          ? "Platform admin"
+          : "School admin";
+  const schoolContext = [session?.name ?? "Staff", school?.city ?? school?.country].filter(Boolean).join(" · ");
   const normalizedProgress = typeof setupProgress === "number" ? Math.max(0, Math.min(100, setupProgress)) : 0;
   const progressCircumference = 2 * Math.PI * 10;
   const navItemsWithSectionVisibility = navItems.map((item, index) => ({
     ...item,
-    showSection: Boolean(item.section && (index === 0 || navItems[index - 1].section !== item.section)),
+    sectionLabel: item.section || (index === 0 ? portalName : undefined),
+    showSection: Boolean((item.section || index === 0) && (index === 0 || navItems[index - 1].section !== item.section)),
   }));
 
   const handleNavClick = () => {
@@ -118,44 +129,46 @@ export default function Sidebar({
   };
 
   return (
-    <aside className={`w-56 h-screen flex flex-col border-r border-border bg-surface overflow-hidden print:hidden ${
+    <aside className={`flex h-screen w-64 flex-col border-r border-border bg-surface overflow-hidden print:hidden ${
       isMobile ? "" : "hidden md:flex"
     }`}>
       <div className="border-b border-border px-4 py-4 flex-shrink-0">
-        <Link href={logoHref} className="flex items-center gap-2.5 rounded-lg px-1 py-1 hover:bg-accent/40 transition-colors">
+        <Link href={logoHref} className="group flex items-center gap-3 px-1 py-1 transition-colors">
           {schoolLogo ? (
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-white shadow-sm">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-white shadow-sm">
               <img src={schoolLogo} alt={schoolName} className="h-full w-full object-contain p-1" />
             </div>
           ) : (
             <AppLogo size="md" showText={false} href={null} />
           )}
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-foreground">{schoolName}</p>
-            <p className="truncate text-xs text-muted">{session?.name ?? "Staff"} · {school?.city ?? school?.country}</p>
+            <p className="text-[10px] font-bold uppercase tracking-[.16em] text-brand">{portalName}</p>
+            <p className="mt-1 truncate text-sm font-semibold text-foreground group-hover:text-brand">{schoolName}</p>
+            <p className="mt-0.5 truncate text-[11px] text-muted">{schoolContext || "Workspace"}</p>
           </div>
         </Link>
       </div>
 
-      <nav className="flex-1 space-y-2 p-2 overflow-y-auto">
-        {navItemsWithSectionVisibility.map(({ href, label, icon, section, showSection }) => {
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+        {navItemsWithSectionVisibility.map(({ href, label, icon, sectionLabel, showSection }) => {
           const isActive = pathname === href || pathname.startsWith(`${href}/`);
           const IconComponent = typeof icon === "string" ? icons[icon] : icon;
 
           return (
             <div key={href}>
               {showSection ? (
-                <div className="px-3 pb-2 pt-3 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
-                  {section}
+                <div className="px-2 pb-2 pt-4 text-[10px] font-bold uppercase tracking-[.18em] text-muted first:pt-0">
+                  {sectionLabel}
                 </div>
               ) : null}
               <Link
                 href={href}
                 onClick={handleNavClick}
-                className={`flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
+                aria-current={isActive ? "page" : undefined}
+                className={`group relative flex cursor-pointer items-center gap-3 border-l-2 px-3 py-2.5 text-sm font-medium transition-colors ${
                   isActive
-                    ? "bg-brand/10 text-brand"
-                    : "text-muted hover:bg-brand-light hover:text-brand"
+                    ? "border-brand bg-brand/10 text-brand"
+                    : "border-transparent text-muted hover:border-brand/30 hover:bg-brand-light hover:text-brand"
                 }`}
               >
                 {href === "/admin/getting-started" ? (
@@ -181,19 +194,18 @@ export default function Sidebar({
                     )}
                   </div>
                 ) : IconComponent ? createElement(IconComponent, { className: "h-4 w-4" }) : null}
-                {label}
-                {href === "/admin/timetable" ? (
-                  <span className="ml-auto rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
-                    New
-                  </span>
-                ) : null}
+                <span className="min-w-0 flex-1 truncate">{label}</span>
               </Link>
             </div>
           );
         })}
       </nav>
 
-      <div className="border-t border-border px-3 py-3 space-y-2 flex-shrink-0">
+      <div className="border-t border-border bg-background px-3 py-3 flex-shrink-0">
+        <div className="mb-2 flex items-center gap-2 px-2 text-[10px] font-bold uppercase tracking-[.16em] text-muted">
+          <span className="h-1.5 w-1.5 bg-emerald-500" />
+          {portalName}
+        </div>
         <LogoutButton redirectUrl={logoutRedirectUrl} />
       </div>
     </aside>

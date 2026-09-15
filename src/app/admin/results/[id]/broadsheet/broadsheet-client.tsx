@@ -221,7 +221,7 @@ export default function BroadsheetClient({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
       <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
         <div className="flex gap-3">
           <label className="text-sm font-medium text-foreground">Class:</label>
@@ -258,11 +258,11 @@ export default function BroadsheetClient({
         </div>
       </div>
 
-      <div className="rounded-lg border border-border overflow-hidden bg-white">
+      <div className="overflow-hidden border border-border bg-surface">
         {/* Desktop Table */}
         <div className="hidden sm:block overflow-x-auto">
           <table className="min-w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs uppercase tracking-[0.18em] text-muted">
+            <thead className="bg-background text-left text-xs uppercase tracking-[0.18em] text-muted">
               <tr>
                 <th className="px-4 py-3 sticky left-0 bg-slate-50 z-10 w-12">#</th>
                 <th className="px-4 py-3 sticky left-12 bg-slate-50 z-10 min-w-[150px]">Name</th>

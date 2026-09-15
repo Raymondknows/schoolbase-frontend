@@ -258,11 +258,12 @@ export default function GettingStartedPage() {
 
   if (!loading && !showFullExperience) {
     return (
-      <div className="space-y-6">
-        <div className="rounded-[28px] border border-brand/20 bg-gradient-to-br from-brand/15 via-background to-brand/5 p-6 shadow-[0_20px_50px_-24px_rgba(0,0,0,0.28)]">
+      <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+        <div className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+          <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-3">
-              <div className="inline-flex w-fit items-center gap-2 rounded-full border border-brand/20 bg-background/80 px-3 py-1 text-sm font-semibold uppercase tracking-[0.2em] text-brand">
+              <div className="inline-flex w-fit items-center gap-2 border border-brand/20 bg-brand/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-brand">
                 <Sparkles className="h-4 w-4" />
                 Setup complete
               </div>
@@ -281,31 +282,31 @@ export default function GettingStartedPage() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <div className="rounded-3xl border border-border bg-surface p-5 shadow-sm">
+          <div className="border border-border bg-surface p-5">
             <h2 className="text-lg font-semibold text-foreground">What’s next?</h2>
             <p className="mt-2 text-sm text-muted">Your school is fully set up for the basics. You can continue managing students, fees, results and communications from the main admin pages.</p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <Link href="/admin" className="rounded-full bg-brand px-3 py-2 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand/90">
+              <Link href="/admin" className="bg-brand px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover">
                 Go to dashboard
               </Link>
               <button
                 type="button"
                 onClick={() => setShowTasksModal(true)}
-                className="rounded-full border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground transition-all duration-300 hover:border-brand/30 hover:bg-brand/5"
+                className="border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground transition hover:border-brand/30 hover:bg-brand/5"
               >
                 Open next tasks
               </button>
             </div>
           </div>
 
-          <div className="rounded-3xl border border-border bg-surface p-5 shadow-sm">
+          <div className="border border-border bg-surface p-5">
             <h2 className="text-lg font-semibold text-foreground">Helpful shortcuts</h2>
             <div className="mt-4 space-y-3">
-              <Link href="/admin/settings" className="flex items-center justify-between rounded-2xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-brand/30 hover:bg-brand/5">
+              <Link href="/admin/settings" className="flex items-center justify-between border border-border bg-background px-4 py-3 text-sm font-medium text-foreground transition hover:border-brand/30 hover:bg-brand/5">
                 <span>Review school settings</span>
                 <ArrowRight className="h-4 w-4 text-muted" />
               </Link>
-              <Link href="/admin/teachers" className="flex items-center justify-between rounded-2xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-brand/30 hover:bg-brand/5">
+              <Link href="/admin/teachers" className="flex items-center justify-between border border-border bg-background px-4 py-3 text-sm font-medium text-foreground transition hover:border-brand/30 hover:bg-brand/5">
                 <span>Manage staff</span>
                 <ArrowRight className="h-4 w-4 text-muted" />
               </Link>
@@ -315,8 +316,8 @@ export default function GettingStartedPage() {
 
         {showTasksModal ? (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="w-full max-w-lg rounded-3xl border border-border bg-surface p-5 shadow-2xl">
-              <div className="flex items-start justify-between gap-3">
+            <div className="w-full max-w-lg overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]">
+              <div className="flex items-start justify-between gap-3 border-b border-border/70 bg-brand/10 px-4 py-4 sm:px-6 sm:py-5">
                 <div>
                   <h2 className="text-lg font-semibold text-foreground">Next tasks</h2>
                   <p className="mt-1 text-sm text-muted">Choose a follow-up action without reopening the full setup flow.</p>
@@ -324,21 +325,21 @@ export default function GettingStartedPage() {
                 <button
                   type="button"
                   onClick={() => setShowTasksModal(false)}
-                  className="rounded-full border border-border bg-background p-2 text-muted transition-colors hover:text-foreground"
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted transition-colors hover:bg-background hover:text-foreground"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
 
-              <div className="mt-5 space-y-3">
-                <Link href="/admin/results" onClick={() => setShowTasksModal(false)} className="flex items-center justify-between rounded-2xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-brand/30 hover:bg-brand/5">
+              <div className="space-y-3 px-4 py-4 sm:px-6 sm:py-5">
+                <Link href="/admin/results" onClick={() => setShowTasksModal(false)} className="flex items-center justify-between rounded-md border border-border bg-background px-4 py-3 text-sm font-medium text-foreground transition hover:border-brand/30 hover:bg-brand/5">
                   <span>
                     <span className="block">Publish results</span>
                     <span className="mt-0.5 block text-xs font-normal text-muted">Create your first assessment and share it with the school community.</span>
                   </span>
                   <ArrowRight className="h-4 w-4 text-muted" />
                 </Link>
-                <Link href="/admin/website" onClick={() => setShowTasksModal(false)} className="flex items-center justify-between rounded-2xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-brand/30 hover:bg-brand/5">
+                <Link href="/admin/website" onClick={() => setShowTasksModal(false)} className="flex items-center justify-between rounded-md border border-border bg-background px-4 py-3 text-sm font-medium text-foreground transition hover:border-brand/30 hover:bg-brand/5">
                   <span>
                     <span className="block">Send announcements</span>
                     <span className="mt-0.5 block text-xs font-normal text-muted">Inform staff, parents and students about the latest school updates.</span>
@@ -354,13 +355,13 @@ export default function GettingStartedPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="overflow-hidden rounded-[32px] border border-border/80 bg-surface shadow-[0_24px_70px_-40px_rgba(15,23,42,0.35)]">
+    <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+    <div className="overflow-hidden border border-border bg-surface">
         <div className="grid gap-0 xl:grid-cols-[1.05fr_0.95fr]">
-          <div className="border-b border-border/70 bg-gradient-to-br from-brand/20 via-background to-brand/5 p-6 sm:p-8 xl:border-b-0 xl:border-r">
+          <div className="border-b border-border/70 bg-brand-light/20 p-6 sm:p-8 xl:border-b-0 xl:border-r">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-4">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-brand">
+                  <div className="inline-flex items-center gap-2 border border-brand/20 bg-brand/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-brand">
                     <Sparkles className="h-3.5 w-3.5" />
                     Setup your workspace
                   </div>
@@ -375,31 +376,31 @@ export default function GettingStartedPage() {
                   <div className="flex flex-wrap gap-3">
                     <Link
                       href={nextStep?.href || "/admin/settings"}
-                      className="inline-flex items-center justify-center gap-2 rounded-full bg-brand px-4 py-2.5 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand/90"
+                      className="inline-flex items-center justify-center gap-2 bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"
                     >
                       <Zap className="h-4 w-4" />
                       Continue
                     </Link>
                     <Link
                       href="/admin/settings"
-                      className="inline-flex items-center justify-center rounded-full border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition-all duration-300 hover:border-brand/30 hover:bg-brand/5"
+                      className="inline-flex items-center justify-center border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:border-brand/30 hover:bg-brand/5"
                     >
                       Open settings
                     </Link>
                   </div>
                 </div>
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[22px] border border-brand/20 bg-brand/10 shadow-sm">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center border border-brand/20 bg-brand/10">
                   <Sparkles className="h-8 w-8 text-brand" />
                 </div>
               </div>
 
-              <div className="mt-6 rounded-[24px] border border-brand/20 bg-gradient-to-br from-brand/10 via-background to-brand/5 p-5 shadow-inner">
+              <div className="mt-6 border border-brand/20 bg-background p-5">
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium text-foreground">Workspace progress</span>
                   <span className="font-semibold text-brand">{progressPercent}%</span>
                 </div>
-                <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-border">
-                  <div className="h-full rounded-full bg-brand transition-all duration-500" style={{ width: `${progressPercent}%` }} />
+                <div className="mt-3 h-2.5 w-full overflow-hidden bg-border">
+                  <div className="h-full bg-brand transition-all duration-500" style={{ width: `${progressPercent}%` }} />
                 </div>
                 <div className="mt-4 flex items-center justify-between text-sm text-muted">
                   <span>{completedCount} completed</span>
@@ -409,7 +410,7 @@ export default function GettingStartedPage() {
           </div>
 
           <div className="p-6 sm:p-8">
-            <div className="rounded-[24px] border border-border bg-background p-5 shadow-sm">
+            <div className="border border-border bg-background p-5">
               <div className="flex items-center gap-2 text-sm font-semibold text-brand">
                 <Compass className="h-4 w-4" />
                 Next step
@@ -418,7 +419,7 @@ export default function GettingStartedPage() {
               <p className="mt-2 text-sm leading-6 text-muted">{nextStep?.description || "Get everything ready for your first active school month."}</p>
               <Link
                 href={nextStep?.href || "/admin/settings"}
-                className="mt-4 inline-flex items-center gap-2 rounded-full bg-brand/10 px-3.5 py-2 text-sm font-semibold text-brand transition-all duration-300 hover:bg-brand/20"
+                className="mt-4 inline-flex items-center gap-2 border border-brand/20 bg-brand/10 px-3.5 py-2 text-sm font-semibold text-brand transition hover:bg-brand/20"
               >
                 Open now
                 <ArrowRight className="h-4 w-4" />
@@ -434,7 +435,7 @@ export default function GettingStartedPage() {
                 <Link
                   key={item.title}
                   href={item.href}
-                  className="rounded-[20px] border border-border bg-background px-4 py-3 text-sm font-medium text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-brand/30 hover:bg-brand/5"
+                  className="rounded-md border border-border bg-background px-4 py-3 text-sm font-medium text-foreground transition hover:border-brand/30 hover:bg-brand/5"
                 >
                   <span className="block">{item.title}</span>
                   <span className="mt-1 block text-xs font-normal text-muted">{item.description}</span>
@@ -445,13 +446,13 @@ export default function GettingStartedPage() {
         </div>
       </div>
 
-      <div className="rounded-[28px] border border-border/80 bg-surface p-4 shadow-sm sm:p-6">
+      <section className="border border-border bg-surface p-4 sm:p-6">
         <div className="mb-5 flex items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-foreground">Setup checklist</h2>
             <p className="text-sm text-muted">Each step is arranged to move the school from configuration to everyday use.</p>
           </div>
-          <div className="rounded-full border border-border bg-background px-3 py-1.5 text-sm font-semibold text-muted">
+          <div className="border border-border bg-background px-3 py-1.5 text-sm font-semibold text-muted">
             {completedCount}/{steps.length}
           </div>
         </div>
@@ -459,13 +460,13 @@ export default function GettingStartedPage() {
         {loading ? (
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="h-16 animate-pulse rounded-2xl bg-background" />
+              <div key={index} className="h-16 animate-pulse bg-background" />
             ))}
           </div>
         ) : (
           <div>
             {steps.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-border bg-background/70 p-4 text-sm text-muted">
+              <div className="border border-dashed border-border bg-background/70 p-4 text-sm text-muted">
                 Everything is in place. You can keep working from the main admin pages.
               </div>
             ) : (
@@ -478,7 +479,7 @@ export default function GettingStartedPage() {
                     <li key={step.title}>
                       <Link
                         href={step.href}
-                        className={`group flex flex-col gap-3 rounded-[18px] border px-4 py-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-sm sm:flex-row sm:items-center ${
+                        className={`group flex flex-col gap-3 border px-4 py-3 transition hover:border-brand/30 hover:shadow-sm sm:flex-row sm:items-center ${
                           step.complete
                             ? "border-border/70 bg-background/70"
                             : isNext
@@ -486,20 +487,20 @@ export default function GettingStartedPage() {
                               : "border-border bg-background"
                         }`}
                       >
-                        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${step.complete ? "bg-emerald-500/10 text-emerald-600" : isNext ? "bg-brand text-white" : "bg-brand/10 text-brand"}`}>
+                        <div className={`flex h-9 w-9 shrink-0 items-center justify-center ${step.complete ? "bg-emerald-500/10 text-emerald-600" : isNext ? "bg-brand text-white" : "bg-brand/10 text-brand"}`}>
                           <Icon className="h-4.5 w-4.5" />
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
                             <h3 className="text-sm font-semibold text-foreground">{step.title}</h3>
-                            <span className="rounded-full bg-background/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">
+                            <span className="border border-border bg-background/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">
                               {step.hint}
                             </span>
                           </div>
                           <p className="mt-1 text-sm leading-6 text-muted">{step.description}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] ${step.complete ? "bg-emerald-50 text-emerald-700" : "bg-background text-muted"}`}>
+                          <span className={`border border-border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] ${step.complete ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "bg-background text-muted"}`}>
                             {step.complete ? "Done" : isNext ? "Next" : "Open"}
                           </span>
                           <ArrowRight className="h-4 w-4 shrink-0 text-muted transition-transform duration-300 group-hover:translate-x-1" />
@@ -512,7 +513,7 @@ export default function GettingStartedPage() {
             )}
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }

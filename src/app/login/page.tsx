@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, LockKeyhole, ShieldCheck } from "lucide-react";
 import { AppLogo } from "@/components/app-logo";
 import { LoginForm } from "@/components/auth/login-form";
 import { getStaffSession, getPlatformAdminSession } from "@/lib/auth";
@@ -20,18 +20,36 @@ export default async function LoginPage({
   const { next, signup, reset } = await searchParams;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md rounded-2xl border border-border bg-surface/80 backdrop-blur-sm p-8 shadow-lg">
-        <div className="mb-8 flex justify-center">
-          <AppLogo href="/" size="lg" showSpinner />
-        </div>
+    <main className="min-h-screen bg-background px-4 py-6 sm:px-8 sm:py-10">
+      <div className="mx-auto grid min-h-[calc(100vh-3rem)] max-w-6xl overflow-hidden border border-border bg-surface lg:grid-cols-[minmax(0,.9fr)_minmax(420px,.75fr)]">
+        <section className="relative hidden overflow-hidden border-r border-border bg-brand/5 p-10 lg:flex lg:flex-col lg:justify-between">
+          <div className="absolute right-0 top-0 h-2/3 w-2/3 bg-brand-light/50 [clip-path:polygon(35%_0,100%_0,100%_100%,0_60%)]" />
+          <div className="relative">
+            <AppLogo href="/" size="lg" />
+            <p className="mt-16 text-xs font-bold uppercase tracking-[.18em] text-brand">School operations platform</p>
+            <h2 className="mt-4 max-w-md text-4xl font-semibold tracking-tight text-foreground">Run your school with clarity.</h2>
+            <p className="mt-4 max-w-md text-sm leading-7 text-muted">One secure workspace for people, learning, finance, communication, and the daily work that keeps your school moving.</p>
+          </div>
+          <div className="relative grid gap-3 text-sm text-muted">
+            <div className="flex items-center gap-3 border border-border bg-surface px-4 py-3"><ShieldCheck className="h-4 w-4 text-brand" /> Secure role-based access</div>
+            <div className="flex items-center gap-3 border border-border bg-surface px-4 py-3"><LockKeyhole className="h-4 w-4 text-brand" /> Protected school data</div>
+          </div>
+        </section>
 
-        <h1 className="text-center text-2xl font-bold text-foreground">
+        <section className="flex items-center justify-center p-6 sm:p-10">
+          <div className="w-full max-w-md">
+            <div className="mb-8 flex justify-center lg:hidden">
+              <AppLogo href="/" size="lg" />
+            </div>
+
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[.16em] text-brand">Workspace access</p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
           Sign in to SchoolBase
-        </h1>
+          </h1>
 
         {reset === "success" ? (
-          <div className="mt-4 rounded-3xl border border-green-200 bg-green-50 p-5 text-green-900 shadow-sm">
+          <div className="mt-4 border border-green-200 bg-green-50 p-5 text-green-900">
             <div className="flex items-start gap-3">
               <CheckCircle2 className="mt-1 h-5 w-5 text-green-700" />
               <div>
@@ -43,7 +61,7 @@ export default async function LoginPage({
             </div>
           </div>
         ) : signup === "success" ? (
-          <div className="mt-4 rounded-3xl border border-green-200 bg-green-50 p-5 text-green-900 shadow-sm">
+          <div className="mt-4 border border-green-200 bg-green-50 p-5 text-green-900">
             <div className="flex items-start gap-3">
               <CheckCircle2 className="mt-1 h-5 w-5 text-green-700" />
               <div>
@@ -56,21 +74,24 @@ export default async function LoginPage({
           </div>
         ) : null}
 
-        <p className="mt-2 text-center text-sm text-muted">
+        <p className="mt-2 text-sm text-muted">
           Sign in to manage your school.
         </p>
 
         {/* Form automatically routes based on user role */}
         <LoginForm redirectTo="/admin" />
 
-        <div className="mt-4 space-y-2 text-center text-sm">
+        <div className="mt-6 border-t border-border pt-5 text-center text-sm">
           <p>
             <a href="/parent/login" className="text-brand hover:underline">
               Parent sign in →
             </a>
           </p>
         </div>
+          </div>
+          </div>
+        </section>
       </div>
-    </div>
+    </main>
   );
 }

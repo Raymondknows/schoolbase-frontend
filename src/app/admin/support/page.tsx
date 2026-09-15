@@ -154,11 +154,13 @@ export default function SupportPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <main className="min-h-screen pb-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
       <SupportRequestsClient initialRequests={requests} />
 
       {/* Help & Guide */}
       <UserGuide guide={HELP_GUIDE} />
     </div>
+    </main>
   );
 }

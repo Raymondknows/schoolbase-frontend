@@ -8,7 +8,7 @@ import { getBackendUrl } from "@/lib/backend-url";
 import { useState, useEffect, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, ChevronDown, Loader2, Upload, X } from "lucide-react";
+import { AlertCircle, ChevronDown, Loader2, Upload, X, UserPlus } from "lucide-react";
 import { WhatsAppIcon } from "@/components/ui/icons";
 
 export default function NewStudentClient() {
@@ -244,13 +244,16 @@ export default function NewStudentClient() {
   `;
 
   return (
-    <div className="mx-auto max-w-[1400px] px-2 sm:px-4 md:px-6 pb-16 pt-0">
+    <main className="min-h-screen pb-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
       <style>{whatsAppPulseStyle}</style>
-      <div className="hidden lg:block sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-sm py-1.5">
-        <div className="mx-auto flex max-w-[1400px] items-center gap-2 px-2 sm:px-0">
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-10 sm:px-8 sm:pb-8 sm:pt-12">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+        <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <div className="flex-1">
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Add Student</h1>
-            <p className="mt-0.5 text-sm text-muted max-w-2xl">Quickly register a student — all fields visible on a single page.</p>
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand"><UserPlus className="h-4 w-4" /> Student records</div>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Add student</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Register a student and connect the core academic, guardian, and medical records in one place.</p>
           </div>
 
           <div className="ml-auto flex items-center gap-3">
@@ -288,9 +291,9 @@ export default function NewStudentClient() {
             </Button>
           </div>
         </div>
-      </div>
+      </header>
 
-      <form id="new-student-form" onSubmit={handleSubmit} className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <form id="new-student-form" onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Error Alert */}
         {error && !errorModalOpen && (
           <div className="lg:col-span-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -300,7 +303,7 @@ export default function NewStudentClient() {
 
         {/* Left: photo card (sticky) */}
         <div className="lg:col-span-1">
-          <div className="rounded-xl border border-border bg-surface p-4 shadow-sm lg:sticky lg:top-28">
+          <div className="border border-border bg-surface p-4 lg:sticky lg:top-6">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold text-foreground">Profile photo</p>
@@ -311,11 +314,11 @@ export default function NewStudentClient() {
               </div>
             </div>
 
-            <div className="mt-4 rounded-2xl border border-dashed border-border/70 bg-surface/80 p-3 text-center">
+            <div className="mt-4 rounded-md border border-dashed border-border/70 bg-background p-3 text-center">
               {photoPreview ? (
-                <img src={photoPreview} alt="Selected student photo" className="mx-auto h-40 w-40 rounded-2xl object-cover" />
+                <img src={photoPreview} alt="Selected student photo" className="mx-auto h-40 w-40 rounded-md object-cover" />
               ) : (
-                <div className="flex h-40 items-center justify-center rounded-3xl bg-surface/80 text-muted">
+                <div className="flex h-40 items-center justify-center rounded-md bg-surface/80 text-muted">
                   <span className="text-sm">No photo selected</span>
                 </div>
               )}
@@ -336,7 +339,7 @@ export default function NewStudentClient() {
         {/* Right: main form fields */}
         <div className="lg:col-span-2">
           {/* Top row: Admission details */}
-          <div className="rounded-lg border border-border bg-surface p-3 mb-3">
+          <div className="border border-border bg-surface p-4 mb-3">
             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
               <label className="text-sm font-semibold text-foreground">
                 Admission number
@@ -371,7 +374,7 @@ export default function NewStudentClient() {
           </div>
 
           {/* Section 1: Student Information */}
-          <div className="rounded-lg border border-border bg-surface p-3 mb-3">
+          <div className="border border-border bg-surface p-4 mb-3">
             <h3 className="text-lg font-semibold text-foreground">Student information</h3>
             <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
               <label className="text-sm font-semibold text-foreground">
@@ -467,7 +470,7 @@ export default function NewStudentClient() {
           </div>
 
           {/* Section 3: Medical Information (collapsible) */}
-          <div className="rounded-lg border border-border bg-surface p-0 mb-3">
+          <div className="border border-border bg-surface p-0 mb-3">
             <button type="button" onClick={() => setMedicalOpen((v) => !v)} className="w-full flex items-center justify-between p-4 text-left hover:bg-surface/80 transition">
               <div className="flex items-center gap-3">
                 <ChevronDown className={`h-5 w-5 text-muted transition-transform ${medicalOpen ? 'rotate-180' : ''}`} />
@@ -501,7 +504,7 @@ export default function NewStudentClient() {
           </div>
 
           {/* Section 4: Previous School (collapsible) */}
-          <div className="rounded-lg border border-border bg-surface p-0 mb-3">
+          <div className="border border-border bg-surface p-0 mb-3">
             <button type="button" onClick={() => setPreviousOpen((v) => !v)} className="w-full flex items-center justify-between p-4 text-left hover:bg-surface/80 transition">
               <div className="flex items-center gap-3">
                 <ChevronDown className={`h-5 w-5 text-muted transition-transform ${previousOpen ? 'rotate-180' : ''}`} />
@@ -553,33 +556,33 @@ export default function NewStudentClient() {
           <style>{`
             @keyframes student_error_modal_enter { from { transform: translateX(36px) scale(.98); opacity: 0 } to { transform: translateX(0) scale(1); opacity: 1 } }
           `}</style>
-          <div className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]" style={{ animation: "student_error_modal_enter 320ms cubic-bezier(.2,.9,.2,1)" }}>
-            <div className="border-b border-border px-6 py-5" style={{ background: "linear-gradient(90deg, rgba(10,102,194,0.12), rgba(10,102,194,0.04))" }}>
+          <div className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]" style={{ animation: "student_error_modal_enter 320ms cubic-bezier(.2,.9,.2,1)" }}>
+            <div className="border-b border-border bg-brand/10 px-4 py-4 sm:px-6 sm:py-5">
               <div className="flex items-start gap-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/70 bg-[rgba(10,102,194,0.12)] shadow-sm">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md border border-brand/20 bg-brand/10">
                   <AlertCircle className="h-6 w-6 text-[#0A66C2]" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <h2 id="student-registration-error-title" className="text-lg font-semibold text-foreground">Unable to register student</h2>
                   <p className="mt-1 text-sm text-muted">Please review the details below.</p>
                 </div>
-                <button type="button" onClick={closeErrorModal} className="rounded-lg p-1 text-muted transition-colors hover:bg-surface/90 hover:text-foreground" aria-label="Close error modal">
+                <button type="button" onClick={closeErrorModal} className="rounded-md p-1 text-muted transition-colors hover:bg-surface/90 hover:text-foreground" aria-label="Close error modal">
                   <X className="h-5 w-5" />
                 </button>
               </div>
             </div>
 
-            <div className="px-6 py-5">
+            <div className="px-4 py-4 sm:px-6 sm:py-5">
               <p className="text-sm leading-6 text-muted">{error}</p>
               {error.toLowerCase().includes("limit") && (
-                <div className="mt-4 rounded-lg border border-border bg-surface/80 p-3">
+                <div className="mt-4 rounded-md border border-border bg-background p-3">
                   <p className="text-xs leading-5 text-muted">Your school has reached its student capacity. Upgrade your plan to register more students.</p>
                 </div>
               )}
             </div>
 
-            <div className="border-t border-border bg-surface/80 px-6 py-4">
-              <button type="button" onClick={closeErrorModal} className="w-full rounded-lg bg-[#0A66C2] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#084B8A]">
+            <div className="border-t border-border bg-surface/80 px-4 py-4 sm:px-6">
+              <button type="button" onClick={closeErrorModal} className="w-full rounded-md bg-brand px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-hover">
                 OK
               </button>
             </div>
@@ -587,6 +590,7 @@ export default function NewStudentClient() {
         </div>
       )}
     </div>
+    </main>
   );
 }
 

@@ -372,52 +372,54 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
   }, 0);
 
   return (
-    <div className="min-h-screen p-4 sm:p-8">
-      <div className="mx-auto max-w-4xl">
+    <main className="min-h-screen pb-12">
+      <div className="mx-auto max-w-7xl px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
         {/* Navigation */}
-        <div className="flex items-center justify-between mb-6 print:hidden">
-          <Link href={basePath} className="inline-flex items-center gap-2 text-sm font-medium hover:opacity-70 transition" style={{ color: BRAND_BLUE }}>
+        <div className="mb-4 flex items-center justify-between gap-3 print:hidden sm:mb-6">
+          <Link href={basePath} className="inline-flex items-center gap-2 text-sm font-semibold text-brand transition hover:text-brand-hover">
             <ChevronLeft size={16} />
             Back to Fees
           </Link>
           <div className="flex gap-2">
             <button
               onClick={handleDownloadPDF}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 hover:opacity-90"
-              style={{ backgroundColor: LIGHT_BLUE, color: BRAND_BLUE }}
+              aria-label="Download invoice"
+              title="Download invoice"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface text-brand transition hover:border-brand hover:bg-brand-light sm:h-auto sm:w-auto sm:gap-2 sm:px-3 sm:py-2"
             >
               <Download size={16} />
-              Download
+              <span className="hidden sm:inline">Download</span>
             </button>
             <button
               onClick={() => window.print()}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 hover:opacity-90"
-              style={{ backgroundColor: LIGHT_BLUE, color: BRAND_BLUE }}
+              aria-label="Print invoice"
+              title="Print invoice"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface text-brand transition hover:border-brand hover:bg-brand-light sm:h-auto sm:w-auto sm:gap-2 sm:px-3 sm:py-2"
             >
               <Printer size={16} />
-              Print
+              <span className="hidden sm:inline">Print</span>
             </button>
           </div>
         </div>
 
         {/* Invoice Content */}
-        <div className="invoice-sheet rounded-xl bg-white p-7 sm:p-8 print:p-5 print:bg-white">
+        <div className="invoice-sheet border border-border bg-surface p-5 sm:p-8 print:border-0 print:p-5 print:bg-white">
           <div className="flex flex-col gap-7 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <div className="flex items-center gap-3">
                 {school?.logoUrl ? (
-                  <img src={school.logoUrl} alt="School logo" className="h-12 w-12 rounded-full border border-gray-300 object-cover" />
+                  <img src={school.logoUrl} alt="School logo" className="h-12 w-12 rounded-md border border-border object-cover" />
                 ) : (
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full text-lg font-semibold text-gray-700">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-md bg-brand/10 text-lg font-semibold text-brand">
                     {school?.name?.charAt(0) || "S"}
                   </div>
                 )}
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.3em] text-gray-500">Invoice</p>
-                  <h1 className="mt-1 text-2xl font-semibold text-gray-900">{school?.name || "School Name"}</h1>
+                  <p className="text-[11px] font-bold uppercase tracking-[.16em] text-muted">Invoice</p>
+                  <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{school?.name || "School Name"}</h1>
                 </div>
               </div>
-              <div className="mt-4 space-y-1 text-sm text-gray-600">
+              <div className="mt-4 space-y-1 text-sm text-muted">
                 {school?.address && <p>{school.address}</p>}
                 {school?.email && <p>{school.email}</p>}
                 {school?.phone && <p>{school.phone}</p>}
@@ -425,9 +427,9 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
             </div>
 
             <div className="lg:text-right">
-              <div className="text-sm font-semibold uppercase tracking-[0.3em] text-gray-500">Invoice No.</div>
-              <div className="mt-2 text-xl font-semibold text-gray-900">{invoice.invoiceNo}</div>
-              <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-gray-700">
+              <div className="text-[11px] font-bold uppercase tracking-[.16em] text-muted">Invoice No.</div>
+              <div className="mt-2 text-xl font-semibold text-foreground">{invoice.invoiceNo}</div>
+              <div className={`mt-4 inline-flex items-center gap-2 border px-3 py-1 text-xs font-semibold uppercase tracking-wide ${isPaid ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-amber-200 bg-amber-50 text-amber-800"}`}>
                 {isPaid ? <Check size={14} /> : <AlertCircle size={14} />}
                 {isPaid ? "Paid" : isPartPaid ? "Part Paid" : "Outstanding"}
               </div>
@@ -609,10 +611,10 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
           `}</style>
 
           <div
-            className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
+            className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
             style={{ animation: "fee_adjustment_confirm_enter 320ms cubic-bezier(.2,.9,.2,1)" }}
           >
-            <div className="border-b border-border px-6 py-5" style={{ background: "linear-gradient(90deg, rgba(10,102,194,0.12), rgba(10,102,194,0.04))" }}>
+            <div className="border-b border-border px-4 py-4 sm:px-6 sm:py-5" style={{ background: "linear-gradient(90deg, rgba(10,102,194,0.12), rgba(10,102,194,0.04))" }}>
               <div className="flex items-start gap-3">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/70 bg-brand/10 shadow-sm">
                   <AlertCircle className="h-5 w-5 text-brand" />
@@ -624,26 +626,26 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
               </div>
             </div>
 
-            <div className="px-6 py-5">
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <div className="px-4 py-4 sm:px-6 sm:py-5">
+              <div className="rounded-md border border-border bg-background p-3">
                 <p className="text-sm leading-6 text-slate-700">
                   You are about to remove this fee adjustment from the invoice. The total balance will be recalculated immediately.
                 </p>
               </div>
             </div>
 
-            <div className="flex gap-3 border-t border-slate-200 bg-white px-6 py-4">
+            <div className="flex gap-3 border-t border-border bg-surface px-4 py-4 sm:px-6">
               <button
                 type="button"
                 onClick={cancelDeleteAdjustment}
-                className="flex-1 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                className="flex-1 rounded-md border border-border px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-background"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={confirmDeleteAdjustment}
-                className="flex-1 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
+                className="flex-1 rounded-md bg-brand px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-hover"
               >
                 Remove
               </button>
@@ -655,10 +657,10 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
       {adjustmentModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
           <div
-            className="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
+            className="w-full max-w-lg overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
             style={{ animation: "payment_edit_enter 320ms cubic-bezier(.2,.9,.2,1)" }}
           >
-            <div className="border-b border-border px-6 py-5" style={{ background: "linear-gradient(90deg, rgba(10,102,194,0.12), rgba(10,102,194,0.04))" }}>
+            <div className="border-b border-border px-4 py-4 sm:px-6 sm:py-5" style={{ background: "linear-gradient(90deg, rgba(10,102,194,0.12), rgba(10,102,194,0.04))" }}>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/70 bg-brand/10 shadow-sm">
@@ -672,14 +674,14 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                 <button
                   type="button"
                   onClick={() => setAdjustmentModalOpen(false)}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-surface text-slate-600 transition hover:bg-background"
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-surface text-muted transition hover:bg-background"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
             </div>
 
-            <div className="px-6 py-5">
+            <div className="px-4 py-4 sm:px-6 sm:py-5">
               <form onSubmit={handleCreateAdjustment} className="space-y-4">
                 <div className="grid gap-3 md:grid-cols-2">
                   <div className="md:col-span-2">
@@ -812,10 +814,10 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
           `}</style>
 
           <div
-            className="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
+            className="w-full max-w-lg overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
             style={{ animation: `payment_edit_enter 320ms cubic-bezier(.2,.9,.2,1)` }}
           >
-            <div className="border-b border-slate-100 px-6 py-5" style={{ background: "linear-gradient(90deg, rgba(10,102,194,0.12), rgba(10,102,194,0.04))" }}>
+            <div className="border-b border-border px-4 py-4 sm:px-6 sm:py-5" style={{ background: "linear-gradient(90deg, rgba(10,102,194,0.12), rgba(10,102,194,0.04))" }}>
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-2xl font-bold text-foreground">Edit payment</h2>
@@ -831,7 +833,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
               </div>
             </div>
 
-            <form onSubmit={handleUpdatePayment} className="space-y-5 px-6 py-6">
+            <form onSubmit={handleUpdatePayment} className="space-y-5 px-4 py-4 sm:px-6 sm:py-6">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Payment amount ({currency})</label>
                 <input
@@ -960,6 +962,6 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
           }
         }
       `}</style>
-    </div>
+    </main>
   );
 }

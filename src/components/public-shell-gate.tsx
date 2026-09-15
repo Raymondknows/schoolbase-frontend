@@ -7,6 +7,7 @@ const hiddenPublicShellPaths = [
   "/admin",
   "/teacher",
   "/parent",
+  "/admissions",
   "/schoolbase-admin",
   "/accounting",
 ];

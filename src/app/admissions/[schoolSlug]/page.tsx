@@ -309,37 +309,40 @@ export default function PublicAdmissionsPage() {
   ] as const;
 
   const contactItems = contactInfoItems;
-  const pageContainerClass = admissionsOpen ? "mx-auto grid max-w-7xl gap-8 lg:grid-cols-[360px_minmax(0,1fr)]" : "mx-auto max-w-7xl";
+  const pageContainerClass = admissionsOpen ? "mx-auto grid max-w-7xl gap-6 lg:grid-cols-[360px_minmax(0,1fr)]" : "mx-auto max-w-7xl";
 
   return (
-    <main className="min-h-screen bg-[#f6f8fb] px-4 py-6 text-slate-900 sm:px-6 lg:px-8 sm:py-8">
-      <div className="mx-auto mb-6 flex max-w-7xl flex-col justify-between gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-end">
+    <main className="min-h-screen bg-background px-4 py-6 text-foreground sm:px-6 lg:px-8 sm:py-8">
+      <div className="relative mx-auto mb-6 max-w-7xl overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+        <div className="relative flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
         <div>
-          <div className="flex items-center gap-2 text-sm font-semibold text-[#0A66C2]">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand">
             <GraduationCap className="h-4 w-4" /> Admissions workspace
           </div>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Online application</h1>
-          <p className="mt-1 text-sm text-slate-600">A guided application experience for {school?.name || displaySchool?.name || 'your school'}</p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Online application</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">A guided application experience for {school?.name || displaySchool?.name || 'your school'}</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-          <span className={`inline-flex items-center gap-2 rounded-full px-3 py-2 ${statusBadgeClass}`}>
+        <div className="relative flex flex-wrap items-center gap-2 text-xs font-semibold">
+          <span className={`inline-flex items-center gap-2 border px-3 py-2 ${statusBadgeClass}`}>
             <span className="h-2 w-2 rounded-full bg-current" /> {statusBadgeText}
           </span>
-          {settings?.closingDate ? <span className="rounded-full border border-slate-200 bg-white px-3 py-2 text-slate-600">Closes {new Date(settings.closingDate).toLocaleDateString()}</span> : null}
+          {settings?.closingDate ? <span className="border border-border bg-background px-3 py-2 text-muted">Closes {new Date(settings.closingDate).toLocaleDateString()}</span> : null}
+        </div>
         </div>
       </div>
 
       {admissionsOpen ? (
         <div className="mx-auto mb-6 grid max-w-7xl gap-3 sm:grid-cols-3">
-          <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
+          <div className="border border-border bg-surface px-4 py-3">
             <p className="text-[10px] font-bold uppercase tracking-[.12em] text-slate-500">Application mode</p>
             <p className="mt-1 font-semibold text-slate-900">Guided submission</p>
           </div>
-          <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
+          <div className="border border-border bg-surface px-4 py-3">
             <p className="text-[10px] font-bold uppercase tracking-[.12em] text-slate-500">Application steps</p>
             <p className="mt-1 font-semibold text-slate-900">{completedSteps.filter(Boolean).length} of {tabs.length} completed</p>
           </div>
-          <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
+          <div className="border border-border bg-surface px-4 py-3">
             <p className="text-[10px] font-bold uppercase tracking-[.12em] text-slate-500">Expected time</p>
             <p className="mt-1 font-semibold text-slate-900">About 5 minutes</p>
           </div>
@@ -349,7 +352,7 @@ export default function PublicAdmissionsPage() {
       <div className={pageContainerClass}>
         {admissionsOpen ? (
           <aside className="space-y-6">
-            <div className="rounded-lg border border-border bg-surface p-6 shadow-sm">
+            <div className="border border-border bg-surface p-6">
               <div className="flex items-start gap-4">
                 <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-brand/15 bg-brand/5">
                   {school?.logoUrl ? (
@@ -403,7 +406,7 @@ export default function PublicAdmissionsPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="border border-border bg-surface p-6">
               <h2 className="text-lg font-semibold text-slate-900">Admissions requirements</h2>
               <ol className="mt-4 space-y-3 text-sm text-slate-700">
                 {requirementItems.map((item: string, index: number) => (
@@ -417,7 +420,7 @@ export default function PublicAdmissionsPage() {
           </aside>
         ) : null}
 
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
+        <section className="border border-border bg-surface p-5 sm:p-8">
           {admissionsOpen ? (
             <div className="mb-7">
               <div className="grid gap-2 sm:grid-cols-4">

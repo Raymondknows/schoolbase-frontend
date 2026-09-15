@@ -108,21 +108,26 @@ export default function SubjectsPage() {
   }
 
   return (
-    <div className="space-y-6 pb-8">
+    <main className="min-h-screen pb-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-200 pb-6">
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+      <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+      <div className="relative flex items-end justify-between">
         <div>
           <button onClick={() => router.back()} className="flex items-center gap-2 font-medium text-sm mb-2" style={{ color: '#0A66C2' }}>
             <ChevronLeft className="w-4 h-4" />
             Back
           </button>
-          <h1 className="text-4xl font-bold text-slate-900">All Subjects</h1>
-          <p className="mt-1 text-sm text-slate-600">Complete list of subjects taught in the school</p>
+          <div className="text-xs font-bold uppercase tracking-[.16em] text-brand">Academic analytics</div>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">All subjects</h1>
+          <p className="mt-2 text-sm leading-6 text-muted">Complete list of subjects taught in the school.</p>
         </div>
       </div>
+      </header>
 
       {/* Search and Controls */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
+      <div className="border border-border bg-surface p-6">
         <div className="flex gap-4 items-end">
           <div className="flex-1">
             <label className="block text-sm font-medium text-slate-900 mb-2">Search Subjects</label>
@@ -162,7 +167,7 @@ export default function SubjectsPage() {
       </div>
 
       {/* Subjects Grid */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
+      <div className="border border-border bg-surface p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {paginatedSubjects.length > 0 ? (
             paginatedSubjects.map((subject) => (
@@ -236,5 +241,6 @@ export default function SubjectsPage() {
         )}
       </div>
     </div>
+    </main>
   );
 }

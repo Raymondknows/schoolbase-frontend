@@ -4,7 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { getBackendUrl } from "@/lib/backend-url";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Info, Send } from "lucide-react";
 import { WhatsAppIcon } from "@/components/ui/icons";
 
 interface AcademicYearItem {
@@ -119,21 +119,28 @@ export default function NewAnnouncementPage() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <main className="min-h-screen pb-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
       {/* Back link */}
       <Link
         href="/admin/website"
-        className="flex items-center gap-2 text-sm text-brand hover:underline"
+        className="inline-flex items-center gap-2 text-sm font-semibold text-brand transition hover:text-brand-hover"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to announcements
       </Link>
 
       {/* Form */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+      <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Post news</h1>
-          <p className="mt-1 text-muted">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand">
+            <Send className="h-4 w-4" />
+            School communications
+          </div>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Post news</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
             Share announcements with parents, teachers, and the public website.
           </p>
         </div>
@@ -157,39 +164,54 @@ export default function NewAnnouncementPage() {
           </div>
         )}
       </div>
+      </header>
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-4 rounded-xl border border-border bg-surface p-6"
+        className="grid w-full gap-6 border border-border bg-surface p-5 sm:p-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(260px,.65fr)]"
       >
         {submitError && (
-          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="lg:col-span-2 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {submitError}
           </div>
         )}
-        <label className="block text-sm font-medium">
-          Title *
+        <div className="space-y-5">
+        <label className="block text-sm font-semibold text-foreground">
+          Headline *
           <input
             name="title"
             required
             placeholder="e.g., Holiday Schedule for December"
-            className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand"
+            className="mt-2 w-full border border-border bg-background px-3.5 py-3 text-sm text-foreground placeholder:text-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
           />
         </label>
 
-        <label className="block text-sm font-medium">
+        <label className="block text-sm font-semibold text-foreground">
           Message *
           <textarea
             name="body"
             required
             rows={8}
             placeholder="Write your announcement here. This will be visible to parents, teachers, and students."
-            className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand"
+            className="mt-2 w-full resize-y border border-border bg-background px-3.5 py-3 text-sm leading-6 text-foreground placeholder:text-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
           />
         </label>
+        </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block text-sm font-medium">
+        <div className="space-y-5">
+          <div className="border border-border bg-background p-4">
+            <div className="flex items-start gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-brand/10 text-brand">
+                <Info className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Publication settings</p>
+                <p className="mt-1 text-xs leading-5 text-muted">Choose where this update belongs and how it should be released.</p>
+              </div>
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+          <label className="block text-sm font-semibold text-foreground">
             Session
             <select
               name="academicYearId"
@@ -198,7 +220,7 @@ export default function NewAnnouncementPage() {
                 setSelectedAcademicYearId(event.target.value);
                 setSelectedTermId("");
               }}
-              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="mt-2 w-full border border-border bg-background px-3 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
             >
               <option value="">Select session (optional)</option>
               {academicYears.map((year) => (
@@ -209,14 +231,14 @@ export default function NewAnnouncementPage() {
             </select>
           </label>
 
-          <label className="block text-sm font-medium">
+          <label className="block text-sm font-semibold text-foreground">
             Term
             <select
               name="termId"
               value={selectedTermId}
               onChange={(event) => setSelectedTermId(event.target.value)}
               disabled={!selectedAcademicYearId || termOptions.length === 0}
-              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-2 w-full border border-border bg-background px-3 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <option value="">Select term (optional)</option>
               {termOptions.map((term) => (
@@ -228,18 +250,17 @@ export default function NewAnnouncementPage() {
           </label>
         </div>
 
-        <label className="flex items-center gap-2 text-sm font-medium">
+        <label className="flex items-start gap-3 border border-border bg-background p-3 text-sm font-medium text-foreground">
           <input
             type="checkbox"
             name="publish"
             defaultChecked
             className="h-4 w-4 rounded border-border"
           />
-          Publish immediately
-          <span className="text-xs text-muted">(uncheck to save as draft)</span>
+          <span>Publish immediately <span className="block text-xs font-normal text-muted">Uncheck to save this as a draft.</span></span>
         </label>
 
-        <label className="flex items-start gap-2 text-sm font-medium">
+        <label className="flex items-start gap-3 border border-border bg-background p-3 text-sm font-medium text-foreground">
           <input
             type="checkbox"
             name="bulkApproval"
@@ -247,31 +268,38 @@ export default function NewAnnouncementPage() {
           />
           <span>
             I approve sending this announcement to the school&apos;s WhatsApp recipients.
-            <span className="mt-1 block text-xs font-normal text-muted">Required for larger broadcasts. Quiet hours and rate limits still apply.</span>
+            <span className="mt-1 block text-xs font-normal leading-5 text-muted">Required for larger broadcasts. Quiet hours and rate limits still apply.</span>
           </span>
         </label>
 
-        <div className="flex gap-3">
-          <Button type="submit" disabled={submitting} className="flex-1">
-            {submitting ? "Publishing…" : "Post announcement"}
-          </Button>
-          <Link href="/admin/website" className="flex-1">
+        <div className="flex flex-col-reverse gap-3 sm:flex-row lg:col-span-2">
+          <Link href="/admin/website" className="sm:flex-1">
             <Button type="button" variant="outline" className="w-full">
               Cancel
             </Button>
           </Link>
+          <Button type="submit" disabled={submitting} className="gap-2 sm:flex-1">
+            <Send className="h-4 w-4" />
+            {submitting ? "Publishing..." : "Publish announcement"}
+          </Button>
+        </div>
         </div>
       </form>
 
       {/* Info section */}
-      <div className="rounded-lg border border-border bg-surface/50 p-4 text-sm text-muted">
-        <p className="font-medium text-foreground">Tips:</p>
-        <ul className="mt-2 space-y-1 list-inside list-disc">
-          <li>Published announcements appear on parents and teachers' dashboards</li>
-          <li>Draft announcements can be edited before publishing</li>
-          <li>Keep announcements clear and concise for better readability</li>
-        </ul>
+      <div className="grid gap-4 border border-border bg-surface p-5 sm:grid-cols-3 sm:p-6">
+        {[
+          "Published announcements appear on parent and teacher dashboards.",
+          "Drafts stay private until your team is ready to publish.",
+          "Keep updates concise so they remain easy to scan on mobile.",
+        ].map((tip) => (
+          <div key={tip} className="flex items-start gap-2.5 text-sm text-muted">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+            <span>{tip}</span>
+          </div>
+        ))}
       </div>
     </div>
+    </main>
   );
 }

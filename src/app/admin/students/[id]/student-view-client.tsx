@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Edit2, Mail, Phone, MapPin } from "lucide-react";
+import { ChevronLeft, ChevronRight, Edit2, Mail, Phone, MapPin, UserRound, CreditCard, CalendarCheck, GraduationCap } from "lucide-react";
 import { formatMoney, pupilName } from "@/lib/format";
 import { resolveFileUrl } from "@/lib/api-client";
 
@@ -34,50 +34,63 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
 
   const photoUrl = resolveFileUrl(student.photoUrl, student.id);
   const fullName = pupilName(student.firstName, student.lastName);
+  const attendance = student.attendance || { total: 0, present: 0, absent: 0, late: 0, percentage: null, records: [] };
+  const invoices = Array.isArray(student.invoices) ? student.invoices : [];
+  const termSummaries = Array.isArray(student.termSummaries) ? student.termSummaries : [];
+  const promotionHistory = Array.isArray(student.promotionHistory) ? student.promotionHistory : [];
+  const latestSummary = termSummaries[0];
 
   return (
-    <div className="space-y-6 pb-8">
+    <main className="min-h-screen pb-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
       {/* Header */}
-      <div className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-sm py-1.5 -mx-6 px-6 mb-4">
-        <div className="flex items-center justify-between gap-3">
-          <Link href="/admin/students" className="flex items-center gap-2 text-muted hover:text-foreground">
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-10 sm:px-8 sm:pb-8 sm:pt-12">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+        <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand"><UserRound className="h-4 w-4" /> Student profile</div>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">{fullName}</h1>
+            <p className="mt-2 text-sm leading-6 text-muted">Student record, placement, family contacts, and academic snapshot.</p>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+          <Link href="/admin/students" className="flex items-center gap-2 text-sm font-semibold text-brand hover:text-brand-hover">
             <ChevronLeft className="h-5 w-5" />
             <span className="text-sm font-medium">Back</span>
           </Link>
-          <h1 className="flex-1 text-center text-lg font-semibold text-foreground">{fullName}</h1>
           <Link href={`/admin/students/${studentId}/edit`}>
             <Button className="gap-2">
               <Edit2 className="h-4 w-4" />
               Edit
             </Button>
           </Link>
+          </div>
         </div>
-      </div>
+      </header>
 
-      <div className="mx-auto max-w-4xl px-6">
-        <div className="rounded-xl bg-surface border border-border shadow-sm p-6 space-y-6">
+      <div>
+        <div className="border border-border bg-surface p-5 space-y-6 sm:p-6">
           {/* Student Info */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Left: Photo & Badges */}
             <div className="md:col-span-1">
             <div className="space-y-4">
               {photoUrl ? (
-                <img src={photoUrl} alt={fullName} className="w-full rounded-xl border border-border object-cover aspect-square" />
+                <img src={photoUrl} alt={fullName} className="w-full rounded-md border border-border object-cover aspect-square" />
               ) : (
-                <div className="flex w-full items-center justify-center rounded-xl border border-border bg-surface/80 aspect-square">
+                <div className="flex w-full items-center justify-center rounded-md border border-border bg-surface/80 aspect-square">
                   <span className="text-6xl text-muted">👤</span>
                 </div>
               )}
               <div className="space-y-2">
-                <div className={`rounded-lg p-3 text-center text-sm font-medium ${
+                <div className={`rounded-md border p-3 text-center text-sm font-medium ${
                   student.status === "ACTIVE"
                     ? "bg-green-100 text-green-800"
                     : "bg-surface/80 text-slate-800"
                 }`}>
                   {student.status === "ACTIVE" ? "Active" : "Inactive"}
                 </div>
-                <div className="rounded-lg bg-brand/10 p-3 text-center text-sm font-medium text-brand">
-                  {student.class?.name || "No Class"}
+                <div className="rounded-md border border-brand/20 bg-brand/10 p-3 text-center text-sm font-medium text-brand">
+                  {student.class?.name || "No Class"}{student.class?.arm ? ` ${student.class.arm}` : ""}
                 </div>
               </div>
             </div>
@@ -157,44 +170,104 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
           </div>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-2xl border border-border bg-surface/80 p-5 text-center shadow-sm">
+          <div className="border border-border bg-surface p-5 text-center transition hover:border-brand/40 hover:bg-brand-light/20">
             <p className="text-xs uppercase tracking-[0.24em] text-muted mb-3">Fees balance</p>
             <p className="text-3xl font-semibold text-foreground">{formatMoney(student.feesBalance || 0)}</p>
             <p className="text-sm text-muted mt-2">Outstanding balance</p>
           </div>
-          <div className="rounded-2xl border border-border bg-surface/80 p-5 text-center shadow-sm">
+          <div className="border border-border bg-surface p-5 text-center transition hover:border-brand/40 hover:bg-brand-light/20">
             <p className="text-xs uppercase tracking-[0.24em] text-muted mb-3">Attendance</p>
-            <p className="text-3xl font-semibold text-foreground">{(student.attendancePercentage || 0)}%</p>
-            <p className="text-sm text-muted mt-2">Term attendance</p>
+            <p className="text-3xl font-semibold text-foreground">{attendance.percentage === null ? "—" : `${attendance.percentage}%`}</p>
+            <p className="text-sm text-muted mt-2">{attendance.present} present · {attendance.absent} absent</p>
           </div>
-          <div className="rounded-2xl border border-border bg-surface/80 p-5 text-center shadow-sm">
+          <div className="border border-border bg-surface p-5 text-center transition hover:border-brand/40 hover:bg-brand-light/20">
             <p className="text-xs uppercase tracking-[0.24em] text-muted mb-3">Performance</p>
-            <p className="text-3xl font-semibold text-foreground">{student.performanceGrade || "N/A"}</p>
-            <p className="text-sm text-muted mt-2">Average grade</p>
+            <p className="text-3xl font-semibold text-foreground">{latestSummary?.overallGrade || latestSummary?.performanceBand || "—"}</p>
+            <p className="text-sm text-muted mt-2">Latest academic summary</p>
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h3 className="text-lg font-semibold text-foreground">Quick actions</h3>
-            <p className="text-sm text-muted">Jump to the most important student details.</p>
+        <div className="grid gap-4 xl:grid-cols-2">
+          <section id="attendance" className="border border-border bg-surface">
+            <div className="border-b border-border px-5 py-4">
+              <p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Attendance</p>
+              <h3 className="mt-1 text-lg font-semibold text-foreground">Recent attendance</h3>
+            </div>
+            <div className="grid grid-cols-4 divide-x divide-border border-b border-border">
+              <div className="p-3 text-center"><p className="text-lg font-semibold text-foreground">{attendance.total}</p><p className="text-[10px] uppercase tracking-wide text-muted">Total</p></div>
+              <div className="p-3 text-center"><p className="text-lg font-semibold text-emerald-700">{attendance.present}</p><p className="text-[10px] uppercase tracking-wide text-muted">Present</p></div>
+              <div className="p-3 text-center"><p className="text-lg font-semibold text-amber-700">{attendance.late}</p><p className="text-[10px] uppercase tracking-wide text-muted">Late</p></div>
+              <div className="p-3 text-center"><p className="text-lg font-semibold text-rose-700">{attendance.absent}</p><p className="text-[10px] uppercase tracking-wide text-muted">Absent</p></div>
+            </div>
+            {attendance.records.length > 0 ? (
+              <div className="divide-y divide-border">
+                {attendance.records.slice(0, 5).map((record: any) => (
+                  <div key={record.id} className="flex items-center justify-between px-5 py-3 text-sm">
+                    <span className="text-muted">{new Date(record.date).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}</span>
+                    <span className={`text-xs font-semibold ${record.status === "PRESENT" ? "text-emerald-700" : record.status === "LATE" ? "text-amber-700" : "text-rose-700"}`}>{record.status}</span>
+                  </div>
+                ))}
+              </div>
+            ) : <p className="px-5 py-8 text-center text-sm text-muted">No attendance records available yet.</p>}
+          </section>
+
+          <section id="fees" className="border border-border bg-surface">
+            <div className="border-b border-border px-5 py-4">
+              <p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Finance</p>
+              <h3 className="mt-1 text-lg font-semibold text-foreground">Fee ledger</h3>
+            </div>
+            {invoices.length > 0 ? (
+              <div className="divide-y divide-border">
+                {invoices.slice(0, 5).map((invoice: any) => (
+                  <Link key={invoice.id} href={`/admin/fees/${invoice.id}`} className="flex items-center justify-between gap-3 px-5 py-3 transition hover:bg-background">
+                    <div className="min-w-0"><p className="truncate text-sm font-medium text-foreground">{invoice.feeSchedule?.name || invoice.invoiceNo}</p><p className="mt-1 text-xs text-muted">{invoice.feeSchedule?.term?.name || "Invoice"} · {invoice.status}</p></div>
+                    <div className="shrink-0 text-right"><p className="text-sm font-semibold text-foreground">{formatMoney(Math.max(0, invoice.amountDue - invoice.amountPaid))}</p><p className="text-[11px] text-muted">Balance</p></div>
+                  </Link>
+                ))}
+              </div>
+            ) : <p className="px-5 py-8 text-center text-sm text-muted">No invoices have been issued for this student.</p>}
+          </section>
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-2">
+          <section id="results" className="border border-border bg-surface">
+            <div className="border-b border-border px-5 py-4"><p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Academic progress</p><h3 className="mt-1 text-lg font-semibold text-foreground">Latest term summary</h3></div>
+            {latestSummary ? <div className="grid gap-4 p-5 sm:grid-cols-3"><div><p className="text-xs text-muted">Average score</p><p className="mt-1 text-xl font-semibold text-foreground">{latestSummary.averageScore ?? "—"}</p></div><div><p className="text-xs text-muted">Class position</p><p className="mt-1 text-xl font-semibold text-foreground">{latestSummary.classPosition ?? "—"}</p></div><div><p className="text-xs text-muted">Attendance</p><p className="mt-1 text-xl font-semibold text-foreground">{latestSummary.attendancePercentage ?? attendance.percentage ?? "—"}{latestSummary.attendancePercentage ?? attendance.percentage ? "%" : ""}</p></div><p className="text-sm leading-6 text-muted sm:col-span-3">{latestSummary.classTeacherRemarks || latestSummary.principalRemarks || "No teacher remarks recorded for the latest term."}</p></div> : <p className="px-5 py-8 text-center text-sm text-muted">No academic summary has been published yet.</p>}
+          </section>
+
+          <section id="enrollment" className="border border-border bg-surface">
+            <div className="border-b border-border px-5 py-4"><p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Enrollment history</p><h3 className="mt-1 text-lg font-semibold text-foreground">Promotion timeline</h3></div>
+            {promotionHistory.length > 0 ? <div className="divide-y divide-border">{promotionHistory.slice(0, 5).map((record: any) => <div key={record.id} className="flex items-center justify-between gap-3 px-5 py-3 text-sm"><div><p className="font-medium text-foreground">{record.decision?.replace(/_/g, " ") || "Decision recorded"}</p><p className="mt-1 text-xs text-muted">{record.rationale || "No rationale provided"}</p></div><span className="shrink-0 text-xs text-muted">{new Date(record.decidedAt).toLocaleDateString("en-NG", { month: "short", year: "numeric" })}</span></div>)}</div> : <p className="px-5 py-8 text-center text-sm text-muted">No promotion history recorded yet.</p>}
+          </section>
+        </div>
+
+        <section>
+          <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+            Quick actions
           </div>
-        </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
-          <Link href="#fees" className="block">
-            <Button variant="outline" className="w-full">View fees</Button>
-          </Link>
-          <Link href="#attendance" className="block">
-            <Button variant="outline" className="w-full">Attendance</Button>
-          </Link>
-          <Link href="#results" className="block">
-            <Button variant="outline" className="w-full">Results</Button>
-          </Link>
-          <Link href={`/admin/students/${studentId}/edit`} className="block">
-            <Button className="w-full">Edit profile</Button>
-          </Link>
-        </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+            <Link href="#fees" className="group flex items-center gap-3 border border-border bg-surface px-4 py-4 transition hover:border-brand/50 hover:bg-brand-light/30">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand text-white"><CreditCard className="h-5 w-5" /></span>
+              <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-foreground">Fees</span><span className="mt-0.5 block truncate text-xs text-muted">Review balances and invoices</span></span>
+              <ChevronRight className="h-4 w-4 text-muted transition group-hover:translate-x-0.5 group-hover:text-brand" />
+            </Link>
+            <Link href="#attendance" className="group flex items-center gap-3 border border-border bg-surface px-4 py-4 transition hover:border-brand/50 hover:bg-brand-light/30">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand text-white"><CalendarCheck className="h-5 w-5" /></span>
+              <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-foreground">Attendance</span><span className="mt-0.5 block truncate text-xs text-muted">Track recent attendance</span></span>
+              <ChevronRight className="h-4 w-4 text-muted transition group-hover:translate-x-0.5 group-hover:text-brand" />
+            </Link>
+            <Link href="#results" className="group flex items-center gap-3 border border-border bg-surface px-4 py-4 transition hover:border-brand/50 hover:bg-brand-light/30">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand text-white"><GraduationCap className="h-5 w-5" /></span>
+              <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-foreground">Results</span><span className="mt-0.5 block truncate text-xs text-muted">View academic progress</span></span>
+              <ChevronRight className="h-4 w-4 text-muted transition group-hover:translate-x-0.5 group-hover:text-brand" />
+            </Link>
+            <Link href={`/admin/students/${studentId}/edit`} className="group flex items-center gap-3 border border-border bg-surface px-4 py-4 transition hover:border-brand/50 hover:bg-brand-light/30">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand text-white"><Edit2 className="h-5 w-5" /></span>
+              <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-foreground">Edit profile</span><span className="mt-0.5 block truncate text-xs text-muted">Update student records</span></span>
+              <ChevronRight className="h-4 w-4 text-muted transition group-hover:translate-x-0.5 group-hover:text-brand" />
+            </Link>
+          </div>
+        </section>
 
         {/* Additional Information */}
         {student.guardians && student.guardians.length > 0 && (
@@ -202,12 +275,12 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
             <h3 className="text-sm font-semibold uppercase text-muted">Family contacts</h3>
             <div className="space-y-3">
               {student.guardians.map((g: any, i: number) => (
-                <div key={i} className="rounded-lg border border-border p-4">
+                <div key={i} className="border border-border bg-surface p-4">
                   <div className="mb-3">
                     <h4 className="text-sm font-bold text-foreground">
                       {g.guardian?.firstName} {g.guardian?.lastName}
                     </h4>
-                    <p className="text-xs text-muted">{g.relationship}</p>
+                      <p className="text-xs text-muted">{g.relation || g.relationship || "Guardian"}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     {g.guardian?.phone && (
@@ -239,7 +312,7 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
         {(student.bloodGroup || student.genotype || student.medicalNotes) && (
           <div className="space-y-3">
             <h3 className="text-sm font-semibold uppercase text-muted">Health record</h3>
-            <div className="rounded-lg border border-border p-4 grid grid-cols-2 gap-4 text-sm">
+            <div className="border border-border bg-surface p-4 grid grid-cols-2 gap-4 text-sm">
               {student.bloodGroup && (
                 <div>
                   <p className="text-xs text-muted mb-1">Blood Group</p>
@@ -266,7 +339,7 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
         {(student.previousSchool || student.previousClass) && (
           <div className="space-y-3">
             <h3 className="text-sm font-semibold uppercase text-muted">Academic background</h3>
-            <div className="rounded-lg border border-border p-4 grid grid-cols-2 gap-4 text-sm">
+            <div className="border border-border bg-surface p-4 grid grid-cols-2 gap-4 text-sm">
               {student.previousSchool && (
                 <div>
                   <p className="text-xs text-muted mb-1">Previous School</p>
@@ -283,23 +356,10 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
           </div>
         )}
 
-        {/* Footer Action */}
-        <div className="flex gap-3 pt-4 border-t border-border">
-          <Link href={`/admin/students/${studentId}/edit`} className="flex-1">
-            <Button className="w-full gap-2">
-              <Edit2 className="h-4 w-4" />
-              Edit Student
-            </Button>
-          </Link>
-          <Link href="/admin/students" className="flex-1">
-            <Button variant="outline" className="w-full">
-              Back to List
-            </Button>
-          </Link>
-        </div>
       </div>
     </div>
   </div>
+  </main>
   );
 }
 

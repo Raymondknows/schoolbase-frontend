@@ -170,7 +170,7 @@ export function VerifySignupClient() {
   if (!adminEmail) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
-        <div className="w-full max-w-xl rounded-xl border border-border bg-surface p-8 shadow-sm">
+        <div className="w-full max-w-xl border border-border bg-surface p-8">
           <div className="mb-6 flex justify-center">
             <AppLogo href="/" size="lg" />
           </div>
@@ -189,7 +189,7 @@ export function VerifySignupClient() {
   if (!pendingLoaded) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
-        <div className="w-full max-w-xl rounded-xl border border-border bg-surface p-8 shadow-sm">
+        <div className="w-full max-w-xl border border-border bg-surface p-8">
           <div className="mb-6 flex justify-center">
             <AppLogo href="/" size="lg" />
           </div>
@@ -201,21 +201,23 @@ export function VerifySignupClient() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
-      <div className="w-full max-w-xl rounded-xl border border-border bg-surface p-8 shadow-sm">
+      <div className="w-full max-w-xl border border-border bg-surface p-8">
         <div className="mb-6 flex justify-center">
           <AppLogo href="/" size="lg" />
         </div>
         
         {needsVerification ? (
           <>
-            <h1 className="text-center text-xl font-bold">Verify your email</h1>
+            <p className="text-center text-xs font-bold uppercase tracking-[.16em] text-brand">SchoolBase onboarding</p>
+            <h1 className="mt-3 text-center text-3xl font-semibold tracking-tight">Verify your email</h1>
             <p className="mt-2 text-center text-sm text-muted">
               We sent a verification code to <strong>{adminEmail}</strong>. Enter it below to complete your signup.
             </p>
           </>
         ) : (
           <>
-            <h1 className="text-center text-xl font-bold">Verify your signup</h1>
+            <p className="text-center text-xs font-bold uppercase tracking-[.16em] text-brand">SchoolBase onboarding</p>
+            <h1 className="mt-3 text-center text-3xl font-semibold tracking-tight">Verify your signup</h1>
             <p className="mt-2 text-center text-sm text-muted">
               Enter the 6-digit code we sent to <strong>{adminEmail}</strong>.
             </p>
@@ -223,7 +225,7 @@ export function VerifySignupClient() {
         )}
 
         {error && (
-          <div className={`mt-4 rounded-lg px-4 py-3 text-sm ${
+          <div className={`mt-4 border px-4 py-3 text-sm ${
             error.message.startsWith('✓')
               ? 'border border-green-300 bg-green-50 text-green-900'
               : 'border border-red-300 bg-red-50 text-red-900'
@@ -257,11 +259,11 @@ export function VerifySignupClient() {
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
               disabled={isLoading}
-              className="mt-1 w-full rounded-lg border border-border px-3 py-2.5 text-sm font-mono text-center text-lg letter-spacing-wider disabled:bg-background disabled:text-muted"
+              className="mt-2 w-full border border-border bg-background px-3 py-3 text-center font-mono text-lg tracking-[.35em] focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:bg-background disabled:text-muted"
             />
           </label>
 
-          <Button type="submit" className="w-full" disabled={isLoading || otp.length !== 6}>
+          <Button type="submit" className="w-full bg-brand py-3 font-semibold hover:bg-brand-hover" disabled={isLoading || otp.length !== 6}>
             {isLoading ? "Verifying..." : "Confirm and create account"}
           </Button>
         </form>
@@ -271,7 +273,7 @@ export function VerifySignupClient() {
             type="button"
             onClick={handleResendOtp}
             disabled={isLoading || resendCooldown > 0}
-            className="w-full rounded-lg border border-brand bg-brand/5 px-4 py-2.5 text-sm font-medium text-brand hover:bg-brand/10 disabled:bg-background disabled:text-muted"
+            className="w-full border border-brand bg-brand/5 px-4 py-2.5 text-sm font-semibold text-brand hover:bg-brand/10 disabled:bg-background disabled:text-muted"
           >
             {resendCooldown > 0
               ? `Resend code in ${resendCooldown}s`

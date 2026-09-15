@@ -7,12 +7,11 @@ import { getBackendUrl } from "@/lib/backend-url";
 
 import { useMemo, useState, useEffect, useRef, useCallback, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ErrorModal } from "@/components/ui/error-modal";
 import { UserGuide } from "@/components/ui/user-guide";
 import SubscriptionModal from "@/components/subscription-modal";
 import AdminSkeleton from "@/components/ui/skeleton";
-import { BookOpen, Users, Plus, Edit2, Search, School, AlertCircle, Trash2, LayoutGrid } from "lucide-react";
+import { BookOpen, Users, Plus, Edit2, Search, School, AlertCircle, Trash2, LayoutGrid, ArrowUpRight, X } from "lucide-react";
 
 const CLASS_GUIDE = {
   title: "Classes Management",
@@ -85,13 +84,13 @@ function getPhaseLabel(phase: string) {
 function getPhaseColor(phase: string): { bg: string; text: string; icon: string; row: string } {
   switch (phase) {
     case "EARLY_YEARS":
-      return { bg: "bg-purple-100", text: "text-purple-800", icon: "text-purple-600", row: "border-l-4 border-l-purple-400 bg-background/5" };
+      return { bg: "bg-brand/10", text: "text-brand", icon: "text-brand", row: "border-l-2 border-l-brand/70" };
     case "PRIMARY":
-      return { bg: "bg-blue-100", text: "text-blue-800", icon: "text-blue-600", row: "border-l-4 border-l-blue-400 bg-background/5" };
+      return { bg: "bg-emerald-100", text: "text-emerald-700", icon: "text-emerald-600", row: "border-l-2 border-l-emerald-500" };
     case "SECONDARY":
-      return { bg: "bg-green-100", text: "text-green-800", icon: "text-green-600", row: "border-l-4 border-l-green-500 bg-background/5" };
+      return { bg: "bg-amber-100", text: "text-amber-700", icon: "text-amber-600", row: "border-l-2 border-l-amber-500" };
     default:
-      return { bg: "bg-gray-100", text: "text-gray-800", icon: "text-gray-600", row: "border-l-4 border-l-slate-400 bg-background/5" };
+      return { bg: "bg-background", text: "text-muted", icon: "text-muted", row: "border-l-2 border-l-border" };
   }
 }
 
@@ -364,43 +363,37 @@ export default function ClassesPageClient({ classes: initialClasses }: { classes
       )}
 
       {!loading && (
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <div>
-              <div className="flex items-center gap-2 text-sm font-medium text-brand">
-                <LayoutGrid size={17} /> School Structure
+        <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+          <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+            <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+            <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand">
+                  <LayoutGrid className="h-4 w-4" /> School structure
+                </div>
+                <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Classes</h1>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Organize grade groups, sections, pupils, and subjects from one central workspace.</p>
               </div>
-              <h1 className="mt-2 text-3xl font-bold text-foreground">Classes</h1>
-              <p className="mt-1 text-muted">Manage school classes, phases, and student assignments</p>
-            </div>
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              <div className={`overflow-hidden transition-all duration-300 ease-out ${isSearchOpen ? "w-72 opacity-100" : "w-0 opacity-0"}`}>
+              <div className="relative flex flex-wrap items-center gap-3">
+                <div className={`overflow-hidden transition-all duration-300 ease-out ${isSearchOpen ? "w-64 opacity-100" : "w-0 opacity-0"}`}>
                 <input
                   ref={searchInputRef}
                   type="text"
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   placeholder="Search classes..."
-                  className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground placeholder-muted outline-none transition focus:border-brand"
+                  className="w-full border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder-muted outline-none transition focus:border-brand"
                 />
+                </div>
+                <button type="button" onClick={() => setIsSearchOpen((open) => !open)} className="inline-flex items-center gap-2 border border-border bg-background px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light" title="Search classes">
+                  <Search className="h-4 w-4" /> <span className="hidden sm:inline">Search</span>
+                </button>
+                <button type="button" onClick={() => openModal()} className="inline-flex items-center gap-2 bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover">
+                  <Plus className="h-4 w-4" /> Add class
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsSearchOpen((open) => !open)}
-                className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"
-              >
-                <Search size={16} /> Search
-              </button>
-              <button
-                type="button"
-                onClick={() => openModal()}
-                className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover"
-              >
-                <Plus size={17} /> Add class
-              </button>
             </div>
-          </div>
+          </header>
 
           {error && (
             <div className="rounded-lg border border-error/20 bg-error/10 p-4">
@@ -408,7 +401,6 @@ export default function ClassesPageClient({ classes: initialClasses }: { classes
             </div>
           )}
 
-          {/* Summary Stats Grid */}
           <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <ClassStat
               icon={<BookOpen size={18} />}
@@ -436,9 +428,14 @@ export default function ClassesPageClient({ classes: initialClasses }: { classes
             />
           </section>
 
-          {/* Phase Filters */}
-          <div className="mb-6 flex flex-wrap gap-2">
-            <span className="text-sm font-medium text-muted self-center">School Phase:</span>
+          <section className="border border-border bg-surface px-4 py-3 sm:px-5">
+            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Class directory</p>
+                <p className="mt-1 text-sm text-foreground">{filteredClasses.length} {filteredClasses.length === 1 ? "class" : "classes"} in {getPhaseLabel(activePhase)}</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="mr-1 text-xs font-semibold text-muted">Filter by phase</span>
             {PHASE_OPTIONS.map((phaseOption) => {
               const isActive = activePhase === phaseOption.value;
               const count = getPhaseCount(phaseOption.value);
@@ -448,10 +445,10 @@ export default function ClassesPageClient({ classes: initialClasses }: { classes
                   key={phaseOption.value}
                   type="button"
                   onClick={() => setActivePhase(phaseOption.value)}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                  className={`border px-3 py-1.5 text-xs font-semibold transition ${
                     isActive
                       ? "bg-brand text-white"
-                      : "bg-background text-muted hover:bg-surface"
+                      : "border-border bg-background text-muted hover:border-brand/40 hover:text-brand"
                   }`}
                 >
                   {phaseOption.label}
@@ -459,24 +456,27 @@ export default function ClassesPageClient({ classes: initialClasses }: { classes
                 </button>
               );
             })}
-          </div>
+              </div>
+            </div>
+          </section>
 
-          <div className="mb-4 text-sm text-muted">
-            Showing {filteredClasses.length} class{filteredClasses.length === 1 ? "" : "es"} in {getPhaseLabel(activePhase)}
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs text-muted">Select a class to edit its structure or review its coverage.</p>
+            <span className="hidden items-center gap-1 text-xs font-semibold text-brand sm:inline-flex">Live directory <ArrowUpRight className="h-3 w-3" /></span>
           </div>
 
           {/* Classes Grid/Table */}
-          <div className="overflow-hidden rounded-lg border border-border bg-surface">
+          <div className="overflow-hidden border border-border bg-surface">
             {/* Desktop Table */}
             <table className="hidden sm:table w-full text-left text-sm">
-              <thead className="border-b border-border/70 bg-surface text-muted">
+              <thead className="border-b border-border/70 bg-background text-muted">
                 <tr>
-                  <th className="px-3 py-2 font-semibold">Class</th>
-                  <th className="px-3 py-2 font-semibold">Phase</th>
-                  <th className="px-3 py-2 font-semibold">Arm</th>
-                  <th className="px-3 py-2 font-semibold">Pupils</th>
-                  <th className="px-3 py-2 font-semibold">Subjects</th>
-                  <th className="px-3 py-2 font-semibold text-right">Action</th>
+                  <th className="px-5 py-3 text-[11px] font-bold uppercase tracking-[.12em]">Class</th>
+                  <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-[.12em]">Phase</th>
+                  <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-[.12em]">Arm</th>
+                  <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-[.12em]">Pupils</th>
+                  <th className="px-3 py-3 text-[11px] font-bold uppercase tracking-[.12em]">Subjects</th>
+                  <th className="px-5 py-3 text-right text-[11px] font-bold uppercase tracking-[.12em]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -484,8 +484,8 @@ export default function ClassesPageClient({ classes: initialClasses }: { classes
                   filteredClasses.map((classItem) => {
                     const colors = getPhaseColor(classItem.phase);
                     return (
-                      <tr key={classItem.id} className={`transition-colors hover:bg-background/50 ${colors.row}`}>
-                        <td className="px-3 py-2 font-medium text-foreground">{classItem.name}</td>
+                      <tr key={classItem.id} className={`transition-colors hover:bg-brand-light/20 ${colors.row}`}>
+                        <td className="px-5 py-4 font-semibold text-foreground">{classItem.name}</td>
                         <td className="px-3 py-2">
                           <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${colors.bg} ${colors.text}`}>
                             {getPhaseLabel(classItem.phase)}
@@ -498,7 +498,7 @@ export default function ClassesPageClient({ classes: initialClasses }: { classes
                           <div className="flex items-center gap-2 justify-end">
                             <button
                               onClick={() => openModal(classItem)}
-                              className="flex items-center gap-2 inline-flex px-3 py-1.5 rounded-lg border border-border bg-surface hover:bg-background text-sm font-medium transition-colors"
+                              className="inline-flex items-center gap-2 border border-border bg-surface px-3 py-1.5 text-sm font-medium transition-colors hover:border-brand/40 hover:bg-brand-light"
                             >
                               <Edit2 className="h-3.5 w-3.5" />
                               Edit
@@ -506,9 +506,9 @@ export default function ClassesPageClient({ classes: initialClasses }: { classes
                             <button
                               type="button"
                               onClick={() => openDeleteModal(classItem)}
-                              className="inline-flex px-3 py-1.5 rounded-lg border border-error/20 bg-error/10 hover:bg-error/20 text-error text-sm font-medium transition-colors"
+                              className="inline-flex items-center gap-2 border border-transparent px-3 py-1.5 text-sm font-medium text-error transition-colors hover:border-error/20 hover:bg-error/10"
                             >
-                              Delete
+                              <Trash2 className="h-3.5 w-3.5" /> Delete
                             </button>
                           </div>
                         </td>
@@ -526,7 +526,7 @@ export default function ClassesPageClient({ classes: initialClasses }: { classes
             </table>
 
             {/* Mobile List */}
-            <div className="sm:hidden space-y-2 p-4">
+            <div className="space-y-3 p-4 sm:hidden">
               {filteredClasses.length > 0 ? (
                 filteredClasses.map((classItem) => {
                   const colors = getPhaseColor(classItem.phase);
@@ -534,7 +534,7 @@ export default function ClassesPageClient({ classes: initialClasses }: { classes
                     <button
                       key={classItem.id}
                       onClick={() => openModal(classItem)}
-                      className="block w-full text-left rounded-lg border border-border bg-surface p-4 hover:border-border/80 hover:shadow-sm transition-all"
+                      className="block w-full border border-border bg-background p-4 text-left transition-all hover:border-brand/40 hover:bg-brand-light/20"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex-1 min-w-0">
@@ -572,15 +572,15 @@ export default function ClassesPageClient({ classes: initialClasses }: { classes
                 @keyframes classes_delete_exit { from { transform: translateX(0) scale(1); opacity: 1 } to { transform: translateX(36px) scale(.98); opacity: 0 } }
               `}</style>
 
-              <div
-                className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(220,38,38,0.16)]"
+                <div
+                className="w-full max-w-md overflow-hidden border border-border bg-surface shadow-[0_16px_50px_rgba(220,38,38,0.16)]"
                 style={{
                   animation: `${deleteAnimateState === "enter" ? "classes_delete_enter" : "classes_delete_exit"} 320ms cubic-bezier(.2,.9,.2,1)`,
                 }}
               >
                 <div className="border-b border-border/70 bg-error/10 px-6 py-5">
                   <div className="flex items-start gap-3">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-error/20 bg-error/10 shadow-sm">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-error/20 bg-error/10">
                       <AlertCircle className="h-6 w-6 text-error" />
                     </div>
                     <div>
@@ -642,7 +642,7 @@ export default function ClassesPageClient({ classes: initialClasses }: { classes
               `}</style>
 
               <div
-                className="w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
+                className="w-full max-w-2xl overflow-hidden border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
                 style={{ animation: `classes_modal_enter 320ms cubic-bezier(.2,.9,.2,1)` }}
               >
                 <div className="border-b border-border/70 bg-brand/10 px-6 py-5">
@@ -663,9 +663,9 @@ export default function ClassesPageClient({ classes: initialClasses }: { classes
                         playCloseTone();
                         setIsOpen(false);
                       }}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-border hover:bg-background transition-colors"
+                      className="flex h-8 w-8 items-center justify-center border border-border hover:bg-background transition-colors"
                     >
-                      ✕
+                      <X className="h-4 w-4" />
                     </button>
                   </div>
                 </div>

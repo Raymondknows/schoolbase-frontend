@@ -93,20 +93,21 @@ export default function AcademicYearSettingsPageClient({
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <main className="min-h-screen pb-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand">
-            School year setup
+          <p className="text-xs font-bold uppercase tracking-[.16em] text-brand">
+            Academic operations
           </p>
-          <h1 className="mt-2 text-3xl font-bold text-foreground">
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
             Academic years & terms
           </h1>
-          <p className="mt-3 max-w-2xl text-sm text-muted">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
             Manage academic years and term periods for the whole school. Edit terms using table actions and update details in a modal.
           </p>
-        </div>
-
         <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
           <Button type="button" className="w-full sm:w-auto" onClick={() => setShowNewTermModal(true)} disabled={academicYears.length === 0}>
             Add term
@@ -116,23 +117,25 @@ export default function AcademicYearSettingsPageClient({
           </Button>
         </div>
       </div>
+      </div>
+      </header>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-3xl border border-border bg-surface p-3">
+        <div className="border border-border bg-surface p-5">
           <p className="text-sm text-muted">Academic years</p>
           <p className="mt-2 text-2xl font-semibold text-foreground">{academicYears.length}</p>
         </div>
-        <div className="rounded-3xl border border-border bg-surface p-3">
+        <div className="border border-border bg-surface p-5">
           <p className="text-sm text-muted">Total terms</p>
           <p className="mt-2 text-2xl font-semibold text-foreground">{totalTerms}</p>
         </div>
-        <div className="rounded-3xl border border-border bg-surface p-3">
+        <div className="border border-border bg-surface p-5">
           <p className="text-sm text-muted">Search</p>
           <p className="mt-2 text-2xl font-semibold text-foreground">{searchQuery ? "Filtered" : "All"}</p>
         </div>
       </div>
 
-      <div className="rounded-3xl border border-border bg-surface p-3 shadow-sm">
+      <section className="border border-border bg-surface p-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-xl font-semibold text-foreground">Term table</h2>
@@ -163,10 +166,10 @@ export default function AcademicYearSettingsPageClient({
             />
           </label>
         </div>
-      </div>
+      </section>
 
       {filteredAcademicYears.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-border bg-background p-8 text-center text-sm text-muted">
+        <div className="border border-dashed border-border bg-background p-8 text-center text-sm text-muted">
           No academic years or terms match your search. Add a new academic year to begin.
         </div>
       ) : (
@@ -237,8 +240,8 @@ export default function AcademicYearSettingsPageClient({
       )}
 
       {showNewYearModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-2xl rounded-3xl border border-border bg-surface p-6 shadow-2xl">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-2xl overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-xl font-semibold text-foreground">Create academic year</h2>
@@ -283,8 +286,8 @@ export default function AcademicYearSettingsPageClient({
       )}
 
       {showNewTermModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-2xl rounded-3xl border border-border bg-surface p-6 shadow-2xl">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-2xl overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-xl font-semibold text-foreground">Add term</h2>
@@ -340,8 +343,8 @@ export default function AcademicYearSettingsPageClient({
       )}
 
       {editingTerm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-2xl rounded-3xl border border-border bg-surface p-6 shadow-2xl">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-2xl overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-xl font-semibold text-foreground">Edit term</h2>
@@ -407,5 +410,6 @@ export default function AcademicYearSettingsPageClient({
         </div>
       )}
     </div>
+    </main>
   );
 }

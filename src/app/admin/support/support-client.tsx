@@ -1,8 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
-import { ChevronDown, HelpCircle, Search, LifeBuoy } from "lucide-react";
+import { CheckCircle2, ChevronDown, Clock3, FileText, HelpCircle, Inbox, LifeBuoy, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErrorModal } from "@/components/ui/error-modal";
 import { getBackendUrl } from "@/lib/backend-url";
@@ -295,6 +294,10 @@ export default function SupportClient({
     return (faqCategory === "All topics" || faq.category === faqCategory) && (!faqSearch.trim() || haystack.includes(faqSearch.trim().toLowerCase()));
   });
 
+  const openCount = requests.filter((request) => request.status === "OPEN").length;
+  const inProgressCount = requests.filter((request) => request.status === "IN_PROGRESS").length;
+  const resolvedCount = requests.filter((request) => request.status === "RESOLVED" || request.status === "CLOSED").length;
+
   const uploadSupportFiles = useCallback(async (files: FileList | File[]) => {
     if (!files || files.length === 0) return [];
 
@@ -395,27 +398,28 @@ export default function SupportClient({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand/10">
-            <HelpCircle className="h-5 w-5 text-brand" />
-          </div>
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+        <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[.12em] text-muted">Support center</p>
-            <h1 className="text-3xl font-bold text-foreground">Support Requests</h1>
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand">
+              <LifeBuoy className="h-4 w-4" />
+              Support center
+            </div>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Support requests</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Keep school operations moving with a clear view of open issues, support conversations, and practical answers.</p>
           </div>
-        </div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search tickets..."
-            className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 sm:w-64"
+            className="w-full border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 sm:w-64"
           />
           <select
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.target.value)}
-            className="rounded-lg border border-border bg-background px-4 py-2 text-sm outline-none"
+            className="border border-border bg-background px-4 py-2.5 text-sm outline-none"
           >
             <option value="ALL">All statuses</option>
             <option value="OPEN">Open</option>
@@ -425,14 +429,15 @@ export default function SupportClient({
           </select>
           <Button
             type="button"
-            className="inline-flex h-10 items-center gap-2 px-4 py-2 text-sm bg-brand hover:bg-brand-hover text-white font-semibold rounded-lg"
+            className="inline-flex h-10 items-center gap-2 bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-hover"
             onClick={() => {
               setError(null);
               setSuccess(null);
               setShowCreateModal(true);
             }}
           >
-            Create support request
+            <Plus className="h-4 w-4" />
+            New request
           </Button>
           <Button
             type="button"
@@ -443,8 +448,41 @@ export default function SupportClient({
             <LifeBuoy className="h-4 w-4" />
             Help center
           </Button>
+          </div>
         </div>
-      </div>
+      </header>
+
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { label: "All requests", value: requests.length, detail: "Across your support history", icon: FileText },
+          { label: "Open", value: openCount, detail: "Awaiting support attention", icon: Inbox },
+          { label: "In progress", value: inProgressCount, detail: "Currently being handled", icon: Clock3 },
+          { label: "Resolved", value: resolvedCount, detail: "Completed conversations", icon: CheckCircle2 },
+        ].map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <article key={stat.label} className="border border-border bg-surface p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex h-10 w-10 items-center justify-center bg-brand/10 text-brand">
+                  <Icon className="h-4 w-4" />
+                </div>
+                <span className="text-2xl font-semibold tracking-tight text-foreground">{stat.value}</span>
+              </div>
+              <p className="mt-5 text-[11px] font-bold uppercase tracking-[.14em] text-muted">{stat.label}</p>
+              <p className="mt-1 text-xs text-muted">{stat.detail}</p>
+            </article>
+          );
+        })}
+      </section>
+
+      <section>
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Workspace</p>
+            <h2 className="mt-1 text-lg font-semibold text-foreground">Your support inbox</h2>
+          </div>
+          <span className="text-sm text-muted">{sorted.length} visible · {unreadCount} unread</span>
+        </div>
 
       <ErrorModal
         isOpen={Boolean(success)}
@@ -748,6 +786,7 @@ export default function SupportClient({
           )}
         </section>
       </div>
+      </section>
 
       {showCreateModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-4" onClick={() => setShowCreateModal(false)}>

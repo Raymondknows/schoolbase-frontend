@@ -245,26 +245,28 @@ export default function SubscriptionPage() {
                                error?.includes('403');
     
     return (
-      <div className="w-full max-w-5xl mx-auto space-y-10">
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-3xl font-bold">Your Subscription</h1>
-          <p className="text-sm text-muted mt-2">
-            Manage your school's subscription plan and billing
-          </p>
-        </div>
+      <main className="min-h-screen pb-12">
+      <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+        <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+          <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+          <div className="relative">
+            <p className="text-xs font-bold uppercase tracking-[.16em] text-brand">Billing and plans</p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Your subscription</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Manage your school&apos;s plan, access dates, and renewal options from one place.</p>
+          </div>
+        </header>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="rounded-full border border-border bg-surface px-4 py-2 text-sm text-muted">
+          <div className="border border-border bg-surface px-4 py-2 text-sm text-muted">
             Current market: <span className="font-semibold text-foreground">{countryName}</span> · <span className="font-semibold text-brand">{currency}</span>
           </div>
-          <div className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium text-muted">
+          <div className="border border-border bg-surface px-4 py-2 text-sm font-medium text-muted">
             Payment provider: <span className="font-semibold text-foreground">{paymentProvider}</span>
           </div>
         </div>
 
         {/* Error Card */}
-        <div className="rounded-xl border border-border p-6 bg-surface/60 backdrop-blur-sm space-y-4">
+        <div className="border border-border bg-surface p-6 space-y-4">
           <div className="flex items-start gap-4">
             <AlertCircle className={`h-5 w-5 mt-0.5 flex-shrink-0 ${isSubscriptionError ? 'text-orange-600' : 'text-red-600'}`} />
             <div className="flex-1">
@@ -299,7 +301,7 @@ export default function SubscriptionPage() {
         </div>
 
         {/* Troubleshooting */}
-        <div className="rounded-xl border border-border p-6 bg-surface/40">
+        <div className="border border-border bg-surface p-6">
           <h3 className="text-sm font-semibold mb-3 text-foreground">Troubleshooting Tips</h3>
           <ul className="space-y-2 text-sm text-muted">
             <li className="flex gap-2">
@@ -327,6 +329,7 @@ export default function SubscriptionPage() {
           </ul>
         </div>
       </div>
+      </main>
     );
   }
 
@@ -351,26 +354,25 @@ export default function SubscriptionPage() {
     : null;
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-10">
-      {/* Header */}
-      <div className="text-center">
-        <h1 className="text-3xl font-bold">Your Subscription</h1>
-        <p className="text-sm text-muted mt-2">
-          Manage your school's subscription plan and billing
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="rounded-full border border-border bg-surface px-4 py-2 text-sm text-muted">
-          Current market: <span className="font-semibold text-foreground">{countryName}</span> · <span className="font-semibold text-brand">{currency}</span>
+    <main className="min-h-screen pb-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+        <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[.16em] text-brand">Billing and plans</p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Your subscription</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Manage your school&apos;s plan, access dates, and renewal options from one place.</p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <div className="border border-border bg-background px-3 py-2 text-sm text-muted">Market: <span className="font-semibold text-foreground">{countryName}</span> · <span className="font-semibold text-brand">{currency}</span></div>
+            <div className="border border-border bg-background px-3 py-2 text-sm text-muted">Provider: <span className="font-semibold text-foreground">{paymentProvider}</span></div>
+          </div>
         </div>
-        <div className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium text-muted">
-          Payment provider: <span className="font-semibold text-foreground">{paymentProvider}</span>
-        </div>
-      </div>
+      </header>
 
       {/* Premium Status Hero Card */}
-      <div className="rounded-xl border border-border p-6 md:p-8 bg-surface/60 backdrop-blur-sm">
+      <section className="border border-border bg-surface p-6 md:p-8">
         <div className="flex items-start gap-4">
           <div className={`${config.color} p-3 rounded-lg bg-white/50 flex-shrink-0`}>
             {config.icon}
@@ -379,18 +381,18 @@ export default function SubscriptionPage() {
             <h2 className="text-2xl font-bold text-foreground mb-1">{subscription.schoolName}</h2>
             <p className="text-sm text-muted mb-3">{subscription.message}</p>
             <div className="inline-flex">
-              <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${config.badge}`}>
+              <span className={`border px-2.5 py-1 text-xs font-semibold ${config.badge}`}>
                 {status.replace(/_/g, " ")}
               </span>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Plan & Time Remaining Grid */}
       <div className="grid gap-5 md:grid-cols-2">
         {/* Current Plan Card - Selected State */}
-        <div className="rounded-xl border-2 border-brand ring-2 ring-brand/20 p-5 md:p-6 bg-surface/60 backdrop-blur-sm hover:border-brand transition-colors">
+        <div className="border-2 border-brand bg-surface p-5 md:p-6 hover:border-brand transition-colors">
           <div className="space-y-4 h-full flex flex-col">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-slate-600 mb-2">Current Plan</p>
@@ -405,7 +407,7 @@ export default function SubscriptionPage() {
 
         {/* Time Remaining Card */}
         {subscription.currentPlan !== "ENTERPRISE" && (
-          <div className="rounded-xl border border-border p-5 md:p-6 bg-surface/60 backdrop-blur-sm hover:border-border/80 transition-colors flex flex-col">
+          <div className="border border-border p-5 md:p-6 bg-surface hover:border-border/80 transition-colors flex flex-col">
             <p className="text-xs font-semibold uppercase tracking-widest text-slate-600 mb-4">Time Remaining</p>
             <div className="flex-1 flex flex-col items-center justify-center py-4">
               <p className="text-5xl font-bold text-brand">{Math.max(0, subscription.daysRemaining)}</p>
@@ -419,7 +421,7 @@ export default function SubscriptionPage() {
       <div className="grid gap-5 md:grid-cols-[repeat(2,minmax(0,1fr))] lg:grid-cols-[repeat(3,minmax(0,1fr))]">
         {/* Active/Trial Status Date */}
         {(subscription.trialEndsAt || subscription.subscriptionExpiresAt || isActivePlan) && (
-          <div className="rounded-xl border border-border p-5 md:p-6 bg-surface/60 backdrop-blur-sm flex items-center gap-4">
+          <div className="border border-border p-5 md:p-6 bg-surface flex items-center gap-4">
             <Calendar className="h-5 w-5 text-slate-400 flex-shrink-0" />
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">{activePlanLabel}</p>
@@ -433,7 +435,7 @@ export default function SubscriptionPage() {
 
         {/* Subscription End Date */}
         {subscription.subscriptionExpiresAt && (
-          <div className="rounded-xl border border-border p-5 md:p-6 bg-surface/60 backdrop-blur-sm flex items-center gap-4">
+          <div className="border border-border p-5 md:p-6 bg-surface flex items-center gap-4">
             <Calendar className="h-5 w-5 text-slate-400 flex-shrink-0" />
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Expires On</p>
@@ -449,7 +451,7 @@ export default function SubscriptionPage() {
         )}
 
         {/* Actions Section */}
-        <div className="rounded-xl border border-border p-6 md:p-8 bg-surface/40">
+        <div className="border border-border p-6 md:p-8 bg-surface">
           <h3 className="text-lg font-semibold mb-4 text-foreground">Next Steps</h3>
           <div className="space-y-3">
             {subscription.canRenew && (
@@ -487,7 +489,7 @@ export default function SubscriptionPage() {
       </div>
 
       {/* Support & Help Section */}
-      <div className="rounded-xl border border-border p-6 md:p-8 bg-surface/40">
+      <div className="border border-border p-6 md:p-8 bg-surface">
         <p className="text-sm text-foreground">
           <span className="font-semibold">Need assistance?</span> If you have questions about your subscription, plan features, or would like to contact support,{" "}
           <Link href="/admin/support" className="font-semibold text-brand hover:underline transition-colors">
@@ -500,5 +502,6 @@ export default function SubscriptionPage() {
       {/* Help & Guide */}
       <UserGuide guide={HELP_GUIDE} />
     </div>
+    </main>
   );
 }

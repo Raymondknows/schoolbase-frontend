@@ -12,6 +12,7 @@ import {
   Sparkles,
   Users,
   X,
+  Eye,
 } from "lucide-react";
 import { getBackendUrl } from "@/lib/backend-url";
 import { Button } from "@/components/ui/button";
@@ -298,21 +299,21 @@ export default function AdminAdmissionsPage() {
   }
 
   return (
-    <main className="min-h-screen text-foreground">
-      <div className="space-y-8 w-full">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand/10">
-              <Users className="h-5 w-5 text-brand" />
+    <main className="min-h-screen pb-12 text-foreground">
+      <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+        <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-10 sm:px-8 sm:pb-8 sm:pt-12">
+          <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+          <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand">
+              <Users className="h-4 w-4" /> Student admissions
             </div>
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-[.12em] text-muted">Student admissions</p>
-              <h1 className="text-3xl font-bold text-foreground">Admissions requests</h1>
-            </div>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Admissions requests</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Review applications, confirm student details, and move each request through the admissions workflow.</p>
           </div>
           <Button
             type="button"
-            className="inline-flex h-10 items-center gap-2 px-4 py-2 text-sm bg-brand hover:bg-brand-hover text-white font-semibold rounded-lg"
+            className="inline-flex h-10 items-center gap-2 rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-hover"
             onClick={() => void loadApplications()}
             disabled={loading}
             aria-busy={loading}
@@ -321,9 +322,10 @@ export default function AdminAdmissionsPage() {
             Refresh
           </Button>
         </div>
+        </header>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
-          <div className="border border-border bg-surface p-5">
+          <div className="border border-border bg-surface p-5 transition hover:border-brand/40 hover:bg-brand-light/20">
             <div className="mb-4 flex items-center gap-2 text-brand">
               <Sparkles className="h-4 w-4 text-brand" />
               <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">Total requests</span>
@@ -331,7 +333,7 @@ export default function AdminAdmissionsPage() {
             <div className="text-3xl font-semibold text-foreground">{summary.total}</div>
             <div className="mt-1 text-xs text-muted">All admission requests submitted</div>
           </div>
-          <div className="border border-border bg-surface p-5">
+          <div className="border border-border bg-surface p-5 transition hover:border-brand/40 hover:bg-brand-light/20">
             <div className="mb-4 flex items-center gap-2 text-brand">
               <Clock3 className="h-4 w-4 text-brand" />
               <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">Under review</span>
@@ -339,7 +341,7 @@ export default function AdminAdmissionsPage() {
             <div className="text-3xl font-semibold text-foreground">{summary.UNDER_REVIEW}</div>
             <div className="mt-1 text-xs text-muted">Waiting for final review</div>
           </div>
-          <div className="border border-border bg-surface p-5">
+          <div className="border border-border bg-surface p-5 transition hover:border-brand/40 hover:bg-brand-light/20">
             <div className="mb-4 flex items-center gap-2 text-brand">
               <CheckCircle2 className="h-4 w-4 text-brand" />
               <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">Approved</span>
@@ -347,7 +349,7 @@ export default function AdminAdmissionsPage() {
             <div className="text-3xl font-semibold text-foreground">{summary.APPROVED}</div>
             <div className="mt-1 text-xs text-muted">Ready for onboarding</div>
           </div>
-          <div className="border border-border bg-surface p-5">
+          <div className="border border-border bg-surface p-5 transition hover:border-brand/40 hover:bg-brand-light/20">
             <div className="mb-4 flex items-center gap-2 text-brand">
               <CircleX className="h-4 w-4 text-brand" />
               <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">Rejected</span>
@@ -357,7 +359,7 @@ export default function AdminAdmissionsPage() {
           </div>
         </div>
         {message ? (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <div className="border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
             {message}
           </div>
         ) : null}
@@ -365,13 +367,13 @@ export default function AdminAdmissionsPage() {
         <UserGuide guide={HELP_GUIDE} />
 
         <section className="border border-border bg-surface">
-          <div className="flex flex-col gap-4 border-b border-border px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 border-b border-border px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-[.12em] text-muted">Incoming requests</p>
-              <h2 className="text-2xl font-semibold text-foreground">Admission applications</h2>
+              <h2 className="mt-1 text-lg font-semibold text-foreground">Admission applications</h2>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground">
+              <div className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground">
                 <span className="font-medium text-muted">Status filter</span>
                 <select
                   value={statusFilter}
@@ -428,14 +430,14 @@ export default function AdminAdmissionsPage() {
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-semibold ${statusStyles[application.status] || statusStyles.SUBMITTED}`}>
+                            <span className={`inline-flex items-center rounded-md border px-2.5 py-1 text-xs font-semibold ${statusStyles[application.status] || statusStyles.SUBMITTED}`}>
                             {application.status.replace(/_/g, " ")}
                           </span>
                           <select
                             value={application.status}
                             onChange={(event) => void updateStatus(application.id, event.target.value)}
                             disabled={updatingApplicationId === application.id}
-                            className="rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground outline-none focus:border-brand"
+                            className="rounded-md border border-border bg-background px-3 py-2 text-xs text-foreground outline-none focus:border-brand"
                           >
                             <option value="SUBMITTED">Submitted</option>
                             <option value="UNDER_REVIEW">Under Review</option>
@@ -454,9 +456,11 @@ export default function AdminAdmissionsPage() {
                         <button
                           type="button"
                           onClick={() => openApplicationDetail(application)}
-                          className="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-hover"
+                          aria-label="View application details"
+                          title="View application details"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-brand text-white transition hover:bg-brand-hover"
                         >
-                          View
+                          <Eye className="h-4 w-4" />
                         </button>
                       </td>
                     </tr>
@@ -470,57 +474,24 @@ export default function AdminAdmissionsPage() {
 
       {successModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-[460px] overflow-hidden rounded-lg border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]">
-            <div className="flex items-start justify-between border-b border-border px-5 py-4">
+          <div className="w-full max-w-[460px] overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]">
+            <div className="flex items-start justify-between border-b border-border bg-brand/10 px-4 py-4 sm:px-5">
               <div className="flex items-center gap-3">
-                <div
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-brand/20 bg-brand/10"
-                >
-                  {modalType === "success" ? (
-                    <CheckCircle2 className="h-5 w-5 text-brand" />
-                  ) : modalType === "rejected" ? (
-                    <CircleX className="h-5 w-5 text-brand" />
-                  ) : (
-                    <AlertTriangle className="h-5 w-5 text-brand" />
-                  )}
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md border border-brand/20 bg-brand/10">
+                  {modalType === "success" ? <CheckCircle2 className="h-5 w-5 text-brand" /> : modalType === "rejected" ? <CircleX className="h-5 w-5 text-brand" /> : <AlertTriangle className="h-5 w-5 text-brand" />}
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold text-foreground">{modalTitle}</h2>
-                  <p className="mt-1 text-sm text-muted">
-                    {modalType === "success"
-                      ? "The request has been updated successfully."
-                      : modalType === "rejected"
-                        ? "The application status has been changed to rejected."
-                        : "Please review the message below and try again."}
-                  </p>
+                  <p className="mt-1 text-sm text-muted">{modalType === "success" ? "The request has been updated successfully." : modalType === "rejected" ? "The application status has been changed to rejected." : "Please review the message below and try again."}</p>
                 </div>
               </div>
-              <button
-                type="button"
-                aria-label="Close result modal"
-                onClick={() => {
-                  playCloseTone();
-                  setSuccessModalOpen(false);
-                }}
-                className="rounded-lg border border-border bg-background p-2 text-muted transition hover:bg-surface hover:text-foreground"
-              >
+              <button type="button" aria-label="Close result modal" onClick={() => { playCloseTone(); setSuccessModalOpen(false); }} className="rounded-md border border-border bg-background p-2 text-muted transition hover:bg-surface hover:text-foreground">
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="px-5 py-5">
-              <p className="text-sm leading-6 text-foreground">{modalMessage}</p>
-            </div>
-            <div className="border-t border-border bg-background px-5 py-4">
-              <button
-                type="button"
-                onClick={() => {
-                  playCloseTone();
-                  setSuccessModalOpen(false);
-                }}
-                className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface"
-              >
-                Close
-              </button>
+            <div className="px-4 py-4 sm:px-5 sm:py-5"><p className="text-sm leading-6 text-foreground">{modalMessage}</p></div>
+            <div className="border-t border-border bg-background px-4 py-4 sm:px-5">
+              <button type="button" onClick={() => { playCloseTone(); setSuccessModalOpen(false); }} className="w-full rounded-md border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface">Close</button>
             </div>
           </div>
         </div>
@@ -528,13 +499,13 @@ export default function AdminAdmissionsPage() {
 
       {detailModalVisible && selectedApplication && (
         <div className={`fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-3 py-4 sm:px-4 transition-opacity duration-300 ease-out ${detailModalOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
-          <div className={`w-full max-w-[1120px] max-h-[calc(100vh-1.5rem)] overflow-hidden rounded-lg border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)] transition-all duration-500 ease-out ${detailModalOpen ? "translate-y-0 opacity-100" : "translate-y-16 opacity-0"}`}>
+          <div className={`w-full max-w-[1120px] max-h-[calc(100vh-1.5rem)] overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)] transition-all duration-500 ease-out ${detailModalOpen ? "translate-y-0 opacity-100" : "translate-y-16 opacity-0"}`}>
             <div
-              className="flex flex-col gap-4 border-b border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 bg-background"
+              className="flex flex-col gap-4 border-b border-border bg-brand/10 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"
             >
               <div className="flex items-start gap-3">
                 <div
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand/10"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand/10"
                 >
                   <DetailStatusIcon className="h-5 w-5 text-brand" />
                 </div>
@@ -544,7 +515,7 @@ export default function AdminAdmissionsPage() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1 text-xs font-semibold ${detailStatusClass}`}>
+                <span className={`inline-flex items-center gap-2 rounded-md border px-3 py-1 text-xs font-semibold ${detailStatusClass}`}>
                   <DetailStatusIcon className="h-3.5 w-3.5" />
                   {getStatusLabel(detailStatus)}
                 </span>
@@ -552,7 +523,7 @@ export default function AdminAdmissionsPage() {
                   type="button"
                   aria-label="Close application review"
                   onClick={closeApplicationDetail}
-                  className="rounded-lg border border-border bg-surface p-2 text-muted transition hover:bg-background hover:text-foreground"
+                  className="rounded-md border border-border bg-surface p-2 text-muted transition hover:bg-background hover:text-foreground"
                 >
                   <X className="h-4 w-4" />
                 </button>

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { UserGuide } from "@/components/ui/user-guide";
 import { getBackendUrl } from "@/lib/backend-url";
-import { Search, Trash2, X, Check, AlertCircle, Edit2 } from "lucide-react";
+import { Search, Trash2, X, Check, AlertCircle, Edit2, BookOpen, Plus, ChevronRight } from "lucide-react";
 
 const SUBJECTS_GUIDE = {
   title: "Subjects Management",
@@ -324,23 +324,19 @@ export default function SubjectsPageClient({
 
   return (
     <>
-      <div className="w-full">
-      <div className="mb-4 text-sm text-brand">
-        <Link href="/admin" className="hover:underline">
-          ← Admin
-        </Link>
-      </div>
-
-      <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
+      <main className="min-h-screen pb-12">
+      <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-10 sm:px-8 sm:pb-8 sm:pt-12">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+        <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
         <div className="min-w-0">
-          <h1 className="text-3xl font-bold text-foreground">Subjects</h1>
-          <p className="mt-2 text-sm text-muted sm:text-base">
-            Manage the curriculum with searchable subject records and class assignments.
-          </p>
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand"><BookOpen className="h-4 w-4" /> Academic operations</div>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Subjects</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Manage curriculum subjects, class assignments, and teacher coverage.</p>
         </div>
 
         <div className="flex flex-col gap-2 w-full sm:w-auto sm:flex-row sm:items-center">
-          <div className="hidden rounded-full bg-background px-4 py-2 text-sm text-muted sm:block">
+          <div className="hidden border border-border bg-background px-3 py-2 text-sm text-muted sm:block">
             {activeSubjectCount} subject{activeSubjectCount === 1 ? "" : "s"} · {activeClassCount} class{activeClassCount === 1 ? "" : "es"}
           </div>
           {/* Animated Search Panel - slides out on same line */}
@@ -358,22 +354,25 @@ export default function SubjectsPageClient({
             type="button"
             variant="primary"
             onClick={() => setIsSearchOpen((open) => !open)}
-            className="h-9 rounded-md border border-brand bg-brand px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-brand/90"
+            aria-label={isSearchOpen ? "Close search" : "Search subjects"}
+            title={isSearchOpen ? "Close search" : "Search subjects"}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-brand bg-brand p-0 text-sm font-semibold text-white transition hover:bg-brand-hover sm:h-auto sm:w-auto sm:gap-2 sm:px-3 sm:py-2"
           >
             <Search className="h-4 w-4" />
-            {isSearchOpen ? "Close Search" : "Search Subject"}
+            <span className="hidden sm:inline">{isSearchOpen ? "Close" : "Search"}</span>
           </Button>
           <button
             type="button"
             onClick={() => openSubjectModal()}
-            className="h-9 rounded-md border border-brand bg-brand px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-brand/90"
+            className="inline-flex items-center gap-2 rounded-md border border-brand bg-brand px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
           >
-            Add subject
+            <Plus className="h-4 w-4" /> Add subject
           </button>
         </div>
       </div>
+      </header>
 
-      <div className="overflow-hidden rounded-lg border border-border bg-surface">
+      <div className="overflow-hidden border border-border bg-surface">
         {/* Desktop Table */}
         <table className="hidden sm:table w-full text-left text-sm">
           <thead className="border-b border-border bg-background text-muted">
@@ -404,7 +403,7 @@ export default function SubjectsPageClient({
                           type="button"
                           onClick={() => openSubjectModal(subject)}
                           aria-label="Edit subject"
-                          className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-foreground transition-colors hover:bg-surface focus:outline-none focus:ring-2 focus:ring-brand/30"
+                          className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background text-foreground transition-colors hover:bg-surface focus:outline-none focus:ring-2 focus:ring-brand/30"
                         >
                           <Edit2 className="h-4 w-4" />
                         </button>
@@ -412,7 +411,7 @@ export default function SubjectsPageClient({
                           type="button"
                           onClick={() => openDeleteModal(subject)}
                           aria-label="Delete subject"
-                          className="flex h-10 w-10 items-center justify-center rounded-full border border-error/20 bg-error/10 text-error transition-colors hover:bg-error/20"
+                          className="flex h-8 w-8 items-center justify-center rounded-md border border-error/20 bg-error/10 text-error transition-colors hover:bg-error/20"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -440,7 +439,7 @@ export default function SubjectsPageClient({
                 <button
                   key={subject.id}
                   onClick={() => openSubjectModal(subject)}
-                    className="block w-full text-left rounded-lg border border-border bg-surface px-4 py-2 hover:bg-background/50 transition-colors"
+                    className="block w-full text-left border border-border bg-surface px-4 py-3 hover:bg-background/50 transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
@@ -465,8 +464,8 @@ export default function SubjectsPageClient({
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-3xl max-h-[90vh] overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]">
-            <div className="border-b border-border/70 bg-brand/10 px-6 py-5">
+          <div className="w-full max-w-3xl max-h-[90vh] overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]">
+            <div className="border-b border-border/70 bg-brand/10 px-4 py-4 sm:px-6 sm:py-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-2xl font-bold text-foreground">
@@ -484,7 +483,7 @@ export default function SubjectsPageClient({
                       type="button"
                       onClick={handleDelete}
                       title="Delete subject"
-                      className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-foreground transition-colors hover:bg-surface focus:outline-none focus:ring-2 focus:ring-brand/30"
+                      className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background text-foreground transition-colors hover:bg-surface focus:outline-none focus:ring-2 focus:ring-brand/30"
                       aria-label="Delete subject"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -506,7 +505,7 @@ export default function SubjectsPageClient({
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="max-h-[calc(90vh-160px)] overflow-y-auto space-y-5 px-6 py-6">
+            <form onSubmit={handleSubmit} className="max-h-[calc(90vh-160px)] overflow-y-auto space-y-5 px-4 py-4 sm:px-6 sm:py-6">
               {error && (
                 <div className="rounded-lg border border-error/20 bg-error/10 p-4">
                   <p className="text-sm text-error">{error}</p>
@@ -595,12 +594,12 @@ export default function SubjectsPageClient({
           `}</style>
 
           <div
-            className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(220,38,38,0.16)]"
+            className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(220,38,38,0.16)]"
             style={{
               animation: `${deleteAnimateState === "enter" ? "subjects_delete_enter" : "subjects_delete_exit"} 320ms cubic-bezier(.2,.9,.2,1)`,
             }}
           >
-            <div className="border-b border-border/70 bg-error/10 px-6 py-5">
+            <div className="border-b border-border/70 bg-error/10 px-4 py-4 sm:px-6 sm:py-5">
               <div className="flex items-start gap-3">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-error/20 bg-error/10 shadow-sm">
                   <AlertCircle className="h-6 w-6 text-error" />
@@ -612,7 +611,7 @@ export default function SubjectsPageClient({
               </div>
             </div>
 
-            <div className="px-6 py-5">
+            <div className="px-4 py-4 sm:px-6 sm:py-5">
               <p className="text-sm leading-6 text-muted">
                 You are about to permanently delete <strong>“{deletingSubjectName}”</strong>.
               </p>
@@ -655,6 +654,7 @@ export default function SubjectsPageClient({
         </div>
       )}
       </div>
+      </main>
       <UserGuide guide={SUBJECTS_GUIDE} />
     </>
   );

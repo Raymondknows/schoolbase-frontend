@@ -531,42 +531,46 @@ export default function SettingsPageClient({
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-5 py-8 sm:px-8 lg:px-12">
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+    <main className="min-h-screen pb-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+      <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
         <div>
-          <div className="flex items-center gap-2 text-sm font-medium text-brand"><Building2 size={17} /> School operations</div>
-          <h1 className="mt-2 text-3xl font-bold text-foreground">School Settings</h1>
-          <p className="mt-1 text-muted">Manage your school profile, branding, payments, admissions, and result access</p>
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand"><Building2 className="h-4 w-4" /> School operations</div>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">School settings</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Manage your school profile, branding, payments, admissions, and result access from one workspace.</p>
           {detectedCountryName && detectedCurrency ? (
             <p className="mt-2 text-sm text-muted">
               Detected market: <span className="font-semibold text-foreground">{detectedCountryName}</span> · <span className="font-semibold text-brand">{detectedCurrency}</span>
             </p>
           ) : null}
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="relative flex flex-wrap gap-3">
           <Link
             href="/admin/settings/academic-years"
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"
+            className="inline-flex items-center justify-center gap-2 rounded-md border border-border bg-background px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"
           >
             <CalendarDays className="h-4 w-4" />
             Manage Session
           </Link>
           <Link
             href="/admin/settings/whatsapp"
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"
+            className="inline-flex items-center justify-center gap-2 rounded-md border border-border bg-background px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"
           >
             <WhatsAppIcon className="h-4 w-4" />
             WhatsApp Settings
           </Link>
           <Link
             href="/admin/settings/result-pins"
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"
+            className="inline-flex items-center justify-center gap-2 rounded-md bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"
           >
             <ShieldCheck className="h-4 w-4" />
             Result PINs
           </Link>
         </div>
       </div>
+      </header>
 
       <div className="flex flex-wrap items-center gap-3 border-b border-border pb-5">
         <span className="text-sm font-semibold text-foreground">Integration status</span>
@@ -577,9 +581,9 @@ export default function SettingsPageClient({
 
       {/* Messages */}
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 flex gap-3">
-          <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-red-700">{error}</p>
+        <div className="border border-error/20 bg-error/10 p-4 flex gap-3">
+          <AlertCircle className="h-5 w-5 text-error flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-error">{error}</p>
         </div>
       )}
 
@@ -1226,7 +1230,7 @@ export default function SettingsPageClient({
 
           {openPanels.security && (
             <div id="security-panel" className="p-6">
-            <div className="rounded-3xl border border-border bg-background p-5 sm:flex sm:items-center sm:justify-between">
+            <div className="border border-border bg-background p-5 sm:flex sm:items-center sm:justify-between">
               <div className="mb-4 sm:mb-0">
                 <p className="font-medium text-foreground">Change password</p>
                 <p className="mt-1 text-sm text-muted">
@@ -1237,7 +1241,7 @@ export default function SettingsPageClient({
               <button
                 type="button"
                 onClick={openPasswordModal}
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-semibold text-foreground shadow-sm transition hover:bg-surface"
+                className="inline-flex items-center justify-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-surface"
               >
                 <KeyRound className="h-4 w-4" />
                 Change password
@@ -1347,14 +1351,14 @@ export default function SettingsPageClient({
           `}</style>
 
           <div
-            className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(220,38,38,0.16)]"
+            className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(220,38,38,0.16)]"
             style={{
               animation: `${deleteAccountAnimateState === "enter" ? "settings_payment_delete_enter" : "settings_payment_delete_exit"} 320ms cubic-bezier(.2,.9,.2,1)`,
             }}
           >
             <div className="border-b border-border/70 bg-error/10 px-6 py-5">
               <div className="flex items-start gap-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-error/20 bg-error/10 shadow-sm">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-error/20 bg-error/10">
                   <AlertCircle className="h-6 w-6 text-error" />
                 </div>
                 <div>
@@ -1368,7 +1372,7 @@ export default function SettingsPageClient({
               <p className="text-sm leading-6 text-muted">
                 You are about to permanently remove <strong>“{deleteAccountTarget.label}”</strong>.
               </p>
-              <div className="mt-4 rounded-lg border border-error/20 bg-error/10 p-3">
+              <div className="mt-4 border border-error/20 bg-error/10 p-3">
                 <p className="text-xs text-error">
                   <strong>Warning:</strong> The account will be removed from invoice payment instructions immediately.
                 </p>
@@ -1379,14 +1383,14 @@ export default function SettingsPageClient({
               <button
                 type="button"
                 onClick={closeDeleteAccountModal}
-                className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-surface text-foreground"
+                className="flex-1 rounded-md border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-surface text-foreground"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={confirmDeleteAccount}
-                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-error px-4 py-2.5 text-sm font-medium text-white hover:bg-error/90 transition-colors"
+                className="flex flex-1 items-center justify-center gap-2 rounded-md bg-error px-4 py-2.5 text-sm font-medium text-white hover:bg-error/90 transition-colors"
               >
                 <Trash2 className="h-4 w-4" />
                 Delete permanently
@@ -1412,12 +1416,12 @@ export default function SettingsPageClient({
           `}</style>
 
           <div
-            className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
+            className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
             role="dialog"
             aria-modal="true"
             style={{ animation: `admin_settings_password_modal_enter 320ms cubic-bezier(.2,.9,.2,1)` }}
           >
-            <div className="border-b border-slate-100 px-6 py-5" style={{ background: 'linear-gradient(90deg, rgba(10,102,194,0.12), rgba(10,102,194,0.04))' }}>
+            <div className="border-b border-border/70 bg-brand/10 px-6 py-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-2xl font-bold text-foreground">Change password</h2>
@@ -1437,14 +1441,14 @@ export default function SettingsPageClient({
 
             <form onSubmit={handleChangePassword} className="space-y-4 px-6 py-6">
               {passwordError && (
-                <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3">
+                <div className="flex items-start gap-2 border border-error/20 bg-error/10 p-3">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
                   <p className="text-sm text-red-800">{passwordError}</p>
                 </div>
               )}
 
               {passwordSuccess && (
-                <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+                <div className="flex items-center gap-2 border border-emerald-200 bg-emerald-50 p-3">
                   <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                   <p className="text-sm text-emerald-800">Password changed successfully.</p>
                 </div>
@@ -1492,7 +1496,7 @@ export default function SettingsPageClient({
                   type="button"
                   onClick={closePasswordModal}
                   disabled={changingPassword}
-                  className="flex-1 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-surface disabled:opacity-50"
+                  className="flex-1 rounded-md border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-surface disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -1500,7 +1504,7 @@ export default function SettingsPageClient({
                 <button
                   type="submit"
                   disabled={changingPassword}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-md bg-brand px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {changingPassword ? (
                     <>
@@ -1520,5 +1524,6 @@ export default function SettingsPageClient({
       {/* Help & Guide */}
       <UserGuide guide={HELP_GUIDE} />
     </div>
+    </main>
   );
 }

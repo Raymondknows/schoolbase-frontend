@@ -8,7 +8,6 @@ import {
   BarChart3,
   Calendar,
   Download,
-  Filter,
   Loader2,
   Search,
 } from "lucide-react";
@@ -376,21 +375,22 @@ export default function AttendanceOverviewPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <main className="min-h-screen pb-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+      <div className="relative flex flex-wrap items-end justify-between gap-5">
         <div className="space-y-2">
           <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-              <BarChart2 className="h-8 w-8 text-brand" />
-              Attendance overview
-            </h1>
-            <p className="mt-1 text-muted">Manage attendance records, review performance, and export reporting from one place.</p>
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand"><BarChart2 className="h-4 w-4" /> Student operations</div>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Attendance overview</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Review attendance health, filter records, and export reporting from one operational workspace.</p>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="relative flex flex-wrap gap-2">
           <button
             onClick={() => setRecordsPanelOpen(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand/90"
+            className="inline-flex items-center gap-2 rounded-md bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"
           >
             <BarChart3 className="h-4 w-4" />
             Open records
@@ -405,6 +405,7 @@ export default function AttendanceOverviewPage() {
           </Button>
         </div>
       </div>
+      </header>
 
       {error && (
         <div className="rounded-lg border border-error bg-error/10 p-4 flex gap-3">
@@ -416,7 +417,7 @@ export default function AttendanceOverviewPage() {
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-4">
+      <section className="grid gap-4 border border-border bg-surface p-5 sm:grid-cols-4">
         <div>
           <label className="text-xs font-semibold uppercase tracking-wider text-muted">Phase</label>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -424,8 +425,8 @@ export default function AttendanceOverviewPage() {
               <button
                 key={phase}
                 onClick={() => selectPhase(phase)}
-                className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
-                  selectedPhase === phase ? "bg-brand text-white" : "bg-background text-muted hover:bg-surface"
+                className={`border px-3 py-1.5 text-xs font-semibold transition ${
+                  selectedPhase === phase ? "border-brand bg-brand text-white" : "border-border bg-background text-muted hover:border-brand/40 hover:text-brand"
                 }`}
               >
                 {PHASE_LABELS[phase]}
@@ -469,10 +470,10 @@ export default function AttendanceOverviewPage() {
             onChange={(e) => setEndDate(e.target.value)}
           />
         </div>
-      </div>
+      </section>
 
 
-      <div className="rounded-lg border border-border bg-surface p-6 shadow-sm transition-shadow">
+      <section className="border border-border bg-surface p-6">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand/10 text-brand">
@@ -505,7 +506,7 @@ export default function AttendanceOverviewPage() {
             ))}
           </div>
 
-          <div className="rounded-xl border border-border bg-surface p-5">
+          <div className="border border-border bg-background p-5">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand/10 text-brand">
                 <Activity className="h-5 w-5" />
@@ -527,7 +528,7 @@ export default function AttendanceOverviewPage() {
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {loading ? (
         <div className="rounded-lg border border-border bg-surface p-8 text-center">
@@ -537,15 +538,15 @@ export default function AttendanceOverviewPage() {
       ) : null}
 
       {recordsPanelOpen && (
-        <div className="fixed inset-0 z-50 bg-foreground/10 backdrop-blur-[2px]" onClick={() => setRecordsPanelOpen(false)}>
-          <div className="absolute inset-y-0 right-0 flex w-full max-w-[640px] flex-col border-l border-brand/15 bg-background/95 shadow-2xl backdrop-blur" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-border bg-gradient-to-r from-brand/10 via-background to-surface px-5 py-4">
+        <div className="fixed inset-0 z-[60] bg-black/50" onClick={() => setRecordsPanelOpen(false)}>
+          <div className="absolute inset-y-0 right-0 flex w-full max-w-[640px] flex-col border-l border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-border/70 bg-brand/10 px-5 py-4">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand">Record Explorer</p>
                 <h3 className="text-lg font-semibold text-foreground">Attendance records</h3>
               </div>
-              <button onClick={() => setRecordsPanelOpen(false)} className="rounded-full border border-border bg-background p-2 text-foreground shadow-sm transition hover:bg-surface">
-                ✕
+              <button onClick={() => setRecordsPanelOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background text-foreground transition hover:bg-surface" aria-label="Close attendance records">
+                ×
               </button>
             </div>
 
@@ -631,5 +632,6 @@ export default function AttendanceOverviewPage() {
         </div>
       )}
     </div>
+    </main>
   );
 }

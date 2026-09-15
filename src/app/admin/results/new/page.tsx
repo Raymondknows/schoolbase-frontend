@@ -155,27 +155,28 @@ export default function NewAssessmentPage() {
   const isFormValid = formData.name && formData.termId && formData.phase;
 
   return (
-    <>
+    <main className="min-h-screen pb-12">
+      <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+        <div className="relative mx-auto flex max-w-7xl items-end justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Create Assessment</h1>
-            <p className="mt-0.5 text-sm text-muted">
-              Set up a new assessment to collect and manage student results
-            </p>
+            <div className="text-xs font-bold uppercase tracking-[.16em] text-brand">Academic operations</div>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Create assessment</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Set up a new assessment to collect and manage student results.</p>
           </div>
           <Link href="/admin/results">
-            <Button variant="secondary">Back to Results</Button>
+            <Button variant="secondary" className="rounded-md border border-border bg-background text-brand">Back to Results</Button>
           </Link>
         </div>
-      </div>
+      </header>
 
       {/* Main Content */}
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-3 sm:px-6 lg:px-8">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Form Column */}
         <div className="lg:col-span-2">
-          <div className="rounded-xl border border-border bg-surface p-6 shadow-sm">
+          <div className="border border-border bg-surface p-6">
             {termsLoading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="mr-2 h-5 w-5 animate-spin text-brand" />
@@ -224,7 +225,7 @@ export default function NewAssessmentPage() {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Academic Year Info */}
-                <div className="rounded-lg border border-brand/20 bg-brand/5 p-4">
+                  <div className="border border-brand/20 bg-brand/5 p-4">
                   <p className="text-xs font-medium text-brand uppercase tracking-wide">Active Academic Year</p>
                   <p className="text-lg font-semibold text-brand mt-1">{currentAcademicYear?.name}</p>
                   <p className="text-xs text-brand mt-2">
@@ -345,13 +346,13 @@ export default function NewAssessmentPage() {
 
         {/* Sidebar - Help & Guide */}
         <div className="lg:col-span-1">
-          <div className="rounded-xl border border-border bg-gradient-to-br from-brand/5 to-brand/5 p-6 shadow-sm">
+          <div className="border border-border bg-surface p-6">
             <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-brand" />
               How It Works
             </h3>
             <div className="mt-4 space-y-4 text-xs text-muted">
-              <div className="bg-white/50 rounded-lg p-3 border border-brand/20">
+                  <div className="border border-brand/20 bg-background p-3">
                 <p className="font-medium text-foreground mb-2">System Structure</p>
                 <div className="space-y-2 text-xs">
                   <div className="flex gap-2">
@@ -399,6 +400,7 @@ export default function NewAssessmentPage() {
           </div>
         </div>
       </div>
-    </>
+      </div>
+    </main>
   );
 }

@@ -23,18 +23,19 @@ export default function SignupSuccessPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
-      <div className="w-full max-w-xl rounded-xl border border-border bg-surface p-8 shadow-sm">
+    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
+      <div className="w-full max-w-xl border border-border bg-surface p-8">
         <div className="mb-6 flex justify-center">
           <AppLogo href="/" size="lg" />
         </div>
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand/20">
+            <div className="flex h-12 w-12 items-center justify-center border border-brand/20 bg-brand/10">
               <CheckCircle2 className="h-8 w-8 text-brand" />
             </div>
           </div>
-          <h1 className="text-xl font-bold text-foreground">Account Created!</h1>
+          <p className="text-xs font-bold uppercase tracking-[.16em] text-brand">SchoolBase onboarding</p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">Account created</h1>
           <p className="mt-2 text-sm text-muted">
             Your school account is ready. Click the button below to log in.
           </p>
@@ -53,6 +54,6 @@ export default function SignupSuccessPage() {
           onClick: () => router.push("/signup"),
         }}
       />
-    </div>
+    </main>
   );
 }
