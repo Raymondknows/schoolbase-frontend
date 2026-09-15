@@ -208,6 +208,22 @@ export function SchoolTable({
     return filteredSchools.slice(start, start + pageSize);
   }, [filteredSchools, page, pageSize]);
 
+  const totalPages = Math.max(1, Math.ceil(filteredSchools.length / pageSize));
+  const pageItems = useMemo<(number | "ellipsis")[]>(() => {
+    if (totalPages <= 5) return Array.from({ length: totalPages }, (_, index) => index + 1);
+
+    const items: (number | "ellipsis")[] = [1];
+    const start = Math.max(2, page - 1);
+    const end = Math.min(totalPages - 1, page + 1);
+
+    if (start > 2) items.push("ellipsis");
+    for (let pageNumber = start; pageNumber <= end; pageNumber += 1) items.push(pageNumber);
+    if (end < totalPages - 1) items.push("ellipsis");
+    items.push(totalPages);
+
+    return items;
+  }, [page, totalPages]);
+
   const currentPageIds = useMemo(
     () => paginated.map((school) => school.id),
     [paginated],
@@ -801,18 +817,21 @@ export function SchoolTable({
             Prev
           </Button>
           <div className="flex items-center gap-1">
-            {Array.from({ length: Math.max(1, Math.ceil(filteredSchools.length / pageSize)) }).map((_, i) => {
-              const pageNumber = i + 1;
-              return (
+            {pageItems.map((pageItem, index) =>
+              pageItem === "ellipsis" ? (
+                <span key={`ellipsis-${index}`} className="inline-flex items-center px-1 py-2 text-xs text-muted" aria-hidden="true">
+                  ...
+                </span>
+              ) : (
                 <button
-                  key={pageNumber}
-                  onClick={() => setPage(pageNumber)}
-                  className={`inline-flex items-center justify-center px-3 py-2 text-xs font-semibold rounded ${page === pageNumber ? "bg-brand text-white" : "bg-background text-foreground border border-border"}`}
+                  key={pageItem}
+                  onClick={() => setPage(pageItem)}
+                  className={`inline-flex items-center justify-center rounded px-3 py-2 text-xs font-semibold ${page === pageItem ? "bg-brand text-white" : "border border-border bg-background text-foreground"}`}
                 >
-                  {pageNumber}
+                  {pageItem}
                 </button>
-              );
-            })}
+              ),
+            )}
           </div>
           <Button
             type="button"
