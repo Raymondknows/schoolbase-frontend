@@ -7,9 +7,8 @@ async function forwardRequest(
 ) {
   try {
     const { path } = await context.params;
-    const backendUrl = buildApiUrl(
-      `/schoolbase-admin/api/${path.join('/')}${request.nextUrl.search}`,
-    );
+    const backendPath = `/schoolbase-admin/api/${path.join('/')}${request.nextUrl.search}`;
+    const backendUrl = buildApiUrl(backendPath).replace('/api/schoolbase-admin/api/', '/schoolbase-admin/api/');
     const headers = new Headers();
 
     request.headers.forEach((value, key) => {
