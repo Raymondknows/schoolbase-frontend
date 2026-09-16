@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { UserGuide, type PageHelpGuide } from "@/components/ui/user-guide";
-import { Badge } from "@/components/ui/badge";
 import { ErrorModal } from "@/components/ui/error-modal";
 import { WhatsAppIcon } from "@/components/ui/icons";
-import { ArrowLeft, CheckCircle2, QrCode, Save, Send, Wifi, WifiOff } from "lucide-react";
-import Link from "next/link";
+import { CheckCircle2, Save, Send, Wifi } from "lucide-react";
 
 interface SessionStatus {
   status?: string;
@@ -55,20 +54,16 @@ export default function WhatsAppSettingsPage() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  const [isRunningDebug, setIsRunningDebug] = useState(false);
   const [message, setMessage] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [includeSignature, setIncludeSignature] = useState(true);
   const [schoolPreviewName, setSchoolPreviewName] = useState<string | null>(null);
   const [schoolPreviewPhone, setSchoolPreviewPhone] = useState<string | null>(null);
-  const [schoolPreviewAddress, setSchoolPreviewAddress] = useState<string | null>(null);
   const [pairingPhoneNumber, setPairingPhoneNumber] = useState('');
   const [usePairingCode, setUsePairingCode] = useState(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [lastRequestedMode, setLastRequestedMode] = useState<'qr' | 'pairing' | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successModalMessage, setSuccessModalMessage] = useState<string | null>(null);
-  const [debugLog, setDebugLog] = useState<string[]>([]);
   const [debugInfo, setDebugInfo] = useState<Record<string, unknown> | null>(null);
   const isStreamErrorRetrying = debugInfo?.streamErrorRetrying === true;
   const streamErrorReconnectAttempts = typeof debugInfo?.streamErrorReconnectAttempts === 'number' ? debugInfo.streamErrorReconnectAttempts : 0;
@@ -123,10 +118,57 @@ export default function WhatsAppSettingsPage() {
     }
   };
 
+  const syncSession = (nextSession: SessionStatus | null) => {
+    setSession(nextSession);
+    setDebugInfo(nextSession?.debugInfo || null);
+  };
+
+  const fetchStatus = useCallback(async (showLoading = false) => {
+    if (showLoading) {
+      setLoading(true);
+    }
+    try {
+      const response = await fetch('/api/admin/whatsapp/status', { credentials: 'include' });
+      if (!response.ok) {
+        if (showLoading) {
+          setActionMessage('Unable to load WhatsApp status.');
+        }
+        return;
+      }
+      const data = await response.json();
+      syncSession(data.session || null);
+    } catch (error) {
+      console.error('Status fetch error:', error);
+      if (showLoading) {
+        setActionMessage('Unable to load WhatsApp status.');
+      }
+    } finally {
+      if (showLoading) {
+        setLoading(false);
+      }
+    }
+  }, []);
+
+  const fetchPolicy = useCallback(async () => {
+    try {
+      const response = await fetch('/api/admin/communications/whatsapp-policy', { credentials: 'include' });
+      if (response.ok) {
+        const data = await response.json();
+        setPolicy({ ...DEFAULT_POLICY, ...(data.policy || {}) });
+      }
+    } catch (error) {
+      console.error('Policy fetch error:', error);
+    } finally {
+      setIsPolicyLoading(false);
+    }
+  }, []);
+
+  // Initial status and policy loading intentionally updates local state.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchStatus(true);
     void fetchPolicy();
-  }, []);
+  }, [fetchPolicy, fetchStatus]);
 
   useEffect(() => {
     const isConnected = session?.status === 'connected';
@@ -140,20 +182,6 @@ export default function WhatsAppSettingsPage() {
 
     wasConnectedRef.current = isConnected;
   }, [session?.status]);
-
-  async function fetchPolicy() {
-    try {
-      const response = await fetch('/api/admin/communications/whatsapp-policy', { credentials: 'include' });
-      if (response.ok) {
-        const data = await response.json();
-        setPolicy({ ...DEFAULT_POLICY, ...(data.policy || {}) });
-      }
-    } catch (error) {
-      console.error('Policy fetch error:', error);
-    } finally {
-      setIsPolicyLoading(false);
-    }
-  }
 
   async function savePolicy() {
     setIsPolicySaving(true);
@@ -171,7 +199,8 @@ export default function WhatsAppSettingsPage() {
         return;
       }
       setPolicy({ ...DEFAULT_POLICY, ...(data.policy || policy) });
-      setActionMessage('WhatsApp safety policy saved.');
+      setSuccessModalMessage('WhatsApp safety policy saved.');
+      setShowSuccessModal(true);
     } catch (error) {
       console.error('Policy save error:', error);
       setActionMessage('Unable to save WhatsApp policy.');
@@ -193,7 +222,6 @@ export default function WhatsAppSettingsPage() {
 
         setSchoolPreviewName(name);
         setSchoolPreviewPhone(phone);
-        setSchoolPreviewAddress(address);
 
         if (!message) {
           const lines = [
@@ -213,18 +241,18 @@ export default function WhatsAppSettingsPage() {
           lines.push('', 'Kind regards,');
           setMessage(lines.join('\n'));
         }
-      } catch (e) {
+      } catch {
         // ignore
       }
     };
 
     void loadPreview();
-  }, []);
+  }, [message]);
 
   // Poll status while a QR is active or while connecting to keep the UI updated
   useEffect(() => {
     let timer: ReturnType<typeof setInterval> | null = null;
-    if (session?.status === 'qr' || session?.status === 'connecting' || isConnecting || isRunningDebug) {
+    if (session?.status === 'qr' || session?.status === 'connecting' || isConnecting) {
       timer = setInterval(() => {
         void fetchStatus(false);
       }, 1500);
@@ -232,13 +260,7 @@ export default function WhatsAppSettingsPage() {
     return () => {
       if (timer) clearInterval(timer);
     };
-  }, [session?.status, isConnecting, isRunningDebug]);
-
-  const syncSession = (nextSession: SessionStatus | null) => {
-    setSession(nextSession);
-    setDebugLog(nextSession?.debugLog || []);
-    setDebugInfo(nextSession?.debugInfo || null);
-  };
+  }, [fetchStatus, session?.status, isConnecting]);
 
   const buildSessionActionMessage = (nextSession: SessionStatus | null, fallbackMessage: string | null = null) => {
     if (!nextSession) {
@@ -264,32 +286,6 @@ export default function WhatsAppSettingsPage() {
     }
 
     return nextSession.statusMessage || fallbackMessage || 'Waiting for the WhatsApp session to become ready.';
-  };
-
-  async function fetchStatus(showLoading = false) {
-    if (showLoading) {
-      setLoading(true);
-    }
-    try {
-      const response = await fetch('/api/admin/whatsapp/status', { credentials: 'include' });
-      if (!response.ok) {
-        if (showLoading) {
-          setActionMessage('Unable to load WhatsApp status.');
-        }
-        return;
-      }
-      const data = await response.json();
-      syncSession(data.session || null);
-      } catch (error) {
-      console.error('Status fetch error:', error);
-      if (showLoading) {
-        setActionMessage('Unable to load WhatsApp status.');
-      }
-    } finally {
-      if (showLoading) {
-        setLoading(false);
-      }
-    }
   };
 
   const handleConnect = async () => {
@@ -389,30 +385,6 @@ export default function WhatsAppSettingsPage() {
     await sendMessageToRecipients([phoneNumber.trim()]);
   };
 
-  const handleRunDebug = async () => {
-    setActionMessage(null);
-    setIsRunningDebug(true);
-    try {
-      const response = await fetch('/api/admin/whatsapp/debug', {
-        method: 'POST',
-        credentials: 'include',
-      });
-      const data = await response.json();
-      if (response.ok) {
-        setDebugLog(data.result?.events || []);
-        setDebugInfo(data.result || null);
-        setActionMessage(data.result?.summary || 'Debug probe completed.');
-      } else {
-        setActionMessage(data.error || 'Failed to run debug probe.');
-      }
-    } catch (error) {
-    console.error('Debug probe error:', error);
-    setActionMessage('Unable to run debug probe.');
-    } finally {
-      setIsRunningDebug(false);
-    }
-  };
-
   const isConnected = session?.status === 'connected';
   const isPendingPairing = session?.status === 'connecting' || session?.status === 'qr';
   const badgeLabel = isConnected
@@ -424,9 +396,6 @@ export default function WhatsAppSettingsPage() {
         : session?.status === 'error'
           ? 'Error'
           : 'Disconnected';
-  const statusDescription = session?.statusMessage && !session.statusMessage.toLowerCase().includes(badgeLabel.toLowerCase())
-    ? session.statusMessage
-    : '';
   const connectionStatusCopy = (() => {
     if (!session) {
       return 'Start a connection to generate the WhatsApp pairing details.';
@@ -551,11 +520,16 @@ export default function WhatsAppSettingsPage() {
           {session?.qr ? (
             <div className="mt-6">
               <p className="text-sm font-medium mb-2">Scan QR Code</p>
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(session.qr)}`}
-                alt="WhatsApp QR Code"
-                className="rounded-lg border border-border"
-              />
+              <div className="overflow-hidden rounded-lg border border-border bg-background">
+                <Image
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(session.qr)}`}
+                  alt="WhatsApp QR Code"
+                  width={220}
+                  height={220}
+                  unoptimized
+                  className="h-auto w-full max-w-[220px]"
+                />
+              </div>
             </div>
           ) : showWaitingFallback ? (
             <div className="mt-6 rounded-lg border border-dashed border-brand/30 bg-brand/5 p-4">
@@ -759,8 +733,8 @@ export default function WhatsAppSettingsPage() {
       <ErrorModal
         isOpen={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
-        title="Test Message Sent"
-        message={successModalMessage || "The test message was sent successfully."}
+        title={successModalMessage === 'WhatsApp safety policy saved.' ? 'Saved Successfully' : 'Test Message Sent'}
+        message={successModalMessage || 'The test message was sent successfully.'}
         type="success"
         confirmLabel="Okay"
       />
