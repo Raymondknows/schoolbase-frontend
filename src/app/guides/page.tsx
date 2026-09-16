@@ -13,6 +13,13 @@ export const metadata: Metadata = {
   title: "School Management Guides | SchoolBase",
   description:
     "Practical guides for school owners, administrators, teachers, bursars, and education teams.",
+  alternates: { canonical: "https://schoolbase.live/guides" },
+  openGraph: {
+    title: "School Management Guides | SchoolBase",
+    description: "Practical guidance for school finance, academics, operations, and digital transformation.",
+    url: "https://schoolbase.live/guides",
+    type: "website",
+  },
 };
 
 const guides = [

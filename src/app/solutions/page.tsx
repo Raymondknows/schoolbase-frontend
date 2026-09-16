@@ -16,11 +16,14 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: 'Solutions for Schools | SchoolBase',
-    description: 'Tailored solutions for every role in your school',
+    description: 'Practical SchoolBase workflows for owners, administrators, teachers, parents, and bursars.',
+    url: 'https://schoolbase.live/solutions',
+    type: 'website',
     images: [
       { url: 'https://schoolbase.live/og-solutions.png', width: 1200, height: 630 },
     ],
   },
+  alternates: { canonical: 'https://schoolbase.live/solutions' },
 }
 
 const solutions = [
@@ -29,13 +32,13 @@ const solutions = [
     icon: Users,
     href: '/solutions/school-owners',
     benefits: [
-      'Complete visibility into school finances',
-      'Real-time fee payment tracking',
-      'Automated payment reminders',
-      'Revenue reports and analytics',
-      'Multi-staff account management',
+      'Visibility into fees and school operations',
+      'Fee payment and invoice tracking',
+      'Configured communication workflows',
+      'Reports and analytics',
+      'Staff and role-aware workspaces',
     ],
-    description: 'Run your school like a business with complete financial control and insights.',
+    description: 'Review the operational and financial records that help your school make informed decisions.',
   },
   {
     title: 'For Administrators',
@@ -46,7 +49,7 @@ const solutions = [
       'Bulk operations and automation',
       'Staff role management',
       'Academic calendar control',
-      'Backup and data security',
+      'Settings, access, and school records',
     ],
     description: 'Automate routine tasks and keep your school organized.',
   },
@@ -55,11 +58,11 @@ const solutions = [
     icon: TrendingUp,
     href: '/solutions/teachers',
     benefits: [
-      'Publish student results in minutes',
-      'Track student progress',
-      'Communicate with parents via WhatsApp',
-      'Generate grade reports',
-      'Manage class information',
+      'Enter assessment scores',
+      'Review results and analytics',
+      'Use configured communication workflows',
+      'Generate academic reports',
+      'Work with assigned classes and subjects',
     ],
     description: 'Focus on teaching while SchoolBase handles the paperwork.',
   },
@@ -68,13 +71,13 @@ const solutions = [
     icon: Clock,
     href: '/solutions/parents',
     benefits: [
-      'View school fees and due dates',
-      'Get payment reminders on WhatsApp',
-      'Track student results in real-time',
-      'Receive school announcements',
-      'Pay fees from anywhere',
+      'View invoices and balances',
+      'Review payment history',
+      'See published student results',
+      'Receive school publications',
+      'Access linked-child information',
     ],
-    description: "Stay connected with your child's school and never miss important updates.",
+    description: "See the school information and published records connected to your children.",
   },
 ]
 
