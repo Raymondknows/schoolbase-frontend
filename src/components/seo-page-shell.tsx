@@ -39,63 +39,44 @@ export function SeoPageShell({
   secondaryHref,
 }: SeoPageShellProps) {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-brand/5 to-white">
-      <section className="border-b border-border bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-16 lg:py-20">
-          <div className="max-w-4xl">
-            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-brand">{eyebrow}</p>
-            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">{title}</h1>
-            <p className="mt-5 text-lg leading-8 text-muted">{description}</p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href={primaryHref} className="rounded-lg bg-brand px-6 py-3 text-center font-semibold text-white transition hover:bg-brand/90">
-                {primaryCtaLabel}
-              </Link>
-              <Link href={secondaryHref} className="rounded-lg border border-brand px-6 py-3 text-center font-semibold text-brand transition hover:bg-brand/5">
-                {secondaryCtaLabel}
-              </Link>
-            </div>
-            <div className="mt-8 flex flex-wrap gap-3">
-              {highlights.map((highlight) => (
-                <span key={highlight} className="rounded-full border border-brand/20 bg-brand/5 px-4 py-2 text-sm font-medium text-brand">
-                  {highlight}
-                </span>
-              ))}
-            </div>
+    <main className="overflow-hidden bg-background">
+      <section className="relative border-b border-border bg-[#f6faff]">
+        <div className="mx-auto grid max-w-6xl gap-14 px-6 py-20 sm:py-28 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
+          <div className="relative z-10">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">{eyebrow}</p>
+            <h1 className="mt-6 max-w-3xl text-4xl font-bold leading-[1.08] tracking-tight text-foreground sm:text-6xl">{title}</h1>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-muted sm:text-xl">{description}</p>
+            <div className="mt-9 flex flex-wrap gap-3"><Link href={primaryHref} className="inline-flex items-center gap-2 rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-hover">{primaryCtaLabel} <ArrowRight className="h-4 w-4" /></Link><Link href={secondaryHref} className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-5 py-3 text-sm font-semibold text-foreground transition hover:border-brand hover:text-brand">{secondaryCtaLabel}</Link></div>
           </div>
+          <div className="relative min-h-[360px] lg:min-h-[430px]"><div className="absolute inset-4 border border-brand/20 bg-white shadow-[18px_18px_0_0_#dcecff] sm:inset-8" /><div className="relative flex min-h-[360px] flex-col justify-between border border-brand/30 bg-white p-6 shadow-xl sm:min-h-[430px] sm:p-9"><div className="flex items-center justify-between border-b border-border pb-5"><div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">SchoolBase at a glance</p><p className="mt-2 text-xl font-semibold text-foreground">A practical system for daily work</p></div><div className="flex h-11 w-11 items-center justify-center rounded-full bg-brand text-white"><Sparkles className="h-5 w-5" /></div></div><div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{highlights.slice(0, 6).map((highlight, index) => <div key={highlight} className={`${['bg-[#eaf4ff]', 'bg-[#f1f7f4]', 'bg-[#fff7e8]', 'bg-[#f2efff]', 'bg-[#edf7f8]', 'bg-[#fff0f0]'][index % 6]} border border-black/5 p-4`}><p className="text-xs text-muted">Benefit</p><p className="mt-3 text-sm font-semibold leading-5 text-foreground">{highlight}</p></div>)}</div><div className="border-t border-border pt-5 text-sm text-muted"><span className="font-semibold text-brand">Connected by design.</span> Give your team one clearer place to work.</div></div></div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-16">
-        <div className="grid gap-8 lg:grid-cols-3">
+      <section className="py-20 sm:py-24">
+        <div className="mx-auto max-w-6xl px-6"><div className="max-w-3xl"><p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">What changes first</p><h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-5xl">A simpler way to run the work that matters.</h2></div>
+        <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {features.map((feature, index) => {
             const Icon = feature.icon
             return (
-              <div key={index} className="rounded-2xl border border-brand/10 bg-white p-8 shadow-sm">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand/10 text-brand">
-                  <Icon className="h-6 w-6" />
+              <div key={index} className="border border-border bg-white p-6 transition hover:-translate-y-1 hover:border-brand/50 hover:shadow-lg">
+                <div className="flex h-11 w-11 items-center justify-center bg-brand-light text-brand">
+                  <Icon className="h-5 w-5" />
                 </div>
-                <h2 className="mt-5 text-xl font-semibold text-foreground">{feature.title}</h2>
-                <p className="mt-3 text-sm leading-7 text-muted">{feature.description}</p>
+                <h2 className="mt-6 text-xl font-semibold text-foreground">{feature.title}</h2>
+                <p className="mt-3 leading-7 text-muted">{feature.description}</p>
               </div>
             )
           })}
         </div>
+        </div>
       </section>
 
-      <section className="bg-brand/5 py-16">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="rounded-3xl bg-white p-8 shadow-xl sm:p-10">
-            <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.2em] text-brand">
-              <Sparkles className="h-4 w-4" />
-              Built for modern school teams
-            </div>
-            <h2 className="mt-4 text-3xl font-bold text-foreground">Why school leaders choose SchoolBase</h2>
-            <p className="mt-4 max-w-3xl text-slate-600">
-              Our platform combines fee automation, parent communication, exam release, and school websites in one school management system that works beautifully for day-to-day operations.
-            </p>
-            <div className="mt-10 grid gap-6 md:grid-cols-2">
+      <section className="border-y border-border bg-[#f6faff] py-20 sm:py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="max-w-3xl"><p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">Built for modern school teams</p><h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-5xl">Why school leaders choose SchoolBase.</h2><p className="mt-5 text-lg leading-8 text-muted">Bring the school’s daily work into a clearer operating system, so each team can work with the information that matters to them.</p></div>
+          <div className="mt-12 grid gap-4 md:grid-cols-2">
               {proofItems.map((item) => (
-                <div key={item.title} className="rounded-2xl border border-border p-6">
+                <div key={item.title} className="border border-border bg-white p-6">
                   <div className="flex items-center gap-2 text-brand">
                     <BadgeCheck className="h-5 w-5" />
                     <h3 className="font-semibold text-foreground">{item.title}</h3>
@@ -103,27 +84,11 @@ export function SeoPageShell({
                   <p className="mt-3 text-sm leading-7 text-muted">{item.detail}</p>
                 </div>
               ))}
-            </div>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-16">
-        <div className="rounded-3xl border border-border bg-white p-10 text-center">
-          <h2 className="text-3xl font-bold text-foreground">Ready to simplify school operations?</h2>
-          <p className="mt-4 text-slate-600">
-            Launch faster, communicate better, and keep every parent and teacher in the loop with SchoolBase.
-          </p>
-          <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-            <Link href={primaryHref} className="rounded-lg bg-brand px-6 py-3 font-semibold text-white transition hover:bg-brand/90">
-              {primaryCtaLabel}
-            </Link>
-            <Link href={secondaryHref} className="rounded-lg border border-brand px-6 py-3 font-semibold text-brand transition hover:bg-brand/5">
-              {secondaryCtaLabel}
-            </Link>
-          </div>
-        </div>
-      </section>
+      <section className="bg-brand py-16 text-white sm:py-20"><div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-8 px-6 md:flex-row md:items-center"><div><p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/70">Ready to simplify school operations</p><h2 className="mt-3 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">Launch faster, communicate better, and keep everyone in the loop.</h2></div><Link href={primaryHref} className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-brand hover:bg-blue-50">{primaryCtaLabel} <ArrowRight className="h-4 w-4" /></Link></div></section>
     </main>
   )
 }

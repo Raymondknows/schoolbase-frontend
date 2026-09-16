@@ -29,15 +29,15 @@ export const metadata: Metadata = {
 export default function BlogPage() {
   return (
     <div className="min-h-screen bg-background">
-      <section className="border-b border-border bg-surface py-20">
-        <div className="mx-auto max-w-6xl px-6">
+      <section className="border-b border-border bg-[#f6faff] py-20 sm:py-24">
+        <div className="mx-auto max-w-7xl px-6">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand-light px-3 py-1 text-sm font-medium text-brand">
+            <div className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-brand">
               <Sparkles className="h-4 w-4" />
               SchoolBase Insights
             </div>
-            <h1 className="mt-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-              Expert blog content for smarter school operations
+            <h1 className="mt-5 max-w-4xl text-4xl font-bold leading-[1.08] tracking-tight text-foreground sm:text-6xl">
+              Practical thinking for better school operations
             </h1>
             <p className="mt-5 text-lg leading-8 text-muted">
               Discover practical articles on school management software, attendance tracking,
@@ -45,13 +45,13 @@ export default function BlogPage() {
             </p>
           </div>
 
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
+          <div className="mt-10 grid gap-3 md:grid-cols-3">
             {[
               'School management software',
               'Parent communication software',
               'Results publishing software',
             ].map((tag) => (
-              <div key={tag} className="rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium text-muted">
+              <div key={tag} className="border border-border bg-white px-4 py-4 text-sm font-semibold text-foreground">
                 {tag}
               </div>
             ))}
@@ -60,7 +60,7 @@ export default function BlogPage() {
       </section>
 
       <section className="py-20">
-        <div className="mx-auto max-w-6xl px-6">
+        <div className="mx-auto max-w-7xl px-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h2 className="text-3xl font-bold text-foreground">Latest posts</h2>
@@ -78,7 +78,7 @@ export default function BlogPage() {
               .slice()
               .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
               .map((post) => (
-              <article key={post.slug} className="group rounded-2xl border border-border bg-surface p-8 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
+              <article key={post.slug} className="group border border-border bg-white p-8 transition-all hover:-translate-y-1 hover:border-brand/40 hover:shadow-lg">
                 <div className="flex items-center gap-2 text-sm font-medium text-brand">
                   <BookOpen className="h-4 w-4" />
                   {post.category}
@@ -96,7 +96,7 @@ export default function BlogPage() {
                 </div>
                 <div className="mt-6 flex flex-wrap gap-2">
                   {post.keywords.slice(0, 3).map((keyword) => (
-                    <span key={keyword} className="rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted">
+                    <span key={keyword} className="border border-border bg-background px-3 py-1 text-xs font-medium text-muted">
                       {keyword}
                     </span>
                   ))}
@@ -110,9 +110,9 @@ export default function BlogPage() {
         </div>
       </section>
 
-      <section className="border-t border-border bg-surface py-20">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="rounded-2xl border border-border bg-background p-10">
+      <section className="border-t border-border bg-[#f6faff] py-20">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="border border-border bg-white p-10">
             <h2 className="text-3xl font-bold text-foreground">Why schools choose SchoolBase</h2>
             <p className="mt-4 max-w-3xl text-lg text-muted">
               Our blog content supports schools searching for trusted solutions in school management software, fee automation, parent communication, results publishing, and school transformation.

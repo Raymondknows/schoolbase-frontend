@@ -1,80 +1,29 @@
 import type { Metadata } from 'next'
 import { Baby, CalendarCheck2, MessageSquareText, ShieldCheck, Sparkles, Users } from 'lucide-react'
-import { SeoPageShell } from '@/components/seo-page-shell'
+import { PublicProductShell } from '@/components/public-product-shell'
 
 export const metadata: Metadata = {
   title: 'School Management Software for Early Childhood Schools | SchoolBase',
-  description:
-    'Friendly school management software for early childhood schools. Simplify attendance, parent communication, and daily operations with a simple platform.',
-  keywords: [
-    'school management software for early childhood schools',
-    'nursery school management system',
-    'preschool management software',
-    'early childhood school software',
-  ],
+  description: 'Simple school management software for early childhood schools with attendance, parent communication, and connected daily records.',
+  keywords: ['school management software for early childhood schools', 'nursery school management system', 'preschool management software', 'early childhood school software'],
 }
 
 export default function EarlyChildhoodSchoolsPage() {
-  return (
-    <SeoPageShell
-      eyebrow="EARLY CHILDHOOD SCHOOLS"
-      title="School Management Software for Early Childhood Schools"
-      description="SchoolBase helps nurseries and preschool schools run smoother with simple attendance, parent updates, and operational tools that fit daily school life."
-      highlights={['Nursery-friendly workflows', 'Parent updates', 'Simple onboarding', 'Secure records']}
-      features={[
-        {
-          title: 'Easy Daily Operations',
-          description: 'Support the rhythm of nursery and preschool life with simple tools for attendance, transitions, and communication.',
-          icon: Baby,
-        },
-        {
-          title: 'Clear Parent Communication',
-          description: 'Keep parents informed with updates about attendance, school events, and important notices on WhatsApp and SMS.',
-          icon: MessageSquareText,
-        },
-        {
-          title: 'Attendance You Can Trust',
-          description: 'Store daily attendance records clearly and give staff a simple way to manage punctuality and absence tracking.',
-          icon: CalendarCheck2,
-        },
-        {
-          title: 'A Friendly Platform for Staff',
-          description: 'Give teachers and administrators a system that feels easy to adopt and simple to use every day.',
-          icon: Users,
-        },
-        {
-          title: 'Secure Student Records',
-          description: 'Protect family and student information with permission-based access and dependable data backups.',
-          icon: ShieldCheck,
-        },
-        {
-          title: 'Built for Growth',
-          description: 'As your school expands, SchoolBase helps you stay organized with records and communication in one place.',
-          icon: Sparkles,
-        },
-      ]}
-      proofItems={[
-        {
-          title: 'Purpose-built for daily school life',
-          detail: 'Simplify the repeat tasks that take too much time in early childhood settings.',
-        },
-        {
-          title: 'Parents stay connected',
-          detail: 'Send updates that help families feel informed and involved in school life.',
-        },
-        {
-          title: 'Less admin, more attention to learning',
-          detail: 'Reduce paperwork so teachers can invest more time in children and classroom routines.',
-        },
-        {
-          title: 'Practical for West African schools',
-          detail: 'Supports the communication and record needs of growing early childhood schools across the region.',
-        },
-      ]}
-      primaryCtaLabel="Schedule a Demo"
-      primaryHref="/demo"
-      secondaryCtaLabel="See the Platform"
-      secondaryHref="/features"
-    />
-  )
+  return <PublicProductShell
+    eyebrow="Early childhood schools"
+    title="Give your early learning team a clearer way to run the day."
+    description="SchoolBase brings attendance, parent updates, student records, and daily school operations into one practical platform for nurseries and preschool teams."
+    proofTitle="Simple workflows for early learning"
+    sectionTitle="Keep the daily work visible, connected, and easy to follow."
+    ctaTitle="Build a calmer operating system for your school."
+    highlights={['Daily attendance', 'Parent updates', 'Student records', 'Simple staff workflows', 'School notices', 'Connected operations']}
+    features={[
+      { title: 'Daily attendance', description: 'Record attendance clearly and give staff a simple way to keep daily presence and absence information up to date.', icon: CalendarCheck2 },
+      { title: 'Parent communication', description: 'Share school notices, attendance updates, and important information with families through connected communication workflows.', icon: MessageSquareText },
+      { title: 'Student records', description: 'Keep the student and guardian information your team relies on organised in one school account.', icon: Baby },
+      { title: 'Easy for staff to adopt', description: 'Give teachers and administrators a focused workspace that supports everyday routines without unnecessary complexity.', icon: Users },
+      { title: 'Permission-aware access', description: 'Help the right staff work with the information relevant to their role while keeping school records organised.', icon: ShieldCheck },
+      { title: 'Ready to grow with you', description: 'As your school expands, keep administration, communication, and records connected in one place.', icon: Sparkles },
+    ]}
+  />
 }

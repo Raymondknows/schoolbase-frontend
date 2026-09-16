@@ -1,5 +1,16 @@
 import { Metadata } from 'next'
-import { BookOpen, Clock, MessageSquare, TrendingUp, Users, Zap, CheckCircle } from 'lucide-react'
+import {
+  ArrowUpRight,
+  BookOpen,
+  CheckCircle2,
+  Clock,
+  CreditCard,
+  LayoutDashboard,
+  MessageSquare,
+  TrendingUp,
+  Users,
+  Zap,
+} from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
@@ -18,112 +29,105 @@ export const metadata: Metadata = {
   },
 }
 
-const features = [
-  {
-    icon: TrendingUp,
-    title: 'One-Click Result Publishing',
-    description: 'Enter grades once and publish to parents, students, and staff instantly.',
-  },
-  {
-    icon: MessageSquare,
-    title: 'Direct Parent Communication',
-    description: 'Reach parents directly on WhatsApp for important updates and notifications.',
-  },
-  {
-    icon: BookOpen,
-    title: 'Grade Management',
-    description: 'Track student performance across subjects, terms, and years.',
-  },
-  {
-    icon: Clock,
-    title: 'Automated Grading',
-    description: 'Configure grading scales and let SchoolBase calculate grades automatically.',
-  },
-  {
-    icon: Users,
-    title: 'Class Management',
-    description: 'Manage your class roster, attendance, and subject assignments in one place.',
-  },
-  {
-    icon: Zap,
-    title: 'Bulk Operations',
-    description: 'Upload grades via CSV or enter manually. SchoolBase adapts to your workflow.',
-  },
+const statCards = [
+  { label: 'Results published', value: '3x faster', sub: 'Compared to manual reporting', href: '/admin/results', icon: TrendingUp },
+  { label: 'Parent updates', value: 'Instant', sub: 'Sent directly on WhatsApp', href: '/parent', icon: MessageSquare },
+  { label: 'Classes tracked', value: '24/7', sub: 'Progress visibility', href: '/admin/classes', icon: Users },
+  { label: 'Reporting load', value: '5h+', sub: 'Saved each term', href: '/admin', icon: LayoutDashboard },
+]
+
+const featureCards = [
+  { icon: TrendingUp, title: 'One-click result publishing', description: 'Enter grades once and publish to parents, students, and staff without extra admin steps.' },
+  { icon: MessageSquare, title: 'Direct parent communication', description: 'Send updates and check-ins on WhatsApp while keeping all communication in one place.' },
+  { icon: BookOpen, title: 'Grade and performance tracking', description: 'Track progress across subjects, terms, and academic years in a cleaner reporting flow.' },
+  { icon: Clock, title: 'Faster reporting cycles', description: 'Reduce the time spent on grading workflows and routine follow-up tasks at term-end.' },
+  { icon: Users, title: 'Class and student visibility', description: 'See class rosters, attendance, and student information in one shared workspace.' },
+  { icon: Zap, title: 'Bulk grading support', description: 'Upload or update results efficiently across a class or year group without duplicate effort.' },
+]
+
+const quickWins = [
+  'Spend less time on paperwork and more time teaching',
+  'Publish result updates faster and more consistently',
+  'Keep parents informed without repeated manual messages',
+  'Review class performance with clear subject-level insight',
+  'Reduce admin stress during reporting cycles',
+  'Stay focused on student outcomes instead of operational friction',
 ]
 
 export default function TeachersPage() {
   return (
-    <main className="min-h-screen bg-slate-50">
-      {/* Hero */}
-      <section className="text-white py-20 px-4 sm:px-6 lg:px-8" style={{ background: 'linear-gradient(90deg, #0A66C2 0%, #084a9a 100%)' }}>
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-6">
-            Focus on Teaching. We'll Handle the Paperwork.
-          </h1>
-          <p className="text-xl text-[#dbeafe] mb-8">
-            Publish results in minutes, communicate with parents effortlessly, and spend less time on admin work.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Link
-              href="/purchase"
-              className="bg-white text-[#0A66C2] px-8 py-3 rounded-lg font-semibold hover:bg-[#eff6ff] transition-colors"
-            >
-              Get Started Free
-            </Link>
-            <Link
-              href="/demo"
-              className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#084a9a] transition-colors"
-            >
-              Watch Demo
-            </Link>
+    <div className="overflow-hidden bg-background">
+      <section className="relative border-b border-border bg-[#f6faff]">
+        <div className="mx-auto grid max-w-6xl gap-14 px-6 py-20 sm:py-28 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
+          <div className="relative z-10">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">For teachers</p>
+            <h1 className="mt-6 max-w-3xl text-4xl font-bold leading-[1.08] tracking-tight text-foreground sm:text-6xl">
+              Spend more time teaching and less time on admin.
+            </h1>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-muted sm:text-xl">
+              Keep results, parent communication, and class updates organized without wasting time on repetitive paperwork and manual reporting.
+            </p>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <Link href="/signup" className="inline-flex items-center gap-2 rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-hover">
+                Get Started <ArrowUpRight className="h-4 w-4" />
+              </Link>
+              <Link href="#overview" className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-5 py-3 text-sm font-semibold text-foreground transition hover:border-brand hover:text-brand">
+                See the overview
+              </Link>
+            </div>
           </div>
-        </div>
-      </section>
 
-      {/* Pain Points */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-slate-900 mb-12 text-center">
-            The Teacher's Dilemma
-          </h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                title: 'Manual Grade Entry',
-                description: 'Hours spent entering grades into spreadsheets and reporting forms.',
-              },
-              {
-                title: 'No Direct Parent Contact',
-                description: 'Can\'t reach parents quickly about student performance or important updates.',
-              },
-              {
-                title: 'Admin Overload',
-                description: 'Spending more time on paperwork than actually teaching.',
-              },
-            ].map((item, idx) => (
-              <div key={idx} className="bg-orange-50 border-l-4 border-orange-500 p-6 rounded">
-                <h3 className="font-bold text-slate-900 mb-2">{item.title}</h3>
-                <p className="text-slate-600">{item.description}</p>
+          <div className="relative min-h-[360px] lg:min-h-[430px]">
+            <div className="absolute inset-4 border border-brand/20 bg-white shadow-[18px_18px_0_0_#dcecff] sm:inset-8" />
+            <div className="relative flex min-h-[360px] flex-col justify-between border border-brand/30 bg-white p-6 shadow-xl sm:min-h-[430px] sm:p-9">
+              <div className="flex items-center justify-between border-b border-border pb-5">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">Teacher flow</p>
+                  <p className="mt-2 text-xl font-semibold text-foreground">Teaching-first workflow</p>
+                </div>
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-brand text-white"><BookOpen className="h-5 w-5" /></div>
               </div>
-            ))}
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {[
+                  { label: 'Results', value: '3x faster', tone: 'bg-[#eaf4ff]' },
+                  { label: 'Parents', value: 'Instant', tone: 'bg-[#f1f7f4]' },
+                  { label: 'Tracking', value: 'Live', tone: 'bg-[#fff7e8]' },
+                  { label: 'Classes', value: '24/7', tone: 'bg-[#f2efff]' },
+                  { label: 'Grading', value: 'Clear', tone: 'bg-[#edf7f8]' },
+                  { label: 'Load', value: 'Lower', tone: 'bg-[#fff0f0]' },
+                ].map((item) => (
+                  <div key={item.label} className={`${item.tone} border border-black/5 p-4`}>
+                    <p className="text-xs text-muted">{item.label}</p>
+                    <p className="mt-3 text-xl font-semibold text-foreground">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="border-t border-border pt-5 text-sm text-muted">
+                <span className="font-semibold text-brand">Less paperwork.</span> More time for teaching, feedback, and student progress.
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-100">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-slate-900 mb-12 text-center">
-            Designed for Teachers
-          </h2>
-          <div className="grid md:grid-cols-2 gap-8">
-            {features.map((feature, idx) => {
-              const Icon = feature.icon
+      <section id="overview" className="py-20 sm:py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">The core idea</p>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-5xl">Give teachers a cleaner system for results, class visibility, and communication.</h2>
+            <p className="mt-5 text-lg leading-8 text-muted">SchoolBase removes the admin friction around grading, reporting, and updates so teaching can stay in the center of the school experience.</p>
+          </div>
+
+          <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {featureCards.map((card) => {
+              const Icon = card.icon
               return (
-                <div key={idx} className="bg-white rounded-lg p-8 shadow-md hover:shadow-lg transition-shadow">
-                  <Icon className="w-10 h-10 text-[#0A66C2] mb-4" />
-                  <h3 className="text-xl font-bold text-slate-900 mb-3">{feature.title}</h3>
-                  <p className="text-slate-600">{feature.description}</p>
+                <div key={card.title} className="border border-border bg-white p-6 transition hover:-translate-y-1 hover:border-brand/50 hover:shadow-lg">
+                  <div className="flex h-11 w-11 items-center justify-center bg-brand-light text-brand">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-6 text-xl font-semibold text-foreground">{card.title}</h3>
+                  <p className="mt-3 leading-7 text-muted">{card.description}</p>
                 </div>
               )
             })}
@@ -131,66 +135,32 @@ export default function TeachersPage() {
         </div>
       </section>
 
-      {/* Workflow */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-slate-900 mb-12 text-center">
-            Your New Workflow
-          </h2>
-          <div className="space-y-8">
-            {[
-              {
-                step: '1',
-                title: 'Enter Grades',
-                description: 'Upload CSV or enter grades manually into SchoolBase.',
-              },
-              {
-                step: '2',
-                title: 'Review & Finalize',
-                description: 'Review grades, add comments, and finalize results.',
-              },
-              {
-                step: '3',
-                title: 'One-Click Publish',
-                description: 'Publish to parents, students, and staff instantly.',
-              },
-              {
-                step: '4',
-                title: 'Communicate on WhatsApp',
-                description: 'Send updates and celebrate achievements with parents directly.',
-              },
-            ].map((item, idx) => (
-              <div key={idx} className="flex gap-6 items-start">
-                <div className="bg-[#0A66C2] text-white rounded-full w-12 h-12 flex items-center justify-center font-bold flex-shrink-0">
-                  {item.step}
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-2">{item.title}</h3>
-                  <p className="text-slate-600">{item.description}</p>
-                </div>
+      <section className="border-y border-border bg-[#f6faff] py-20 sm:py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">What improves immediately</p>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-5xl">The teacher-side wins that matter most.</h2>
+          </div>
+          <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {quickWins.map((item) => (
+              <div key={item} className="flex items-start gap-3 border border-border bg-white p-5">
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
+                <span className="text-sm leading-7 text-foreground">{item}</span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="text-white py-16 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: '#0A66C2' }}>
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-4">
-            Reclaim Your Time
-          </h2>
-          <p className="text-[#dbeafe] mb-8 text-lg">
-            Teachers using SchoolBase spend 5+ hours less per term on paperwork. What will you do with that time?
-          </p>
-          <Link
-            href="/purchase"
-            className="inline-block bg-white text-[#0A66C2] px-8 py-3 rounded-lg font-semibold hover:bg-[#eff6ff] transition-colors"
-          >
-            Start Free Trial
-          </Link>
+      <section className="bg-brand py-16 text-white sm:py-20">
+        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-8 px-6 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/70">A better daily rhythm</p>
+            <h2 className="mt-3 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">Let SchoolBase carry the reporting burden while teaching stays central.</h2>
+          </div>
+          <Link href="/signup" className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-brand hover:bg-blue-50">Start Your School <ArrowUpRight className="h-4 w-4" /></Link>
         </div>
       </section>
-    </main>
+    </div>
   )
 }

@@ -1,403 +1,153 @@
-import Link from "next/link";
-import { FileText, CheckCircle, DollarSign, Users, TrendingUp, Clock } from "lucide-react";
+import Link from 'next/link'
+import {
+  ArrowUpRight,
+  CheckCircle2,
+  Clock3,
+  CreditCard,
+  FileText,
+  LayoutDashboard,
+  TrendingUp,
+  Users,
+} from 'lucide-react'
 
 export const metadata = {
-  title: "School Fee Management System | SchoolBase",
+  title: 'School Fee Management System | SchoolBase',
   description:
-    "Complete school fee management solution with automated invoicing, payment tracking, and Paystack integration. Reduce collection time by 40%.",
-};
+    'Complete school fee management solution with automated invoicing, payment tracking, and Paystack integration. Reduce collection time by 40%.',
+}
+
+const statCards = [
+  { label: 'Collection rate', value: '91%', sub: 'Live payment coverage', href: '/admin/fees', icon: CreditCard },
+  { label: 'Outstanding fees', value: '₦2.8M', sub: 'Across active families', href: '/admin/fees', icon: FileText },
+  { label: 'Reminder flow', value: '24/7', sub: 'Automated WhatsApp follow-up', href: '/admin/notifications', icon: Clock3 },
+  { label: 'Operations', value: '40%', sub: 'Lower fee collection effort', href: '/admin', icon: LayoutDashboard },
+]
+
+const featureCards = [
+  { icon: CreditCard, title: 'Automated invoicing', description: 'Generate invoices for multiple students and classes in seconds with set payment deadlines.' },
+  { icon: CheckCircle2, title: 'Payment tracking', description: 'Track who paid, what is due, and how much remains across the whole school.' },
+  { icon: TrendingUp, title: 'Multiple payment methods', description: 'Accept online transfers, cash, and student payments through one clean workflow.' },
+  { icon: FileText, title: 'Auto-generated receipts', description: 'Send instant proof of payment and reduce misunderstandings for parents and staff.' },
+  { icon: Users, title: 'Parent visibility', description: 'Give families a simple portal to see invoices, due balances, and payment history.' },
+  { icon: Clock3, title: 'Time savings', description: 'Reduce repetitive billing admin and focus more attention on financial planning.' },
+]
+
+const quickWins = [
+  'Reduce overdue balances through clearer reminders and payment visibility',
+  'Track collection performance by class, term, and student in real time',
+  'Give parents a cleaner way to pay and understand what they owe',
+  'Keep billing records accurate with digital receipts and audit-friendly logs',
+  'Cut manual reconciliation and administrative bottlenecks',
+  'Make fee health part of your school’s daily operational dashboard',
+]
 
 export default function FeesManagementPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-brand/5 to-white">
-      {/* Header */}
-      <div className="border-b border-border bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-12">
-          <div className="max-w-3xl">
-            <p className="mb-2 text-sm font-medium text-brand">SCHOOL FEE MANAGEMENT</p>
-            <h1 className="text-4xl font-bold text-foreground">
-              Digital Fee Management for Schools
+    <div className="overflow-hidden bg-background">
+      <section className="relative border-b border-border bg-[#f6faff]">
+        <div className="mx-auto grid max-w-6xl gap-14 px-6 py-20 sm:py-28 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
+          <div className="relative z-10">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">School fee management</p>
+            <h1 className="mt-6 max-w-3xl text-4xl font-bold leading-[1.08] tracking-tight text-foreground sm:text-6xl">
+              Digital fee management for schools.
             </h1>
-            <p className="mt-4 text-lg text-muted">
-              Stop chasing payments. Let SchoolBase automate your fee collection, invoicing,
-              and payment tracking. Schools report 40% reduction in overdue fees.
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-muted sm:text-xl">
+              Stop chasing payments. SchoolBase automates invoicing, tracking, and follow-up so school teams can focus on operations rather than admin bottlenecks.
             </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Problem Section */}
-      <div className="mx-auto max-w-6xl px-4 py-12">
-        <h2 className="text-2xl font-bold text-foreground">The School Fee Collection Problem</h2>
-        <div className="mt-8 grid gap-6 md:grid-cols-2">
-          {[
-            {
-              title: "Lost Revenue",
-              desc: "Manual tracking loses ₦50k-500k annually in overdue fees that go unrecovered",
-            },
-            {
-              title: "Parent Confusion",
-              desc: "No transparency = constant parent complaints about what they owe",
-            },
-            {
-              title: "Time Wasted",
-              desc: "Bursars spend 20+ hours/week chasing payments instead of reconciling",
-            },
-            {
-              title: "No Records",
-              desc: "Paper receipts get lost, creating disputes about who paid what",
-            },
-            {
-              title: "Reconciliation Chaos",
-              desc: "Manual spreadsheets don't match actual payments, creating audit nightmares",
-            },
-            {
-              title: "Payment Integration",
-              desc: "Schools can't accept online payments, limiting options for busy parents",
-            },
-          ].map((item, i) => (
-            <div key={i} className="rounded-lg border border-border bg-white p-6">
-              <h3 className="font-semibold text-foreground">{item.title}</h3>
-              <p className="mt-2 text-sm text-muted">{item.desc}</p>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <Link href="/signup" className="inline-flex items-center gap-2 rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-hover">
+                Get Started <ArrowUpRight className="h-4 w-4" />
+              </Link>
+              <Link href="#overview" className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-5 py-3 text-sm font-semibold text-foreground transition hover:border-brand hover:text-brand">
+                See the overview
+              </Link>
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Solution Section */}
-      <div className="bg-brand/5 py-12">
-        <div className="mx-auto max-w-6xl px-4">
-          <h2 className="text-2xl font-bold text-foreground">How SchoolBase Solves It</h2>
-          <div className="mt-8 grid gap-8 md:grid-cols-2">
-            {[
-              {
-                icon: <DollarSign className="h-8 w-8 text-brand" />,
-                title: "Automated Invoicing",
-                desc: "Generate invoices for multiple students/classes in seconds. Set payment deadlines, track overdue automatically.",
-              },
-              {
-                icon: <CheckCircle className="h-8 w-8 text-brand" />,
-                title: "Payment Tracking",
-                desc: "See who paid, who owes, how much, by when. Real-time dashboard shows collection status.",
-              },
-              {
-                icon: <TrendingUp className="h-8 w-8 text-brand" />,
-                title: "Multiple Payment Methods",
-                desc: "Accept Paystack (online), bank transfer, cash. All in one place. Automatic reconciliation.",
-              },
-              {
-                icon: <FileText className="h-8 w-8 text-brand" />,
-                title: "Auto-Generated Receipts",
-                desc: "Parents get instant PDF receipts. Proof of payment. Reduces disputes by 90%.",
-              },
-              {
-                icon: <Users className="h-8 w-8 text-brand" />,
-                title: "Parent Portal",
-                desc: "Parents see invoices, payment history, outstanding balance. Can pay online directly.",
-              },
-              {
-                icon: <Clock className="h-8 w-8 text-brand" />,
-                title: "Time Savings",
-                desc: "Reduce billing admin time from 20+ hours/week to 2-3 hours. Focus on strategy.",
-              },
-            ].map((item, i) => (
-              <div key={i} className="rounded-lg border border-brand/20 bg-white p-6">
-                <div className="mb-3">{item.icon}</div>
-                <h3 className="font-semibold text-foreground">{item.title}</h3>
-                <p className="mt-2 text-sm text-muted">{item.desc}</p>
-              </div>
-            ))}
           </div>
-        </div>
-      </div>
 
-      {/* Features in Detail */}
-      <div className="mx-auto max-w-6xl px-4 py-12">
-        <h2 className="text-2xl font-bold text-foreground">Key Features</h2>
-        <div className="mt-8 space-y-8">
-          {[
-            {
-              title: "Fee Schedule Management",
-              desc: "Create different fee categories (tuition, hostel, activities) by class level. Track partial payments.",
-              features: [
-                "Multiple fee types per school",
-                "By-class and by-student pricing",
-                "Payment installments/plans",
-                "Discounts and waivers",
-              ],
-            },
-            {
-              title: "Automated Reminders",
-              desc: "Never lose a payment to forgetfulness. WhatsApp reminders 1 week before, 3 days before, and on due date.",
-              features: [
-                "Customizable reminder schedule",
-                "WhatsApp notifications",
-                "SMS option available",
-                "Escalation for overdue",
-              ],
-            },
-            {
-              title: "Financial Reports",
-              desc: "Understand your school's cash flow. See collection by class, by student, by payment method.",
-              features: [
-                "Collection by class/grade",
-                "Payment method breakdown",
-                "Outstanding by student",
-                "Monthly trends",
-              ],
-            },
-            {
-              title: "Paystack Integration",
-              desc: "Accept card payments online. Automatic settlement to your bank account (same day).",
-              features: [
-                "Credit/debit card acceptance",
-                "Mobile money ready",
-                "Instant notifications",
-                "Automatic settlement",
-              ],
-            },
-          ].map((section, i) => (
-            <div key={i} className="rounded-lg border border-border bg-white p-8">
-              <h3 className="text-xl font-semibold text-foreground">{section.title}</h3>
-              <p className="mt-2 text-muted">{section.desc}</p>
-              <ul className="mt-4 grid gap-2 md:grid-cols-2">
-                {section.features.map((feat, j) => (
-                  <li key={j} className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-brand" />
-                    <span className="text-sm text-foreground">{feat}</span>
-                  </li>
+          <div className="relative min-h-[360px] lg:min-h-[430px]">
+            <div className="absolute inset-4 border border-brand/20 bg-white shadow-[18px_18px_0_0_#dcecff] sm:inset-8" />
+            <div className="relative flex min-h-[360px] flex-col justify-between border border-brand/30 bg-white p-6 shadow-xl sm:min-h-[430px] sm:p-9">
+              <div className="flex items-center justify-between border-b border-border pb-5">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">Finance flow</p>
+                  <p className="mt-2 text-xl font-semibold text-foreground">Clearer billing and faster collections</p>
+                </div>
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-brand text-white"><CreditCard className="h-5 w-5" /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {[
+                  { label: 'Collection', value: '91%', tone: 'bg-[#eaf4ff]' },
+                  { label: 'Invoices', value: 'Live', tone: 'bg-[#f1f7f4]' },
+                  { label: 'Reminders', value: '24/7', tone: 'bg-[#fff7e8]' },
+                  { label: 'Parents', value: 'Clear', tone: 'bg-[#f2efff]' },
+                  { label: 'Receipts', value: 'Auto', tone: 'bg-[#edf7f8]' },
+                  { label: 'Savings', value: '40%', tone: 'bg-[#fff0f0]' },
+                ].map((item) => (
+                  <div key={item.label} className={`${item.tone} border border-black/5 p-4`}>
+                    <p className="text-xs text-muted">{item.label}</p>
+                    <p className="mt-3 text-xl font-semibold text-foreground">{item.value}</p>
+                  </div>
                 ))}
-              </ul>
+              </div>
+              <div className="border-t border-border pt-5 text-sm text-muted">
+                <span className="font-semibold text-brand">Less chasing.</span> More predictable fee collections and cleaner parent communication.
+              </div>
             </div>
-          ))}
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Results Section */}
-      <div className="bg-brand/5 py-12">
-        <div className="mx-auto max-w-6xl px-4">
-          <h2 className="text-2xl font-bold text-foreground">Results Schools Have Seen</h2>
-          <div className="mt-8 grid gap-6 md:grid-cols-3">
-            {[
-              { stat: "40%", label: "Reduction in overdue fees" },
-              { stat: "20→2h", label: "Weekly billing admin time" },
-              { stat: "90%", label: "Reduction in payment disputes" },
-              { stat: "80%", label: "Parent adoption in first month" },
-              { stat: "₦100k+", label: "Monthly revenue recovered" },
-              { stat: "24h", label: "Payment verification time" },
-            ].map((item, i) => (
-              <div key={i} className="rounded-lg bg-white p-6 text-center">
-                <p className="text-3xl font-bold text-brand">{item.stat}</p>
-                <p className="mt-2 text-sm text-muted">{item.label}</p>
+      <section id="overview" className="py-20 sm:py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">The core idea</p>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-5xl">Make fee collection visible, organized, and easier to manage.</h2>
+            <p className="mt-5 text-lg leading-8 text-muted">SchoolBase gives schools a cleaner way to generate invoices, track payment status, send reminders, and keep both staff and parents aligned around what is due and what has been paid.</p>
+          </div>
+
+          <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {featureCards.map((card) => {
+              const Icon = card.icon
+              return (
+                <div key={card.title} className="border border-border bg-white p-6 transition hover:-translate-y-1 hover:border-brand/50 hover:shadow-lg">
+                  <div className="flex h-11 w-11 items-center justify-center bg-brand-light text-brand">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-6 text-xl font-semibold text-foreground">{card.title}</h3>
+                  <p className="mt-3 leading-7 text-muted">{card.description}</p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-border bg-[#f6faff] py-20 sm:py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">What improves immediately</p>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-5xl">The fee-side wins that matter to every school.</h2>
+          </div>
+          <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {quickWins.map((item) => (
+              <div key={item} className="flex items-start gap-3 border border-border bg-white p-5">
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
+                <span className="text-sm leading-7 text-foreground">{item}</span>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Pricing Section */}
-      <div className="mx-auto max-w-6xl px-4 py-12">
-        <h2 className="text-2xl font-bold text-foreground">Simple, Transparent Pricing</h2>
-        <div className="mt-8 grid gap-6 md:grid-cols-3">
-          {[
-            {
-              name: "Starter",
-              price: "₦60,000",
-              desc: "Up to 150 pupils",
-              features: [
-                "✓ Fees & receipts",
-                "✓ WhatsApp & SMS",
-                "✓ Results & reports",
-                "✓ School website",
-                "✓ Parent app",
-              ],
-            },
-            {
-              name: "Standard",
-              price: "₦85,000",
-              desc: "Up to 600 pupils",
-              features: [
-                "✓ Fees & receipts",
-                "✓ WhatsApp & SMS",
-                "✓ Results & reports",
-                "✓ School website",
-                "✓ Parent app",
-              ],
-              highlighted: true,
-            },
-            {
-              name: "Enterprise",
-              price: "Custom from ₦150,000",
-              desc: "Multiple campuses",
-              features: [
-                "✓ Fees & receipts",
-                "✓ WhatsApp & SMS",
-                "✓ Results & reports",
-                "✓ School website",
-                "✓ Parent app",
-              ],
-            },
-          ].map((tier, i) => (
-            <div
-              key={i}
-              className={`rounded-lg border p-8 ${
-                tier.highlighted
-                  ? "border-brand bg-brand/5 ring-2 ring-brand"
-                  : "border-border bg-white"
-              }`}
-            >
-              <h3 className="text-xl font-semibold text-foreground">{tier.name}</h3>
-              <p className="mt-2 text-3xl font-bold text-brand">{tier.price}</p>
-              <p className="text-sm text-muted">{tier.desc}</p>
-              <ul className="mt-6 space-y-3">
-                {tier.features.map((feat, j) => (
-                  <li key={j} className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="h-4 w-4 text-brand" />
-                    {feat}
-                  </li>
-                ))}
-              </ul>
-              <button
-                className={`mt-6 w-full rounded-lg py-2 font-medium transition ${
-                  tier.highlighted
-                    ? "bg-brand text-white hover:bg-brand/90"
-                    : "border border-brand text-brand hover:bg-brand/5"
-                }`}
-              >
-                Start Free Trial
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* FAQ */}
-      <div className="bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-12">
-          <h2 className="text-2xl font-bold text-foreground">Frequently Asked Questions</h2>
-          <div className="mt-8 space-y-4">
-            {[
-              {
-                q: "Can parents pay online?",
-                a: "Yes. We're integrated with Paystack, so parents can pay by card, mobile money, or bank transfer. Payment goes directly to your school account.",
-              },
-              {
-                q: "What if a parent loses their receipt?",
-                a: "No problem. Receipts are stored in the parent portal forever. They can download anytime.",
-              },
-              {
-                q: "Do we need to train parents?",
-                a: "Minimal. Parents get a simple link to the portal. Most learn in their first use. We provide WhatsApp guidance.",
-              },
-              {
-                q: "Can we set payment plans?",
-                a: "Yes. SchoolBase supports installment plans. Set the number of payments and due dates.",
-              },
-              {
-                q: "What about refunds?",
-                a: "You can issue refunds directly in SchoolBase. Parents see the credit in their account.",
-              },
-              {
-                q: "Is it secure?",
-                a: "Yes. All payments are encrypted and processed by Paystack (PCI compliant). Your data is backed up daily.",
-              },
-            ].map((item, i) => (
-              <div key={i} className="rounded-lg border border-border bg-white p-6">
-                <h3 className="font-semibold text-foreground">{item.q}</h3>
-                <p className="mt-2 text-sm text-muted">{item.a}</p>
-              </div>
-            ))}
+      <section className="bg-brand py-16 text-white sm:py-20">
+        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-8 px-6 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/70">Built for school finance</p>
+            <h2 className="mt-3 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">Turn fee collection into a cleaner, faster system.</h2>
           </div>
+          <Link href="/signup" className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-brand hover:bg-blue-50">Start Your School <ArrowUpRight className="h-4 w-4" /></Link>
         </div>
-      </div>
-
-      {/* Related Resources (Internal Linking) */}
-      <div className="mx-auto max-w-6xl px-4 py-12">
-        <h2 className="text-2xl font-bold text-foreground mb-8">Learn More</h2>
-        <div className="grid gap-6 md:grid-cols-3">
-          {/* Related Guide */}
-          <Link href="/guides/school-fee-management" className="rounded-lg border border-border bg-white p-6 hover:shadow-lg transition">
-            <FileText className="h-8 w-8 text-brand mb-3" />
-            <h3 className="font-semibold text-foreground">Fee Management Guide</h3>
-            <p className="mt-2 text-sm text-muted">Complete guide to best practices, ROI calculation, and implementation roadmap</p>
-          </Link>
-
-          {/* Role-Based Link */}
-          <Link href="/for-bursars" className="rounded-lg border border-border bg-white p-6 hover:shadow-lg transition">
-            <Users className="h-8 w-8 text-brand mb-3" />
-            <h3 className="font-semibold text-foreground">For Bursars</h3>
-            <p className="mt-2 text-sm text-muted">Discover how bursars use SchoolBase to automate fee collection and reporting</p>
-          </Link>
-
-          {/* Comparison */}
-          <Link href="/compare/manual-systems" className="rounded-lg border border-border bg-white p-6 hover:shadow-lg transition">
-            <TrendingUp className="h-8 w-8 text-brand mb-3" />
-            <h3 className="font-semibold text-foreground">vs Manual Systems</h3>
-            <p className="mt-2 text-sm text-muted">See ROI comparison and why digital fee management saves ₦500k+ annually</p>
-          </Link>
-        </div>
-
-        {/* Country Pricing Links */}
-        <h3 className="text-xl font-bold text-foreground mt-12 mb-6">Fee Management in Your Country</h3>
-        <div className="grid gap-4 md:grid-cols-5">
-          <Link href="/ghana-school-software" className="flex items-center gap-3 rounded-lg border border-border bg-white p-4 hover:bg-brand/5 transition">
-            <span className="text-2xl">🇬🇭</span>
-            <div className="text-sm">
-              <p className="font-semibold">Ghana</p>
-              <p className="text-muted">GHS 680 / term</p>
-            </div>
-          </Link>
-          <Link href="/nigeria-school-software" className="flex items-center gap-3 rounded-lg border border-border bg-white p-4 hover:bg-brand/5 transition">
-            <span className="text-2xl">🇳🇬</span>
-            <div className="text-sm">
-              <p className="font-semibold">Nigeria</p>
-              <p className="text-muted">₦60,000 / term</p>
-            </div>
-          </Link>
-          <Link href="/liberia" className="flex items-center gap-3 rounded-lg border border-border bg-white p-4 hover:bg-brand/5 transition">
-            <span className="text-2xl">🇱🇷</span>
-            <div className="text-sm">
-              <p className="font-semibold">Liberia</p>
-              <p className="text-muted">L$7,500 / term</p>
-            </div>
-          </Link>
-          <Link href="/sierra-leone" className="flex items-center gap-3 rounded-lg border border-border bg-white p-4 hover:bg-brand/5 transition">
-            <span className="text-2xl">🇸🇱</span>
-            <div className="text-sm">
-              <p className="font-semibold">Sierra Leone</p>
-              <p className="text-muted">Le 800,000 / term</p>
-            </div>
-          </Link>
-          <Link href="/the-gambia" className="flex items-center gap-3 rounded-lg border border-border bg-white p-4 hover:bg-brand/5 transition">
-            <span className="text-2xl">🇬🇲</span>
-            <div className="text-sm">
-              <p className="font-semibold">The Gambia</p>
-              <p className="text-muted">D2,500 / term</p>
-            </div>
-          </Link>
-        </div>
-      </div>
-
-      {/* CTA */}
-      <div className="bg-brand text-white">
-        <div className="mx-auto max-w-4xl px-4 py-12 text-center">
-          <h2 className="text-3xl font-bold">Stop Chasing Payments</h2>
-          <p className="mt-4 text-lg text-brand/80">
-            Let SchoolBase automate fee collection. Schools see 40% reduction in overdue fees.
-          </p>
-          <div className="mt-8 flex gap-4 justify-center">
-            <button className="rounded-lg bg-white px-6 py-3 font-medium text-brand hover:bg-white/90">
-              Start Free 7-Day Trial
-            </button>
-            <Link
-              href="/contact"
-              className="rounded-lg border border-white px-6 py-3 font-medium hover:bg-white/10"
-            >
-              Schedule a Demo
-            </Link>
-          </div>
-        </div>
-      </div>
+      </section>
     </div>
-  );
+  )
 }

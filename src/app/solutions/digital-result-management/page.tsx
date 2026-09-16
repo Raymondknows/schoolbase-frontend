@@ -1,264 +1,154 @@
-import Link from "next/link";
-import { CheckCircle, Zap, BarChart3, Users, FileText, TrendingDown, TrendingUp } from "lucide-react";
+import Link from 'next/link'
+import {
+  ArrowUpRight,
+  BarChart3,
+  CheckCircle2,
+  FileText,
+  LayoutDashboard,
+  TrendingDown,
+  TrendingUp,
+  Users,
+  Zap,
+} from 'lucide-react'
 
 export const metadata = {
-  title: "Digital Result Management System | SchoolBase",
+  title: 'Digital Result Management System | SchoolBase',
   description:
-    "Manage student results digitally with automatic grading, class positioning, and automated parent reports. Teachers report 3x faster entry.",
-};
+    'Manage student results digitally with automatic grading, class positioning, and automated parent reports. Teachers report 3x faster entry.',
+}
+
+const statCards = [
+  { label: 'Result entry', value: '3x faster', sub: 'Than manual mark sheets', href: '/admin/results', icon: Zap },
+  { label: 'Grade accuracy', value: '100%', sub: 'Auto-calculated totals', href: '/admin/results', icon: BarChart3 },
+  { label: 'Parent visibility', value: '24h', sub: 'From entry to access', href: '/parent/results', icon: FileText },
+  { label: 'Operations', value: '95%', sub: 'Teacher adoption rate', href: '/admin', icon: LayoutDashboard },
+]
+
+const featureCards = [
+  { icon: Zap, title: 'Fast result entry', description: 'Teachers enter marks once and the system handles calculation, ranking, and review.' },
+  { icon: BarChart3, title: 'Automatic grading', description: 'Apply school grading rules consistently without manual formula errors or data loss.' },
+  { icon: FileText, title: 'Instant reports', description: 'Generate professional result reports in seconds and share them to parents immediately.' },
+  { icon: Users, title: 'Class positioning', description: 'Show each student’s rank and class performance at a glance across the entire cohort.' },
+  { icon: BarChart3, title: 'School broadsheet', description: 'View subject-by-student performance in one clean matrix for quick decision-making.' },
+  { icon: TrendingDown, title: 'Progress tracking', description: 'Compare term-to-term performance to catch gaps early and support each learner.' },
+]
+
+const quickWins = [
+  'Reduce teacher workload and eliminate repetitive score calculations',
+  'Keep grade records consistent and traceable across the school term',
+  'Give parents access to academic progress as soon as results are published',
+  'Identify weak subjects and intervention needs without manual spreadsheet work',
+  'Use class-wide data to guide academic planning and leadership reviews',
+  'Turn reporting cycles into a predictable, organized process',
+]
 
 export default function ResultsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-brand/5 to-white">
-      {/* Header */}
-      <div className="border-b border-border bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-12">
-          <div className="max-w-3xl">
-            <p className="mb-2 text-sm font-medium text-brand">DIGITAL RESULTS</p>
-            <h1 className="text-4xl font-bold text-foreground">
-              Digital Result Management for Schools
+    <div className="overflow-hidden bg-background">
+      <section className="relative border-b border-border bg-[#f6faff]">
+        <div className="mx-auto grid max-w-6xl gap-14 px-6 py-20 sm:py-28 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
+          <div className="relative z-10">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">Digital results</p>
+            <h1 className="mt-6 max-w-3xl text-4xl font-bold leading-[1.08] tracking-tight text-foreground sm:text-6xl">
+              Digital result management for schools.
             </h1>
-            <p className="mt-4 text-lg text-muted">
-              Stop using paper result sheets. SchoolBase manages results digitally with automatic
-              grading, instant reports, and class positioning. Teachers enter results 3x faster.
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-muted sm:text-xl">
+              Stop using paper result sheets. SchoolBase handles grading, class positioning, and publishing in one connected workflow so teachers move faster with fewer errors.
             </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Problem Section */}
-      <div className="mx-auto max-w-6xl px-4 py-12">
-        <h2 className="text-2xl font-bold text-foreground">The Results Management Problem</h2>
-        <div className="mt-8 grid gap-6 md:grid-cols-2">
-          {[
-            {
-              title: "Time Wasted",
-              desc: "Teachers spend hours calculating grades, percentages, and positions manually",
-            },
-            {
-              title: "Human Errors",
-              desc: "Manual calculations = calculation errors, typos, inconsistent grades",
-            },
-            {
-              title: "Lost Results",
-              desc: "Paper result sheets get lost, damaged, or filed incorrectly",
-            },
-            {
-              title: "No History",
-              desc: "Hard to track student progress across terms without digital records",
-            },
-            {
-              title: "Delayed Reports",
-              desc: "Takes days/weeks to compile and print results. Parents wait for feedback.",
-            },
-            {
-              title: "Accountability Gap",
-              desc: "No audit trail of who entered what and when. Difficult compliance.",
-            },
-          ].map((item, i) => (
-            <div key={i} className="rounded-lg border border-border bg-white p-6">
-              <h3 className="font-semibold text-foreground">{item.title}</h3>
-              <p className="mt-2 text-sm text-muted">{item.desc}</p>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <Link href="/signup" className="inline-flex items-center gap-2 rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-hover">
+                Get Started <ArrowUpRight className="h-4 w-4" />
+              </Link>
+              <Link href="#overview" className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-5 py-3 text-sm font-semibold text-foreground transition hover:border-brand hover:text-brand">
+                See the overview
+              </Link>
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Solution Section */}
-      <div className="bg-brand/5 py-12">
-        <div className="mx-auto max-w-6xl px-4">
-          <h2 className="text-2xl font-bold text-foreground">How SchoolBase Solves It</h2>
-          <div className="mt-8 grid gap-8 md:grid-cols-2">
-            {[
-              {
-                icon: <Zap className="h-8 w-8 text-brand" />,
-                title: "Fast Result Entry",
-                desc: "Simple form-based entry. Teachers enter marks once, system handles all calculations.",
-              },
-              {
-                icon: <BarChart3 className="h-8 w-8 text-brand" />,
-                title: "Automatic Grading",
-                desc: "Grades calculated automatically based on your school's grading scale. No manual work.",
-              },
-              {
-                icon: <FileText className="h-8 w-8 text-brand" />,
-                title: "Instant Reports",
-                desc: "Generate professional result reports in seconds. Parents see them immediately.",
-              },
-              {
-                icon: <Users className="h-8 w-8 text-brand" />,
-                title: "Class Positioning",
-                desc: "Automatic ranking by total score. Shows position in class for each student.",
-              },
-              {
-                icon: <BarChart3 className="h-8 w-8 text-brand" />,
-                title: "Class Broadsheet",
-                desc: "Pupils × Subjects matrix. See all results at a glance. Export to CSV/PDF.",
-              },
-              {
-                icon: <TrendingDown className="h-8 w-8 text-brand" />,
-                title: "Progress Tracking",
-                desc: "Compare results term-to-term. Identify struggling students automatically.",
-              },
-            ].map((item, i) => (
-              <div key={i} className="rounded-lg border border-brand/20 bg-white p-6">
-                <div className="mb-3">{item.icon}</div>
-                <h3 className="font-semibold text-foreground">{item.title}</h3>
-                <p className="mt-2 text-sm text-muted">{item.desc}</p>
-              </div>
-            ))}
           </div>
-        </div>
-      </div>
 
-      {/* Features */}
-      <div className="mx-auto max-w-6xl px-4 py-12">
-        <h2 className="text-2xl font-bold text-foreground">Key Features</h2>
-        <div className="mt-8 space-y-8">
-          {[
-            {
-              title: "Assessment Management",
-              desc: "Create different assessment types (tests, exams, projects) with different weightings.",
-              features: [
-                "Create/edit assessments",
-                "Set scoring ranges",
-                "Configure grading scale",
-                "Multiple subject support",
-              ],
-            },
-            {
-              title: "Result Entry",
-              desc: "Teachers enter marks for their subjects. System handles all calculations automatically.",
-              features: [
-                "Simple form-based entry",
-                "Real-time validation",
-                "Subject-specific grading",
-                "Bulk import support",
-              ],
-            },
-            {
-              title: "Automatic Calculations",
-              desc: "No manual work needed. System calculates: total, average, grade, position.",
-              features: [
-                "Grade calculation",
-                "Position/ranking",
-                "Class averages",
-                "Subject statistics",
-              ],
-            },
-            {
-              title: "Professional Reports",
-              desc: "Generate result cards, transcripts, and reports. Print or share digitally.",
-              features: [
-                "Result cards",
-                "Transcripts",
-                "Progress reports",
-                "Customizable layouts",
-              ],
-            },
-          ].map((section, i) => (
-            <div key={i} className="rounded-lg border border-border bg-white p-8">
-              <h3 className="text-xl font-semibold text-foreground">{section.title}</h3>
-              <p className="mt-2 text-muted">{section.desc}</p>
-              <ul className="mt-4 grid gap-2 md:grid-cols-2">
-                {section.features.map((feat, j) => (
-                  <li key={j} className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-brand" />
-                    <span className="text-sm text-foreground">{feat}</span>
-                  </li>
+          <div className="relative min-h-[360px] lg:min-h-[430px]">
+            <div className="absolute inset-4 border border-brand/20 bg-white shadow-[18px_18px_0_0_#dcecff] sm:inset-8" />
+            <div className="relative flex min-h-[360px] flex-col justify-between border border-brand/30 bg-white p-6 shadow-xl sm:min-h-[430px] sm:p-9">
+              <div className="flex items-center justify-between border-b border-border pb-5">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">Results flow</p>
+                  <p className="mt-2 text-xl font-semibold text-foreground">One system for grades and reporting</p>
+                </div>
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-brand text-white"><FileText className="h-5 w-5" /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {[
+                  { label: 'Entry', value: '3x faster', tone: 'bg-[#eaf4ff]' },
+                  { label: 'Grading', value: '100%', tone: 'bg-[#f1f7f4]' },
+                  { label: 'Reports', value: 'Live', tone: 'bg-[#fff7e8]' },
+                  { label: 'Parents', value: '24h', tone: 'bg-[#f2efff]' },
+                  { label: 'Ranking', value: 'Auto', tone: 'bg-[#edf7f8]' },
+                  { label: 'Tracking', value: 'Clear', tone: 'bg-[#fff0f0]' },
+                ].map((item) => (
+                  <div key={item.label} className={`${item.tone} border border-black/5 p-4`}>
+                    <p className="text-xs text-muted">{item.label}</p>
+                    <p className="mt-3 text-xl font-semibold text-foreground">{item.value}</p>
+                  </div>
                 ))}
-              </ul>
+              </div>
+              <div className="border-t border-border pt-5 text-sm text-muted">
+                <span className="font-semibold text-brand">Fewer errors.</span> Better academic visibility for teachers, leaders, and parents.
+              </div>
             </div>
-          ))}
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Results */}
-      <div className="bg-brand/5 py-12">
-        <div className="mx-auto max-w-6xl px-4">
-          <h2 className="text-2xl font-bold text-foreground">Results Schools Have Seen</h2>
-          <div className="mt-8 grid gap-6 md:grid-cols-3">
-            {[
-              { stat: "3x", label: "Faster result entry" },
-              { stat: "0", label: "Calculation errors" },
-              { stat: "24h", label: "Time to print reports" },
-              { stat: "100%", label: "Teacher adoption" },
-              { stat: "0", label: "Lost result sheets" },
-              { stat: "95%", label: "Parent satisfaction" },
-            ].map((item, i) => (
-              <div key={i} className="rounded-lg bg-white p-6 text-center">
-                <p className="text-3xl font-bold text-brand">{item.stat}</p>
-                <p className="mt-2 text-sm text-muted">{item.label}</p>
+      <section id="overview" className="py-20 sm:py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">The core idea</p>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-5xl">Modern result workflows that save time and improve accuracy.</h2>
+            <p className="mt-5 text-lg leading-8 text-muted">SchoolBase turns result entry, grading, class ranking, and parent publishing into a single connected process so schools can move faster without losing control of standards.</p>
+          </div>
+
+          <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {featureCards.map((card) => {
+              const Icon = card.icon
+              return (
+                <div key={card.title} className="border border-border bg-white p-6 transition hover:-translate-y-1 hover:border-brand/50 hover:shadow-lg">
+                  <div className="flex h-11 w-11 items-center justify-center bg-brand-light text-brand">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-6 text-xl font-semibold text-foreground">{card.title}</h3>
+                  <p className="mt-3 leading-7 text-muted">{card.description}</p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-border bg-[#f6faff] py-20 sm:py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">What improves immediately</p>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-5xl">The wins schools notice first.</h2>
+          </div>
+          <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {quickWins.map((item) => (
+              <div key={item} className="flex items-start gap-3 border border-border bg-white p-5">
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
+                <span className="text-sm leading-7 text-foreground">{item}</span>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Related Resources (Internal Linking) */}
-      <div className="mx-auto max-w-6xl px-4 py-12">
-        <h2 className="text-2xl font-bold text-foreground mb-8">Learn More</h2>
-        <div className="grid gap-6 md:grid-cols-3">
-          {/* Related Guide */}
-          <Link href="/guides/digital-report-cards" className="rounded-lg border border-border bg-white p-6 hover:shadow-lg transition">
-            <FileText className="h-8 w-8 text-brand mb-3" />
-            <h3 className="font-semibold text-foreground">Digital Report Cards Guide</h3>
-            <p className="mt-2 text-sm text-muted">Design, implementation roadmap, and parent communication best practices</p>
-          </Link>
-
-          {/* Role-Based Link */}
-          <Link href="/for-teachers" className="rounded-lg border border-border bg-white p-6 hover:shadow-lg transition">
-            <Users className="h-8 w-8 text-brand mb-3" />
-            <h3 className="font-semibold text-foreground">For Teachers</h3>
-            <p className="mt-2 text-sm text-muted">How teachers quickly enter results, approve marks, and share with parents</p>
-          </Link>
-
-          {/* Broadsheet (Related Solution) */}
-          <Link href="/solutions/school-broadsheet" className="rounded-lg border border-border bg-white p-6 hover:shadow-lg transition">
-            <TrendingUp className="h-8 w-8 text-brand mb-3" />
-            <h3 className="font-semibold text-foreground">School Broadsheet</h3>
-            <p className="mt-2 text-sm text-muted">Powerful analytics and reporting on student performance across classes</p>
-          </Link>
-        </div>
-
-        {/* Industry Links */}
-        <h3 className="text-xl font-bold text-foreground mt-12 mb-6">Results Management by School Type</h3>
-        <div className="grid gap-6 md:grid-cols-3">
-          <Link href="/industries/secondary-schools" className="rounded-lg border border-border bg-white p-6 hover:shadow-lg transition">
-            <h4 className="font-semibold text-foreground mb-2">🎓 Secondary Schools</h4>
-            <p className="text-sm text-muted">Multi-subject streaming, exam board tracking (WAEC/NECO/KCSE)</p>
-          </Link>
-          <Link href="/industries/international-schools" className="rounded-lg border border-border bg-white p-6 hover:shadow-lg transition">
-            <h4 className="font-semibold text-foreground mb-2">🌍 International Schools</h4>
-            <p className="text-sm text-muted">IB, IGCSE, Cambridge support with multi-language reports</p>
-          </Link>
-          <Link href="/industries/early-childhood-centers" className="rounded-lg border border-border bg-white p-6 hover:shadow-lg transition">
-            <h4 className="font-semibold text-foreground mb-2">👶 Early Childhood</h4>
-            <p className="text-sm text-muted">Development milestone tracking and parent updates</p>
-          </Link>
-        </div>
-      </div>
-
-      {/* CTA */}
-      <div className="bg-brand text-white">
-        <div className="mx-auto max-w-4xl px-4 py-12 text-center">
-          <h2 className="text-3xl font-bold">Digitize Your Results Today</h2>
-          <p className="mt-4 text-lg text-brand/80">
-            Teachers spend less time on admin, more time on teaching. Parents get results same day.
-          </p>
-          <div className="mt-8 flex gap-4 justify-center">
-            <button className="rounded-lg bg-white px-6 py-3 font-medium text-brand hover:bg-white/90">
-              Start Free Trial
-            </button>
-            <Link
-              href="/contact"
-              className="rounded-lg border border-white px-6 py-3 font-medium hover:bg-white/10"
-            >
-              See Demo
-            </Link>
+      <section className="bg-brand py-16 text-white sm:py-20">
+        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-8 px-6 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/70">Better results</p>
+            <h2 className="mt-3 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">Turn result publishing into a faster, cleaner workflow.</h2>
           </div>
+          <Link href="/signup" className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-brand hover:bg-blue-50">Start Your School <ArrowUpRight className="h-4 w-4" /></Link>
         </div>
-      </div>
+      </section>
     </div>
-  );
+  )
 }

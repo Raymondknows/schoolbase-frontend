@@ -1,4 +1,6 @@
 import { Metadata } from 'next'
+import { ChevronDown } from 'lucide-react'
+import { ContentSection, PublicContentShell } from '@/components/public-content-shell'
 
 export const metadata: Metadata = {
   title: 'FAQ | SchoolBase Frequently Asked Questions',
@@ -122,73 +124,35 @@ const faqs = [
 
 export default function FAQPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <section className="border-b border-border bg-surface py-20">
-        <div className="mx-auto max-w-4xl px-6">
-          <h1 className="text-4xl font-bold text-foreground">
-            Frequently Asked Questions
-          </h1>
-          <p className="mt-4 max-w-2xl text-lg text-muted">
-            Get answers to common questions about SchoolBase.
-          </p>
-        </div>
-      </section>
-
-      <section className="py-20">
-        <div className="mx-auto max-w-4xl px-6 space-y-16">
+    <PublicContentShell
+      eyebrow="SchoolBase help"
+      title="Answers for the work your school is preparing to do."
+      description="Find practical answers about setup, pricing, school operations, fees, results, communication, security, and support."
+      ctaTitle="Still have a question? Talk to the SchoolBase team."
+      ctaText="We can help you understand the platform, plan your setup, and choose the right place to start."
+      ctaHref="/contact"
+      ctaLabel="Contact Support"
+    >
+      <ContentSection title="Frequently asked questions" intro="Open a category to find the answer you need.">
+        <div className="grid gap-10 lg:grid-cols-2">
           {faqs.map((category) => (
-            <div key={category.category}>
-              <h2 className="text-2xl font-bold text-foreground">
-                {category.category}
-              </h2>
-              <div className="mt-6 space-y-4">
+            <section key={category.category}>
+              <h2 className="text-xl font-semibold text-foreground">{category.category}</h2>
+              <div className="mt-4 space-y-3">
                 {category.questions.map((item, idx) => (
-                  <details
-                    key={idx}
-                    className="group rounded-lg border border-border bg-surface transition-all hover:border-brand"
-                  >
-                    <summary className="cursor-pointer p-4 font-semibold text-foreground flex items-center justify-between select-none">
+                  <details key={idx} className="group border border-border bg-white transition hover:border-brand">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
                       {item.q}
-                      <span className="inline-block transition-transform group-open:rotate-180">
-                        ▼
-                      </span>
+                      <ChevronDown className="h-4 w-4 shrink-0 text-brand transition group-open:rotate-180" />
                     </summary>
-                    <p className="border-t border-border px-4 py-3 text-muted leading-relaxed">
-                      {item.a}
-                    </p>
+                    <p className="border-t border-border px-5 py-4 text-sm leading-7 text-muted">{item.a}</p>
                   </details>
                 ))}
               </div>
-            </div>
+            </section>
           ))}
-
-          {/* CTA */}
-          <div className="rounded-xl border border-border bg-surface p-8 text-center">
-            <h3 className="text-2xl font-bold text-foreground">
-              Didn't find your answer?
-            </h3>
-            <p className="mt-3 text-muted">
-              Get in touch with our support team. We're here to help.
-            </p>
-            <div className="mt-6 flex gap-3 justify-center">
-              <a
-                href="/contact"
-                className="inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold bg-brand text-white hover:bg-brand-hover"
-              >
-                Contact Support
-              </a>
-              <a
-                href="https://wa.me/2348000000000"
-                className="inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold bg-white text-brand border border-brand hover:bg-brand-light"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Chat on WhatsApp
-              </a>
-            </div>
-          </div>
         </div>
-      </section>
-    </div>
+      </ContentSection>
+    </PublicContentShell>
   )
 }

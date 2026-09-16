@@ -1,80 +1,29 @@
 import type { Metadata } from 'next'
 import { BarChart3, BookMarked, ClipboardList, MessageSquareText, ShieldCheck, TrendingUp } from 'lucide-react'
-import { SeoPageShell } from '@/components/seo-page-shell'
+import { PublicProductShell } from '@/components/public-product-shell'
 
 export const metadata: Metadata = {
   title: 'School Management Software for Secondary Schools | SchoolBase',
-  description:
-    'Powerful school management software for secondary schools with exam results, broadsheets, subject management, and parent communication.',
-  keywords: [
-    'school management software for secondary schools',
-    'secondary school management system',
-    'school software for secondary schools',
-    'exam management software',
-  ],
+  description: 'Connected school management software for secondary schools with assessments, results, broadsheets, subject tracking, fees, and parent communication.',
+  keywords: ['school management software for secondary schools', 'secondary school management system', 'school software for secondary schools', 'exam management software'],
 }
 
 export default function SecondarySchoolsPage() {
-  return (
-    <SeoPageShell
-      eyebrow="SECONDARY SCHOOLS"
-      title="School Management Software for Secondary Schools"
-      description="SchoolBase helps secondary schools manage class records, tests, fee balances, and parent communication with a platform designed for fast reporting and strong academic oversight."
-      highlights={['Broadsheets', 'Exam results', 'Parent updates', 'Subject tracking']}
-      features={[
-        {
-          title: 'Results That Are Easy to Release',
-          description: 'Publish exam outcomes, calculate grades, and share report cards with parents in a few clicks.',
-          icon: BarChart3,
-        },
-        {
-          title: 'Broadsheets and Subject Reports',
-          description: 'Create academic summaries that make it easier for principals and heads of department to review school performance.',
-          icon: BookMarked,
-        },
-        {
-          title: 'Structured Assessment Workflows',
-          description: 'Organize classes, subjects, and marks entry so teachers can work clearly and consistently across terms.',
-          icon: ClipboardList,
-        },
-        {
-          title: 'Parent Communication at Scale',
-          description: 'Send result slips, event reminders, and fee notices directly to families on WhatsApp or SMS.',
-          icon: MessageSquareText,
-        },
-        {
-          title: 'Live Insight into Student Performance',
-          description: 'Spot trends early and follow up with students before small challenges become major setbacks.',
-          icon: TrendingUp,
-        },
-        {
-          title: 'Secure Academic Records',
-          description: 'Protect student reports and confidential school data with reliable permissions and backups.',
-          icon: ShieldCheck,
-        },
-      ]}
-      proofItems={[
-        {
-          title: 'Faster exam release cycles',
-          detail: 'Move from manual result compilation to a digital process that saves hours of administrative work.',
-        },
-        {
-          title: 'Clearer communication with parents',
-          detail: 'Keep families updated on performance, fees, and school events using channels they already use.',
-        },
-        {
-          title: 'A better view for school leaders',
-          detail: 'Review performance trends and manage school-wide reporting from one central dashboard.',
-        },
-        {
-          title: 'Built for West African classrooms',
-          detail: 'Support assessments, reporting styles, and school workflows that fit the realities of local schools.',
-        },
-      ]}
-      primaryCtaLabel="Request a Demo"
-      primaryHref="/demo"
-      secondaryCtaLabel="View Results Features"
-      secondaryHref="/results-publishing-software"
-    />
-  )
+  return <PublicProductShell
+    eyebrow="Secondary schools"
+    title="Bring academic oversight and school operations into one clearer system."
+    description="SchoolBase connects classes, subjects, assessments, results, fees, and parent communication so secondary-school teams can report faster and work with better visibility."
+    proofTitle="Clear academic workflows for school teams"
+    sectionTitle="Make every term easier to manage, review, and communicate."
+    ctaTitle="Give your secondary school a stronger operating foundation."
+    highlights={['Exam results', 'Broadsheets', 'Subject tracking', 'Parent updates', 'Fee visibility', 'Academic reporting']}
+    features={[
+      { title: 'Results that are easier to release', description: 'Organise marks, calculate grades, and share published report cards with parents through a clearer workflow.', icon: BarChart3 },
+      { title: 'Broadsheets and subject reports', description: 'Create academic summaries that help principals and heads of department review performance across the school.', icon: BookMarked },
+      { title: 'Structured assessments', description: 'Keep classes, subjects, terms, and marks entry organised so teachers can work consistently.', icon: ClipboardList },
+      { title: 'Parent communication at scale', description: 'Share result notices, event reminders, fee updates, and school messages through connected channels.', icon: MessageSquareText },
+      { title: 'Insight into performance', description: 'Review trends and identify where students or subjects may need attention before challenges grow.', icon: TrendingUp },
+      { title: 'Secure academic records', description: 'Keep student reports and school data organised with role-aware access and dependable operational controls.', icon: ShieldCheck },
+    ]}
+  />
 }

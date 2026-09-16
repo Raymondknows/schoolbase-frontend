@@ -167,7 +167,7 @@ export default function Sidebar({
                 aria-current={isActive ? "page" : undefined}
                 className={`group relative flex cursor-pointer items-center gap-3 border-l-2 px-3 py-2.5 text-sm font-medium transition-colors ${
                   isActive
-                    ? "border-brand bg-brand/10 text-brand"
+                    ? "border-brand bg-brand-light font-semibold text-brand"
                     : "border-transparent text-muted hover:border-brand/30 hover:bg-brand-light hover:text-brand"
                 }`}
               >

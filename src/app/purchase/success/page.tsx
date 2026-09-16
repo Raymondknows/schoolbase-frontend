@@ -1,13 +1,19 @@
 import { AppLogo } from "@/components/app-logo";
 import { Button } from "@/components/ui/button";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Purchase Confirmed | SchoolBase",
+  description: "Your SchoolBase subscription purchase has been received.",
+};
 
 export default function PurchaseSuccessPage() {
   const bankAccountName = process.env.BANK_ACCOUNT_NAME ?? process.env.NEXT_PUBLIC_BANK_ACCOUNT_NAME;
   const bankAccountNumber = process.env.BANK_ACCOUNT_NUMBER ?? process.env.NEXT_PUBLIC_BANK_ACCOUNT_NUMBER;
   const bankName = process.env.BANK_NAME ?? process.env.NEXT_PUBLIC_BANK_NAME;
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 border-b border-border bg-surface/95 backdrop-blur">
+    <div className="min-h-screen bg-[#f6faff]">
+      <header className="sticky top-0 z-50 border-b border-border bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <AppLogo />
           <nav className="hidden items-center gap-6 text-sm font-medium text-muted md:flex">
@@ -28,10 +34,10 @@ export default function PurchaseSuccessPage() {
       </header>
 
       <main className="mx-auto max-w-4xl px-6 py-20">
-        <div className="rounded-3xl border border-border bg-surface p-10 shadow-sm">
+        <div className="border border-border bg-white p-8 shadow-sm sm:p-12">
           <div className="space-y-6 text-center">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-brand-light text-brand">
-              <span className="text-2xl">✓</span>
+              <span className="text-2xl text-brand">✓</span>
             </div>
             <h1 className="text-3xl font-bold text-foreground">Payment successful</h1>
             <p className="mx-auto max-w-2xl text-sm leading-6 text-muted">

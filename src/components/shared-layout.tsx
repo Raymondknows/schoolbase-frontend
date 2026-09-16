@@ -940,7 +940,7 @@ export default function SharedLayout({
 
       {/* Mobile Sidebar */}
       <div
-        className={`fixed left-0 top-0 z-40 h-screen w-56 transform bg-surface md:hidden print:hidden transition-transform duration-300 ease-in-out overflow-hidden ${
+          className={`fixed left-0 top-0 z-40 h-screen w-64 transform bg-surface shadow-2xl md:hidden print:hidden transition-transform duration-300 ease-in-out overflow-hidden ${
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -958,7 +958,7 @@ export default function SharedLayout({
 
       <div className="flex flex-1 flex-col min-w-0">
         {/* Mobile Header */}
-        <div className="border-b border-border bg-surface px-4 py-3 md:hidden flex items-center gap-2 print:hidden">
+        <div className="border-b border-border bg-surface px-4 py-3 md:hidden flex items-center gap-3 print:hidden">
           <Button
             variant="ghost"
             onClick={mobileMenuOpen ? closeMobileSidebar : openMobileSidebar}
@@ -970,10 +970,13 @@ export default function SharedLayout({
               <Menu className="h-5 w-5" />
             )}
           </Button>
-          <h1 className="text-sm font-semibold text-foreground">{school?.name}</h1>
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand">{logoHref === "/teacher" ? "Teacher workspace" : logoHref === "/parent" ? "Parent portal" : logoHref === "/accounting" ? "Finance workspace" : "School admin"}</p>
+            <h1 className="truncate text-sm font-semibold text-foreground">{school?.name || "SchoolBase"}</h1>
+          </div>
         </div>
 
-        <main className={`flex-1 min-w-0 overflow-y-auto overflow-x-hidden ${logoHref === "/teacher" ? "p-2" : "p-6"} md:p-8 print:overflow-visible print:p-0`}>{children}</main>
+        <main className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-background p-4 sm:p-6 md:p-8 print:overflow-visible print:p-0">{children}</main>
 
 
         <div

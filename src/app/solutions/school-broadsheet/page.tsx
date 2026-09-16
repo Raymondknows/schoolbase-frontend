@@ -1,266 +1,155 @@
-import Link from "next/link";
-import { Table2, Download, Eye, BarChart3, CheckCircle, Users, FileText, TrendingUp } from "lucide-react";
+import Link from 'next/link'
+import {
+  ArrowUpRight,
+  BarChart3,
+  CheckCircle2,
+  Download,
+  Eye,
+  FileText,
+  LayoutDashboard,
+  Table2,
+  TrendingUp,
+  Users,
+} from 'lucide-react'
 
 export const metadata = {
-  title: "School Broadsheet Software | SchoolBase",
+  title: 'School Broadsheet Software | SchoolBase',
   description:
-    "View all student results in one table (pupils × subjects). Export to CSV/PDF. Identify top/bottom performers instantly. Professional reporting.",
-};
+    'View all student results in one table (pupils × subjects). Export to CSV/PDF. Identify top/bottom performers instantly. Professional reporting.',
+}
+
+const statCards = [
+  { label: 'Analysis time', value: '30 min', sub: 'Saved per broadsheet', href: '/admin/results', icon: BarChart3 },
+  { label: 'Accuracy', value: '100%', sub: 'Auto-ranked performance', href: '/admin/results', icon: CheckCircle2 },
+  { label: 'Visibility', value: 'All classes', sub: 'At a glance', href: '/admin/results', icon: Eye },
+  { label: 'Operations', value: '3x', sub: 'Faster decision making', href: '/admin', icon: LayoutDashboard },
+]
+
+const featureCards = [
+  { icon: Table2, title: 'Instant broadsheet view', description: 'See the full pupil-by-subject matrix without building reports by hand.' },
+  { icon: Users, title: 'Automatic ranking', description: 'Rank students by total score accurately and consistently every term.' },
+  { icon: BarChart3, title: 'Subject analytics', description: 'Spot the strongest and weakest subjects across the class quickly.' },
+  { icon: Eye, title: 'Mobile view', description: 'Review class data cleanly on phone or desktop without losing context.' },
+  { icon: Download, title: 'Export options', description: 'Download the data as CSV or PDF and share it with stakeholders when needed.' },
+  { icon: TrendingUp, title: 'Data-driven insights', description: 'See top performers, intervention needs, and subject trends from one dashboard.' },
+]
+
+const quickWins = [
+  'Cut down on manual result compilation and revision time',
+  'Reduce ranking errors and inconsistent class analysis',
+  'Monitor performance by subject and by pupil in a single view',
+  'Create cleaner parent and leadership reviews across each term',
+  'Highlight intervention needs before they become long-term issues',
+  'Move academic reviews into a more consistent, decision-ready workflow',
+]
 
 export default function BroadsheetPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-brand/5 to-white">
-      {/* Header */}
-      <div className="border-b border-border bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-12">
-          <div className="max-w-3xl">
-            <p className="mb-2 text-sm font-medium text-brand">SCHOOL BROADSHEET</p>
-            <h1 className="text-4xl font-bold text-foreground">
-              Digital School Broadsheet Software
+    <div className="overflow-hidden bg-background">
+      <section className="relative border-b border-border bg-[#f6faff]">
+        <div className="mx-auto grid max-w-6xl gap-14 px-6 py-20 sm:py-28 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
+          <div className="relative z-10">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">School broadsheet</p>
+            <h1 className="mt-6 max-w-3xl text-4xl font-bold leading-[1.08] tracking-tight text-foreground sm:text-6xl">
+              Digital school broadsheet software.
             </h1>
-            <p className="mt-4 text-lg text-muted">
-              View all class results in one table. Every student × every subject. Export to CSV/PDF.
-              Identify top/bottom performers. Make data-driven decisions.
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-muted sm:text-xl">
+              View every student and every subject in one table, export the data when needed, and spot performance patterns without spreadsheets and manual sorting.
             </p>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <Link href="/signup" className="inline-flex items-center gap-2 rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-hover">
+                Get Started <ArrowUpRight className="h-4 w-4" />
+              </Link>
+              <Link href="#overview" className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-5 py-3 text-sm font-semibold text-foreground transition hover:border-brand hover:text-brand">
+                See the overview
+              </Link>
+            </div>
+          </div>
+
+          <div className="relative min-h-[360px] lg:min-h-[430px]">
+            <div className="absolute inset-4 border border-brand/20 bg-white shadow-[18px_18px_0_0_#dcecff] sm:inset-8" />
+            <div className="relative flex min-h-[360px] flex-col justify-between border border-brand/30 bg-white p-6 shadow-xl sm:min-h-[430px] sm:p-9">
+              <div className="flex items-center justify-between border-b border-border pb-5">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">School view</p>
+                  <p className="mt-2 text-xl font-semibold text-foreground">Every student, every subject, one table</p>
+                </div>
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-brand text-white"><Table2 className="h-5 w-5" /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {[
+                  { label: 'Analysis', value: '30 min', tone: 'bg-[#eaf4ff]' },
+                  { label: 'Accuracy', value: '100%', tone: 'bg-[#f1f7f4]' },
+                  { label: 'Visibility', value: 'All classes', tone: 'bg-[#fff7e8]' },
+                  { label: 'Exports', value: 'CSV/PDF', tone: 'bg-[#f2efff]' },
+                  { label: 'Ranking', value: 'Auto', tone: 'bg-[#edf7f8]' },
+                  { label: 'Insights', value: 'Clear', tone: 'bg-[#fff0f0]' },
+                ].map((item) => (
+                  <div key={item.label} className={`${item.tone} border border-black/5 p-4`}>
+                    <p className="text-xs text-muted">{item.label}</p>
+                    <p className="mt-3 text-xl font-semibold text-foreground">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="border-t border-border pt-5 text-sm text-muted">
+                <span className="font-semibold text-brand">Better academic insight.</span> Class trends become easier to act on.
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Problem Section */}
-      <div className="mx-auto max-w-6xl px-4 py-12">
-        <h2 className="text-2xl font-bold text-foreground">The Broadsheet Problem</h2>
-        <div className="mt-8 grid gap-6 md:grid-cols-2">
-          {[
-            {
-              title: "Manual Compilation",
-              desc: "Creating broadsheet by hand takes hours. Compile results from different sources manually.",
-            },
-            {
-              title: "Errors in Ranking",
-              desc: "Miscalculations when ranking students. Positions don't match actual totals.",
-            },
-            {
-              title: "Hard to Analyze",
-              desc: "Can't easily see which subjects are weak or which students are struggling.",
-            },
-            {
-              title: "Difficult to Share",
-              desc: "Broadsheet on paper. Hard to share with stakeholders. Parents can't see their place.",
-            },
-            {
-              title: "No Subject Stats",
-              desc: "Hard to calculate class average by subject or see per-subject performance.",
-            },
-            {
-              title: "Not Mobile-Friendly",
-              desc: "Broadsheet on paper doesn't work on phones. Teachers can't check results on the go.",
-            },
-          ].map((item, i) => (
-            <div key={i} className="rounded-lg border border-border bg-white p-6">
-              <h3 className="font-semibold text-foreground">{item.title}</h3>
-              <p className="mt-2 text-sm text-muted">{item.desc}</p>
-            </div>
-          ))}
+      <section id="overview" className="py-20 sm:py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">The core idea</p>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-5xl">Turn classroom data into clearer decisions and faster action.</h2>
+            <p className="mt-5 text-lg leading-8 text-muted">SchoolBase gives schools a clean matrix of academic performance so leaders can review patterns, identify intervention needs, and share results clearly with parents and staff.</p>
+          </div>
+
+          <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {featureCards.map((card) => {
+              const Icon = card.icon
+              return (
+                <div key={card.title} className="border border-border bg-white p-6 transition hover:-translate-y-1 hover:border-brand/50 hover:shadow-lg">
+                  <div className="flex h-11 w-11 items-center justify-center bg-brand-light text-brand">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-6 text-xl font-semibold text-foreground">{card.title}</h3>
+                  <p className="mt-3 leading-7 text-muted">{card.description}</p>
+                </div>
+              )
+            })}
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Solution */}
-      <div className="bg-brand/5 py-12">
-        <div className="mx-auto max-w-6xl px-4">
-          <h2 className="text-2xl font-bold text-foreground">How SchoolBase Broadsheet Works</h2>
-          <div className="mt-8 grid gap-8 md:grid-cols-2">
-            {[
-              {
-                icon: <Table2 className="h-8 w-8 text-brand" />,
-                title: "Instant Broadsheet View",
-                desc: "All pupils × all subjects in one table. No manual compilation needed.",
-              },
-              {
-                icon: <Users className="h-8 w-8 text-brand" />,
-                title: "Automatic Ranking",
-                desc: "Students ranked by total score automatically. No calculation errors.",
-              },
-              {
-                icon: <BarChart3 className="h-8 w-8 text-brand" />,
-                title: "Subject Analytics",
-                desc: "See class average per subject. Identify weak subjects instantly.",
-              },
-              {
-                icon: <Eye className="h-8 w-8 text-brand" />,
-                title: "Mobile View",
-                desc: "Access broadsheet on phone. Swipeable table for all screen sizes.",
-              },
-              {
-                icon: <Download className="h-8 w-8 text-brand" />,
-                title: "Export Options",
-                desc: "Export to CSV or PDF for sharing with parents/stakeholders.",
-              },
-              {
-                icon: <CheckCircle className="h-8 w-8 text-brand" />,
-                title: "Data-Driven Insights",
-                desc: "Quickly identify top performers and students needing support.",
-              },
-            ].map((item, i) => (
-              <div key={i} className="rounded-lg border border-brand/20 bg-white p-6">
-                <div className="mb-3">{item.icon}</div>
-                <h3 className="font-semibold text-foreground">{item.title}</h3>
-                <p className="mt-2 text-sm text-muted">{item.desc}</p>
+      <section className="border-y border-border bg-[#f6faff] py-20 sm:py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">What improves immediately</p>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-5xl">The academic wins that matter most.</h2>
+          </div>
+          <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {quickWins.map((item) => (
+              <div key={item} className="flex items-start gap-3 border border-border bg-white p-5">
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
+                <span className="text-sm leading-7 text-foreground">{item}</span>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* What's Included */}
-      <div className="mx-auto max-w-6xl px-4 py-12">
-        <h2 className="text-2xl font-bold text-foreground">Broadsheet Features</h2>
-        <div className="mt-8 space-y-6">
-          {[
-            {
-              title: "Pupils × Subjects Matrix",
-              desc: "Every student on rows, every subject on columns. See entire class picture at once.",
-            },
-            {
-              title: "Automatic Ranking",
-              desc: "Pupils ranked by total score. Handles tie-breaking correctly. Position shown for each student.",
-            },
-            {
-              title: "Subject Statistics",
-              desc: "Average score per subject, highest score, lowest score. Identify strong/weak subjects.",
-            },
-            {
-              title: "Class Statistics",
-              desc: "Overall class average, pass rate, grade distribution.",
-            },
-            {
-              title: "Sortable & Filterable",
-              desc: "Sort by position, by subject, by score. Filter by performance range.",
-            },
-            {
-              title: "Export to CSV/PDF",
-              desc: "Download broadsheet for Excel, printing, or sharing with parents.",
-            },
-            {
-              title: "Mobile Responsive",
-              desc: "Swipeable table on mobile. View on any screen size. All columns visible.",
-            },
-            {
-              title: "Print-Friendly Design",
-              desc: "Professional layout for printing. Fits on page properly with all data.",
-            },
-          ].map((feature, i) => (
-            <div key={i} className="rounded-lg border border-border bg-white p-6">
-              <h3 className="font-semibold text-foreground">{feature.title}</h3>
-              <p className="mt-2 text-sm text-muted">{feature.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Use Cases */}
-      <div className="bg-brand/5 py-12">
-        <div className="mx-auto max-w-6xl px-4">
-          <h2 className="text-2xl font-bold text-foreground">How Schools Use Broadsheet</h2>
-          <div className="mt-8 grid gap-6 md:grid-cols-2">
-            {[
-              {
-                title: "Class Performance Review",
-                desc: "Principal reviews broadsheet to see class-level performance. Identifies weak classes.",
-              },
-              {
-                title: "Subject Curriculum Planning",
-                desc: "Teachers see subject performance. Plan interventions for topics with low scores.",
-              },
-              {
-                title: "Intervention Targeting",
-                desc: "Identify bottom 10% of students. Target them for extra support.",
-              },
-              {
-                title: "Parent Reporting",
-                desc: "Show parents where their child ranked in class. Motivates improvement.",
-              },
-              {
-                title: "Stakeholder Meetings",
-                desc: "Present broadsheet to board/parents. Show academic progress term-to-term.",
-              },
-              {
-                title: "Data Analysis",
-                desc: "Export to Excel for custom analysis. Combine with other school data.",
-              },
-            ].map((item, i) => (
-              <div key={i} className="rounded-lg border border-border bg-white p-6">
-                <h3 className="font-semibold text-foreground">{item.title}</h3>
-                <p className="mt-2 text-sm text-muted">{item.desc}</p>
-              </div>
-            ))}
+      <section className="bg-brand py-16 text-white sm:py-20">
+        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-8 px-6 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/70">Academic visibility</p>
+            <h2 className="mt-3 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">Turn classroom data into better decisions.</h2>
           </div>
+          <Link href="/signup" className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-brand hover:bg-blue-50">Start Your School <ArrowUpRight className="h-4 w-4" /></Link>
         </div>
-      </div>
-
-      {/* Results */}
-      <div className="mx-auto max-w-6xl px-4 py-12">
-        <h2 className="text-2xl font-bold text-foreground">Results Schools Report</h2>
-        <div className="mt-8 grid gap-6 md:grid-cols-3">
-          {[
-            { stat: "30min", label: "Time saved per broadsheet" },
-            { stat: "0", label: "Calculation errors" },
-            { stat: "100%", label: "Visibility into class data" },
-            { stat: "40%", label: "Improvement in weak subjects" },
-            { stat: "3x", label: "Faster decision making" },
-            { stat: "80%", label: "Of data-driven decisions" },
-          ].map((item, i) => (
-            <div key={i} className="rounded-lg bg-white p-6 text-center">
-              <p className="text-3xl font-bold text-brand">{item.stat}</p>
-              <p className="mt-2 text-sm text-muted">{item.label}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Related Resources (Internal Linking) */}
-      <div className="mx-auto max-w-6xl px-4 py-12">
-        <h2 className="text-2xl font-bold text-foreground mb-8">Learn More</h2>
-        <div className="grid gap-6 md:grid-cols-3">
-          <Link href="/guides/school-broadsheet" className="rounded-lg border border-border bg-white p-6 hover:shadow-lg transition">
-            <FileText className="h-8 w-8 text-brand mb-3" />
-            <h3 className="font-semibold text-foreground">Broadsheet Guide</h3>
-            <p className="mt-2 text-sm text-muted">Complete guide to reading broadsheets, analysis tips, and action items</p>
-          </Link>
-
-          <Link href="/solutions/digital-result-management" className="rounded-lg border border-border bg-white p-6 hover:shadow-lg transition">
-            <BarChart3 className="h-8 w-8 text-brand mb-3" />
-            <h3 className="font-semibold text-foreground">Results Management</h3>
-            <p className="mt-2 text-sm text-muted">First, manage your results. Then, see them in beautiful broadsheets</p>
-          </Link>
-
-          <Link href="/for-principals" className="rounded-lg border border-border bg-white p-6 hover:shadow-lg transition">
-            <TrendingUp className="h-8 w-8 text-brand mb-3" />
-            <h3 className="font-semibold text-foreground">For Principals</h3>
-            <p className="mt-2 text-sm text-muted">Use broadsheets for school oversight and academic analytics</p>
-          </Link>
-        </div>
-      </div>
-
-      {/* CTA */}
-      <div className="bg-brand text-white">
-        <div className="mx-auto max-w-4xl px-4 py-12 text-center">
-          <h2 className="text-3xl font-bold">See Your Class Data Clearly</h2>
-          <p className="mt-4 text-lg text-brand/80">
-            Instant broadsheet. Automatic ranking. Export anytime.
-          </p>
-          <div className="mt-8 flex gap-4 justify-center">
-            <button className="rounded-lg bg-white px-6 py-3 font-medium text-brand hover:bg-white/90">
-              Start Free Trial
-            </button>
-            <Link
-              href="/contact"
-              className="rounded-lg border border-white px-6 py-3 font-medium hover:bg-white/10"
-            >
-              See Demo
-            </Link>
-          </div>
-        </div>
-      </div>
+      </section>
     </div>
-  );
+  )
 }

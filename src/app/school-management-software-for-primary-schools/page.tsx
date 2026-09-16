@@ -1,80 +1,29 @@
 import type { Metadata } from 'next'
 import { BookOpen, ClipboardCheck, MessageSquareText, ShieldCheck, Sparkles, Users } from 'lucide-react'
-import { SeoPageShell } from '@/components/seo-page-shell'
+import { PublicProductShell } from '@/components/public-product-shell'
 
 export const metadata: Metadata = {
   title: 'School Management Software for Primary Schools | SchoolBase',
-  description:
-    'Simple and powerful school management software for primary schools. Manage attendance, fee reports, parent communication, and results with ease.',
-  keywords: [
-    'school management software for primary schools',
-    'primary school management system',
-    'school software for primary schools',
-    'primary school admin software',
-  ],
+  description: 'Practical school management software for primary schools with attendance, parent communication, student records, and connected daily workflows.',
+  keywords: ['school management software for primary schools', 'primary school management system', 'school software for primary schools', 'primary school admin software'],
 }
 
 export default function PrimarySchoolsPage() {
-  return (
-    <SeoPageShell
-      eyebrow="PRIMARY SCHOOLS"
-      title="School Management Software for Primary Schools"
-      description="SchoolBase gives primary schools a simpler way to manage class records, attendance, fees, and parent updates without overwhelming staff or parents."
-      highlights={['Easy teacher adoption', 'Attendance tracking', 'Parent updates', 'Fast setup']}
-      features={[
-        {
-          title: 'Simple for Teachers',
-          description: 'Teachers can record attendance, enter marks, and share updates using a clean interface that feels familiar from the first day.',
-          icon: BookOpen,
-        },
-        {
-          title: 'Attendance That Parents Can Trust',
-          description: 'Send absence alerts automatically and keep daily records in one secure place that school leaders can review quickly.',
-          icon: ClipboardCheck,
-        },
-        {
-          title: 'Clear Communication with Families',
-          description: 'Use WhatsApp and SMS to send reminders, school news, and academic updates without manual follow-up.',
-          icon: MessageSquareText,
-        },
-        {
-          title: 'Affordable and Practical',
-          description: 'Get the core school management features you need without the cost and complexity of enterprise platforms.',
-          icon: Sparkles,
-        },
-        {
-          title: 'Shared Access Across Roles',
-          description: 'Principals, class teachers, and admins can work from the same data without duplicate spreadsheets.',
-          icon: Users,
-        },
-        {
-          title: 'Secure Record Keeping',
-          description: 'Protect student data with permission-based access and dependable backups that school owners can trust.',
-          icon: ShieldCheck,
-        },
-      ]}
-      proofItems={[
-        {
-          title: 'Less paperwork for busy school teams',
-          detail: 'Replace paper registers and scattered files with a digital workflow that saves time every week.',
-        },
-        {
-          title: 'Smart reporting for school heads',
-          detail: 'Monitor attendance trends, fee balances, and academic progress in one place.',
-        },
-        {
-          title: 'Better parent engagement',
-          detail: 'Parents receive timely updates and can keep track of their child’s progress from their phone.',
-        },
-        {
-          title: 'Made for practical school operations',
-          detail: 'SchoolBase supports the day-to-day realities of schools in West Africa, from classroom management to administration.',
-        },
-      ]}
-      primaryCtaLabel="See SchoolBase in Action"
-      primaryHref="/demo"
-      secondaryCtaLabel="Explore Features"
-      secondaryHref="/features"
-    />
-  )
+  return <PublicProductShell
+    eyebrow="Primary schools"
+    title="Give your primary school a simpler way to keep everyone in step."
+    description="SchoolBase brings class records, attendance, fees, results, and parent updates into one practical platform that teachers and administrators can use every day."
+    proofTitle="Practical workflows for primary teams"
+    sectionTitle="Make the work around every classroom easier to follow."
+    ctaTitle="Give your school one clearer place to work."
+    highlights={['Easy teacher adoption', 'Attendance tracking', 'Parent updates', 'Student records', 'Shared staff access', 'Fast setup']}
+    features={[
+      { title: 'Simple for teachers', description: 'Record attendance, enter marks, and manage class information through a focused workspace that is easy to adopt.', icon: BookOpen },
+      { title: 'Attendance families can trust', description: 'Keep daily attendance records organised and give school teams a clear view of absence and punctuality.', icon: ClipboardCheck },
+      { title: 'Communication with families', description: 'Send reminders, school news, and academic updates through communication workflows families already use.', icon: MessageSquareText },
+      { title: 'Practical school operations', description: 'Bring the core work of a primary school together without adding unnecessary complexity for staff.', icon: Sparkles },
+      { title: 'Shared access across roles', description: 'Let principals, class teachers, and administrators work from the same school records instead of duplicate files.', icon: Users },
+      { title: 'Secure record keeping', description: 'Keep student and school information organised with permission-aware access and dependable operational controls.', icon: ShieldCheck },
+    ]}
+  />
 }

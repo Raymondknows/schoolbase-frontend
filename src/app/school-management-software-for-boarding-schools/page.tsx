@@ -71,10 +71,10 @@ export default function BoardingSchoolsPage() {
           detail: 'SchoolBase fits the practical needs of boarding schools in West Africa with flexible workflows and strong support.',
         },
       ]}
-      primaryCtaLabel="Request a Demo"
-      primaryHref="/demo"
-      secondaryCtaLabel="Explore SchoolBase"
-      secondaryHref="/features"
+      primaryCtaLabel="Get Started"
+      primaryHref="/signup"
+      secondaryCtaLabel="Explore the Platform"
+      secondaryHref="/platform"
     />
   )
 }

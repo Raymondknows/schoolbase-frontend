@@ -16,7 +16,9 @@ export default async function Header() {
         {/* Top bar with social links - hide for logged-in users */}
         {!isLoggedIn && (
           <div className="hidden md:flex justify-between items-center text-xs text-muted mb-2 pb-2 border-b border-border/30">
-            <div>Built for West African schools by ClickBase Technologies Ltd.</div>
+            <div>
+              Built for West African schools by ClickBase Technologies Ltd.
+            </div>
             <div className="flex flex-wrap gap-3">
               <a
                 href="https://www.linkedin.com/company/106371744/"
@@ -36,7 +38,10 @@ export default async function Header() {
                 <Facebook className="h-4 w-4" />
                 Facebook
               </a>
-              <a href="mailto:support@schoolbase.live" className="text-muted hover:text-brand flex items-center gap-1">
+              <a
+                href="mailto:support@schoolbase.live"
+                className="text-muted hover:text-brand flex items-center gap-1"
+              >
                 <Mail className="h-4 w-4" />
                 Email
               </a>
@@ -63,22 +68,27 @@ export default async function Header() {
               <Link href="/platform" className="hover:text-brand">
                 Platform
               </Link>
-              <Link href="/solutions/school-fee-management" className="hover:text-brand">
+              <Link href="/solutions" className="hover:text-brand">
                 Solutions
               </Link>
-              <Link href="/compare/manual-systems" className="hover:text-brand">
+              <Link href="/compare" className="hover:text-brand">
                 Compare
               </Link>
               <Link href="/for-principals" className="hover:text-brand">
                 For Your Role
               </Link>
-              <Link href="/guides/school-fee-management" className="hover:text-brand">
+              <Link href="/guides" className="hover:text-brand">
                 Guides
               </Link>
               <Link href="/blog" className="hover:text-brand">
                 Blog
               </Link>
-              <a href="https://clickbasegroup.com/" target="_blank" rel="noopener noreferrer" className="hover:text-brand">
+              <a
+                href="https://clickbasegroup.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-brand"
+              >
                 ClickBase
               </a>
             </nav>
@@ -90,19 +100,70 @@ export default async function Header() {
                   Menu
                 </summary>
                 <nav className="absolute right-0 top-12 z-10 grid min-w-56 gap-1 border border-border bg-white p-2 text-sm font-medium text-foreground shadow-xl">
-                  <Link href="/platform" className="px-3 py-2 hover:bg-brand-light hover:text-brand">Platform</Link>
-                  <Link href="/solutions/school-fee-management" className="px-3 py-2 hover:bg-brand-light hover:text-brand">Solutions</Link>
-                  <Link href="/for-principals" className="px-3 py-2 hover:bg-brand-light hover:text-brand">For Your Role</Link>
-                  <Link href="/guides/school-fee-management" className="px-3 py-2 hover:bg-brand-light hover:text-brand">Guides</Link>
-                  <Link href="/blog" className="px-3 py-2 hover:bg-brand-light hover:text-brand">Blog</Link>
+                  <Link
+                    href="/platform"
+                    className="px-3 py-2 hover:bg-brand-light hover:text-brand"
+                  >
+                    Platform
+                  </Link>
+                  <Link
+                    href="/solutions"
+                    className="px-3 py-2 hover:bg-brand-light hover:text-brand"
+                  >
+                    Solutions
+                  </Link>
+                  <Link
+                    href="/for-principals"
+                    className="px-3 py-2 hover:bg-brand-light hover:text-brand"
+                  >
+                    For Your Role
+                  </Link>
+                  <Link
+                    href="/compare"
+                    className="px-3 py-2 hover:bg-brand-light hover:text-brand"
+                  >
+                    Compare
+                  </Link>
+                  <Link
+                    href="/guides"
+                    className="px-3 py-2 hover:bg-brand-light hover:text-brand"
+                  >
+                    Guides
+                  </Link>
+                  <Link
+                    href="/blog"
+                    className="px-3 py-2 hover:bg-brand-light hover:text-brand"
+                  >
+                    Blog
+                  </Link>
                   <div className="my-1 border-t border-border" />
-                  <Link href="/login" className="px-3 py-2 font-semibold text-brand hover:bg-brand-light">School login</Link>
-                  <Link href="/parent/login" className="px-3 py-2 font-semibold text-brand hover:bg-brand-light">Parent login</Link>
+                  <Link
+                    href="/login"
+                    className="px-3 py-2 font-semibold text-brand hover:bg-brand-light"
+                  >
+                    School login
+                  </Link>
+                  <Link
+                    href="/parent/login"
+                    className="px-3 py-2 font-semibold text-brand hover:bg-brand-light"
+                  >
+                    Parent login
+                  </Link>
                 </nav>
               </details>
               <div className="hidden items-center gap-3 lg:flex">
-                <Link href="/login" className="text-sm font-semibold text-muted hover:text-brand">School login</Link>
-                <Link href="/parent/login" className="text-sm font-semibold text-muted hover:text-brand">Parent login</Link>
+                <Link
+                  href="/login"
+                  className="text-sm font-semibold text-muted hover:text-brand"
+                >
+                  School login
+                </Link>
+                <Link
+                  href="/parent/login"
+                  className="text-sm font-semibold text-muted hover:text-brand"
+                >
+                  Parent login
+                </Link>
               </div>
               <Link
                 href="/signup"

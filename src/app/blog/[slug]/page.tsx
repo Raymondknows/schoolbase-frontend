@@ -141,13 +141,13 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           }),
         }}
       />
-      <section className="border-b border-border bg-surface py-20">
-        <div className="mx-auto max-w-5xl px-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand-light px-3 py-1 text-sm font-medium text-brand">
+      <section className="border-b border-border bg-[#f6faff] py-20">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-brand">
             <Sparkles className="h-4 w-4" />
             {post.category}
           </div>
-          <h1 className="mt-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+          <h1 className="mt-5 max-w-4xl text-4xl font-bold leading-[1.08] tracking-tight text-foreground sm:text-6xl">
             {post.title}
           </h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-muted">{post.description}</p>
@@ -165,7 +165,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </div>
           <div className={`mt-10 grid gap-8 ${post.image ? 'lg:grid-cols-[420px_minmax(0,1fr)]' : 'lg:grid-cols-1'}`}>
             {post.image ? (
-              <div className="relative overflow-hidden rounded-[28px] shadow-xl">
+                <div className="relative overflow-hidden border border-border shadow-xl">
                 <img
                   src={post.image}
                   alt={post.title}
@@ -182,7 +182,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                 </div>
               </div>
             ) : null}
-            <div className="flex min-h-[420px] items-center justify-center rounded-[28px] border border-brand/30 bg-brand/10 p-10 shadow-sm text-center">
+            <div className="flex min-h-[420px] items-center justify-center border border-brand/30 bg-brand-light p-10 text-center">
               <div className="max-w-2xl">
                 <p className="text-[6rem] font-black leading-none text-brand/80">“</p>
                 <p className="mt-4 text-xl font-semibold leading-9 text-foreground">{post.hero}</p>
@@ -197,7 +197,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <div className="mx-auto max-w-5xl px-6">
           <article className="mt-10 space-y-10">
             {post.sections.map((section) => (
-              <section key={section.heading} className="rounded-2xl border border-border bg-background p-8">
+              <section key={section.heading} className="border border-border bg-white p-8">
                 <h2 className="text-2xl font-semibold text-foreground">{section.heading}</h2>
                 <div className="mt-4 space-y-4 text-base leading-8 text-muted">
                   {section.body.map((paragraph) => (
@@ -225,7 +225,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             </div>
             <div className="mt-6 grid gap-6 md:grid-cols-2">
               {relatedPosts.map((item) => (
-                <Link key={item.slug} href={`/blog/${item.slug}`} className="rounded-xl border border-border bg-background p-5 hover:border-brand/40 hover:bg-brand-light/40">
+                <Link key={item.slug} href={`/blog/${item.slug}`} className="border border-border bg-background p-5 hover:border-brand/40 hover:bg-brand-light/40">
                   <h3 className="text-lg font-semibold text-foreground">{item.title}</h3>
                   <p className="mt-2 text-sm leading-7 text-muted">{item.excerpt}</p>
                 </Link>
@@ -233,7 +233,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             </div>
           </div>
 
-          <div className="mt-12 rounded-2xl border border-brand/20 bg-brand-light/50 p-8 text-center">
+          <div className="mt-12 border border-brand/20 bg-brand-light/50 p-8 text-center">
             <h2 className="text-2xl font-semibold text-foreground">Ready to modernize your school?</h2>
             <p className="mt-3 text-lg text-muted">
               Explore the full SchoolBase platform and see how it supports smarter operations, stronger communication, and better educational outcomes.

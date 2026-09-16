@@ -1,81 +1,29 @@
 import type { Metadata } from 'next'
 import { Building2, GraduationCap, MessageSquareText, Receipt, ShieldCheck, Users } from 'lucide-react'
-import { SeoPageShell } from '@/components/seo-page-shell'
+import { PublicProductShell } from '@/components/public-product-shell'
 
 export const metadata: Metadata = {
   title: 'School Management Software for Private Schools | SchoolBase',
-  description:
-    'Modern school management software for private schools in West Africa. Automate fees, results, parent communication and admissions with one trusted platform.',
-  keywords: [
-    'school management software for private schools',
-    'private school management system',
-    'school software for private schools',
-    'education management software',
-    'West African school software',
-  ],
+  description: 'Modern school management software for private schools with connected admissions, fees, results, parent communication, and school records.',
+  keywords: ['school management software for private schools', 'private school management system', 'school software for private schools', 'education management software', 'West African school software'],
 }
 
 export default function PrivateSchoolsPage() {
-  return (
-    <SeoPageShell
-      eyebrow="PRIVATE SCHOOLS"
-      title="School Management Software for Private Schools"
-      description="SchoolBase helps private schools run faster with admissions, fee automation, parent communication, and digital results in one secure platform built for West African teams."
-      highlights={['Fee automation', 'Admissions workflow', 'Parent updates', 'Secure data access']}
-      features={[
-        {
-          title: 'Admissions That Feel Effortless',
-          description: 'Create a smooth intake process with online forms, student records, and a professional school website connected to your operations.',
-          icon: Building2,
-        },
-        {
-          title: 'Fee Collection Without the Chasing',
-          description: 'Track invoices, collect payments, send reminders, and keep parents informed with clear balances and instant receipts.',
-          icon: Receipt,
-        },
-        {
-          title: 'Results and Reports in Minutes',
-          description: 'Publish marks, generate report cards, and share performance updates with teachers, parents, and school leadership automatically.',
-          icon: GraduationCap,
-        },
-        {
-          title: 'Parent Communication That Gets Read',
-          description: 'Send announcements, reminders, and results on WhatsApp and SMS so parents stay informed without extra effort.',
-          icon: MessageSquareText,
-        },
-        {
-          title: 'Role-Based Access for Staff',
-          description: 'Give principals, bursars, teachers, and admins exactly the tools they need while protecting sensitive school data.',
-          icon: Users,
-        },
-        {
-          title: 'Built for Trust and Growth',
-          description: 'From onboarding to reporting, SchoolBase supports private schools that want dependable systems and a better parent experience.',
-          icon: ShieldCheck,
-        },
-      ]}
-      proofItems={[
-        {
-          title: 'Go live in days, not months',
-          detail: 'Schools can switch from spreadsheets and paper records to a live platform in a short implementation window.',
-        },
-        {
-          title: 'One system for every department',
-          detail: 'Keep academics, finance, admissions, and parent communication connected from one dashboard.',
-        },
-        {
-          title: 'Clear visibility for school leaders',
-          detail: 'Get real-time reporting on fees, attendance, student performance, and communication without manual work.',
-        },
-        {
-          title: 'Built for West African operations',
-          detail: 'Support local workflows and practical finance processes for schools in Nigeria, Ghana, Liberia, Sierra Leone, and The Gambia.',
-        },
-      ]}
-      primaryCtaLabel="Start Free Trial"
-      primaryHref="/signup"
-      secondaryCtaLabel="Book a Demo"
-      secondaryHref="/demo"
-    />
-  )
+  return <PublicProductShell
+    eyebrow="Private schools"
+    title="Bring every part of your private school into one clearer system."
+    description="SchoolBase connects admissions, fees, academics, results, parent communication, and school records so private-school teams can work with more visibility and less manual repetition."
+    proofTitle="One connected view for school leaders"
+    sectionTitle="Give every department a reliable workflow to work from."
+    ctaTitle="Build a stronger operating foundation for your school."
+    highlights={['Admissions workflow', 'Fee visibility', 'Parent updates', 'Digital results', 'Role-aware access', 'School records']}
+    features={[
+      { title: 'Admissions that stay organised', description: 'Keep new student intake, school records, and the information your team needs connected from the start.', icon: Building2 },
+      { title: 'Fee collection without guesswork', description: 'Track invoices, payments, balances, reminders, and receipts in one clearer financial workflow.', icon: Receipt },
+      { title: 'Results and reports in one place', description: 'Organise academic records and give teachers, parents, and school leadership a clearer view of progress.', icon: GraduationCap },
+      { title: 'Parent communication that connects', description: 'Share announcements, reminders, and academic updates through communication workflows families already use.', icon: MessageSquareText },
+      { title: 'Workspaces for every role', description: 'Give principals, bursars, teachers, and administrators access to the information relevant to their responsibilities.', icon: Users },
+      { title: 'Ready for steady growth', description: 'Keep operations organised as your school grows, adds staff, and takes on more students and families.', icon: ShieldCheck },
+    ]}
+  />
 }
