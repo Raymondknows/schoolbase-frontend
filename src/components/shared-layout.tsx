@@ -1,11 +1,10 @@
 "use client";
 
-import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import Sidebar from "@/components/sidebar";
 import { usePathname } from "next/navigation";
-import { Menu, X, FileText, Music, Play, Pause, ChevronDown, ChevronLeft, ChevronRight, Volume2, Calculator, Bell, Clock, Sparkles, Loader2, MoonStar, SunMedium, Equal, Delete, RefreshCcw, Plus } from "lucide-react";
+import { Menu, X, Music, Play, Pause, ChevronDown, ChevronLeft, ChevronRight, Volume2, Loader2, Equal, Delete, RefreshCcw, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ThemeSwitcher } from "@/components/platform-admin/theme-switcher";
 import { playCloseTone, playOpenTone } from "@/lib/sounds";
 import { applyTheme, detectSystemTheme, resolveStoredTheme, ThemeMode } from "@/lib/theme";
 import TeacherClassAlert from "@/components/teacher-class-alert";
@@ -49,27 +48,20 @@ export default function SharedLayout({
   const [currentAudioIndex, setCurrentAudioIndex] = useState<number | null>(null);
   const [audioProgress, setAudioProgress] = useState(0);
   const [playerVolume, setPlayerVolume] = useState(0.75);
-  const [noteModalWidth, setNoteModalWidth] = useState(720);
-  const [noteModalHeight, setNoteModalHeight] = useState(480);
+  const [noteModalWidth, setNoteModalWidth] = useState(560);
+  const [noteModalHeight, setNoteModalHeight] = useState(420);
   const [isResizingNotes, setIsResizingNotes] = useState(false);
   const [isVolumePopoverOpen, setIsVolumePopoverOpen] = useState(false);
   const [isAudioPlayerOpen, setIsAudioPlayerOpen] = useState(false);
   const [isAudioBuffering, setIsAudioBuffering] = useState(false);
   const [themeMode, setThemeMode] = useState<ThemeMode>("system");
   const [isToolsOpen, setIsToolsOpen] = useState(false);
-  const [toolsPosition, setToolsPosition] = useState({ x: 24, y: 120 });
-  const [isDraggingTools, setIsDraggingTools] = useState(false);
   const [toolPanelPosition, setToolPanelPosition] = useState({ x: 680, y: 120 });
   const [audioPanelPosition, setAudioPanelPosition] = useState({ x: 24, y: 200 });
   const [isDraggingToolPanel, setIsDraggingToolPanel] = useState(false);
   const [isDraggingAudioPanel, setIsDraggingAudioPanel] = useState(false);
   const [activeTool, setActiveTool] = useState<"notes" | "calculator" | "reminders" | "timer">("notes");
   const [isToolPanelOpen, setIsToolPanelOpen] = useState(false);
-  const [isThemeOpen, setIsThemeOpen] = useState(false);
-  const [themePanelPosition, setThemePanelPosition] = useState({ x: 680, y: 120 });
-  const [isDraggingThemePanel, setIsDraggingThemePanel] = useState(false);
-  const themePanelRef = useRef<HTMLDivElement | null>(null);
-  const themePanelDragOffsetRef = useRef({ x: 0, y: 0 });
   const [calculatorExpression, setCalculatorExpression] = useState("12+34");
   const [calculatorResult, setCalculatorResult] = useState("0");
   const [calculatorHistory, setCalculatorHistory] = useState<string[]>([]);
@@ -83,12 +75,9 @@ export default function SharedLayout({
   const resizeStartRef = useRef<any>({ startX: 0, width: 720, startLeft: 0, startY: 0, height: 480, side: "right" });
   const volumeButtonRef = useRef<HTMLButtonElement | null>(null);
   const volumePopoverRef = useRef<HTMLDivElement | null>(null);
-  const toolPanelRef = useRef<HTMLDivElement | null>(null);
   const dragOffsetRef = useRef({ x: 0, y: 0 });
   const toolPanelDragOffsetRef = useRef({ x: 0, y: 0 });
   const audioPanelDragOffsetRef = useRef({ x: 0, y: 0 });
-  const toolsDragOffsetRef = useRef({ x: 0, y: 0 });
-  const toolsTouchMovedRef = useRef(false);
   const audioTouchMovedRef = useRef(false);
 
   function openMobileSidebar() {
@@ -129,19 +118,6 @@ export default function SharedLayout({
   }, [themeMode]);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (themePanelRef.current?.contains(event.target as Node)) {
-        return;
-      }
-      setIsThemeOpen(false);
-    };
-
-    if (!isThemeOpen) return;
-    window.addEventListener("mousedown", handleClickOutside);
-    return () => window.removeEventListener("mousedown", handleClickOutside);
-  }, [isThemeOpen]);
-
-  useEffect(() => {
     window.sessionStorage.setItem("schoolbase-admin-session-notes", adminSessionNotes);
   }, [adminSessionNotes]);
 
@@ -171,52 +147,6 @@ export default function SharedLayout({
       window.removeEventListener("mouseup", handleMouseUp);
     };
   }, [isDraggingNotes]);
-
-  useEffect(() => {
-    if (!isDraggingThemePanel) return;
-
-    const handleMouseMove = (event: MouseEvent) => {
-      setThemePanelPosition((current) => clampToViewport(
-        {
-          x: event.clientX - themePanelDragOffsetRef.current.x,
-          y: event.clientY - themePanelDragOffsetRef.current.y,
-        },
-        320,
-        260
-      ));
-    };
-
-    const handleTouchMove = (event: TouchEvent) => {
-      if (event.touches.length !== 1) return;
-      const touch = event.touches[0];
-      setThemePanelPosition((current) => clampToViewport(
-        {
-          x: touch.clientX - themePanelDragOffsetRef.current.x,
-          y: touch.clientY - themePanelDragOffsetRef.current.y,
-        },
-        320,
-        260
-      ));
-      event.preventDefault();
-    };
-
-    const handleMouseUp = () => setIsDraggingThemePanel(false);
-    const handleTouchEnd = () => setIsDraggingThemePanel(false);
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-    window.addEventListener("touchmove", handleTouchMove, { passive: false });
-    window.addEventListener("touchend", handleTouchEnd);
-    window.addEventListener("touchcancel", handleTouchEnd);
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-      window.removeEventListener("touchmove", handleTouchMove);
-      window.removeEventListener("touchend", handleTouchEnd);
-      window.removeEventListener("touchcancel", handleTouchEnd);
-    };
-  }, [isDraggingThemePanel]);
 
   useEffect(() => {
     if (!isResizingNotes) return;
@@ -299,22 +229,9 @@ export default function SharedLayout({
   }, [isVolumePopoverOpen]);
 
   useEffect(() => {
-    if (!isToolsOpen) return;
-
-    const handleToolClickOutside = (event: MouseEvent) => {
-      if (!toolPanelRef.current) return;
-      if (toolPanelRef.current.contains(event.target as Node)) return;
-      setIsToolsOpen(false);
-    };
-
-    window.addEventListener("mousedown", handleToolClickOutside);
-    return () => window.removeEventListener("mousedown", handleToolClickOutside);
-  }, [isToolsOpen]);
-
-  useEffect(() => {
     if (!isToolPanelOpen) return;
 
-    const panelWidth = activeTool === "reminders" ? 560 : 320;
+    const panelWidth = activeTool === "reminders" ? 440 : 320;
     setToolPanelPosition((current) => clampToViewport(current, panelWidth, 520));
   }, [activeTool, isToolPanelOpen]);
 
@@ -327,7 +244,7 @@ export default function SharedLayout({
   useEffect(() => {
     const handleResize = () => {
       if (isToolPanelOpen) {
-        const panelWidth = activeTool === "reminders" ? 560 : 320;
+        const panelWidth = activeTool === "reminders" ? 440 : 320;
         setToolPanelPosition((current) => clampToViewport(current, panelWidth, 520));
       }
       if (isAudioPlayerOpen) {
@@ -396,43 +313,6 @@ export default function SharedLayout({
     };
   }, [isDraggingToolPanel, isDraggingAudioPanel]);
 
-  useEffect(() => {
-    if (!isDraggingTools) return;
-
-    const handleMouseMove = (event: MouseEvent) => {
-      const nextX = Math.max(12, Math.min(window.innerWidth - 60, event.clientX - toolsDragOffsetRef.current.x));
-      const nextY = Math.max(12, Math.min(window.innerHeight - 60, event.clientY - toolsDragOffsetRef.current.y));
-      setToolsPosition({ x: nextX, y: nextY });
-    };
-
-    const handleTouchMove = (event: TouchEvent) => {
-      if (event.touches.length !== 1) return;
-      toolsTouchMovedRef.current = true;
-      const touch = event.touches[0];
-      const nextX = Math.max(12, Math.min(window.innerWidth - 60, touch.clientX - toolsDragOffsetRef.current.x));
-      const nextY = Math.max(12, Math.min(window.innerHeight - 60, touch.clientY - toolsDragOffsetRef.current.y));
-      setToolsPosition({ x: nextX, y: nextY });
-      event.preventDefault();
-    };
-
-    const handleMouseUp = () => setIsDraggingTools(false);
-    const handleTouchEnd = () => setIsDraggingTools(false);
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-    window.addEventListener("touchmove", handleTouchMove, { passive: false });
-    window.addEventListener("touchend", handleTouchEnd);
-    window.addEventListener("touchcancel", handleTouchEnd);
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-      window.removeEventListener("touchmove", handleTouchMove);
-      window.removeEventListener("touchend", handleTouchEnd);
-      window.removeEventListener("touchcancel", handleTouchEnd);
-    };
-  }, [isDraggingTools]);
-
   const sanitizeCalculatorInput = (expression: string) => {
     return expression.replace(/[^0-9+\-*/().% ]/g, "");
   };
@@ -469,18 +349,11 @@ export default function SharedLayout({
     if (tool === "notes") {
       openNotesModal();
     } else {
-      const panelWidth = tool === "reminders" ? 560 : 320;
+      const panelWidth = tool === "reminders" ? 440 : 320;
       const panelHeight = 520;
       setToolPanelPosition((current) => clampToViewport(current, panelWidth, panelHeight));
       setIsToolPanelOpen(true);
     }
-  };
-
-  const openThemePanel = () => {
-    playOpenTone();
-    setIsToolsOpen(false);
-    setThemePanelPosition((current) => clampToViewport(current, 320, 260));
-    setIsThemeOpen(true);
   };
 
   const toggleToolsOpen = () => {
@@ -603,47 +476,6 @@ export default function SharedLayout({
     toolPanelDragOffsetRef.current = {
       x: event.clientX - toolPanelPosition.x,
       y: event.clientY - toolPanelPosition.y,
-    };
-  };
-
-  const handleThemePanelMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    if ((event.target as HTMLElement).closest("button")) return;
-    event.preventDefault();
-    setIsDraggingThemePanel(true);
-    themePanelDragOffsetRef.current = {
-      x: event.clientX - themePanelPosition.x,
-      y: event.clientY - themePanelPosition.y,
-    };
-  };
-
-  const handleThemePanelTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
-    if (event.touches.length !== 1) return;
-    const touch = event.touches[0];
-    setIsDraggingThemePanel(true);
-    themePanelDragOffsetRef.current = {
-      x: touch.clientX - themePanelPosition.x,
-      y: touch.clientY - themePanelPosition.y,
-    };
-  };
-
-  const handleToolsMouseDown = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    event.preventDefault();
-    toolsTouchMovedRef.current = false;
-    setIsDraggingTools(true);
-    toolsDragOffsetRef.current = {
-      x: event.clientX - toolsPosition.x,
-      y: event.clientY - toolsPosition.y,
-    };
-  };
-
-  const handleToolsTouchStart = (event: React.TouchEvent<HTMLButtonElement>) => {
-    if (event.touches.length !== 1) return;
-    const touch = event.touches[0];
-    toolsTouchMovedRef.current = false;
-    setIsDraggingTools(true);
-    toolsDragOffsetRef.current = {
-      x: touch.clientX - toolsPosition.x,
-      y: touch.clientY - toolsPosition.y,
     };
   };
 
@@ -826,12 +658,6 @@ export default function SharedLayout({
     applyTheme(nextTheme);
   };
 
-  const themeStatusText = useMemo(() => {
-    if (themeMode === "system") return "Auto following your OS preference.";
-    if (themeMode === "dark") return "Dark mode stays active regardless of system setting.";
-    return "Light mode stays active regardless of system setting.";
-  }, [themeMode]);
-
   const toggleThemeMode = () => {
     const nextTheme = actualTheme === "dark" ? "light" : "dark";
     handleThemeChange(nextTheme);
@@ -926,6 +752,12 @@ export default function SharedLayout({
         school={school}
         session={session}
         setupProgress={setupProgress}
+        actualTheme={actualTheme}
+        onThemeToggle={toggleThemeMode}
+        toolsOpen={isToolsOpen}
+        onToolsToggle={toggleToolsOpen}
+        onToolSelect={(tool) => { openTool(tool); closeMobileSidebar(); }}
+        onAudioOpen={() => { toggleAudioPlayer(); setIsToolsOpen(false); closeMobileSidebar(); }}
         logoHref={logoHref}
         logoutRedirectUrl={logoutRedirectUrl}
       />
@@ -949,6 +781,12 @@ export default function SharedLayout({
           school={school}
           session={session}
           setupProgress={setupProgress}
+          actualTheme={actualTheme}
+          onThemeToggle={toggleThemeMode}
+          toolsOpen={isToolsOpen}
+          onToolsToggle={toggleToolsOpen}
+          onToolSelect={(tool) => { openTool(tool); closeMobileSidebar(); }}
+          onAudioOpen={() => { toggleAudioPlayer(); setIsToolsOpen(false); closeMobileSidebar(); }}
           logoHref={logoHref}
           logoutRedirectUrl={logoutRedirectUrl}
           isMobile
@@ -978,102 +816,12 @@ export default function SharedLayout({
 
         <main className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-background p-4 sm:p-6 md:p-8 print:overflow-visible print:p-0">{children}</main>
 
-
-        <div
-          className="fixed z-50 flex flex-col items-end gap-2 print:hidden"
-          style={{ left: toolsPosition.x, top: toolsPosition.y }}
-        >
-          <div className="relative" ref={toolPanelRef}>
-            <button
-              type="button"
-              data-tools-button
-              onMouseDown={handleToolsMouseDown}
-              onTouchStart={handleToolsTouchStart}
-              onClick={(event) => {
-                if (toolsTouchMovedRef.current) {
-                  event.preventDefault();
-                  return;
-                }
-                toggleToolsOpen();
-              }}
-              className="inline-flex touch-none select-none h-12 w-12 items-center justify-center rounded-full bg-[#0A66C2] text-white shadow-lg shadow-slate-900/20 transition hover:bg-[#0952a4] hover:scale-105"
-              title="Open tools"
-              aria-label="Open tools"
-            >
-              <Sparkles className="h-5 w-5" />
-            </button>
-            {isToolsOpen ? (
-              <div className="absolute right-0 top-full mt-2 flex flex-col items-end gap-2 rounded-full bg-transparent p-1 shadow-none">
-                <button
-                  type="button"
-                  onClick={() => openTool("notes")}
-                  className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#0A66C2] text-white shadow-lg shadow-slate-900/10 transition hover:scale-105"
-                  title="Notes"
-                  aria-label="Open Notes tool"
-                >
-                  <FileText className="h-5 w-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => openTool("calculator")}
-                  className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#0A66C2] text-white shadow-lg shadow-slate-900/10 transition hover:scale-105"
-                  title="Calculator"
-                  aria-label="Open Calculator tool"
-                >
-                  <Calculator className="h-5 w-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => openTool("reminders")}
-                  className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#0A66C2] text-white shadow-lg shadow-slate-900/10 transition hover:scale-105"
-                  title="Reminders"
-                  aria-label="Open Reminders tool"
-                >
-                  <Bell className="h-5 w-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => openTool("timer")}
-                  className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#0A66C2] text-white shadow-lg shadow-slate-900/10 transition hover:scale-105"
-                  title="Timer"
-                  aria-label="Open Timer tool"
-                >
-                  <Clock className="h-5 w-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={openThemePanel}
-                  className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#0A66C2] text-white shadow-lg shadow-slate-900/10 transition hover:scale-105"
-                  title="Theme"
-                  aria-label="Open Theme settings"
-                >
-                  <SunMedium className="h-5 w-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    toggleAudioPlayer();
-                    setIsToolsOpen(false);
-                  }}
-                  className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#0A66C2] text-white shadow-lg shadow-slate-900/10 transition hover:scale-105"
-                  title="Audio player"
-                  aria-label="Open Audio player"
-                >
-                  <Music className="h-5 w-5" />
-                </button>
-              </div>
-            ) : null}
-
-          </div>
-
-        </div>
-
         <div className="fixed z-50 flex flex-col items-end gap-2" style={{ left: audioPanelPosition.x, top: audioPanelPosition.y }}>
           {isAudioPlayerOpen ? (
             <div
-                  className={`w-[340px] max-w-[calc(100vw-32px)] rounded-[20px] border p-3 shadow-sm transition ${themeMode === "dark" ? "border-slate-700 bg-slate-900 text-slate-100" : "border-border bg-surface text-foreground"}`}
+                  className={`w-[360px] max-w-[calc(100vw-32px)] border p-3 shadow-2xl transition ${themeMode === "dark" ? "border-slate-700 bg-slate-900 text-slate-100" : "border-border bg-surface text-foreground"}`}
                 >
-                <div className={`flex cursor-grab items-start justify-between gap-3 rounded-t-lg px-4 py-3 ${themeMode === "dark" ? "bg-slate-800" : "bg-gradient-to-r from-[#dbeafe] via-[#bfdbfe] to-[#f8fafc]"}`} onMouseDown={handleAudioPanelMouseDown} onTouchStart={handleAudioPanelTouchStart}>
+                <div className={`flex cursor-grab items-start justify-between gap-3 border-b px-4 py-3 ${themeMode === "dark" ? "border-slate-700 bg-slate-800" : "border-border bg-[#f6faff]"}`} onMouseDown={handleAudioPanelMouseDown} onTouchStart={handleAudioPanelTouchStart}>
                 <div className="flex items-center gap-3">
                   <div className={`flex h-9 w-9 items-center justify-center rounded-2xl ${themeMode === "dark" ? "bg-slate-800 text-slate-100" : "bg-muted text-brand"}`}>
                     {isAudioPlaying ? <Loader2 className="h-5 w-5 animate-spin" /> : <Music className="h-5 w-5" />}
@@ -1084,15 +832,6 @@ export default function SharedLayout({
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={toggleThemeMode}
-                    className={`rounded-full border px-2.5 py-1.5 text-xs font-semibold transition ${themeMode === "dark" ? "border-slate-700 bg-slate-800 text-slate-100 hover:bg-slate-700" : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"}`}
-                    title={themeMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-                    aria-label={themeMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-                  >
-                    {themeMode === "dark" ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
-                  </button>
                   <button
                     type="button"
                     onClick={() => { setPlayerCollapsed(true); setIsAudioPlayerOpen(false); }}
@@ -1290,39 +1029,10 @@ export default function SharedLayout({
             </div>
           ) : null}
 
-        {isThemeOpen ? (
-          <div
-            ref={themePanelRef}
-            className={`fixed z-50 w-[320px] max-w-[calc(100vw-32px)] rounded-[28px] border p-4 shadow-[0_20px_80px_rgba(0,0,0,0.16)] transition ${themeMode === "dark" ? "border-slate-700 bg-slate-900 text-slate-100" : "border-slate-200 bg-white text-slate-900"}`}
-            style={{ left: themePanelPosition.x, top: themePanelPosition.y }}
-          >
-            <div
-              className={`flex cursor-grab items-center justify-between gap-3 rounded-t-3xl px-5 py-4 ${themeMode === "dark" ? "bg-slate-800" : "bg-gradient-to-r from-[#dbeafe] via-[#bfdbfe] to-[#f8fafc]"}`}
-              onMouseDown={handleThemePanelMouseDown}
-              onTouchStart={handleThemePanelTouchStart}
-            >
-              <div>
-                <p className={`text-sm font-semibold ${themeMode === "dark" ? "text-slate-100" : "text-slate-900"}`}>Theme settings</p>
-                <p className={`text-xs ${themeMode === "dark" ? "text-slate-400" : "text-slate-600"}`}>Drag to reposition</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsThemeOpen(false)}
-                className={`rounded-lg border px-3 py-2 text-xs font-semibold transition ${themeMode === "dark" ? "border-slate-700 bg-slate-800 text-slate-100 hover:bg-slate-700" : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"}`}
-              >
-                Close
-              </button>
-            </div>
-            <div className="mt-4">
-              <ThemeSwitcher theme={themeMode} onChange={handleThemeChange} />
-            </div>
-          </div>
-        ) : null}
-
         {isNotesOpen ? (
           <div className="fixed inset-0 z-50 pointer-events-none">
             <div
-              className="absolute z-50 rounded-2xl border border-slate-200 bg-white shadow-[0_16px_50px_rgba(10,102,194,0.16)] pointer-events-auto flex flex-col"
+              className="absolute z-50 border border-border bg-surface shadow-2xl pointer-events-auto flex flex-col"
               style={{
                   animation: `notes_modal_enter 320ms cubic-bezier(.2,.9,.2,1)`,
                   top: noteModalPosition.top,
@@ -1339,19 +1049,18 @@ export default function SharedLayout({
                 @keyframes spin { to { transform: rotate(360deg); } }
               `}</style>
               <div
-                className="relative flex cursor-grab items-center justify-between gap-3 rounded-t-2xl border-b border-slate-200 bg-gradient-to-r from-[#dbeafe] via-[#bfdbfe] to-[#eff6ff] px-6 py-5"
+                className={`relative flex cursor-grab items-center justify-between gap-3 border-b px-5 py-4 ${themeMode === "dark" ? "border-slate-700 bg-slate-800" : "border-border bg-[#f6faff]"}`}
                 onMouseDown={handleNotesMouseDown}
               >
                 <div>
-                  <p className="text-2xl font-bold text-foreground">Notes</p>
-              
-                  <p className="mt-1 text-sm text-slate-600">Keep notes and reminders visible while you work.</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand">Workspace tool</p>
+                  <p className="mt-1 text-base font-semibold tracking-tight text-foreground">Notes</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={closeNotesModal}
-                    className="flex h-10 w-10 items-center justify-center rounded-lg border border-border hover:bg-background transition-colors"
+                    className="flex h-9 w-9 items-center justify-center border border-border text-muted hover:bg-background hover:text-foreground transition-colors"
                     title="Close notes"
                     aria-label="Close notes"
                   >
@@ -1359,21 +1068,21 @@ export default function SharedLayout({
                   </button>
                 </div>
               </div>
-              <div className="relative flex-1 flex flex-col space-y-4 px-5 py-5 overflow-auto">
+              <div className="relative flex-1 flex flex-col space-y-4 bg-background/40 px-5 py-5 overflow-auto">
                 {/* audio element moved out of modal so playback persists when modal closes */}
                 <textarea
                   value={adminSessionNotes}
                   onChange={(event) => setAdminSessionNotes(event.target.value)}
                   rows={10}
                   placeholder="Write your current tasks, reminders, or follow-up notes here..."
-                  className="w-full rounded-2xl border border-border bg-slate-50 px-4 py-4 text-sm text-foreground outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10 flex-1 min-h-0"
+                  className="w-full border border-border bg-surface px-4 py-4 text-sm text-foreground outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10 flex-1 min-h-0"
                 />
                 <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted">
                   <span>{adminSessionNotes.length} character{adminSessionNotes.length === 1 ? "" : "s"}</span>
                   <button
                     type="button"
                     onClick={clearNotes}
-                    className="rounded-lg border border-border bg-slate-100 px-4 py-2 text-xs font-medium text-foreground hover:bg-slate-200 transition"
+                    className="border border-border bg-surface px-4 py-2 text-xs font-semibold text-foreground hover:border-brand hover:text-brand transition"
                   >
                     Clear notes
                   </button>
@@ -1451,40 +1160,34 @@ export default function SharedLayout({
       </div>
 
       {isToolPanelOpen && activeTool !== "notes" ? (
-        <div className={`fixed z-50 ${activeTool === "reminders" ? "w-[560px]" : "w-[320px]"} max-w-[calc(100vw-32px)] rounded-3xl border shadow-[0_20px_80px_rgba(0,0,0,0.12)] ${themeMode === "dark" ? "border-slate-700 bg-slate-900 text-slate-100" : "border-slate-200 bg-white text-slate-900"}`} style={{ left: toolPanelPosition.x, top: toolPanelPosition.y }}>
+        <div className={`fixed z-50 ${activeTool === "reminders" ? "w-[440px]" : "w-[340px]"} max-w-[calc(100vw-32px)] border shadow-2xl ${themeMode === "dark" ? "border-slate-700 bg-slate-900 text-slate-100" : "border-border bg-surface text-foreground"}`} style={{ left: toolPanelPosition.x, top: toolPanelPosition.y }}>
           <div
-            className={`flex cursor-grab items-center justify-between gap-3 rounded-t-3xl px-5 py-4 ${themeMode === "dark" ? "bg-slate-800" : "bg-gradient-to-r from-[#dbeafe] via-[#bfdbfe] to-[#f8fafc]"}`}
+            className={`flex cursor-grab items-center justify-between gap-3 border-b px-5 py-4 ${themeMode === "dark" ? "border-slate-700 bg-slate-800" : "border-border bg-[#f6faff]"}`}
             onMouseDown={handleToolPanelMouseDown}
           >
             <div>
-              <p className={`text-sm font-semibold ${themeMode === "dark" ? "text-slate-100" : "text-slate-900"}`}>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand">Workspace tool</p>
+              <p className={`mt-1 text-base font-semibold tracking-tight ${themeMode === "dark" ? "text-slate-100" : "text-foreground"}`}>
                 {activeTool === "calculator"
                   ? "Calculator"
                   : activeTool === "reminders"
                   ? "Reminders"
                   : "Timer"}
               </p>
-              <p className={`text-xs ${themeMode === "dark" ? "text-slate-400" : "text-slate-600"}`}>
-                {activeTool === "calculator"
-                  ? "Quick sums in a pocket tool."
-                  : activeTool === "reminders"
-                  ? "Jot short reminders for follow-up tasks."
-                  : "Countdown focus sessions for priority work."}
-              </p>
             </div>
             <button
               type="button"
               onClick={() => setIsToolPanelOpen(false)}
-              className={`rounded-lg border px-3 py-2 text-xs font-semibold transition ${themeMode === "dark" ? "border-slate-700 bg-slate-800 text-slate-100 hover:bg-slate-700" : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"}`}
+              className={`border px-3 py-2 text-xs font-semibold transition ${themeMode === "dark" ? "border-slate-700 bg-slate-800 text-slate-100 hover:bg-slate-700" : "border-border bg-surface text-foreground hover:border-brand hover:text-brand"}`}
             >
               Close
             </button>
           </div>
-          <div className="space-y-4 p-5">
+          <div className="space-y-4 bg-background/40 p-4">
             {activeTool === "calculator" ? (
               <>
-                <div className={themeMode === "dark" ? "rounded-3xl border border-slate-700 bg-slate-950/90 p-4 shadow-sm transition" : "rounded-3xl border border-slate-200 bg-white p-4 shadow-sm transition"}>
-                  <div className="mb-4">
+                <div>
+                  <div className="mb-3">
                     <label className="block text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
                       Expression
                     </label>
@@ -1498,12 +1201,12 @@ export default function SharedLayout({
                           handleCalculatorEvaluate();
                         }
                       }}
-                      className={themeMode === "dark" ? "w-full rounded-3xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm font-medium text-slate-100 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-500/20" : "w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"}
+                      className={themeMode === "dark" ? "w-full border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm font-medium text-slate-100 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-500/20" : "w-full border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-900 outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"}
                       placeholder="e.g. 12 + 24 / 3"
                     />
                   </div>
 
-                  <div className="mb-4 grid grid-cols-4 gap-2">
+                  <div className="mb-3 grid grid-cols-4 gap-1.5">
                     {[
                       { label: "7", value: "7" },
                       { label: "8", value: "8" },
@@ -1526,14 +1229,14 @@ export default function SharedLayout({
                         key={button.label}
                         type="button"
                         onClick={() => appendCalculatorExpression(button.value)}
-                        className={themeMode === "dark" ? "rounded-3xl border border-slate-700 bg-slate-900 px-3 py-3 text-sm font-semibold text-slate-100 transition hover:border-slate-500 hover:bg-slate-800" : "rounded-3xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-300 hover:bg-slate-100"}
+                        className={themeMode === "dark" ? "border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm font-semibold text-slate-100 transition hover:border-slate-500 hover:bg-slate-800" : "border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-900 transition hover:border-slate-300 hover:bg-slate-100"}
                       >
                         {button.label}
                       </button>
                     ))}
                   </div>
 
-                  <div className={themeMode === "dark" ? "mb-4 rounded-3xl border border-slate-700 bg-slate-950 p-4" : "mb-4 rounded-3xl border border-slate-200 bg-slate-50 p-4"}>
+                  <div className={themeMode === "dark" ? "mb-3 border border-slate-700 bg-slate-950 p-3" : "mb-3 border border-slate-200 bg-slate-50 p-3"}>
                     <div className="text-xs uppercase tracking-[0.24em] text-slate-400">Result</div>
                     <div className={themeMode === "dark" ? "mt-2 text-3xl font-semibold text-white" : "mt-2 text-3xl font-semibold text-slate-900"}>{calculatorResult}</div>
                   </div>
@@ -1570,11 +1273,11 @@ export default function SharedLayout({
                 </div>
 
                 {calculatorHistory.length > 0 ? (
-                  <div className={themeMode === "dark" ? "rounded-3xl border border-slate-700 bg-slate-950/90 p-4 shadow-sm transition" : "rounded-3xl border border-slate-200 bg-white p-4 shadow-sm transition"}>
-                    <div className="mb-3 text-xs uppercase tracking-[0.24em] text-slate-400">Recent calculations</div>
+                  <div className={themeMode === "dark" ? "border-t border-slate-700 pt-3" : "border-t border-slate-200 pt-3"}>
+                    <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">Recent calculations</div>
                     <div className={themeMode === "dark" ? "space-y-2 text-sm text-slate-200" : "space-y-2 text-sm text-slate-800"}>
                       {calculatorHistory.map((entry, index) => (
-                        <div key={`${entry}-${index}`} className={themeMode === "dark" ? "rounded-2xl border border-slate-800 bg-slate-900 px-3 py-2" : "rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2"}>
+                        <div key={`${entry}-${index}`} className={themeMode === "dark" ? "border-b border-slate-800 py-2" : "border-b border-slate-100 py-2"}>
                           {entry}
                         </div>
                       ))}
@@ -1584,47 +1287,46 @@ export default function SharedLayout({
               </>
             ) : activeTool === "reminders" ? (
               <>
-                <div className={`rounded-[28px] border p-4 shadow-[0_24px_80px_rgba(15,23,42,0.08)] transition ${themeMode === "dark" ? "border-slate-700 bg-slate-950/95 text-slate-100 shadow-[0_24px_80px_rgba(0,0,0,0.35)]" : "border-slate-200 bg-white text-slate-900"}`}>
-                  <div className="flex items-start justify-between gap-3">
+                <div className={`border-t p-1 transition ${themeMode === "dark" ? "border-slate-700 text-slate-100" : "border-border text-foreground"}`}>
+                  <div className={`flex items-center justify-between gap-3 border-b pb-4 ${themeMode === "dark" ? "border-slate-800" : "border-border"}`}>
                     <div>
                       <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Reminders</p>
                       <p className="mt-1 text-sm font-semibold">Keep follow-up tasks in view.</p>
                     </div>
-                    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${themeMode === "dark" ? "bg-slate-800 text-slate-300" : "bg-slate-100 text-slate-700"}`}>
+                    <span className={`border-l-2 border-brand px-3 py-1 text-xs font-semibold ${themeMode === "dark" ? "bg-slate-800 text-slate-300" : "bg-slate-100 text-slate-700"}`}>
                       {reminders.length} {reminders.length === 1 ? "item" : "items"}
                     </span>
                   </div>
 
-                  <div className={`mt-4 rounded-[24px] border p-4 shadow-sm transition ${themeMode === "dark" ? "border-slate-800 bg-slate-900/80" : "border-slate-200 bg-slate-50"}`}>
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                      <input
-                        type="text"
-                        value={reminderInput}
-                        onChange={(event) => setReminderInput(event.target.value)}
-                        className={`w-full min-w-0 rounded-3xl border px-4 py-3 text-sm outline-none transition ${themeMode === "dark" ? "border-slate-700 bg-slate-950 text-slate-100 focus:border-brand focus:ring-2 focus:ring-brand/20" : "border-slate-200 bg-white text-slate-900 focus:border-brand focus:ring-2 focus:ring-brand/10"}`}
-                        placeholder="Follow up with admissions team"
-                      />
-                      <button
-                        type="button"
-                        onClick={addReminder}
-                        className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition ${themeMode === "dark" ? "bg-brand text-white hover:bg-[#0952a4]" : "bg-[#0A66C2] text-white hover:bg-[#0952a4]"}`}
-                        title="Add reminder"
-                        aria-label="Add reminder"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </button>
-                    </div>
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <input
+                      type="text"
+                      value={reminderInput}
+                      onChange={(event) => setReminderInput(event.target.value)}
+                      className={`w-full min-w-0 border px-4 py-3 text-sm outline-none transition ${themeMode === "dark" ? "border-slate-700 bg-slate-950 text-slate-100 focus:border-brand focus:ring-2 focus:ring-brand/20" : "border-border bg-background text-foreground focus:border-brand focus:ring-2 focus:ring-brand/10"}`}
+                      placeholder="Add a follow-up reminder"
+                    />
+                    <button
+                      type="button"
+                      onClick={addReminder}
+                      className="inline-flex h-10 shrink-0 items-center justify-center gap-2 bg-brand px-4 text-sm font-semibold text-white transition hover:bg-brand-hover"
+                      title="Add reminder"
+                      aria-label="Add reminder"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>Add</span>
+                    </button>
                   </div>
 
                   <div className="mt-4 space-y-3 max-h-64 overflow-auto">
                     {reminders.length > 0 ? (
                       reminders.map((reminder, index) => (
-                        <div key={`${reminder}-${index}`} className={`rounded-3xl border p-4 text-sm transition ${themeMode === "dark" ? "border-slate-800 bg-slate-900 text-slate-100 shadow-[0_10px_30px_rgba(0,0,0,0.14)]" : "border-slate-200 bg-white text-slate-900 shadow-sm"}`}>
+                        <div key={`${reminder}-${index}`} className={`border-l-2 px-3 py-2.5 text-sm transition ${themeMode === "dark" ? "border-brand/70 bg-slate-900/60 text-slate-100" : "border-brand bg-background text-foreground"}`}>
                           {reminder}
                         </div>
                       ))
                     ) : (
-                      <div className={`rounded-3xl border p-4 text-sm ${themeMode === "dark" ? "border-slate-800 bg-slate-900 text-slate-400" : "border-slate-200 bg-slate-50 text-slate-500"}`}>
+                      <div className={`border border-dashed px-3 py-4 text-sm ${themeMode === "dark" ? "border-slate-700 text-slate-400" : "border-border text-muted"}`}>
                         No reminders yet. Add one to keep it handy.
                       </div>
                     )}
@@ -1633,7 +1335,7 @@ export default function SharedLayout({
               </>
             ) : (
               <>
-                <label className="block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                <label className={`block text-xs font-semibold uppercase tracking-[0.2em] ${themeMode === "dark" ? "text-slate-400" : "text-muted"}`}>
                   Countdown
                 </label>
                 <div className="flex gap-2">
@@ -1641,18 +1343,18 @@ export default function SharedLayout({
                     type="text"
                     value={timerInput}
                     onChange={(event) => setTimerInput(event.target.value)}
-                    className="flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"
+                    className={`flex-1 border px-4 py-3 text-sm outline-none transition ${themeMode === "dark" ? "border-slate-700 bg-slate-950 text-slate-100 focus:border-brand focus:ring-2 focus:ring-brand/20" : "border-border bg-surface text-foreground focus:border-brand focus:ring-2 focus:ring-brand/10"}`}
                     placeholder="MM:SS"
                   />
                   <button
                     type="button"
                     onClick={resetTimer}
-                    className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                    className={`inline-flex items-center justify-center border px-4 py-2 text-sm font-semibold transition ${themeMode === "dark" ? "border-slate-700 bg-slate-800 text-slate-100 hover:bg-slate-700" : "border-border bg-surface text-foreground hover:border-brand hover:text-brand"}`}
                   >
                     Reset
                   </button>
                 </div>
-                <div className="flex items-center justify-between rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900">
+                  <div className={`flex items-center justify-between border px-4 py-3 text-sm font-semibold ${themeMode === "dark" ? "border-slate-700 bg-slate-950 text-slate-100" : "border-border bg-background text-foreground"}`}>
                   <span>Time left</span>
                   <span>{formatTimer(timerRemaining)}</span>
                 </div>
@@ -1660,14 +1362,14 @@ export default function SharedLayout({
                   <button
                     type="button"
                     onClick={timerRunning ? pauseTimer : startTimer}
-                    className="inline-flex flex-1 items-center justify-center rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                    className="inline-flex flex-1 items-center justify-center bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
                   >
                     {timerRunning ? "Pause" : "Start"}
                   </button>
                   <button
                     type="button"
                     onClick={resetTimer}
-                    className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                    className={`inline-flex items-center justify-center border px-4 py-2 text-sm font-semibold transition ${themeMode === "dark" ? "border-slate-700 bg-slate-800 text-slate-100 hover:bg-slate-700" : "border-border bg-surface text-foreground hover:border-brand hover:text-brand"}`}
                   >
                     Clear
                   </button>

@@ -38,6 +38,11 @@ import {
   Sparkles,
   CalendarDays,
   CheckSquare,
+  MoonStar,
+  SunMedium,
+  Calculator,
+  Clock,
+  Music,
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/ui/icons";
 
@@ -47,6 +52,8 @@ type NavItem = {
   icon: string | ComponentType<{ className?: string }>;
   section?: string;
 };
+
+type WorkspaceTool = "notes" | "calculator" | "reminders" | "timer";
 
 const icons: Record<string, ComponentType<{ className?: string }>> = {
   Home,
@@ -89,6 +96,12 @@ export default function Sidebar({
   logoHref = "/",
   logoutRedirectUrl = "/login",
   setupProgress,
+  actualTheme = "light",
+  onThemeToggle,
+  toolsOpen = false,
+  onToolsToggle,
+  onToolSelect,
+  onAudioOpen,
   isMobile = false,
   onClose,
 }: {
@@ -98,6 +111,12 @@ export default function Sidebar({
   logoHref?: string;
   logoutRedirectUrl?: string;
   setupProgress?: number | null;
+  actualTheme?: "light" | "dark";
+  onThemeToggle?: () => void;
+  toolsOpen?: boolean;
+  onToolsToggle?: () => void;
+  onToolSelect?: (tool: WorkspaceTool) => void;
+  onAudioOpen?: () => void;
   isMobile?: boolean;
   onClose?: () => void;
 }) {
@@ -118,8 +137,8 @@ export default function Sidebar({
   const progressCircumference = 2 * Math.PI * 10;
   const navItemsWithSectionVisibility = navItems.map((item, index) => ({
     ...item,
-    sectionLabel: item.section || (index === 0 ? portalName : undefined),
-    showSection: Boolean((item.section || index === 0) && (index === 0 || navItems[index - 1].section !== item.section)),
+    sectionLabel: item.section,
+    showSection: Boolean(item.section && (index === 0 || navItems[index - 1].section !== item.section)),
   }));
 
   const handleNavClick = () => {
@@ -129,9 +148,20 @@ export default function Sidebar({
   };
 
   return (
-    <aside className={`flex h-screen w-64 flex-col border-r border-border bg-surface overflow-hidden print:hidden ${
+    <aside className={`relative flex h-screen w-64 flex-col border-r border-border bg-surface overflow-hidden print:hidden ${
       isMobile ? "" : "hidden md:flex"
     }`}>
+      {onThemeToggle ? (
+        <button
+          type="button"
+          onClick={onThemeToggle}
+          title={actualTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          aria-label={actualTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          className="absolute right-0 top-1/2 z-20 flex h-14 w-6 -translate-y-1/2 items-center justify-center border border-r-0 border-brand bg-brand text-white shadow-sm transition hover:bg-brand-hover"
+        >
+          {actualTheme === "dark" ? <SunMedium className="h-3.5 w-3.5" /> : <MoonStar className="h-3.5 w-3.5" />}
+        </button>
+      ) : null}
       <div className="border-b border-border px-4 py-4 flex-shrink-0">
         <Link href={logoHref} className="group flex items-center gap-3 px-1 py-1 transition-colors">
           {schoolLogo ? (
@@ -201,11 +231,42 @@ export default function Sidebar({
         })}
       </nav>
 
-      <div className="border-t border-border bg-background px-3 py-3 flex-shrink-0">
-        <div className="mb-2 flex items-center gap-2 px-2 text-[10px] font-bold uppercase tracking-[.16em] text-muted">
-          <span className="h-1.5 w-1.5 bg-emerald-500" />
-          {portalName}
-        </div>
+      <div className="relative border-t border-border bg-background px-3 py-3 flex-shrink-0">
+        {onToolsToggle ? (
+          <div className="relative mb-2">
+            {toolsOpen ? (
+              <div className="absolute bottom-full left-0 right-0 mb-2 grid grid-cols-5 gap-1 rounded-lg border border-border bg-surface p-2 shadow-lg">
+                {[
+                  ["notes", FileText, "Notes"],
+                  ["calculator", Calculator, "Calculator"],
+                  ["reminders", Bell, "Reminders"],
+                  ["timer", Clock, "Timer"],
+                  ["audio", Music, "Audio player"],
+                ].map(([tool, Icon, label]) => (
+                  <button
+                    key={tool as string}
+                    type="button"
+                    onClick={() => tool === "audio" ? onAudioOpen?.() : onToolSelect?.(tool as WorkspaceTool)}
+                    title={label as string}
+                    aria-label={label as string}
+                    className="flex h-9 items-center justify-center rounded-md text-muted transition hover:bg-brand-light hover:text-brand"
+                  >
+                    {createElement(Icon as ComponentType<{ className?: string }>, { className: "h-4 w-4" })}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+            <button
+              type="button"
+              onClick={onToolsToggle}
+              aria-expanded={toolsOpen}
+              className="flex w-full items-center gap-3 border border-border bg-surface px-3 py-2.5 text-sm font-semibold text-muted transition hover:border-brand/40 hover:bg-brand-light hover:text-brand"
+            >
+              <Sparkles className="h-4 w-4" />
+              <span>Tools</span>
+            </button>
+          </div>
+        ) : null}
         <LogoutButton redirectUrl={logoutRedirectUrl} />
       </div>
     </aside>
