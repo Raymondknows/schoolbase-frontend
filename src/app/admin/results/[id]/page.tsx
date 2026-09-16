@@ -981,7 +981,6 @@ const subjectId = result.subjectRef?.id ?? null;
       {/* Statistics Tab */}
       {activeTab === "statistics" && (
         <div className="mt-6">
-          <h2 className="text-lg font-semibold mb-4">Class Statistics</h2>
           <ClassStatistics assessmentId={id} schoolId={assessment.schoolId} />
         </div>
       )}
