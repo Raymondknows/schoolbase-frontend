@@ -4,6 +4,12 @@ import { AppLogo } from "@/components/app-logo";
 import { LoginForm } from "@/components/auth/login-form";
 import { getStaffSession, getPlatformAdminSession } from "@/lib/auth";
 
+export const metadata = {
+  title: "School Login | SchoolBase",
+  description: "Sign in to the SchoolBase school operations platform.",
+  robots: { index: false, follow: false },
+};
+
 export default async function LoginPage({
   searchParams,
 }: {

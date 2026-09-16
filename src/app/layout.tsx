@@ -87,6 +87,36 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([
+              {
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                name: "SchoolBase",
+                url: "https://schoolbase.live",
+                logo: "https://schoolbase.live/og-image.png",
+                sameAs: [],
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                name: "SchoolBase",
+                url: "https://schoolbase.live",
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "SoftwareApplication",
+                name: "SchoolBase",
+                applicationCategory: "BusinessApplication",
+                operatingSystem: "Web",
+                url: "https://schoolbase.live/platform",
+                description: "Connected school administration, academic, fee, communication, parent, and reporting workflows.",
+              },
+            ]),
+          }}
+        />
         <PublicShellGate>
           <Header />
         </PublicShellGate>

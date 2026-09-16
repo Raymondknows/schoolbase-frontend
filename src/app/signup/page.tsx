@@ -66,14 +66,14 @@ export default function SignupPage() {
         message: isServerRenderError
           ? "We couldn’t complete your signup right now"
           : errorMessage.includes("Email already registered")
-          ? "This email address has already been used to create a school account. Please use a different email or contact support."
+          ? "This admin email is already in use."
           : errorMessage.includes("Invalid email")
           ? "Please enter a valid email address."
           : errorMessage,
         details: isServerRenderError
           ? "Please review the form and try again. If the problem continues, contact SchoolBase support."
           : errorMessage.includes("Email already registered")
-          ? "Use a different admin email or recover the existing account if that school already exists."
+          ? "Use another email or recover the existing account."
           : errorMessage.includes("Invalid email")
           ? "The email format looks incorrect. Please enter a valid email address."
           : undefined,
@@ -339,6 +339,10 @@ export default function SignupPage() {
         message={error?.message || ""}
         details={error?.details}
         type="error"
+        action={error?.message === "This admin email is already in use." ? {
+          label: "Recover account",
+          onClick: () => { window.location.href = "/forgot-password"; },
+        } : undefined}
       />
     </main>
   );

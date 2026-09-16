@@ -1,10 +1,12 @@
 import { AppLogo } from "@/components/app-logo";
 import { Button } from "@/components/ui/button";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Purchase Confirmed | SchoolBase",
   description: "Your SchoolBase subscription purchase has been received.",
+  robots: { index: false, follow: false },
 };
 
 export default function PurchaseSuccessPage() {
@@ -17,9 +19,9 @@ export default function PurchaseSuccessPage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <AppLogo />
           <nav className="hidden items-center gap-6 text-sm font-medium text-muted md:flex">
-            <a href="/" className="hover:text-brand">
+            <Link href="/" className="hover:text-brand">
               Home
-            </a>
+            </Link>
             <a href="/demo" className="hover:text-brand">
               Demo
             </a>

@@ -134,6 +134,20 @@ export default function FAQPage() {
       ctaHref="/contact"
       ctaLabel="Contact Support"
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: faqs.flatMap((category) => category.questions).map((item) => ({
+              '@type': 'Question',
+              name: item.q,
+              acceptedAnswer: { '@type': 'Answer', text: item.a },
+            })),
+          }),
+        }}
+      />
       <ContentSection title="Frequently asked questions" intro="Open a category to find the answer you need.">
         <div className="grid gap-10 lg:grid-cols-2">
           {faqs.map((category) => (

@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next'
 import { blogPosts } from './blog/data'
+import { docsOrder } from './platform/platform-content'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://schoolbase.live'
@@ -30,7 +31,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 1.0,
     },
-    ...['admin', 'accounting', 'teachers', 'parents', 'admissions', 'academics', 'fees', 'communication', 'reports'].map((slug) => ({
+    ...docsOrder.map((slug) => ({
       url: `${baseUrl}/docs/${slug}`,
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
@@ -398,6 +399,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/guides`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.75,
     },
     {
       url: `${baseUrl}/guides/school-fee-management`,
