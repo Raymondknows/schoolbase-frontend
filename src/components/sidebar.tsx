@@ -157,7 +157,7 @@ export default function Sidebar({
           onClick={onThemeToggle}
           title={actualTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
           aria-label={actualTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-          className="absolute right-0 top-1/2 z-20 flex h-14 w-6 -translate-y-1/2 items-center justify-center border border-r-0 border-brand bg-brand text-white shadow-sm transition hover:bg-brand-hover"
+          className="absolute right-0 top-1/2 z-20 flex h-14 w-6 -translate-y-1/2 cursor-pointer items-center justify-center border border-r-0 border-brand bg-brand text-white shadow-sm transition hover:bg-brand-hover"
         >
           {actualTheme === "dark" ? <SunMedium className="h-3.5 w-3.5" /> : <MoonStar className="h-3.5 w-3.5" />}
         </button>
@@ -260,7 +260,7 @@ export default function Sidebar({
               type="button"
               onClick={onToolsToggle}
               aria-expanded={toolsOpen}
-              className="flex w-full items-center gap-3 border border-border bg-surface px-3 py-2.5 text-sm font-semibold text-muted transition hover:border-brand/40 hover:bg-brand-light hover:text-brand"
+              className="flex w-full cursor-pointer items-center gap-3 border border-border bg-surface px-3 py-2.5 text-sm font-semibold text-muted transition hover:border-brand/40 hover:bg-brand-light hover:text-brand"
             >
               <Sparkles className="h-4 w-4" />
               <span>Tools</span>
