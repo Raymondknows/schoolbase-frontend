@@ -9,7 +9,7 @@ import { Analytics } from "@vercel/analytics/react";
 export const metadata: Metadata = {
   title: "SchoolBase — Everything your school needs in one simple platform",
   description:
-    "Collect fees, reach parents on WhatsApp, publish results, and run a beautiful school website. Live in 48 hours.",
+    "Collect fees, publish results, communicate with families, and run school operations in one connected platform.",
   keywords: [
     "school management",
     "fee collection",
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "SchoolBase — Everything your school needs in one simple platform",
     description:
-      "Collect fees, reach parents on WhatsApp, publish results, and run a beautiful school website. Live in 48 hours.",
+      "Collect fees, publish results, communicate with families, and run school operations in one connected platform.",
     url: "https://schoolbase.live",
     siteName: "SchoolBase",
     images: [

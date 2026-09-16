@@ -5,7 +5,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Result Publishing & Reporting Software | SchoolBase',
   description:
-    'Publish school results in minutes. Automatic grade calculations, parent notifications, and student report cards. Used by 500+ schools.',
+    'Publish school results through configured assessment, review, reporting, and parent-access workflows.',
   keywords: [
     'result publishing software',
     'school reporting software',
@@ -209,11 +209,11 @@ export default function ResultsPublishingPage() {
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
-                number: '80%',
+                number: 'Connected',
                 label: 'Faster Publishing'
               },
               {
-                number: '100%',
+                number: 'Clear',
                 label: 'Error-Free Results'
               },
               {
@@ -235,7 +235,7 @@ export default function ResultsPublishingPage() {
         <div className="max-w-4xl mx-auto bg-gradient-to-r from-[#0A66C2] to-[#084a9a] text-white rounded-lg p-12 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Publish Results in Minutes?</h2>
           <p className="text-[#bfdbfe] mb-8 text-lg">
-            Join 500+ schools publishing results faster, smarter, and without errors.
+            Give your school a clearer result publishing workflow.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

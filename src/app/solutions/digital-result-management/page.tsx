@@ -14,14 +14,14 @@ import {
 export const metadata = {
   title: 'Digital Result Management System | SchoolBase',
   description:
-    'Manage student results digitally with automatic grading, class positioning, and automated parent reports. Teachers report 3x faster entry.',
+  'Manage student results digitally with configured grading, class positioning, report generation, and controlled parent publication.',
 }
 
 const statCards = [
-  { label: 'Result entry', value: '3x faster', sub: 'Than manual mark sheets', href: '/admin/results', icon: Zap },
-  { label: 'Grade accuracy', value: '100%', sub: 'Auto-calculated totals', href: '/admin/results', icon: BarChart3 },
-  { label: 'Parent visibility', value: '24h', sub: 'From entry to access', href: '/parent/results', icon: FileText },
-  { label: 'Operations', value: '95%', sub: 'Teacher adoption rate', href: '/admin', icon: LayoutDashboard },
+  { label: 'Result entry', value: 'Digital', sub: 'Teacher score workflows', href: '/admin/results', icon: Zap },
+  { label: 'Grade calculation', value: 'Configured', sub: 'School assessment rules', href: '/admin/results', icon: BarChart3 },
+  { label: 'Parent visibility', value: 'Published', sub: 'After admin release', href: '/parent/results', icon: FileText },
+  { label: 'Operations', value: 'Connected', sub: 'Admin and teacher workflow', href: '/admin', icon: LayoutDashboard },
 ]
 
 const featureCards = [

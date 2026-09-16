@@ -13,14 +13,21 @@ import {
 export const metadata = {
   title: 'School Fee Management System | SchoolBase',
   description:
-    'Complete school fee management solution with automated invoicing, payment tracking, and Paystack integration. Reduce collection time by 40%.',
+    'School fee management with itemized invoicing, payment tracking, receipts, reminders, and accounting links where supported.',
+  alternates: { canonical: 'https://schoolbase.live/solutions/school-fee-management' },
+  openGraph: {
+    title: 'School Fee Management System | SchoolBase',
+    description: 'School fee management with itemized invoices, payment tracking, receipts, reminders, and supported accounting links.',
+    url: 'https://schoolbase.live/solutions/school-fee-management',
+    type: 'website',
+  },
 }
 
 const statCards = [
-  { label: 'Collection rate', value: '91%', sub: 'Live payment coverage', href: '/admin/fees', icon: CreditCard },
-  { label: 'Outstanding fees', value: '₦2.8M', sub: 'Across active families', href: '/admin/fees', icon: FileText },
-  { label: 'Reminder flow', value: '24/7', sub: 'Automated WhatsApp follow-up', href: '/admin/notifications', icon: Clock3 },
-  { label: 'Operations', value: '40%', sub: 'Lower fee collection effort', href: '/admin', icon: LayoutDashboard },
+  { label: 'Collection view', value: 'Balances', sub: 'Invoice and payment visibility', href: '/admin/fees', icon: CreditCard },
+  { label: 'Fee records', value: 'Itemized', sub: 'Separate charges and adjustments', href: '/admin/fees', icon: FileText },
+  { label: 'Reminder flow', value: 'Configured', sub: 'School-managed follow-up', href: '/admin/fees', icon: Clock3 },
+  { label: 'Operations', value: 'Connected', sub: 'Fees and school records', href: '/admin', icon: LayoutDashboard },
 ]
 
 const featureCards = [
@@ -76,12 +83,12 @@ export default function FeesManagementPage() {
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {[
-                  { label: 'Collection', value: '91%', tone: 'bg-[#eaf4ff]' },
+                  { label: 'Collection', value: 'Visible', tone: 'bg-[#eaf4ff]' },
                   { label: 'Invoices', value: 'Live', tone: 'bg-[#f1f7f4]' },
                   { label: 'Reminders', value: '24/7', tone: 'bg-[#fff7e8]' },
                   { label: 'Parents', value: 'Clear', tone: 'bg-[#f2efff]' },
                   { label: 'Receipts', value: 'Auto', tone: 'bg-[#edf7f8]' },
-                  { label: 'Savings', value: '40%', tone: 'bg-[#fff0f0]' },
+                  { label: 'Accounting', value: 'Linked', tone: 'bg-[#fff0f0]' },
                 ].map((item) => (
                   <div key={item.label} className={`${item.tone} border border-black/5 p-4`}>
                     <p className="text-xs text-muted">{item.label}</p>
@@ -145,7 +152,10 @@ export default function FeesManagementPage() {
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/70">Built for school finance</p>
             <h2 className="mt-3 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">Turn fee collection into a cleaner, faster system.</h2>
           </div>
-          <Link href="/signup" className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-brand hover:bg-blue-50">Start Your School <ArrowUpRight className="h-4 w-4" /></Link>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/docs/fees" className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-white/40 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10">Read the fees guide</Link>
+            <Link href="/signup" className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-brand hover:bg-blue-50">Start Your School <ArrowUpRight className="h-4 w-4" /></Link>
+          </div>
         </div>
       </section>
     </div>

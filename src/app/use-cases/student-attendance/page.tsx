@@ -5,7 +5,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Student Attendance Management System | SchoolBase',
   description:
-    'Digital student attendance tracking with automatic reports, parent notifications, and trend analysis. Reduce absenteeism by 40%.',
+    'Digital student attendance tracking with summaries, school reporting, and configured parent communication workflows.',
   keywords: [
     'student attendance management system',
     'attendance tracking app',
@@ -17,7 +17,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Student Attendance Management System | SchoolBase',
     description: 'Automate student attendance tracking with real-time reports and parent alerts',
+    url: 'https://schoolbase.live/use-cases/student-attendance',
+    type: 'website',
   },
+  alternates: { canonical: 'https://schoolbase.live/use-cases/student-attendance' },
 }
 
 export default function StudentAttendancePage() {
@@ -30,7 +33,7 @@ export default function StudentAttendancePage() {
             Attendance Made Simple
           </h1>
           <p className="text-xl text-[#bfdbfe] mb-8">
-            Track student attendance automatically. Get daily reports, spot patterns, alert parents. Reduce absenteeism by 40%.
+            Track student attendance, review summaries, spot patterns, and use configured workflows to keep relevant people informed.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Link
@@ -177,15 +180,15 @@ export default function StudentAttendancePage() {
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
-                number: '40%',
-                label: 'Reduction in Absenteeism'
+                number: 'Records',
+                label: 'Attendance captured by class'
               },
               {
-                number: '90 min',
-                label: 'Saved Per Teacher Per Week'
+                number: 'Summaries',
+                label: 'Available for review'
               },
               {
-                number: '95%',
+                number: 'Digital',
                 label: 'Parent Notification Rate'
               },
             ].map((stat, idx) => (
@@ -203,7 +206,7 @@ export default function StudentAttendancePage() {
         <div className="max-w-4xl mx-auto bg-gradient-to-r from-[#0A66C2] to-[#084a9a] text-white rounded-lg p-12 text-center">
           <h2 className="text-3xl font-bold mb-4">Stop Wasting Time on Attendance</h2>
           <p className="text-[#bfdbfe] mb-8 text-lg">
-            Get 7 days free. See why 500+ schools use SchoolBase to manage attendance.
+            See how SchoolBase can organize attendance for your school.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

@@ -1,18 +1,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import {
-  Bell,
-  Globe,
-  GraduationCap,
-  MessageCircle,
-  Receipt,
-  Sparkles,
-  TrendingUp,
-  Users,
-  Lock,
-  Zap,
-} from 'lucide-react'
+import { ArrowRight, BookOpen, ChevronRight, CircleDollarSign, ClipboardList, GraduationCap, Megaphone, School, Users } from 'lucide-react'
+import { platformModules, platformSteps, roleCards } from '../platform/platform-content'
 
 export const metadata: Metadata = {
   title: 'Features | SchoolBase School Management Platform',
@@ -25,186 +14,43 @@ export const metadata: Metadata = {
     url: 'https://schoolbase.live/features',
     type: 'website',
   },
+  alternates: { canonical: 'https://schoolbase.live/features' },
 }
 
-const coreFeatures = [
-  {
-    icon: Receipt,
-    title: 'Track Every Fee',
-    description:
-      'Send bills, record cash and bank payments, print receipts, and show parents their balance.',
-  },
-  {
-    icon: MessageCircle,
-    title: 'Reach Parents Instantly',
-    description:
-      'Fee reminders and alerts on WhatsApp and SMS — the way parents actually read messages.',
-  },
-  {
-    icon: GraduationCap,
-    title: 'Publish Results in Minutes',
-    description:
-      'Enter marks, approve, and release to parents with one click. No more leaks or confusion.',
-  },
-  {
-    icon: Globe,
-    title: 'Your School Website Included',
-    description:
-      'News, admissions, and contact — modern and mobile-friendly. No separate Wix bill.',
-  },
-  {
-    icon: Bell,
-    title: 'Attendance Parents Notice',
-    description: 'When a child is absent, parents know right away via WhatsApp.',
-  },
-  {
-    icon: Sparkles,
-    title: 'Live in 48 Hours',
-    description: 'We help you set up fast. No six-month IT project. Go live in two days.',
-  },
-  {
-    icon: Users,
-    title: 'Parent & Student Portal',
-    description:
-      'Parents and students view fees, results, attendance in real-time. Download the mobile app.',
-  },
-  {
-    icon: TrendingUp,
-    title: 'Analytics & Reports',
-    description: 'See which students are behind on fees, attendance trends, and performance reports.',
-  },
-  {
-    icon: Lock,
-    title: 'Secure & Reliable',
-    description: 'Industry-standard encryption, daily backups, and 99.9% uptime guarantee.',
-  },
-  {
-    icon: Zap,
-    title: 'Multi-Platform Support',
-    description:
-      'Desktop, tablet, and mobile. Works on any device with a browser or our native app.',
-  },
-]
+const moduleIcons = [School, CircleDollarSign, GraduationCap, Users, ClipboardList, BookOpen, CircleDollarSign, Megaphone, ClipboardList]
 
 export default function FeaturesPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <section className="border-b border-border bg-surface py-20">
-        <div className="mx-auto max-w-4xl px-6">
-          <Link href="/platform" className="text-sm font-semibold uppercase tracking-[0.2em] text-brand hover:text-brand-hover">
-            Explore the complete platform →
-          </Link>
-          <h1 className="text-4xl font-bold text-foreground">
-            Everything Your School Needs
-          </h1>
-          <p className="mt-4 max-w-2xl text-lg text-muted">
-            One platform. All-in-one solution for fees, communication, results, and
-            more. No extra charges for different modules.
-          </p>
-        </div>
-      </section>
-
-      <section className="py-20">
-        <div className="mx-auto max-w-6xl px-6">
-          <h2 className="text-3xl font-bold text-foreground">Core Features</h2>
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {coreFeatures.map((feature, idx) => {
-              const Icon = feature.icon
-              return (
-                <div
-                  key={idx}
-                  className="rounded-xl border border-border bg-surface p-6 shadow-sm transition-shadow hover:shadow-md"
-                >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-brand-light text-brand">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="mt-4 text-lg font-semibold text-foreground">
-                    {feature.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted">
-                    {feature.description}
-                  </p>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t border-border bg-surface py-20">
-        <div className="mx-auto max-w-6xl px-6">
-          <h2 className="text-3xl font-bold text-foreground">Why Choose SchoolBase?</h2>
-          <div className="mt-12 grid gap-8 md:grid-cols-2">
-            <div>
-              <h3 className="text-xl font-semibold text-foreground">For School Owners</h3>
-              <ul className="mt-4 space-y-3 text-muted">
-                <li className="flex gap-3">
-                  <span className="text-brand">✓</span>
-                  <span>Stop chasing parents for fees</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-brand">✓</span>
-                  <span>Automated receipt generation and tracking</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-brand">✓</span>
-                  <span>Publish results securely in minutes</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-brand">✓</span>
-                  <span>Professional school website included</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-brand">✓</span>
-                  <span>Reduce administrative work by 80%</span>
-                </li>
-              </ul>
+    <div className="overflow-hidden bg-background">
+      <section className="relative border-b border-border bg-[#f6faff]">
+        <div className="mx-auto grid max-w-6xl gap-14 px-6 py-20 sm:py-28 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
+          <div>
+            <Link href="/platform" className="text-sm font-semibold uppercase tracking-[0.2em] text-brand hover:text-brand-hover">SchoolBase Platform</Link>
+            <h1 className="mt-6 max-w-3xl text-4xl font-bold leading-[1.08] tracking-tight text-foreground sm:text-6xl">The features that keep school work connected.</h1>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-muted sm:text-xl">Explore the verified capabilities behind SchoolBase, from administration and admissions to academics, fees, communication, parents, and reporting.</p>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <Link href="#modules" className="inline-flex items-center gap-2 rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand-hover">Explore features <ChevronRight className="h-4 w-4" /></Link>
+              <Link href="/platform" className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-5 py-3 text-sm font-semibold text-foreground hover:border-brand hover:text-brand">View the platform <ArrowRight className="h-4 w-4" /></Link>
             </div>
-            <div>
-              <h3 className="text-xl font-semibold text-foreground">For Parents</h3>
-              <ul className="mt-4 space-y-3 text-muted">
-                <li className="flex gap-3">
-                  <span className="text-brand">✓</span>
-                  <span>Get fee reminders on WhatsApp</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-brand">✓</span>
-                  <span>View results instantly and securely</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-brand">✓</span>
-                  <span>Know immediately if child is absent</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-brand">✓</span>
-                  <span>Pay fees online or via bank transfer</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-brand">✓</span>
-                  <span>Download receipts anytime</span>
-                </li>
-              </ul>
+          </div>
+          <div className="relative min-h-[360px] lg:min-h-[430px]">
+            <div className="absolute inset-4 border border-brand/20 bg-white shadow-[18px_18px_0_0_#dcecff] sm:inset-8" />
+            <div className="relative flex min-h-[360px] flex-col justify-between border border-brand/30 bg-white p-6 shadow-xl sm:min-h-[430px] sm:p-9">
+              <div className="border-b border-border pb-5"><p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">School operations</p><p className="mt-2 text-xl font-semibold text-foreground">One connected feature set</p></div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{['Administration', 'Academics', 'Fees', 'Parents', 'Communication', 'Reports'].map((item) => <div key={item} className="border border-black/5 bg-brand-light p-4"><p className="text-sm font-semibold text-foreground">{item}</p><p className="mt-2 text-xs text-muted">Connected workflow</p></div>)}</div>
+              <div className="border-t border-border pt-5 text-sm text-muted"><span className="font-semibold text-brand">Built around real work.</span> Each area connects to the records and people that need it.</div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="py-20">
-        <div className="mx-auto max-w-4xl px-6 text-center">
-          <h2 className="text-3xl font-bold text-foreground">Ready to Get Started?</h2>
-          <p className="mt-4 text-lg text-muted">
-            Transform your school management today. See how SchoolBase can save you
-            time and money.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-4 justify-center">
-            <Button href="/platform">Explore the Platform</Button>
-            <Button href="/purchase">Get Started Today</Button>
-            <Button variant="secondary" href="/contact">
-              Schedule a Demo
-            </Button>
-          </div>
-        </div>
-      </section>
+      <section className="border-b border-border bg-white py-20 sm:py-24"><div className="mx-auto max-w-6xl px-6"><div className="max-w-3xl"><p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">The feature map</p><h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-5xl">One school system, organized by the work each team does.</h2><p className="mt-5 text-lg leading-8 text-muted">Every feature area has a clear place in the platform. Open a guide to see its capabilities and connections.</p></div><div id="modules" className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">{platformModules.map((module, index) => { const Icon = moduleIcons[index]; return <Link key={module.slug} href={`/docs/${module.slug}`} className="group border border-border bg-white p-6 transition hover:-translate-y-1 hover:border-brand/50 hover:shadow-lg"><div className="flex items-start justify-between gap-4"><div className="flex h-11 w-11 items-center justify-center bg-brand-light text-brand"><Icon className="h-5 w-5" /></div><ArrowRight className="h-5 w-5 text-muted transition group-hover:translate-x-1 group-hover:text-brand" /></div><p className="mt-7 text-xs font-semibold uppercase tracking-[0.16em] text-brand">{module.eyebrow}</p><h3 className="mt-2 text-xl font-semibold text-foreground">{module.title}</h3><p className="mt-3 leading-7 text-muted">{module.summary}</p></Link> })}</div></div></section>
+
+      <section className="border-y border-border bg-[#f6faff] py-20 sm:py-24"><div className="mx-auto max-w-6xl px-6"><div className="max-w-3xl"><p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">How the features connect</p><h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-5xl">A practical flow from setup to insight.</h2></div><div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">{platformSteps.map((step) => <div key={step.number} className="border-t-2 border-brand bg-white p-6"><p className="text-sm font-bold text-brand">{step.number}</p><h3 className="mt-7 text-xl font-semibold text-foreground">{step.title}</h3><p className="mt-3 leading-7 text-muted">{step.text}</p></div>)}</div></div></section>
+
+      <section className="py-20 sm:py-24"><div className="mx-auto max-w-6xl px-6"><div className="max-w-3xl"><p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">For the people in your school</p><h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-5xl">Relevant features for every role.</h2></div><div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{roleCards.map((role) => <Link key={role.title} href={role.href} className="group border border-border bg-white p-6 hover:border-brand/50"><h3 className="text-lg font-semibold text-foreground group-hover:text-brand">{role.title}</h3><p className="mt-3 text-sm leading-7 text-muted">{role.text}</p><span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand">Read the guide <ArrowRight className="h-4 w-4" /></span></Link>)}</div></div></section>
+
+      <section className="bg-brand py-16 text-white sm:py-20"><div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-8 px-6 md:flex-row md:items-center"><div><p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/70">SchoolBase</p><h2 className="mt-3 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">See the complete platform in context.</h2></div><Link href="/platform" className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-brand hover:bg-blue-50">Open the platform <ArrowRight className="h-4 w-4" /></Link></div></section>
     </div>
   )
 }

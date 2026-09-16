@@ -29,7 +29,7 @@ const features = [
   {
     icon: MessageCircle,
     title: "Reach parents instantly",
-    text: "Fee reminders and alerts on WhatsApp and SMS — the way parents actually read messages.",
+    text: "Fee reminders and alerts through the school’s configured communication workflows.",
   },
   {
     icon: GraduationCap,
@@ -48,8 +48,8 @@ const features = [
   },
   {
     icon: Sparkles,
-    title: "Live in in a few minutes",
-    text: "We help you set up fast. No six-month IT project.",
+    title: "Practical onboarding",
+    text: "We help your team configure the school records and workflows needed to get started.",
   },
 ];
 

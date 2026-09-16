@@ -5,7 +5,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Fee Collection Solution | SchoolBase',
   description:
-    'Streamline school fee collection. Reduce outstanding fees by 80% with automated reminders, payment tracking, and clear financial reports.',
+    'Organize school fee collection with itemized schedules, payment tracking, reminders, receipts, and clear financial reports.',
   keywords: [
     'school fee collection software',
     'fee management system',
@@ -28,7 +28,7 @@ export default function FeeCollectionPage() {
             Never Chase Fees Again
           </h1>
           <p className="text-xl text-[#bfdbfe] mb-8">
-            Automate fee collection with WhatsApp reminders, payment tracking, and detailed reports. Reduce outstanding fees by 80%.
+            Organize fee collection with payment tracking, configured reminders, receipts, and detailed reports.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Link
@@ -143,10 +143,10 @@ export default function FeeCollectionPage() {
           </h2>
           <div className="grid md:grid-cols-2 gap-8">
             {[
-              { metric: '80%', label: 'Reduction in fee collection time' },
-              { metric: '95%+', label: 'Fee collection rate' },
-              { metric: '3x', label: 'Faster payment processing' },
-              { metric: '100%', label: 'Data accuracy with automation' },
+              { metric: 'Clear', label: 'Fee schedules and balances' },
+              { metric: 'Connected', label: 'Payment and invoice records' },
+              { metric: 'Digital', label: 'Receipts and reports' },
+              { metric: 'Visible', label: 'Outstanding items and history' },
             ].map((item, idx) => (
               <div key={idx} className="bg-[#eff6ff] p-8 rounded-lg text-center border-l-4 border-[#0A66C2]">
                 <div className="text-4xl font-bold text-[#0A66C2] mb-2">{item.metric}</div>
@@ -192,7 +192,7 @@ export default function FeeCollectionPage() {
             Transform Your Fee Collection Today
           </h2>
           <p className="text-[#bfdbfe] mb-8 text-lg">
-            Join hundreds of schools collecting 95%+ of fees with SchoolBase.
+            Give your finance team a clearer fee workflow with SchoolBase.
           </p>
           <Link
             href="/purchase"

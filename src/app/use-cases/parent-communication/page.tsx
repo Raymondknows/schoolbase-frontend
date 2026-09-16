@@ -15,7 +15,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Parent Communication Solution | SchoolBase',
     description: 'Connect with parents on the app they use most: WhatsApp',
+    url: 'https://schoolbase.live/use-cases/parent-communication',
+    type: 'website',
   },
+  alternates: { canonical: 'https://schoolbase.live/use-cases/parent-communication' },
 }
 
 export default function ParentCommunicationPage() {
@@ -161,9 +164,9 @@ export default function ParentCommunicationPage() {
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { metric: '90%+', label: 'Message open rate' },
-              { metric: '24hr', label: 'Average response time from parents' },
-              { metric: '2-3x', label: 'More announcements sent per term' },
+              { metric: 'Email', label: 'Configured school updates' },
+              { metric: 'WhatsApp', label: 'Configured school messaging' },
+              { metric: 'Portal', label: 'Parent visibility for linked records' },
             ].map((item, idx) => (
               <div key={idx} className="bg-white p-8 rounded-lg text-center border-l-4 border-[#0A66C2]">
                 <div className="text-4xl font-bold text-[#0A66C2] mb-2">{item.metric}</div>
@@ -181,7 +184,7 @@ export default function ParentCommunicationPage() {
             Connect with Your Parents Today
           </h2>
           <p className="text-[#bfdbfe] mb-8 text-lg">
-            See why over 5000 schools use SchoolBase to reach parents on WhatsApp.
+            See how SchoolBase supports school-managed communication with parents.
           </p>
           <Link
             href="/purchase"

@@ -51,7 +51,7 @@ export default function PlatformPage() {
                 <div className="flex h-11 w-11 items-center justify-center rounded-full bg-brand text-white"><School className="h-5 w-5" /></div>
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {[{ label: "Students", value: "1,284", tone: "bg-[#eaf4ff]" }, { label: "Attendance", value: "94.6%", tone: "bg-[#f1f7f4]" }, { label: "Fees", value: "82%", tone: "bg-[#fff7e8]" }, { label: "Results", value: "Ready", tone: "bg-[#f2efff]" }, { label: "Teachers", value: "48", tone: "bg-[#edf7f8]" }, { label: "Updates", value: "12", tone: "bg-[#fff0f0]" }].map((item) => (
+                {[{ label: "Students", value: "Records", tone: "bg-[#eaf4ff]" }, { label: "Attendance", value: "Tracked", tone: "bg-[#f1f7f4]" }, { label: "Fees", value: "Visible", tone: "bg-[#fff7e8]" }, { label: "Results", value: "Published", tone: "bg-[#f2efff]" }, { label: "Teachers", value: "Assigned", tone: "bg-[#edf7f8]" }, { label: "Updates", value: "Connected", tone: "bg-[#fff0f0]" }].map((item) => (
                   <div key={item.label} className={`${item.tone} border border-black/5 p-4`}>
                     <p className="text-xs text-muted">{item.label}</p><p className="mt-3 text-xl font-semibold text-foreground">{item.value}</p>
                   </div>

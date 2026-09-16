@@ -5,7 +5,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Data Management & Security for Schools | SchoolBase',
   description:
-    'Centralize all school data in one secure place. Automatic backups, role-based access, audit trails, and GDPR compliance.',
+    'Organize school records in one place with role-aware access, school-scoped workflows, and operational visibility.',
   keywords: [
     'school data management',
     'student information system',
@@ -30,7 +30,7 @@ export default function DataManagementPage() {
             Your School Data. Secure & Organized.
           </h1>
           <p className="text-xl text-[#bfdbfe] mb-8">
-            One centralized database for students, staff, finances, and academics. Automatic backups. Role-based security. Always available.
+            One connected place for students, staff, finances, and academics with role-aware access and clearer school operations.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Link
@@ -67,8 +67,8 @@ export default function DataManagementPage() {
               },
               {
                 icon: Clock,
-                title: 'No Backups',
-                description: 'Data gets corrupted. Computers crash. Years of records are gone forever.'
+                title: 'Scattered records',
+                description: 'Important student, finance, and academic information can be difficult to keep consistent across separate files.'
               },
               {
                 icon: BarChart3,
@@ -106,13 +106,13 @@ export default function DataManagementPage() {
               },
               {
                 step: '3',
-                title: 'Automatic Backups',
-                description: 'Data backed up every hour to secure servers. If anything goes wrong, we restore within minutes.'
+                title: 'Organized records',
+                description: 'Keep school information in connected workflows with role-aware access and clearer operational visibility.'
               },
               {
                 step: '4',
-                title: 'Compliance & Audit',
-                description: 'GDPR-compliant. Audit trails show who accessed what. Data deletion complies with regulations.'
+                title: 'Access and accountability',
+                description: 'Use role-aware access and available audit records to support responsible school administration.'
               },
             ].map((item, idx) => (
               <div key={idx} className="flex gap-6">
@@ -139,11 +139,11 @@ export default function DataManagementPage() {
             {[
               {
                 title: 'Secure Storage',
-                items: ['256-bit encryption', 'SSL/TLS security', 'Firewall protected', 'DDoS protection', 'SOC 2 certified']
+                items: ['Role-aware access', 'Secure connections', 'School-scoped records', 'Account controls']
               },
               {
                 title: 'Backup & Recovery',
-                items: ['Hourly backups', '99.9% uptime', 'Disaster recovery', 'Point-in-time restore', 'Geo-redundant storage']
+                items: ['Operational visibility', 'Record organization', 'Reports and exports', 'Support workflows']
               },
               {
                 title: 'Access Control',
@@ -151,7 +151,7 @@ export default function DataManagementPage() {
               },
               {
                 title: 'Compliance',
-                items: ['GDPR compliant', 'Data privacy', 'Audit trails', 'Activity logging', 'Compliance reports']
+                items: ['Access controls', 'Privacy-aware workflows', 'Audit history where available', 'School administration records']
               },
             ].map((section, idx) => (
               <div key={idx} className="p-6 bg-gradient-to-br from-blue-50 to-slate-50 rounded-lg border border-slate-200">
@@ -205,12 +205,12 @@ export default function DataManagementPage() {
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
-                number: '500+',
-                label: 'Schools Using SchoolBase'
+                number: 'Connected',
+                label: 'School operations'
               },
               {
-                number: '99.9%',
-                label: 'Uptime Guaranteed'
+                number: 'Role-aware',
+                label: 'Access controls'
               },
               {
                 number: '0',

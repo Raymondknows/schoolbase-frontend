@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     url: 'https://schoolbase.live/faq',
     type: 'website',
   },
+  alternates: { canonical: 'https://schoolbase.live/faq' },
 }
 
 const faqs = [
@@ -20,7 +21,7 @@ const faqs = [
     questions: [
       {
         q: 'How long does it take to set up SchoolBase?',
-        a: 'We can have you live in 48 hours. Our onboarding team guides you through data entry, teacher setup, and goes live when you are ready.',
+        a: 'Our onboarding team can guide you through school setup, data entry, teacher setup, and the first operational workflows.',
       },
       {
         q: 'Do I need technical skills to use SchoolBase?',
@@ -74,7 +75,7 @@ const faqs = [
       },
       {
         q: 'Can parents view their fees and results?',
-        a: 'Yes. Parents can log in to view fees, balance, results, and attendance via web or mobile app.',
+        a: 'Yes. Parents can log in through the parent portal to view linked children, invoices, payment history, published results, and attendance.',
       },
     ],
   },
@@ -83,7 +84,7 @@ const faqs = [
     questions: [
       {
         q: 'Is my data secure?',
-        a: 'Yes. We use industry-standard encryption, secure authentication, and regular backups. Your data is backed up daily.',
+        a: 'SchoolBase uses secure authentication, role-aware access, and protected connections for school records. Ask the SchoolBase team about the operational safeguards relevant to your deployment.',
       },
       {
         q: 'Where is my data stored?',
@@ -115,8 +116,8 @@ const faqs = [
         a: 'Yes. We can help import student data and historical records. Talk to our team about your specific needs.',
       },
       {
-        q: 'Do you have a mobile app?',
-        a: 'Yes. Parents can download the SchoolBase app on iOS and Android to view fees, results, and attendance.',
+        q: 'Can parents use SchoolBase on their phone?',
+        a: 'Parents can use the web parent portal on the devices they already use to view linked children, invoices, published results, and attendance.',
       },
     ],
   },

@@ -16,15 +16,15 @@ export const metadata = {
 }
 
 const statCards = [
-  { label: 'Daily marking', value: '30 sec', sub: 'Per class', href: '/admin/attendance', icon: Clock3 },
-  { label: 'Absence alerts', value: 'Same day', sub: 'Parents notified instantly', href: '/parent/attendance', icon: AlertCircle },
-  { label: 'Class visibility', value: '100%', sub: 'Attendance history tracked', href: '/admin/attendance', icon: Users },
-  { label: 'Operations', value: '80%', sub: 'Time saved daily', href: '/admin', icon: LayoutDashboard },
+  { label: 'Daily marking', value: 'Digital', sub: 'Class attendance records', href: '/admin/attendance', icon: Clock3 },
+  { label: 'Attendance updates', value: 'Configured', sub: 'School-managed communication', href: '/parent', icon: AlertCircle },
+  { label: 'Class visibility', value: 'Tracked', sub: 'Attendance history available', href: '/admin/attendance', icon: Users },
+  { label: 'Operations', value: 'Central', sub: 'School attendance workspace', href: '/admin', icon: LayoutDashboard },
 ]
 
 const featureCards = [
   { icon: Clock3, title: 'One-click marking', description: 'Mark attendance for the whole class in a few seconds without paper registers.' },
-  { icon: AlertCircle, title: 'Absence alerts', description: 'Send automatic WhatsApp or SMS notices to parents when a student is absent.' },
+  { icon: AlertCircle, title: 'Attendance notifications', description: 'Use the available school notification workflow when attendance updates need to reach families.' },
   { icon: BarChart3, title: 'Analytics and patterns', description: 'Spot frequent absenteeism and flag students who need early intervention.' },
   { icon: Users, title: 'Class-level tracking', description: 'Monitor attendance by class and identify where support is needed.' },
   { icon: CheckCircle2, title: 'Instant reports', description: 'Generate monthly or termly attendance reports with a clean operational view.' },

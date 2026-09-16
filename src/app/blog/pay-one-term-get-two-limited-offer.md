@@ -87,9 +87,8 @@ When you subscribe, you get everything. There are no hidden modules or add-ons:
 
 ### **Parent Communication**
 - WhatsApp reminders for fee deadlines
-- SMS alerts for attendance issues
-- Instant notifications when results are published
-- Parent app so they can check balances anytime
+- Configured email and WhatsApp communication workflows
+- Parent web portal for linked children, invoices, payments, and published results
 
 ### **Admissions & Student Records**
 - Digital application forms
@@ -120,11 +119,10 @@ When you subscribe, you get everything. There are no hidden modules or add-ons:
 
 Schools using SchoolBase report:
 
-- **50% less time** managing fees and receipts
-- **Zero fee leakage** (every payment is tracked)
-- **Same-day parent notifications** instead of missed communications
-- **Results published in minutes** instead of hours
-- **Staff confidence growing** within the first week
+- Clearer fee and receipt records
+- More consistent parent communication
+- Results published through an approval workflow
+- Staff support during setup and onboarding
 
 ## When Will This Offer End?
 
@@ -133,7 +131,7 @@ We don't know yet. This is a limited-time offer to schools who move quickly. **I
 ### The math is simple:
 - You get two full terms of usage
 - You pay for one term
-- You save 50% compared to normal pricing
+- You receive the offer terms shown at the time of subscription
 - You get your school fully set up before the rush
 
 ## How to Get Started
@@ -143,7 +141,7 @@ We don't know yet. This is a limited-time offer to schools who move quickly. **I
 3. **Select your country** (pricing varies by region)
 4. **Complete your subscription** with Paystack or Flutterwave
 5. **Book your onboarding call** with our team
-6. **We set everything up together** in 48 hours
+6. **We set everything up together** according to the onboarding plan agreed with your school
 
 ### Questions? We're Here to Help
 
@@ -199,7 +197,7 @@ A: You can cancel anytime. But we're confident you'll want to stay.
 A: No. You pay once for your subscription. No automatic renewals or hidden charges.
 
 **Q: How long does onboarding take?**
-A: We can have your school live in 48 hours. Most data migration happens within that timeframe.
+A: Setup timing depends on your school records, configuration needs, and the onboarding plan agreed with our team.
 
 **Q: What if my staff finds it too complicated?**
 A: We provide training videos, live training calls, and ongoing support. Your school success is our success.

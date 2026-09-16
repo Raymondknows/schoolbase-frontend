@@ -26,11 +26,14 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Parent Solutions | SchoolBase',
     description: 'Stay connected with your child\'s school on WhatsApp',
+    url: 'https://schoolbase.live/solutions/parents',
+    type: 'website',
   },
+  alternates: { canonical: 'https://schoolbase.live/solutions/parents' },
 }
 
 const statCards = [
-  { label: 'Fee visibility', value: '100%', sub: 'Clear due dates and balances', href: '/parent/invoices', icon: DollarSign },
+  { label: 'Fee visibility', value: 'Clear', sub: 'Due dates and balances', href: '/parent/invoices', icon: DollarSign },
   { label: 'Parent updates', value: 'Instant', sub: 'Alerts on WhatsApp', href: '/parent/announcements', icon: MessageSquare },
   { label: 'Results access', value: '24/7', sub: 'Track progress anytime', href: '/parent/results', icon: TrendingUp },
   { label: 'Support', value: '1 place', sub: 'Fees, updates, and communication', href: '/parent', icon: LayoutDashboard },
@@ -49,7 +52,7 @@ const quickWins = [
   'Know exactly when fees are due and what is owed',
   'Receive school updates without searching through messages',
   'See progress reports as soon as they are published',
-  'Pay school charges through a simpler mobile-first flow',
+  'Review invoices, payment history, and school payment instructions in one place',
   'Stay informed and involved in your child’s school journey',
   'Reduce confusion with better communication and clearer records',
 ]
@@ -71,7 +74,7 @@ export default function ParentsPage() {
               <Link href="/login" className="inline-flex items-center gap-2 rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-hover">
                 Parent login <ArrowUpRight className="h-4 w-4" />
               </Link>
-              <Link href="#overview" className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-5 py-3 text-sm font-semibold text-foreground transition hover:border-brand hover:text-brand">
+              <Link href="/docs/parents" className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-5 py-3 text-sm font-semibold text-foreground transition hover:border-brand hover:text-brand">
                 See the overview
               </Link>
             </div>

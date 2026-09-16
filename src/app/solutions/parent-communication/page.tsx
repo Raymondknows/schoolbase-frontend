@@ -14,18 +14,25 @@ import {
 export const metadata = {
   title: 'Parent Communication & Student Results Sharing | SchoolBase',
   description:
-    'Keep parents informed with automated result notifications, instant result access, and two-way communication. Increase parent engagement by 90%.',
+    'Keep parents informed with result access, school updates, fee information, and connected communication workflows.',
+  alternates: { canonical: 'https://schoolbase.live/solutions/parent-communication' },
+  openGraph: {
+    title: 'Parent Communication & Student Results Sharing | SchoolBase',
+    description: 'School-managed email, WhatsApp, announcements, and parent portal workflows.',
+    url: 'https://schoolbase.live/solutions/parent-communication',
+    type: 'website',
+  },
 }
 
 const statCards = [
-  { label: 'Parent engagement', value: '90%', sub: 'Higher response and adoption', href: '/parent', icon: Users },
-  { label: 'Result alerts', value: 'Same day', sub: 'Published in real time', href: '/parent/results', icon: Bell },
-  { label: 'Communication', value: '2-way', sub: 'Teacher and admin updates', href: '/parent', icon: MessageSquare },
-  { label: 'Operations', value: '24/7', sub: 'Parent visibility and access', href: '/admin', icon: LayoutDashboard },
+  { label: 'Parent access', value: 'Linked', sub: 'Authorized child visibility', href: '/parent', icon: Users },
+  { label: 'Result access', value: 'Published', sub: 'Available after release', href: '/parent/results', icon: Bell },
+  { label: 'Communication', value: 'Connected', sub: 'School updates and notices', href: '/parent', icon: MessageSquare },
+  { label: 'Operations', value: 'Central', sub: 'School-managed workflows', href: '/admin', icon: LayoutDashboard },
 ]
 
 const featureCards = [
-  { icon: Bell, title: 'Instant notifications', description: 'Send result, fee, and announcement alerts to parents immediately through WhatsApp and SMS.' },
+  { icon: Bell, title: 'School notifications', description: 'Send result, fee, and announcement updates through the school’s configured communication workflows.' },
   { icon: Users, title: 'Parent portal', description: 'Give families one place to review academic performance, attendance, and fees.' },
   { icon: TrendingUp, title: 'Progress tracking', description: 'Help parents monitor term-by-term growth and address issues before they widen.' },
   { icon: MessageSquare, title: 'Two-way communication', description: 'Let parents ask questions and receive a faster, clearer school response.' },
@@ -59,7 +66,7 @@ export default function ParentCommunicationPage() {
               <Link href="/signup" className="inline-flex items-center gap-2 rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-hover">
                 Get Started <ArrowUpRight className="h-4 w-4" />
               </Link>
-              <Link href="#overview" className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-5 py-3 text-sm font-semibold text-foreground transition hover:border-brand hover:text-brand">
+              <Link href="/docs/communication" className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-5 py-3 text-sm font-semibold text-foreground transition hover:border-brand hover:text-brand">
                 See the overview
               </Link>
             </div>
@@ -77,7 +84,7 @@ export default function ParentCommunicationPage() {
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {[
-                  { label: 'Engagement', value: '90%', tone: 'bg-[#eaf4ff]' },
+                  { label: 'Engagement', value: 'Connected', tone: 'bg-[#eaf4ff]' },
                   { label: 'Alerts', value: 'Same day', tone: 'bg-[#f1f7f4]' },
                   { label: 'Results', value: 'Live', tone: 'bg-[#fff7e8]' },
                   { label: 'Fees', value: 'Clear', tone: 'bg-[#f2efff]' },
