@@ -25,6 +25,7 @@ import { playCloseTone, playOpenTone } from "@/lib/sounds";
 import TimetableSetupWizard from "./timetable-setup-wizard";
 import AdminBellManager from "@/components/admin-bell-manager";
 import AdminPeriodsManager from "@/components/admin-periods-manager";
+import { UserGuide, type PageHelpGuide } from "@/components/ui/user-guide";
 
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 const accents = ["#0a66c2", "#0b7a75", "#7a5af8", "#c2410c", "#b42318"];
@@ -59,6 +60,84 @@ type Config = {
   entries: Entry[];
 };
 type SelectorData = { id: string; name: string; email?: string; arm?: string | null };
+
+const TIMETABLE_HELP_GUIDE: PageHelpGuide = {
+  title: "Timetable Setup Guide",
+  overview:
+    "Create a timetable for each class, define your periods, assign subjects and teachers, and publish the final version when it is ready for the school to use.",
+  steps: [
+    "Click 'New timetable' to create a timetable board for a specific academic year or term.",
+    "Open 'School periods' and define the daily lesson slots, break times, and period sequence.",
+    "Add lessons by selecting a class, subject, teacher, and time slot for the correct day.",
+    "Review the week view to make sure each teacher and class is assigned without clashes.",
+    "Publish the board when the schedule is complete so teachers and parents can see it.",
+  ],
+  commonTasks: [
+    {
+      title: "Create the board",
+      description:
+        "Start with a new timetable configuration, then choose the academic year and term that this schedule belongs to.",
+      tips: [
+        "Use one timetable per class group or school section if your schedule differs by stream.",
+        "Give each timetable a clear name such as 'Junior Secondary 2026' or 'SS2 Gold'.",
+      ],
+    },
+    {
+      title: "Set the school periods",
+      description:
+        "The timetable depends on school periods being correctly defined before lessons are assigned.",
+      tips: [
+        "Set start and end times for each lesson block and break period.",
+        "Keep the periods consistent across the week so lessons line up correctly.",
+      ],
+    },
+    {
+      title: "Add lesson entries",
+      description:
+        "In the Add lesson form, select the class, subject, teacher, and period, then save the lesson.",
+      tips: [
+        "Check teacher availability before assigning the same teacher to overlapping periods.",
+        "Use room numbers when needed so staff can easily locate the class.",
+      ],
+    },
+    {
+      title: "Publish the timetable",
+      description:
+        "When the timetable is complete, publish it to make it live and visible to the school community.",
+      tips: [
+        "Only publish once you are confident the weekly plan is correct.",
+        "If changes are still being made, leave it as a draft until you are ready.",
+      ],
+    },
+  ],
+  faqs: [
+    {
+      question: "How do I create a timetable for the first time?",
+      answer:
+        "Click 'New timetable', choose the academic year and term, then define your periods and add lessons. The board is ready to use once at least one lesson is scheduled.",
+    },
+    {
+      question: "Do I need to set school periods before adding lessons?",
+      answer:
+        "Yes. Lesson slots are tied to the period structure, so setting the school periods first helps keep the timetable organized and accurate.",
+    },
+    {
+      question: "What is the difference between Draft and Published?",
+      answer:
+        "A draft timetable is private and editable. Publishing makes it live for the school staff and other connected users to see.",
+    },
+    {
+      question: "Can I edit or delete a lesson after publishing?",
+      answer:
+        "You can return the timetable to draft before making changes, then publish it again when it is ready. This prevents accidental changes to live schedules.",
+    },
+    {
+      question: "Can I print the timetable?",
+      answer:
+        "Yes. Use the Print board button at the top of the page to generate a clean print layout for staff or notice boards.",
+    },
+  ],
+};
 
 function classLabel(item: Pick<SelectorData, "name" | "arm">) {
   return `${item.name}${item.arm?.trim() ? ` ${item.arm.trim()}` : ""}`;
@@ -637,6 +716,7 @@ export default function TimetableClient() {
           onConfirm={publishConfig}
         />
       )}
+      <UserGuide guide={TIMETABLE_HELP_GUIDE} />
     </main>
   );
 }
