@@ -4,6 +4,7 @@ import Header from "@/components/header";
 import FooterWrapper from "@/components/footer-wrapper";
 import PublicShellGate from "@/components/public-shell-gate";
 import PwaInstallPrompt from "@/components/pwa-install-prompt";
+import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
   title: "SchoolBase — Everything your school needs in one simple platform",
@@ -94,6 +95,7 @@ export default function RootLayout({
           <FooterWrapper />
         </PublicShellGate>
         <PwaInstallPrompt />
+        <Analytics />
       </body>
     </html>
   );

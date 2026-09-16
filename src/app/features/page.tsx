@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import {
   Bell,
@@ -90,6 +91,9 @@ export default function FeaturesPage() {
     <div className="min-h-screen bg-background">
       <section className="border-b border-border bg-surface py-20">
         <div className="mx-auto max-w-4xl px-6">
+          <Link href="/platform" className="text-sm font-semibold uppercase tracking-[0.2em] text-brand hover:text-brand-hover">
+            Explore the complete platform →
+          </Link>
           <h1 className="text-4xl font-bold text-foreground">
             Everything Your School Needs
           </h1>
@@ -193,6 +197,7 @@ export default function FeaturesPage() {
             time and money.
           </p>
           <div className="mt-8 flex flex-wrap gap-4 justify-center">
+            <Button href="/platform">Explore the Platform</Button>
             <Button href="/purchase">Get Started Today</Button>
             <Button variant="secondary" href="/contact">
               Schedule a Demo

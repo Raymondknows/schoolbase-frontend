@@ -8,7 +8,7 @@ export default function Footer() {
     <footer className="bg-foreground text-white print:hidden">
       {/* Main Footer */}
       <div className="mx-auto max-w-6xl px-4 py-16">
-        <div className="grid gap-12 md:grid-cols-5">
+        <div className="grid gap-10 md:grid-cols-6">
           {/* Brand & Social */}
           <div className="md:col-span-1">
             <h3 className="font-bold text-lg mb-4">SchoolBase</h3>
@@ -49,10 +49,32 @@ export default function Footer() {
             </div>
           </div>
 
+          {/* Platform */}
+          <div>
+            <h4 className="font-semibold mb-4">Platform</h4>
+            <ul className="space-y-2 text-sm">
+              <li><Link href={`${siteUrl}/platform`} className="text-white/70 hover:text-white">SchoolBase Platform</Link></li>
+              <li><Link href={`${siteUrl}/docs/admin`} className="text-white/70 hover:text-white">Administration</Link></li>
+              <li><Link href={`${siteUrl}/docs/teachers`} className="text-white/70 hover:text-white">Teachers</Link></li>
+              <li><Link href={`${siteUrl}/docs/parents`} className="text-white/70 hover:text-white">Parents</Link></li>
+              <li><Link href={`${siteUrl}/docs/fees`} className="text-white/70 hover:text-white">Fees & payments</Link></li>
+            </ul>
+          </div>
+
           {/* Solutions */}
           <div>
             <h4 className="font-semibold mb-4">Solutions</h4>
             <ul className="space-y-2 text-sm">
+              <li>
+                <Link href={`${siteUrl}/platform`} className="text-white/70 hover:text-white">
+                  SchoolBase Platform
+                </Link>
+              </li>
+              <li>
+                <Link href={`${siteUrl}/docs/admin`} className="text-white/70 hover:text-white">
+                  Platform Guides
+                </Link>
+              </li>
               <li>
                 <Link
                   href={`${siteUrl}/solutions/school-fee-management`}

@@ -118,8 +118,8 @@ export default function BlogPage() {
               Our blog content supports schools searching for trusted solutions in school management software, fee automation, parent communication, results publishing, and school transformation.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
-              <Link href="/features" className="inline-flex items-center rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand/90">
-                Explore features
+              <Link href="/platform" className="inline-flex items-center rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand/90">
+                Explore the platform
               </Link>
               <Link href="/compare/manual-systems" className="inline-flex items-center rounded-lg border border-border px-5 py-3 text-sm font-semibold text-foreground hover:bg-surface">
                 Compare SchoolBase

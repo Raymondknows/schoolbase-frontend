@@ -21,6 +21,51 @@ export type BlogPost = {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: 'schoolbase-one-platform-for-the-entire-school',
+    title: 'SchoolBase: One Platform for the Entire School',
+    description:
+      'SchoolBase brings school administration, accounting, teachers, parents, admissions, academics, fees, communication, and reports into one connected platform.',
+    excerpt:
+      'A short introduction to the SchoolBase Platform and the connected workflows that help schools operate with more clarity.',
+    category: 'SchoolBase Platform',
+    readingTime: '3 min read',
+    publishedAt: 'September 15, 2026',
+    keywords: [
+      'school management platform',
+      'school management software',
+      'school software Africa',
+      'school administration',
+    ],
+    hero: 'SchoolBase connects the people, records, and workflows that keep a school running every day.',
+    sections: [
+      {
+        heading: 'One connected school system',
+        body: [
+          'SchoolBase gives school administrators a central place to manage students, staff, classes, fees, attendance, assessments, results, communication, and school information.',
+          'Teachers work from their assigned classes and subjects. Parents can follow their linked children’s published results, attendance, invoices, payments, and school updates.',
+        ],
+      },
+      {
+        heading: 'Built around real school workflows',
+        body: [
+          'Admissions can lead to student and guardian records. Academic structure leads to teacher assignments, attendance, assessments, and results. Fee schedules lead to itemized invoices, balances, payments, receipts, and accounting links.',
+          'Because these areas are connected, each team can work with clearer context instead of maintaining separate records for the same school activity.',
+        ],
+      },
+      {
+        heading: 'Explore the platform',
+        body: [
+          'The SchoolBase Platform center explains what each area does, who uses it, and how the parts fit together. Explore the guides for administration, accounting, teachers, parents, admissions, academics, fees, communication, and reports.',
+        ],
+      },
+    ],
+    relatedPosts: [
+      'best-school-management-software',
+      'school-fee-management-software',
+      'parent-communication-software',
+    ],
+  },
+  {
     slug: 'best-school-management-software',
     title: 'Best School Management Software for Modern Schools in 2026',
     description:

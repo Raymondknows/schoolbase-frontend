@@ -12,7 +12,7 @@ export default async function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-white/95 backdrop-blur">
-      <div className="mx-auto max-w-6xl px-4 py-3">
+      <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6">
         {/* Top bar with social links - hide for logged-in users */}
         {!isLoggedIn && (
           <div className="hidden md:flex justify-between items-center text-xs text-muted mb-2 pb-2 border-b border-border/30">
@@ -59,7 +59,10 @@ export default async function Header() {
             <AppLogo />
 
             {/* Navigation */}
-            <nav className="hidden items-center gap-5 text-sm font-medium text-muted md:flex">
+            <nav className="hidden items-center gap-5 text-sm font-medium text-muted lg:flex">
+              <Link href="/platform" className="hover:text-brand">
+                Platform
+              </Link>
               <Link href="/solutions/school-fee-management" className="hover:text-brand">
                 Solutions
               </Link>
@@ -82,9 +85,28 @@ export default async function Header() {
 
             {/* CTA Buttons */}
             <div className="flex items-center gap-2">
+              <details className="relative lg:hidden">
+                <summary className="list-none cursor-pointer rounded-lg border border-border px-3 py-2 text-sm font-semibold text-foreground marker:hidden">
+                  Menu
+                </summary>
+                <nav className="absolute right-0 top-12 z-10 grid min-w-56 gap-1 border border-border bg-white p-2 text-sm font-medium text-foreground shadow-xl">
+                  <Link href="/platform" className="px-3 py-2 hover:bg-brand-light hover:text-brand">Platform</Link>
+                  <Link href="/solutions/school-fee-management" className="px-3 py-2 hover:bg-brand-light hover:text-brand">Solutions</Link>
+                  <Link href="/for-principals" className="px-3 py-2 hover:bg-brand-light hover:text-brand">For Your Role</Link>
+                  <Link href="/guides/school-fee-management" className="px-3 py-2 hover:bg-brand-light hover:text-brand">Guides</Link>
+                  <Link href="/blog" className="px-3 py-2 hover:bg-brand-light hover:text-brand">Blog</Link>
+                  <div className="my-1 border-t border-border" />
+                  <Link href="/login" className="px-3 py-2 font-semibold text-brand hover:bg-brand-light">School login</Link>
+                  <Link href="/parent/login" className="px-3 py-2 font-semibold text-brand hover:bg-brand-light">Parent login</Link>
+                </nav>
+              </details>
+              <div className="hidden items-center gap-3 lg:flex">
+                <Link href="/login" className="text-sm font-semibold text-muted hover:text-brand">School login</Link>
+                <Link href="/parent/login" className="text-sm font-semibold text-muted hover:text-brand">Parent login</Link>
+              </div>
               <Link
                 href="/signup"
-                className="inline-flex px-5 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brand/90 text-sm"
+                className="inline-flex px-4 py-2.5 bg-brand text-white rounded-lg font-semibold hover:bg-brand-hover text-sm sm:px-5"
               >
                 Get started
               </Link>

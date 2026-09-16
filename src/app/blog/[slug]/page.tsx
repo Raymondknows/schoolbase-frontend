@@ -239,8 +239,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               Explore the full SchoolBase platform and see how it supports smarter operations, stronger communication, and better educational outcomes.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-4">
-              <Link href="/features" className="inline-flex items-center gap-2 rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand/90">
-                Explore features <ArrowRight className="h-4 w-4" />
+              <Link href="/platform" className="inline-flex items-center gap-2 rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand/90">
+                Explore the platform <ArrowRight className="h-4 w-4" />
               </Link>
               <Link href="/contact" className="inline-flex items-center rounded-lg border border-border bg-background px-5 py-3 text-sm font-semibold text-foreground hover:bg-surface">
                 Book a demo
