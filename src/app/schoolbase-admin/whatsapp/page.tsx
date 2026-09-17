@@ -18,6 +18,10 @@ interface SessionStatus {
   debugInfo?: Record<string, unknown>;
 }
 
+const buildDefaultPlatformMessage = (adminName = "SchoolBase") =>
+  `Hello {{schoolName}},\n\nThis is ${adminName} from SchoolBase, and we are reaching out to keep your school informed, supported, and aligned with the latest platform developments. We know how important it is for schools to have reliable systems, timely communication, and a trusted partner supporting day-to-day operations.\n\nWe are sharing this update to ensure your team has the information needed to stay ahead, act confidently, and continue delivering a stronger experience for staff, parents, and students. Please review the details in your SchoolBase workspace and complete any next steps that may be relevant to your school.\n\nYour partnership matters to us, and we are committed to helping your school operate more smoothly, communicate more effectively, and grow with confidence. If you need support or guidance, our team is ready to assist.\n\nWarm regards,\n${adminName}\nSchoolBase — Everything your school needs in one simple platform.
+Website: https://schoolbase.live\nNeed help? Reply to this message or contact the SchoolBase support team.`;
+
 export default function PlatformWhatsAppPage() {
   const [session, setSession] = useState<SessionStatus | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,13 +39,14 @@ export default function PlatformWhatsAppPage() {
   const [campaignAudience, setCampaignAudience] = useState('All schools');
   const [audienceCounts, setAudienceCounts] = useState<Record<string, number>>({});
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
-  const [campaignMessage, setCampaignMessage] = useState('Hello {{schoolName}}, this is a SchoolBase platform message. Please review the latest update for your school.');
+  const [platformAdminName, setPlatformAdminName] = useState('SchoolBase');
+  const [campaignMessage, setCampaignMessage] = useState(buildDefaultPlatformMessage('SchoolBase'));
   const [campaignScheduled, setCampaignScheduled] = useState('Tomorrow');
   const [campaignPreview, setCampaignPreview] = useState<{ audience: string; estimatedRecipients: number; templateName?: string; summary: string } | null>(null);
   const [isPreviewingCampaign, setIsPreviewingCampaign] = useState(false);
   const [isCreatingCampaign, setIsCreatingCampaign] = useState(false);
   const [testPhoneNumber, setTestPhoneNumber] = useState("+2348012345678");
-  const [directMessage, setDirectMessage] = useState("Hello {{schoolName}}, this is a SchoolBase platform message. Please review the latest update for your school.");
+  const [directMessage, setDirectMessage] = useState(buildDefaultPlatformMessage('SchoolBase'));
   const [isSendingSchoolMessage, setIsSendingSchoolMessage] = useState(false);
   const [isSendingTestMessage, setIsSendingTestMessage] = useState(false);
   const [actionMessage, setActionMessage] = useState<{ type: 'info' | 'warning' | 'success'; text: string } | null>(null);
@@ -203,29 +208,65 @@ export default function PlatformWhatsAppPage() {
   };
 
   const fetchAudienceCounts = async () => {
-    const audienceEndpoints = {
-      'All schools': '/schoolbase-admin/api/schools?limit=1',
-      'Trial schools': '/schoolbase-admin/api/schools?status=TRIAL&limit=1',
-      'Incomplete setups': '/schoolbase-admin/api/schools?status=TRIAL&limit=1',
-      'Expiring schools': '/schoolbase-admin/api/schools?status=ACTIVE&limit=1',
-      'Renewal reminders': '/schoolbase-admin/api/schools?status=ACTIVE&limit=1',
-    } as const;
-
     try {
-      const nextCounts: Record<string, number> = {};
-      for (const [label, endpoint] of Object.entries(audienceEndpoints)) {
-        const response = await fetch(endpoint, {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
+      const response = await fetch('/schoolbase-admin/api/whatsapp/audience-counts', {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        setAudienceCounts({
+          'All schools': 0,
+          'Trial schools': 0,
+          'Incomplete setups': 0,
+          'Expiring schools': 0,
+          'Renewal reminders': 0,
         });
-        if (!response.ok) continue;
-        const data = await response.json();
-        const total = Number(data?.pagination?.total || 0);
-        nextCounts[label] = Number.isFinite(total) ? total : 0;
+        return;
       }
-      setAudienceCounts(nextCounts);
+
+      const data = await response.json();
+      const nextCounts = data?.counts || {};
+      setAudienceCounts({
+        'All schools': Number(nextCounts['All schools'] ?? 0),
+        'Trial schools': Number(nextCounts['Trial schools'] ?? 0),
+        'Incomplete setups': Number(nextCounts['Incomplete setups'] ?? 0),
+        'Expiring schools': Number(nextCounts['Expiring schools'] ?? 0),
+        'Renewal reminders': Number(nextCounts['Renewal reminders'] ?? 0),
+      });
     } catch (error) {
       console.error('Platform audience counts fetch error:', error);
+      setAudienceCounts({
+        'All schools': 0,
+        'Trial schools': 0,
+        'Incomplete setups': 0,
+        'Expiring schools': 0,
+        'Renewal reminders': 0,
+      });
+    }
+  };
+
+  const fetchPlatformProfile = async () => {
+    try {
+      const response = await fetch('/schoolbase-admin/api/profile', {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) return;
+      const data = await response.json();
+      const fetchedName = String(data?.admin?.name || '').trim() || 'SchoolBase';
+      setPlatformAdminName(fetchedName);
+
+      const defaultMessage = buildDefaultPlatformMessage(fetchedName);
+      if (campaignMessage === buildDefaultPlatformMessage('SchoolBase') || !campaignMessage.trim()) {
+        setCampaignMessage(defaultMessage);
+      }
+      if (directMessage === buildDefaultPlatformMessage('SchoolBase') || !directMessage.trim()) {
+        setDirectMessage(defaultMessage);
+      }
+    } catch (error) {
+      console.error('Platform profile fetch error:', error);
     }
   };
 
@@ -237,6 +278,7 @@ export default function PlatformWhatsAppPage() {
     void fetchLogs();
     void fetchSchools();
     void fetchAudienceCounts();
+    void fetchPlatformProfile();
   }, []);
 
   useEffect(() => {
@@ -682,8 +724,8 @@ export default function PlatformWhatsAppPage() {
             <div className={`relative border p-4 ${isConnected ? "border-[#25D366]/20 bg-[#F5FFF8] text-slate-900" : "border-border bg-background text-foreground"}`}>
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className={`flex h-10 w-10 items-center justify-center ${isConnected ? "bg-[#25D366] text-white" : "bg-slate-200 text-slate-600"}`}>
-                    {isConnected ? <CheckCircle2 className="h-5 w-5" /> : <Wifi className="h-5 w-5" />}
+                  <div className={`flex h-9 w-9 items-center justify-center ${isConnected ? "bg-[#25D366] text-white" : "bg-slate-200 text-slate-600"}`}>
+                    {isConnected ? <CheckCircle2 className="h-4 w-4" /> : <Wifi className="h-4 w-4" />}
                   </div>
                   <div>
                     <p className="text-[10px] uppercase tracking-[0.22em] text-[#25D366]">Connection status</p>
@@ -693,7 +735,7 @@ export default function PlatformWhatsAppPage() {
                   </div>
                 </div>
                 {isConnected && (
-                  <span className="rounded-full border border-[#25D366]/30 bg-[#25D366]/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#128C7E]">
+                  <span className="rounded-full border border-[#25D366]/30 bg-[#25D366]/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#128C7E]">
                     Live
                   </span>
                 )}
@@ -736,7 +778,7 @@ export default function PlatformWhatsAppPage() {
                   <div className="rounded-lg border border-border bg-background px-4 py-3 text-2xl font-semibold tracking-[0.3em]">
                     {session.pairingCode}
                   </div>
-                  <Button onClick={handleCopyPairingCode} variant="outline">
+                  <Button onClick={handleCopyPairingCode} variant="outline" className="h-9 px-3 py-2 text-xs">
                     {isCodeCopied ? "Copied" : "Copy code"}
                   </Button>
                 </div>
@@ -780,14 +822,14 @@ export default function PlatformWhatsAppPage() {
                 />
               </div>
 
-              <div className="flex flex-wrap gap-3">
-                <Button onClick={handleConnect} disabled={isConnecting || isConnected} className={isConnected ? "cursor-not-allowed opacity-50" : ""}>
+              <div className="flex flex-wrap gap-2.5">
+                <Button onClick={handleConnect} disabled={isConnecting || isConnected} className={`h-9 px-3 py-2 text-xs ${isConnected ? "cursor-not-allowed opacity-50" : ""}`}>
                   {isConnecting ? "Connecting…" : isConnected ? "Connected" : "Connect"}
                 </Button>
-                <Button onClick={handleDisconnect} disabled={isDisconnecting || !isConnected} variant="secondary">
+                <Button onClick={handleDisconnect} disabled={isDisconnecting || !isConnected} variant="secondary" className="h-9 px-3 py-2 text-xs">
                   {isDisconnecting ? "Disconnecting…" : "Disconnect"}
                 </Button>
-                <Button onClick={() => void fetchStatus(true)} disabled={loading} variant="outline">
+                <Button onClick={() => void fetchStatus(true)} disabled={loading} variant="outline" className="h-9 px-3 py-2 text-xs">
                   Refresh
                 </Button>
               </div>
@@ -815,7 +857,7 @@ export default function PlatformWhatsAppPage() {
                 This sends a quick platform test message after the connection is live.
               </div>
 
-              <Button type="button" variant="outline" disabled={!session?.connected || isSendingTestMessage} className={!session?.connected ? "opacity-60" : ""} onClick={handleSendTestMessage}>
+              <Button type="button" variant="outline" disabled={!session?.connected || isSendingTestMessage} className={`h-9 px-3 py-2 text-xs ${!session?.connected ? "opacity-60" : ""}`} onClick={handleSendTestMessage}>
                 {isSendingTestMessage ? 'Sending…' : 'Send test message'}
               </Button>
             </div>
@@ -830,24 +872,63 @@ export default function PlatformWhatsAppPage() {
                 {templates.length} templates
               </span>
             </div>
-            <div className="space-y-3">
-              {templates.length ? templates.slice(0, 3).map((template) => (
-                <div key={template.id} className="rounded-lg border border-border bg-background p-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="font-semibold text-foreground">{template.name}</p>
-                    <span className="rounded-full border border-brand/20 bg-brand/5 px-2 py-1 text-[10px] uppercase tracking-[0.15em] text-brand">
-                      {template.status}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-xs uppercase tracking-[0.18em] text-muted">{template.category}</p>
-                  <p className="mt-2 text-sm text-muted">{template.message || 'Template message ready for platform outreach.'}</p>
-                  <div className="mt-3">
-                    <Button type="button" variant="outline" onClick={() => setDirectMessage(template.message || directMessage)}>
-                      Use template
-                    </Button>
-                  </div>
-                </div>
-              )) : (
+            <div className="space-y-4">
+              {templates.length ? (
+                <>
+                  {(() => {
+                    const selectedTemplate = templates.find((template) => template.id === selectedTemplateId) || templates[0];
+                    return (
+                      <div className="rounded-xl border border-border bg-background p-4">
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                          <div>
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">Template</p>
+                            <p className="mt-1 text-base font-semibold text-foreground">{selectedTemplate?.name || 'Selected template'}</p>
+                          </div>
+                          <span className="rounded-full border border-brand/20 bg-brand/5 px-2 py-1 text-[10px] uppercase tracking-[0.15em] text-brand">
+                            {selectedTemplate?.status || 'Approved'}
+                          </span>
+                        </div>
+
+                        <label className="mb-2 block text-sm font-medium">Select template</label>
+                        <select
+                          value={selectedTemplateId}
+                          onChange={(event) => {
+                            const nextId = event.target.value;
+                            setSelectedTemplateId(nextId);
+                            const template = templates.find((item) => item.id === nextId);
+                            if (template?.message) {
+                              setDirectMessage(template.message);
+                              setCampaignMessage(template.message);
+                            }
+                          }}
+                          className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm"
+                        >
+                          {templates.map((template) => (
+                            <option key={template.id} value={template.id}>
+                              {template.name}
+                            </option>
+                          ))}
+                        </select>
+
+                        <div className="mt-3 rounded-lg border border-border bg-white p-3">
+                          <p className="whitespace-pre-line text-sm leading-6 text-foreground">
+                            {selectedTemplate?.message || 'Template content ready for outreach.'}
+                          </p>
+                        </div>
+
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          <Button type="button" variant="outline" className="h-9 px-3 py-2 text-xs" onClick={() => setDirectMessage(selectedTemplate?.message || directMessage)}>
+                            Use for direct send
+                          </Button>
+                          <Button type="button" className="h-9 px-3 py-2 text-xs" onClick={() => setCampaignMessage(selectedTemplate?.message || campaignMessage)}>
+                            Use for campaign
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </>
+              ) : (
                 <div className="rounded-lg border border-dashed border-border bg-background p-4 text-sm text-muted">
                   No templates yet. The platform template library will appear here next.
                 </div>
@@ -869,8 +950,8 @@ export default function PlatformWhatsAppPage() {
                 <textarea
                   value={directMessage}
                   onChange={(event) => setDirectMessage(event.target.value)}
-                  rows={5}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                  rows={12}
+                  className="min-h-[350px] w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
                   placeholder="Type the WhatsApp message to send to the selected schools."
                 />
               </div>
@@ -896,7 +977,7 @@ export default function PlatformWhatsAppPage() {
                 </div>
               </div>
 
-              <Button type="button" onClick={handleSendToSelectedSchools} disabled={isSendingSchoolMessage || !selectedSchoolIds.length} className={!selectedSchoolIds.length ? 'opacity-60' : ''}>
+              <Button type="button" onClick={handleSendToSelectedSchools} disabled={isSendingSchoolMessage || !selectedSchoolIds.length} className={`h-9 px-3 py-2 text-xs ${!selectedSchoolIds.length ? 'opacity-60' : ''}`}>
                 {isSendingSchoolMessage ? 'Sending…' : 'Send to selected schools'}
               </Button>
             </div>
@@ -1004,11 +1085,11 @@ export default function PlatformWhatsAppPage() {
                 />
               </div>
 
-              <div className="flex flex-wrap gap-3">
-                <Button type="button" variant="outline" onClick={handlePreviewCampaign} disabled={isPreviewingCampaign}>
+              <div className="flex flex-wrap gap-2.5">
+                <Button type="button" variant="outline" className="h-9 px-3 py-2 text-xs" onClick={handlePreviewCampaign} disabled={isPreviewingCampaign}>
                   {isPreviewingCampaign ? 'Previewing…' : 'Preview campaign'}
                 </Button>
-                <Button type="button" onClick={handleCreateCampaign} disabled={isCreatingCampaign}>
+                <Button type="button" className="h-9 px-3 py-2 text-xs" onClick={handleCreateCampaign} disabled={isCreatingCampaign}>
                   {isCreatingCampaign ? 'Creating…' : 'Create campaign'}
                 </Button>
               </div>
@@ -1050,17 +1131,17 @@ export default function PlatformWhatsAppPage() {
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {campaign.status !== 'approved' && (
-                      <Button type="button" variant="outline" onClick={() => void updateCampaignStatus(campaign.id, 'approved')}>
+                      <Button type="button" variant="outline" className="h-8 px-2.5 py-1.5 text-[11px]" onClick={() => void updateCampaignStatus(campaign.id, 'approved')}>
                         Approve
                       </Button>
                     )}
                     {campaign.status !== 'queued' && (
-                      <Button type="button" variant="outline" onClick={() => void updateCampaignStatus(campaign.id, 'queued')}>
+                      <Button type="button" variant="outline" className="h-8 px-2.5 py-1.5 text-[11px]" onClick={() => void updateCampaignStatus(campaign.id, 'queued')}>
                         Queue
                       </Button>
                     )}
                     {campaign.status !== 'sent' && (
-                      <Button type="button" onClick={() => void sendCampaignNow(campaign.id)}>
+                      <Button type="button" className="h-8 px-2.5 py-1.5 text-[11px]" onClick={() => void sendCampaignNow(campaign.id)}>
                         Send now
                       </Button>
                     )}
