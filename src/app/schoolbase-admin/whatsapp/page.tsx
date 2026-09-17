@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { WhatsAppIcon } from "@/components/ui/icons";
-import { CheckCircle2, Send, Wifi } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Send, Wifi } from "lucide-react";
 
 interface SessionStatus {
   connected?: boolean;
@@ -51,8 +51,9 @@ export default function PlatformWhatsAppPage() {
   const [isSendingTestMessage, setIsSendingTestMessage] = useState(false);
   const [actionMessage, setActionMessage] = useState<{ type: 'info' | 'warning' | 'success'; text: string } | null>(null);
   const [readiness, setReadiness] = useState<{ readyForStagedRollout: boolean; requiresManualApproval: boolean; blockedForMassBroadcast: boolean; warnings: string[]; lastValidatedAt: string; checks: Record<string, boolean> } | null>(null);
-  const [successModal, setSuccessModal] = useState<{ open: boolean; title: string; message: string }>({
+  const [successModal, setSuccessModal] = useState<{ open: boolean; type: 'success' | 'warning' | 'info'; title: string; message: string }>({
     open: false,
+    type: 'success',
     title: "Success",
     message: "",
   });
@@ -343,9 +344,15 @@ export default function PlatformWhatsAppPage() {
     setActionMessage({ type, text });
   };
 
-  const openSuccessModal = (title: string, message: string) => {
-    setSuccessModal({ open: true, title, message });
-    setNotice('success', message);
+  const openSuccessModal = (title: string, message: string, type: 'success' | 'warning' | 'info' = 'success') => {
+    setSuccessModal({ open: true, type, title, message });
+    if (type === 'warning') {
+      setNotice('warning', message);
+    } else if (type === 'success') {
+      setNotice('success', message);
+    } else {
+      setNotice('info', message);
+    }
   };
 
   const handleConnect = async () => {
@@ -372,10 +379,16 @@ export default function PlatformWhatsAppPage() {
         const successMessage = buildSessionActionMessage(nextSession, usePairingCode ? "Connection requested. Enter the pairing code in WhatsApp." : "Connection requested. Scan the QR code if shown.");
         setNotice('info', successMessage);
         if (nextSession?.status === "connected") {
-          openSuccessModal("WhatsApp connected", successMessage);
+          openSuccessModal("WhatsApp connected", successMessage, 'success');
+        } else if (nextSession?.status === "error") {
+          openSuccessModal("Connection issue", nextSession.lastError || successMessage, 'warning');
+        } else if (nextSession?.status === "qr" || nextSession?.status === "connecting") {
+          openSuccessModal("Connection update", successMessage, 'info');
         }
       } else {
-        setNotice('warning', data.error || "Failed to start WhatsApp connection.");
+        const warningMessage = data.error || "Failed to start WhatsApp connection.";
+        setNotice('warning', warningMessage);
+        openSuccessModal("Connection failed", warningMessage, 'warning');
       }
     } catch (error) {
       console.error("Platform connect error:", error);
@@ -398,9 +411,11 @@ export default function PlatformWhatsAppPage() {
         syncSession(data.session || null);
         const disconnectedMessage = "WhatsApp session disconnected.";
         setNotice('success', disconnectedMessage);
-        openSuccessModal("Session disconnected", disconnectedMessage);
+        openSuccessModal("Session disconnected", disconnectedMessage, 'success');
       } else {
-        setNotice('warning', data.error || "Failed to disconnect WhatsApp session.");
+        const warningMessage = data.error || "Failed to disconnect WhatsApp session.";
+        setNotice('warning', warningMessage);
+        openSuccessModal("Disconnect failed", warningMessage, 'warning');
       }
     } catch (error) {
       console.error("Platform disconnect error:", error);
@@ -451,7 +466,7 @@ export default function PlatformWhatsAppPage() {
       setIsCodeCopied(true);
       const copiedMessage = "Pairing code copied. Paste it into WhatsApp on your phone.";
       setNotice('success', copiedMessage);
-      openSuccessModal("Code copied", copiedMessage);
+      openSuccessModal("Code copied", copiedMessage, 'success');
       setTimeout(() => setIsCodeCopied(false), 2000);
     } catch {
       setNotice('warning', 'Unable to copy the pairing code automatically. Please copy it manually.');
@@ -500,10 +515,12 @@ export default function PlatformWhatsAppPage() {
       const resultCount = Array.isArray(data?.results) ? data.results.length : targetSchoolIds.length;
       const successText = `WhatsApp message sent successfully to ${resultCount} selected school${resultCount === 1 ? '' : 's'}.`;
       setNotice('success', successText);
-      openSuccessModal('School message sent', successText);
+      openSuccessModal('School message sent', successText, 'success');
     } catch (error) {
       console.error('School direct send error:', error);
-      setNotice('warning', error instanceof Error ? error.message : 'Unable to send the school message.');
+      const warningMessage = error instanceof Error ? error.message : 'Unable to send the school message.';
+      setNotice('warning', warningMessage);
+      openSuccessModal('School message failed', warningMessage, 'warning');
     } finally {
       setIsSendingSchoolMessage(false);
     }
@@ -538,10 +555,12 @@ export default function PlatformWhatsAppPage() {
       const sentCount = Array.isArray(data?.results) ? data.results.length : 1;
       const successText = `Platform test message sent successfully to ${sentCount} recipient${sentCount === 1 ? '' : 's'}.`;
       setNotice('success', successText);
-      openSuccessModal('Test message sent', successText);
+      openSuccessModal('Test message sent', successText, 'success');
     } catch (error) {
       console.error('Platform test message error:', error);
-      setNotice('warning', error instanceof Error ? error.message : 'Unable to send the platform test message.');
+      const warningMessage = error instanceof Error ? error.message : 'Unable to send the platform test message.';
+      setNotice('warning', warningMessage);
+      openSuccessModal('Test message failed', warningMessage, 'warning');
     } finally {
       setIsSendingTestMessage(false);
     }
@@ -622,12 +641,14 @@ export default function PlatformWhatsAppPage() {
       const createdTitle = data?.campaign?.name || 'Campaign created';
       const createdNotice = `${createdTitle} has been queued for review.`;
       setNotice('success', createdNotice);
-      openSuccessModal('Campaign queued', createdNotice);
+      openSuccessModal('Campaign queued', createdNotice, 'success');
       await fetchCampaigns();
       await fetchLogs();
     } catch (error) {
       console.error('Platform campaign create error:', error);
-      setNotice('warning', error instanceof Error ? error.message : 'Unable to create the platform campaign.');
+      const warningMessage = error instanceof Error ? error.message : 'Unable to create the platform campaign.';
+      setNotice('warning', warningMessage);
+      openSuccessModal('Campaign failed', warningMessage, 'warning');
     } finally {
       setIsCreatingCampaign(false);
     }
@@ -680,39 +701,18 @@ export default function PlatformWhatsAppPage() {
           </div>
         </header>
 
-        {actionMessage ? (
-          <div
-            className={`rounded-md border px-4 py-3 text-sm shadow-sm ${
-              actionMessage.type === 'warning'
-                ? 'border-error/20 bg-error/5 text-error'
-                : actionMessage.type === 'success'
-                  ? 'border-brand/20 bg-brand/5 text-foreground'
-                  : 'border-brand/20 bg-brand/5 text-foreground'
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              {actionMessage.type === 'warning' ? (
-                <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-error/20 bg-error/10 text-[10px] font-bold text-error">!</span>
-              ) : (
-                <CheckCircle2 className="h-4 w-4 text-brand" />
-              )}
-              <span>{actionMessage.text}</span>
-            </div>
-          </div>
-        ) : null}
-
         {successModal.open ? (
           <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
             <style>{`@keyframes timetable_whatsapp_enter { from { transform: translateX(36px) scale(.98); opacity: 0 } to { transform: translateX(0) scale(1); opacity: 1 } }`}</style>
             <div className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]" style={{ animation: "timetable_whatsapp_enter 320ms cubic-bezier(.2,.9,.2,1)" }}>
-              <div className="border-b border-border/70 bg-brand/10 px-4 py-4 sm:px-6 sm:py-5">
+              <div className={`border-b px-4 py-4 sm:px-6 sm:py-5 ${successModal.type === 'warning' ? 'border-error/20 bg-error/5' : successModal.type === 'info' ? 'border-brand/20 bg-brand/5' : 'border-brand/20 bg-brand/10'}`}>
                 <div className="flex items-start gap-3">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-brand/20 bg-brand/10 text-brand">
-                    <CheckCircle2 className="h-5 w-5" />
+                  <div className={`flex h-11 w-11 shrink-0 items-center justify-center border ${successModal.type === 'warning' ? 'border-error/20 bg-error/10 text-error' : 'border-brand/20 bg-brand/10 text-brand'}`}>
+                    {successModal.type === 'warning' ? <AlertTriangle className="h-5 w-5" /> : <CheckCircle2 className="h-5 w-5" />}
                   </div>
                   <div>
                     <h2 className="text-lg font-semibold text-foreground">{successModal.title}</h2>
-                    <p className="mt-1 text-sm text-muted">The action was completed successfully.</p>
+                    <p className="mt-1 text-sm text-muted">{successModal.type === 'warning' ? 'Please review and try again.' : successModal.type === 'info' ? 'Action update' : 'The action was completed successfully.'}</p>
                   </div>
                 </div>
               </div>
@@ -722,7 +722,7 @@ export default function PlatformWhatsAppPage() {
               <div className="flex gap-3 border-t border-border bg-surface/80 px-6 py-4">
                 <button
                   type="button"
-                  onClick={() => setSuccessModal({ open: false, title: "Success", message: "" })}
+                  onClick={() => setSuccessModal({ open: false, type: 'success', title: "Success", message: "" })}
                   className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-background"
                 >
                   Close
