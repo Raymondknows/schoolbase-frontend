@@ -53,27 +53,27 @@ export default function VideoTutorialDetailsClient({ video }: VideoTutorialDetai
   return (
     <div className="space-y-6">
       {/* Share Section */}
-      <div className="rounded-xl bg-gradient-to-br from-brand/5 to-transparent border border-brand/10 p-6">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-          <Share2 className="w-5 h-5 text-brand" />
-          Share This Tutorial
+      <div className="border border-border bg-white p-6">
+        <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+          <Share2 className="h-5 w-5 text-brand" />
+          Share this tutorial
         </h3>
         
         <div className="space-y-3">
           {/* Share Link */}
           <div className="flex gap-2">
-            <div className="flex-1 px-4 py-3 rounded-lg bg-white border border-slate-200 text-sm text-slate-700 truncate font-mono text-xs">
+            <div className="flex-1 truncate border border-border bg-background px-4 py-3 font-mono text-xs text-muted">
               {shareUrl || "Loading link..."}
             </div>
             <button
               onClick={handleCopy}
-              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 flex-shrink-0 ${
+              className={`flex shrink-0 items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
                 copied
-                  ? "bg-green-500 text-white"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  ? "bg-emerald-600 text-white"
+                  : "border border-border bg-white text-foreground hover:border-brand hover:text-brand"
               }`}
             >
-              <Copy className="w-4 h-4" />
+              <Copy className="h-4 w-4" />
               {copied ? "Copied!" : "Copy"}
             </button>
           </div>
@@ -81,9 +81,9 @@ export default function VideoTutorialDetailsClient({ video }: VideoTutorialDetai
           {canShare && (
             <button
               onClick={handleShare}
-              className="w-full px-4 py-3 rounded-lg bg-brand text-white font-medium hover:bg-brand/90 transition-colors flex items-center justify-center gap-2"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-hover"
             >
-              <Share2 className="w-4 h-4" />
+              <Share2 className="h-4 w-4" />
               Share Tutorial
             </button>
           )}
@@ -92,19 +92,19 @@ export default function VideoTutorialDetailsClient({ video }: VideoTutorialDetai
 
       {/* Meta Information */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="rounded-lg bg-slate-50 p-4 border border-slate-200">
-          <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1">
+        <div className="border border-border bg-white p-4">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand">
             Category
           </p>
-          <p className="text-base font-semibold text-slate-900">
+          <p className="text-base font-semibold text-foreground">
             {video.category}
           </p>
         </div>
-        <div className="rounded-lg bg-slate-50 p-4 border border-slate-200">
-          <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1">
+        <div className="border border-border bg-white p-4">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand">
             Type
           </p>
-          <p className="text-base font-semibold text-slate-900">
+          <p className="text-base font-semibold text-foreground">
             Video Tutorial
           </p>
         </div>

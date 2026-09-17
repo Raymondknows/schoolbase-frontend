@@ -1,4 +1,4 @@
-import { Play, BookOpen } from "lucide-react";
+import { BookOpen, Play, Search } from "lucide-react";
 
 interface VideoHeroSectionProps {
   videoCount?: number;
@@ -7,52 +7,43 @@ interface VideoHeroSectionProps {
 
 export function VideoHeroSection({ videoCount = 0, onSearchChange }: VideoHeroSectionProps) {
   return (
-    <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-brand/5 to-slate-50 pt-16 pb-12">
-      {/* Decorative elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-brand/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-brand/5 rounded-full blur-3xl" />
-      </div>
-
-      {/* Content */}
-      <div className="relative max-w-7xl mx-auto px-6 z-10">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-3 bg-brand/10 rounded-lg">
-            <Play className="w-6 h-6 text-brand fill-current" />
+    <section className="border-b border-border bg-[#f6faff]">
+      <div className="mx-auto grid max-w-6xl gap-10 px-6 py-12 sm:py-16 lg:grid-cols-[1.1fr_.9fr] lg:items-center">
+        <div>
+          <div className="flex h-11 w-11 items-center justify-center bg-brand-light text-brand">
+            <Play className="h-5 w-5 fill-current" />
           </div>
-          <div>
-            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 leading-tight">
-              Learn SchoolBase Step-by-Step
-            </h1>
-            <p className="text-lg text-slate-600 mt-2 max-w-2xl">
-              Master every feature with our comprehensive video tutorials. From setup to advanced configurations, we've got you covered.
-            </p>
-          </div>
+          <p className="mt-5 text-sm font-semibold uppercase tracking-[0.2em] text-brand">SchoolBase learning centre</p>
+          <h1 className="mt-4 max-w-2xl text-4xl font-bold leading-[1.08] tracking-tight text-foreground sm:text-5xl">
+            Learn SchoolBase step by step.
+          </h1>
+          <p className="mt-5 max-w-2xl text-base leading-7 text-muted sm:text-lg">
+            Master every feature with practical walkthroughs for setup, daily operations, and advanced configurations.
+          </p>
         </div>
 
-        {/* Search Bar */}
-        <div className="mt-8 max-w-2xl">
+        <div>
+          <label htmlFor="tutorial-search" className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-muted">Find a tutorial</label>
           <div className="relative">
             <input
+              id="tutorial-search"
               type="text"
-              placeholder="Search tutorials..."
+              placeholder="Search setup, fees, results..."
               onChange={(e) => onSearchChange?.(e.target.value)}
-              className="w-full px-5 py-3 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand/50 focus:border-brand transition-all"
+              className="w-full border border-border bg-white px-5 py-3.5 pr-12 text-foreground placeholder:text-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
             />
-            <div className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400">
-              🔍
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-brand">
+              <Search className="h-5 w-5" />
             </div>
           </div>
+          {videoCount > 0 && (
+            <div className="mt-5 flex items-center gap-2 border-t border-border pt-4 text-sm text-muted">
+              <BookOpen className="h-4 w-4 text-brand" />
+              <span>{videoCount} tutorials available in the library</span>
+            </div>
+          )}
         </div>
-
-        {/* Stats */}
-        {videoCount > 0 && (
-          <div className="mt-6 flex items-center gap-2 text-sm text-slate-600">
-            <BookOpen className="w-4 h-4" />
-            <span>{videoCount} tutorials available</span>
-          </div>
-        )}
       </div>
-    </div>
+    </section>
   );
 }

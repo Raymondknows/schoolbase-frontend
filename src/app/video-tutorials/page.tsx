@@ -85,7 +85,7 @@ export default function VideoTutorialsPage() {
   const regularVideos = filteredVideos.filter(v => !v.featured);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen overflow-hidden bg-background">
       {/* Hero Section */}
       <VideoHeroSection 
         videoCount={videos.length}
@@ -93,9 +93,9 @@ export default function VideoTutorialsPage() {
       />
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="mx-auto max-w-6xl px-6 py-20 sm:py-24">
         {/* Category Filter */}
-        <div className="mb-10">
+        <div className="mb-12 border-b border-border pb-8">
           <CategoryFilterBar
             categories={categories}
             selectedCategory={selectedCategory}
@@ -114,12 +114,15 @@ export default function VideoTutorialsPage() {
             }}
           />
         ) : (
-          <div className="space-y-12">
+          <div className="space-y-16">
             {/* Featured Section */}
             {featuredVideos.length > 0 && (
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 mb-6">Featured Tutorials</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="mb-6">
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">Start here</p>
+                  <h2 className="mt-3 text-3xl font-bold tracking-tight text-foreground">Featured tutorials</h2>
+                </div>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {featuredVideos.map(video => (
                     <VideoCard
                       key={video.id}
@@ -139,9 +142,12 @@ export default function VideoTutorialsPage() {
             {regularVideos.length > 0 && (
               <div>
                 {featuredVideos.length > 0 && (
-                  <h2 className="text-2xl font-bold text-slate-900 mb-6">All Tutorials</h2>
+                  <div className="mb-6">
+                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">Browse the library</p>
+                    <h2 className="mt-3 text-3xl font-bold tracking-tight text-foreground">All tutorials</h2>
+                  </div>
                 )}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {regularVideos.map(video => (
                     <VideoCard
                       key={video.id}

@@ -15,8 +15,9 @@ interface RelatedVideosCardProps {
 
 export function RelatedVideosCard({ videos, category }: RelatedVideosCardProps) {
   return (
-    <div className="rounded-xl bg-white border border-slate-200 p-6 shadow-sm sticky top-20">
-      <h3 className="text-lg font-bold text-slate-900 mb-4">
+    <div className="sticky top-20 border border-border bg-white p-6">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand">Continue learning</p>
+      <h3 className="mt-3 text-xl font-semibold text-foreground">
         {category ? `More ${category} Videos` : "Related Videos"}
       </h3>
 
@@ -25,26 +26,26 @@ export function RelatedVideosCard({ videos, category }: RelatedVideosCardProps) 
           <Link
             key={video.id}
             href={`/video-tutorials/${video.id}`}
-            className="group flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors"
+            className="group flex items-start gap-3 border-t border-border px-0 py-4 transition-colors first:border-t-0 hover:text-brand"
           >
-            <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-gradient-to-br from-brand/20 to-brand/10 flex items-center justify-center group-hover:from-brand/30 group-hover:to-brand/20 transition-colors">
-              <Play className="w-5 h-5 text-brand fill-current" />
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center bg-brand-light text-brand">
+              <Play className="h-5 w-5 fill-current" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-slate-900 line-clamp-2 group-hover:text-brand transition-colors">
+              <p className="line-clamp-2 text-sm font-semibold text-foreground group-hover:text-brand">
                 {video.title}
               </p>
               {video.duration && (
-                <p className="text-xs text-slate-500 mt-1">{video.duration}</p>
+                <p className="mt-1 text-xs text-muted">{video.duration}</p>
               )}
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-brand transition-colors flex-shrink-0 mt-1" />
+            <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-muted transition group-hover:translate-x-1 group-hover:text-brand" />
           </Link>
         ))}
       </div>
 
       {videos.length === 0 && (
-        <p className="text-sm text-slate-500 text-center py-6">
+        <p className="py-6 text-center text-sm text-muted">
           No related videos yet
         </p>
       )}

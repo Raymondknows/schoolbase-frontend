@@ -8,35 +8,35 @@ interface EmptyStateProps {
 
 export function EmptyState({ category, onReset }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-24 px-6">
-      <div className="w-24 h-24 rounded-full bg-slate-100 flex items-center justify-center mb-6">
-        <PlayCircle className="w-12 h-12 text-slate-400" />
+    <div className="flex flex-col items-center justify-center border border-border bg-white px-6 py-24 text-center">
+      <div className="flex h-14 w-14 items-center justify-center bg-brand-light text-brand">
+        <PlayCircle className="h-7 w-7" />
       </div>
 
-      <h3 className="text-2xl font-bold text-slate-900 mb-2">
+      <h3 className="mt-6 text-2xl font-bold text-foreground">
         {category && category !== "all"
           ? `No tutorials in ${category}`
           : "No tutorials available"}
       </h3>
 
-      <p className="text-slate-600 text-center max-w-sm mb-8">
+      <p className="mb-8 mt-3 max-w-sm leading-7 text-muted">
         {category && category !== "all"
           ? "Check back later for new content in this category."
           : "We're working on creating comprehensive video tutorials for you."}
       </p>
 
-      <div className="flex gap-3">
+      <div className="flex flex-wrap justify-center gap-3">
         {category && category !== "all" && (
           <button
             onClick={onReset}
-            className="px-6 py-2 rounded-lg bg-slate-100 text-slate-900 font-medium hover:bg-slate-200 transition-colors"
+            className="rounded-lg border border-border bg-white px-5 py-3 text-sm font-semibold text-foreground transition hover:border-brand hover:text-brand"
           >
             Browse All Categories
           </button>
         )}
         <Link
           href="/"
-          className="px-6 py-2 rounded-lg bg-brand text-white font-medium hover:bg-brand/90 transition-colors"
+          className="rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-hover"
         >
           Back to Home
         </Link>

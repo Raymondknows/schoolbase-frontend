@@ -1,5 +1,3 @@
-import { X } from "lucide-react";
-
 interface CategoryFilterBarProps {
   categories: string[];
   selectedCategory: string;
@@ -12,15 +10,15 @@ export function CategoryFilterBar({
   onSelectCategory,
 }: CategoryFilterBarProps) {
   return (
-    <div className="flex items-center gap-2 overflow-x-auto pb-2 -mb-2 scrollbar-hide">
+    <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
       {categories.map((category) => (
         <button
           key={category}
           onClick={() => onSelectCategory(category)}
-          className={`px-4 py-2 rounded-full font-medium text-sm transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
+          className={`shrink-0 rounded-lg border px-4 py-2 text-sm font-semibold transition ${
             selectedCategory === category
-              ? "bg-brand text-white shadow-md scale-100"
-              : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+              ? "border-brand bg-brand text-white"
+              : "border-border bg-white text-foreground hover:border-brand hover:text-brand"
           }`}
         >
           {category === "all" ? "All Categories" : category}

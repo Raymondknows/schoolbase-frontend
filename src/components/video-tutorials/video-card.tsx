@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Play } from "lucide-react";
+import { ArrowRight, Clock, Play } from "lucide-react";
 
 interface VideoCardProps {
   id: string;
@@ -24,46 +24,21 @@ export function VideoCard({
     : "";
 
   return (
-    <Link href={`/video-tutorials/${id}`}>
-      <div
-        className={`group relative h-64 overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 shadow-md transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer ${cardClasses}`}
-      >
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10" />
-
-        {/* Category Badge - Top Left */}
-        <div className="absolute top-3 left-3 z-20">
-          <span className="inline-block px-3 py-1 bg-brand/90 text-white text-xs font-semibold rounded-full backdrop-blur-sm">
-            {category}
-          </span>
+    <Link href={`/video-tutorials/${id}`} className={`group block border border-border bg-white p-6 transition hover:-translate-y-1 hover:border-brand/50 hover:shadow-lg ${cardClasses}`}>
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex h-11 w-11 items-center justify-center bg-brand-light text-brand">
+          <Play className="h-5 w-5 fill-current" />
         </div>
-
-        {/* Duration Badge - Top Right (if available) */}
-        {duration && (
-          <div className="absolute top-3 right-3 z-20">
-            <span className="inline-block px-3 py-1 bg-black/50 text-white text-xs font-medium rounded-full backdrop-blur-sm">
-              {duration}
-            </span>
-          </div>
-        )}
-
-        {/* Play Button - Center */}
-        <div className="absolute inset-0 flex items-center justify-center z-20">
-          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 group-hover:bg-white/30 transition-all duration-300 group-hover:scale-110">
-            <Play className="w-6 h-6 text-white fill-white ml-1" />
-          </div>
-        </div>
-
-        {/* Content - Bottom */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 z-20 translate-y-1 group-hover:translate-y-0 transition-transform duration-300">
-          <h3 className="text-base font-semibold text-white line-clamp-2 mb-1">
-            {title}
-          </h3>
-          <p className="text-xs text-slate-200 line-clamp-2">
-            {description}
-          </p>
-        </div>
+        <ArrowRight className="h-5 w-5 text-muted transition group-hover:translate-x-1 group-hover:text-brand" />
       </div>
+      <p className="mt-7 text-xs font-semibold uppercase tracking-[0.16em] text-brand">{category}</p>
+      <h3 className="mt-2 text-xl font-semibold text-foreground">{title}</h3>
+      <p className="mt-3 line-clamp-3 leading-7 text-muted">{description}</p>
+      {duration && (
+        <p className="mt-5 flex items-center gap-2 border-t border-border pt-4 text-sm text-muted">
+          <Clock className="h-4 w-4 text-brand" /> {duration}
+        </p>
+      )}
     </Link>
   );
 }

@@ -12,19 +12,19 @@ interface VideoBreadcrumbProps {
 
 export function VideoBreadcrumb({ items }: VideoBreadcrumbProps) {
   return (
-    <div className="flex items-center gap-2 text-sm text-slate-600 mb-8">
-      <Link href="/" className="hover:text-slate-900 transition-colors">
+    <div className="mb-8 flex items-center gap-2 text-sm text-muted">
+      <Link href="/" className="transition-colors hover:text-brand">
         Home
       </Link>
       {items.map((item, index) => (
         <div key={index} className="flex items-center gap-2">
-          <ChevronRight className="w-4 h-4 text-slate-400" />
+          <ChevronRight className="h-4 w-4 text-muted" />
           {item.href ? (
-            <Link href={item.href} className="hover:text-slate-900 transition-colors">
+            <Link href={item.href} className="transition-colors hover:text-brand">
               {item.label}
             </Link>
           ) : (
-            <span className="text-slate-900 font-medium">{item.label}</span>
+            <span className="font-medium text-foreground">{item.label}</span>
           )}
         </div>
       ))}
