@@ -889,24 +889,20 @@ export default function PlatformWhatsAppPage() {
                 {templates.length} templates
               </span>
             </div>
-            <div className="space-y-4">
-              {templates.length ? (
-                <>
-                  {(() => {
-                    const selectedTemplate = templates.find((template) => template.id === selectedTemplateId) || templates[0];
-                    return (
-                      <div className="rounded-xl border border-border bg-background p-4">
+            {templates.length ? (
+              (() => {
+                const selectedTemplate = templates.find((template) => template.id === selectedTemplateId) || templates[0];
+                return (
+                  <div>
                         <div className="mb-3 flex items-center justify-between gap-3">
                           <div>
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">Template</p>
-                            <p className="mt-1 text-base font-semibold text-foreground">{selectedTemplate?.name || 'Selected template'}</p>
+                            <p className="text-base font-semibold text-foreground">{selectedTemplate?.name || 'Selected template'}</p>
                           </div>
                           <span className="rounded-full border border-brand/20 bg-brand/5 px-2 py-1 text-[10px] uppercase tracking-[0.15em] text-brand">
                             {selectedTemplate?.status || 'Approved'}
                           </span>
                         </div>
 
-                        <label className="mb-2 block text-sm font-medium">Select template</label>
                         <select
                           value={selectedTemplateId}
                           onChange={(event) => {
@@ -927,7 +923,7 @@ export default function PlatformWhatsAppPage() {
                           ))}
                         </select>
 
-                        <div className="mt-3 rounded-lg border border-border bg-white p-3">
+                        <div className="mt-3 rounded-lg bg-background p-3">
                           <p className="whitespace-pre-line text-sm leading-6 text-foreground">
                             {selectedTemplate?.message || 'Template content ready for outreach.'}
                           </p>
@@ -941,16 +937,14 @@ export default function PlatformWhatsAppPage() {
                             Use for campaign
                           </Button>
                         </div>
-                      </div>
-                    );
-                  })()}
-                </>
-              ) : (
-                <div className="rounded-lg border border-dashed border-border bg-background p-4 text-sm text-muted">
-                  No templates yet. The platform template library will appear here next.
-                </div>
-              )}
-            </div>
+                  </div>
+                );
+              })()
+            ) : (
+              <div className="rounded-lg border border-dashed border-border bg-background p-4 text-sm text-muted">
+                No templates yet. The platform template library will appear here next.
+              </div>
+            )}
           </div>
 
           <div className="border border-border bg-surface p-5">
