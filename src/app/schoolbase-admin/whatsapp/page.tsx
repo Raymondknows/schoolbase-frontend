@@ -191,16 +191,33 @@ export default function PlatformWhatsAppPage() {
 
   const fetchSchools = async () => {
     try {
-      const response = await fetch('/schoolbase-admin/api/schools?limit=50', {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!response.ok) return;
-      const data = await response.json();
-      const schoolList = Array.isArray(data?.schools) ? data.schools : [];
-      setSchools(schoolList);
-      if (!selectedSchoolIds.length && schoolList.length) {
-        setSelectedSchoolIds([schoolList[0].id]);
+      const allSchools: Array<{ id: string; name: string; phone?: string | null; email?: string | null; status?: string | null }> = [];
+      let page = 1;
+      let hasMorePages = true;
+
+      while (hasMorePages) {
+        const response = await fetch(`/schoolbase-admin/api/schools?page=${page}&limit=100`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (!response.ok) {
+          hasMorePages = false;
+          break;
+        }
+
+        const data = await response.json();
+        const schoolList = Array.isArray(data?.schools) ? data.schools : [];
+        allSchools.push(...schoolList);
+
+        const totalPages = Number(data?.pagination?.pages || 0);
+        hasMorePages = Boolean(totalPages > page && schoolList.length > 0);
+        page += 1;
+      }
+
+      setSchools(allSchools);
+      if (!selectedSchoolIds.length && allSchools.length) {
+        setSelectedSchoolIds([allSchools[0].id]);
       }
     } catch (error) {
       console.error('Platform schools fetch error:', error);
@@ -959,7 +976,7 @@ export default function PlatformWhatsAppPage() {
               <div>
                 <label className="mb-2 block text-sm font-medium">Schools</label>
                 <div className="max-h-64 space-y-2 overflow-y-auto rounded-lg border border-border bg-background p-3">
-                  {schools.length ? schools.slice(0, 20).map((school) => (
+                  {schools.length ? schools.map((school) => (
                     <label key={school.id} className="flex cursor-pointer items-center justify-between gap-3 rounded-md border border-transparent px-2 py-2 hover:border-brand/20">
                       <span className="flex items-center gap-2 text-sm">
                         <input
