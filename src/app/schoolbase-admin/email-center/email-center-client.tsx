@@ -23,6 +23,7 @@ const EMAIL_TYPES = [
   { value: "PRODUCT_UPDATE", label: "Product update" },
   { value: "PRICE_UPDATE", label: "Pricing update" },
   { value: "SUBSCRIPTION_THANK_YOU", label: "Payment Confirmation" },
+  { value: "PAYMENT_ISSUE", label: "Payment issue" },
   { value: "SUPPORT_UPDATE", label: "Support update" },
   { value: "ONBOARDING_GUIDANCE", label: "Onboarding" },
   { value: "BEST_PRACTICE_TIP", label: "Best-practice guidance" },
@@ -101,6 +102,38 @@ Our goal is to help your school save time, reduce stress, improve communication,
 We are excited to have you on board and look forward to supporting you throughout your SchoolBase journey. Our team will be available to guide you through the onboarding process and ensure you get the best experience from the platform.
 
 Thank you once again for choosing SchoolBase.`,
+  },
+  PAYMENT_ISSUE: {
+    subject: "Action required: please retry your SchoolBase payment",
+    body: `Hello,
+
+We noticed that your recent attempt to complete a SchoolBase subscription payment was not completed successfully.
+
+No subscription has been activated from that attempt. Please return to the SchoolBase subscription page and try the payment again. You may use another supported payment method if the first method continues to fail.
+
+Before retrying, please confirm that:
+• The email address and school details are correct.
+• Your payment account has sufficient funds and is enabled for online payments.
+• Your browser or network is not blocking the Paystack checkout window.
+
+If you are charged but your SchoolBase account is not updated, please do not pay again. Reply to this email with the payment reference or a screenshot of the transaction, and our support team will investigate it promptly.
+
+If online payment continues to fail, you may use our alternative bank-transfer option:
+Account name: ClickBase Technologies Ltd
+Account number: 1228481040
+Bank: Zenith
+
+After making a bank transfer, please reply with your transaction ID or payment receipt so we can confirm it and update your school account.
+
+You can retry your payment here:
+https://schoolbase.live/admin/subscribe
+
+We apologise for the inconvenience and are ready to help you complete your subscription.
+
+Warm regards,
+SchoolBase Support
+SchoolBase — Everything your school needs in one simple platform.
+Website: https://schoolbase.live`,
   },
   SUPPORT_UPDATE: {
     subject: "SchoolBase support update: we are actively handling your request",
@@ -243,6 +276,7 @@ const DEFAULT_SUBJECTS: Record<string, string> = {
   MANUAL_ANNOUNCEMENT: "Important SchoolBase announcement: key update for your school operations",
   PRICE_UPDATE: "Important SchoolBase pricing update: more value, more flexibility, and better support",
   SUBSCRIPTION_THANK_YOU: "Payment received for the 2026/2027 Academic Session — welcome to SchoolBase",
+  PAYMENT_ISSUE: "Action required: please retry your SchoolBase payment",
   POLICY_UPDATE: "SchoolBase policy update: important information for your school",
   ACCOUNT_SECURITY: "Security notice: protect your SchoolBase accounts and school data",
   ACCOUNT_VERIFICATION_SUSPENSION: "Action required: SchoolBase account verification review",
