@@ -52,6 +52,17 @@ function getActivityTitle(log: any) {
     IMPERSONATE: "School impersonated",
     VERIFY: "Verification updated",
     VERIFIED: "Verification updated",
+    SCHOOL_SIGNUP_COMPLETED: "New school signup",
+    STUDENT_REGISTERED: "Student registered",
+    STUDENT_ACTIVITY: "Student activity",
+    STUDENTS_IMPORTED: "Students imported",
+    ADMISSION_CONVERTED_TO_STUDENT: "Admission converted",
+    ADMISSION_ACTIVITY: "Admission activity",
+    FEE_SCHEDULE_CREATED: "Fee schedule created",
+    INVOICE_ISSUED: "Invoice issued",
+    PAYMENT_RECORDED: "Payment recorded",
+    ATTENDANCE_RECORDED: "Attendance recorded",
+    RESULTS_PUBLISHED: "Results published",
   };
 
   if (labels[raw]) return labels[raw];
@@ -95,6 +106,11 @@ function getActivityDetails(log: any) {
   return details;
 }
 
+interface ActivitySummary {
+  totals: { events: number; schools: number; activeSchools: number; silentSchools: number };
+  schoolActivity: { id: string; name: string; activityCount: number }[];
+}
+
 function getSchoolInitials(name?: string) {
   if (!name) return "S";
   return name
@@ -126,6 +142,7 @@ export default function PlatformOverviewPage() {
   const [emailLogs, setEmailLogs] = useState<any[]>([]);
   const [trialSchools, setTrialSchools] = useState<any[]>([]);
   const [supportRequests, setSupportRequests] = useState<any[]>([]);
+  const [activitySummary, setActivitySummary] = useState<ActivitySummary | null>(null);
   const [newSupportAlert, setNewSupportAlert] = useState<{ open: boolean; request: any | null }>({ open: false, request: null });
   const newSupportAlertRef = useRef<{ open: boolean; request: any | null }>({ open: false, request: null });
   const knownSupportIdsRef = useRef<Set<string | number>>(new Set());
@@ -148,7 +165,7 @@ export default function PlatformOverviewPage() {
       try {
         const backendUrl = getBackendUrl();
 
-        const [statsRes, schoolsRes, activityRes, emailRes, trialRes, supportRes] = await Promise.all([
+        const [statsRes, schoolsRes, activityRes, emailRes, trialRes, supportRes, activitySummaryRes] = await Promise.all([
           fetch(`${backendUrl}/schoolbase-admin/api/stats`, {
             credentials: "include",
             headers: { "Content-Type": "application/json" },
@@ -173,15 +190,20 @@ export default function PlatformOverviewPage() {
             credentials: "include",
             headers: { "Content-Type": "application/json" },
           }),
+          fetch(`${backendUrl}/schoolbase-admin/api/activity-summary?days=30`, {
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+          }),
         ]);
 
-        const [statsData, schoolsData, activityData, emailData, trialData, supportData] = await Promise.all([
+        const [statsData, schoolsData, activityData, emailData, trialData, supportData, activitySummaryData] = await Promise.all([
           statsRes.json(),
           schoolsRes.json(),
           activityRes.json(),
           emailRes.json(),
           trialRes.json(),
           supportRes.json(),
+          activitySummaryRes.ok ? activitySummaryRes.json() : Promise.resolve(null),
         ]);
 
         setStats(statsData);
@@ -192,6 +214,7 @@ export default function PlatformOverviewPage() {
         setEmailLogs(emailData.logs || []);
         setTrialSchools(trialData.schools || []);
         setSupportRequests(supportData.supportRequests || []);
+        setActivitySummary(activitySummaryData);
         setLoading(false);
 
         const openRequests = (supportData.supportRequests || []).filter(isUnattendedSupportRequest);
@@ -237,6 +260,15 @@ export default function PlatformOverviewPage() {
 
         knownActivityIdsRef.current = new Set(incoming.map((log: any) => log.id));
         setActivityLogs(incoming);
+
+        const summaryResponse = await fetch(`${backendUrl}/schoolbase-admin/api/activity-summary?days=30`, {
+          credentials: "include",
+          cache: "no-store",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (summaryResponse.ok) {
+          setActivitySummary(await summaryResponse.json());
+        }
       } catch (error) {
         console.error("Error polling activity:", error);
       }
@@ -582,6 +614,34 @@ export default function PlatformOverviewPage() {
             </div>
             <div className="overflow-y-auto bg-background p-4 sm:p-6">
               <div className="space-y-3">
+                {activitySummary ? (
+                  <section className="border border-border bg-surface p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-[11px] font-bold uppercase tracking-[.12em] text-brand">30-day activity health</p>
+                        <p className="mt-1 text-xs text-muted">Meaningful school actions, not page views.</p>
+                      </div>
+                      <Link href="/schoolbase-admin/audit" className="text-xs font-semibold text-brand hover:text-brand/80">Full report</Link>
+                    </div>
+                    <div className="mt-4 grid grid-cols-3 gap-2">
+                      <div className="bg-[#eaf4ff] p-3"><p className="text-xl font-semibold text-foreground">{activitySummary.totals.events}</p><p className="mt-1 text-[11px] text-muted">Events</p></div>
+                      <div className="bg-[#f1f7f4] p-3"><p className="text-xl font-semibold text-foreground">{activitySummary.totals.activeSchools}</p><p className="mt-1 text-[11px] text-muted">Active schools</p></div>
+                      <div className="bg-[#fff7e8] p-3"><p className="text-xl font-semibold text-foreground">{activitySummary.totals.silentSchools}</p><p className="mt-1 text-[11px] text-muted">Silent schools</p></div>
+                    </div>
+                    {activitySummary.totals.silentSchools > 0 ? (
+                      <div className="mt-4 border-t border-border pt-3">
+                        <p className="text-xs font-semibold text-foreground">Schools needing attention</p>
+                        <div className="mt-2 space-y-2">
+                          {activitySummary.schoolActivity.filter((school) => school.activityCount === 0).slice(0, 3).map((school) => (
+                            <Link key={school.id} href={`/schoolbase-admin/schools?search=${encodeURIComponent(school.name)}`} className="flex items-center justify-between gap-2 text-xs text-muted hover:text-brand">
+                              <span className="truncate">{school.name}</span><span className="shrink-0">Follow up</span>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                  </section>
+                ) : null}
                 <section className="rounded-lg border border-border bg-surface p-3">
                   <button
                     type="button"
