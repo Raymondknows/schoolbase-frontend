@@ -12,6 +12,7 @@ const nav = [
   { href: "/schoolbase-admin/pending-signups", label: "Pending Signups", icon: "ClipboardCheck" },
   { href: "/schoolbase-admin/setup-reminders", label: "Setup Reminders", icon: "Mail" },
   { href: "/schoolbase-admin/email-center", label: "Email Center", icon: "Mail" },
+  { href: "/schoolbase-admin/whatsapp", label: "WhatsApp", icon: "WhatsApp" },
   { href: "/schoolbase-admin/campaign", label: "Campaign", icon: "Send" },
   { href: "/schoolbase-admin/support", label: "Support", icon: "Bell" },
   { href: "/schoolbase-admin/shared-workspace", label: "Shared Workspace", icon: "CheckSquare" },
