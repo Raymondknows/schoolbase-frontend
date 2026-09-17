@@ -22,6 +22,7 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
+  CheckCircle2,
   MailCheck,
   GraduationCap,
   LifeBuoy,
@@ -417,7 +418,7 @@ export default function PlatformOverviewPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-2 py-6 sm:px-8 sm:py-8 lg:px-12">
+    <div className="mx-auto max-w-7xl space-y-4 px-2 py-4 sm:px-8 sm:py-6 lg:px-12">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <div className="flex items-center gap-2 text-sm font-medium text-brand"><ShieldCheck size={17} /> Platform operations</div>
@@ -483,7 +484,7 @@ export default function PlatformOverviewPage() {
         </>
       ) : null}
       {/* Stats Cards */}
-      <div className="mb-10 hidden sm:block pt-4">
+      <div className="mb-6 hidden sm:block pt-2">
         <div className="relative flex items-center gap-4">
           {/* Left Navigation Arrow */}
           <button
@@ -530,7 +531,7 @@ export default function PlatformOverviewPage() {
       </div>
 
       {/* Stats Cards - Mobile */}
-      <div className="sm:hidden mb-10">
+      <div className="sm:hidden mb-6">
         {statCards.map((stat, idx) => {
           const IconComponent = stat.icon;
           return (
@@ -552,35 +553,53 @@ export default function PlatformOverviewPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="mb-10 grid grid-cols-1 md:grid-cols-4 gap-3">
-        <Link href="/schoolbase-admin/schools">
-          <button className="cursor-pointer w-full inline-flex items-center justify-center px-4 py-3 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors font-medium shadow-sm hover:shadow-md">
-            <Building2 className="h-4 w-4 mr-2" />
-            View Schools
+      <section className="mb-6">
+        <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+          <CheckCircle2 className="h-4 w-4 text-brand" />
+          Quick actions
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { href: "/schoolbase-admin/schools", label: "Schools", detail: "View and manage school accounts", icon: Building2 },
+            { href: "/schoolbase-admin/email-center", label: "Email center", detail: "Send segmented school updates", icon: Mail },
+            { href: "/schoolbase-admin/support", label: "Support", detail: "Respond to school requests", icon: MessageCircle },
+          ].map((action) => {
+            const Icon = action.icon;
+            return (
+              <Link
+                key={action.href}
+                href={action.href}
+                className="group flex items-center gap-3 border border-border bg-surface px-4 py-4 transition hover:border-brand/50 hover:bg-brand-light/30"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand text-white">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold text-foreground">{action.label}</span>
+                  <span className="mt-0.5 block truncate text-xs text-muted">{action.detail}</span>
+                </span>
+                <ChevronRight className="h-4 w-4 text-muted transition group-hover:translate-x-0.5 group-hover:text-brand" />
+              </Link>
+            );
+          })}
+          <button
+            type="button"
+            onClick={sendSetupReminders}
+            disabled={reminding}
+            className="group flex cursor-pointer items-center gap-3 border border-border bg-surface px-4 py-4 text-left transition hover:border-brand/50 hover:bg-brand-light/30 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand text-white">
+              <Bell className="h-5 w-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold text-foreground">Setup reminders</span>
+              <span className="mt-0.5 block truncate text-xs text-muted">Prompt incomplete schools</span>
+            </span>
+            <ChevronRight className="h-4 w-4 text-muted transition group-hover:translate-x-0.5 group-hover:text-brand" />
           </button>
-        </Link>
-        <Link href="/schoolbase-admin/email-center">
-          <button className="cursor-pointer w-full inline-flex items-center justify-center px-4 py-3 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors font-medium shadow-sm hover:shadow-md">
-            <Mail className="h-4 w-4 mr-2" />
-            Send Email
-          </button>
-        </Link>
-        <Link href="/schoolbase-admin/support">
-          <button className="cursor-pointer w-full inline-flex items-center justify-center px-4 py-3 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors font-medium shadow-sm hover:shadow-md">
-            <MessageCircle className="h-4 w-4 mr-2" />
-            View Support
-          </button>
-        </Link>
-        <button
-          type="button"
-          onClick={sendSetupReminders}
-          disabled={reminding}
-          className="cursor-pointer w-full inline-flex items-center justify-center px-4 py-3 bg-brand text-white rounded-lg hover:bg-brand/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Bell className="h-4 w-4 mr-2" />
-          Send setup reminders
-        </button>
-      </div>
+        </div>
+      </section>
 
 
       {isPanelOpen ? (
