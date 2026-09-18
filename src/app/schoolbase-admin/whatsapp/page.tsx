@@ -33,6 +33,7 @@ export default function PlatformWhatsAppPage() {
   const [templates, setTemplates] = useState<Array<{ id: string; name: string; category: string; status: string; lastUpdated: string; message?: string }>>([]);
   const [campaigns, setCampaigns] = useState<Array<{ id: string; name: string; audience: string; status: string; recipients: number; scheduled: string }>>([]);
   const [logs, setLogs] = useState<Array<{ id: string; title: string; status: string; time: string; details: string }>>([]);
+  const [logRowCount, setLogRowCount] = useState(5);
   const [schools, setSchools] = useState<Array<{ id: string; name: string; phone?: string | null; email?: string | null; status?: string | null }>>([]);
   const [selectedSchoolIds, setSelectedSchoolIds] = useState<string[]>([]);
   const [campaignName, setCampaignName] = useState('SchoolBase platform outreach');
@@ -217,9 +218,6 @@ export default function PlatformWhatsAppPage() {
       }
 
       setSchools(allSchools);
-      if (!selectedSchoolIds.length && allSchools.length) {
-        setSelectedSchoolIds([allSchools[0].id]);
-      }
     } catch (error) {
       console.error('Platform schools fetch error:', error);
     }
@@ -1167,34 +1165,51 @@ export default function PlatformWhatsAppPage() {
           </div>
         </div>
 
-        <div className="border border-border bg-surface p-5">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold text-foreground">Delivery logs</h2>
-            <span className="rounded-full border border-border bg-background px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-muted">
-              {logs.length} updates
-            </span>
+        <section className="border border-border bg-surface p-5">
+          <div className="mb-4 flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-sm font-bold uppercase tracking-[.12em] text-foreground">Delivery logs</h2>
+              <p className="mt-1 text-xs text-muted">Recent platform WhatsApp activity</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-muted">Showing {Math.min(logRowCount, logs.length)} of {logs.length}</span>
+              <label className="flex items-center gap-2 text-xs text-muted">
+                <span>Rows</span>
+                <select
+                  value={logRowCount}
+                  onChange={(event) => setLogRowCount(Number(event.target.value))}
+                  className="border border-border bg-background px-2 py-1.5 text-xs font-semibold text-foreground outline-none focus:border-brand"
+                  aria-label="Delivery log row count"
+                >
+                  {[5, 10, 20].map((count) => <option key={count} value={count}>{count}</option>)}
+                </select>
+              </label>
+            </div>
           </div>
-          <div className="space-y-3">
-            {logs.length ? logs.map((log) => (
-              <div key={log.id} className="flex items-start justify-between gap-3 rounded-lg border border-border bg-background p-3">
-                <div>
-                  <p className="font-medium text-foreground">{log.title}</p>
-                  <p className="mt-1 text-sm text-muted">{log.details}</p>
+          <div className="divide-y divide-border">
+            {logs.length ? logs.slice(0, logRowCount).map((log) => {
+              const isFailed = log.status.toLowerCase() === 'failed';
+              return (
+                <div key={log.id} className="flex items-start justify-between gap-4 py-3 first:pt-0 last:pb-0">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-foreground">{log.title}</p>
+                    <p className="mt-1 line-clamp-2 text-sm leading-5 text-muted">{log.details}</p>
+                  </div>
+                  <div className="flex shrink-0 flex-col items-end gap-1.5">
+                    <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] ${isFailed ? 'border-error/20 bg-error/10 text-error' : 'border-success/20 bg-success/10 text-success'}`}>
+                      {log.status}
+                    </span>
+                    <span className="text-[10px] uppercase tracking-[0.14em] text-muted">{log.time}</span>
+                  </div>
                 </div>
-                <div className="flex shrink-0 flex-col items-end gap-2">
-                  <span className="rounded-full border border-border bg-surface px-2 py-1 text-[10px] uppercase tracking-[0.15em] text-muted">
-                    {log.status}
-                  </span>
-                  <span className="text-[10px] uppercase tracking-[0.16em] text-muted">{log.time}</span>
-                </div>
-              </div>
-            )) : (
-              <div className="rounded-lg border border-dashed border-border bg-background p-4 text-sm text-muted">
+              );
+            }) : (
+              <div className="border border-dashed border-border bg-background p-4 text-sm text-muted">
                 Delivery logs will appear here after campaign previews and sends are created.
               </div>
             )}
           </div>
-        </div>
+        </section>
       </div>
     </main>
   );
