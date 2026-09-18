@@ -146,7 +146,7 @@ We don't know yet. This is a limited-time offer to schools who move quickly. **I
 ### Questions? We're Here to Help
 
 - **Chat with us:** Visit [SchoolBase.live/contact](https://schoolbase.live/contact)
-- **WhatsApp us:** [+234 903 136 8963](https://wa.me/2349031368963)
+- **WhatsApp us:** [+234903 225 0338](https://wa.me/2349031368963)
 - **Email:** support@schoolbase.live
 
 We respond within 24 hours, usually much faster.
@@ -209,7 +209,7 @@ A: Yes. Upgrade or downgrade anytime to match your needs.
 
 **Ready to move your school to SchoolBase?**
 
-[Get Started Now](https://schoolbase.live/signup) — or message us on WhatsApp: [+234 903 136 8963](https://wa.me/2349031368963)
+[Get Started Now](https://schoolbase.live/signup) — or message us on WhatsApp: [+234903 225 0338](https://wa.me/2349031368963)
 
 **This is not just software. It's the future of your school.**
 

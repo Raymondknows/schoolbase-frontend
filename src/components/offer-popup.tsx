@@ -101,7 +101,7 @@ export function OfferPopup() {
                   rel="noopener noreferrer"
                   className="text-blue-600 font-semibold hover:underline"
                 >
-                  +234 903 136 8963
+                  +234903 225 0338
                 </a>
               </p>
             </div>

@@ -351,7 +351,7 @@ export default function Footer() {
                   href="tel:+2349032250338"
                   className="hover:text-white"
                 >
-                  +234 903 136 8963
+                  +234903 225 0338
                 </a>
               </p>
               <p className="text-xs">Mon–Sat 8am–8pm WAT</p>
