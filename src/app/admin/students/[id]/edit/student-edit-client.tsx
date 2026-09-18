@@ -88,9 +88,9 @@ export default function StudentEditClient({ studentId }: { studentId: string }) 
           const g = studentData.guardians[0];
           setGuardianFirst(g.guardian?.firstName || "");
           setGuardianLast(g.guardian?.lastName || "");
-          setGuardianRelationship(g.relationship || "Parent");
+          setGuardianRelationship(g.relation || "Parent");
           setGuardianEmail(g.guardian?.email || "");
-          setGuardianPhone(g.guardian?.whatsapp || g.guardian?.phone || "");
+          setGuardianPhone(g.guardian?.phone || g.guardian?.whatsapp || "");
           setGuardianAltPhone(g.guardian?.altPhone || "");
           setGuardianOccupation(g.guardian?.occupation || "");
         }
