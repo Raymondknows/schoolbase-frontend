@@ -138,7 +138,7 @@ export const structuredData = {
     image: 'https://schoolbase.live/logo.png',
     description: 'School management platform serving West African schools',
     url: 'https://schoolbase.live',
-    telephone: '+2349031368963',
+    telephone: '+2349032250338',
     email: 'support@schoolbase.live',
     address: {
       '@type': 'PostalAddress',
