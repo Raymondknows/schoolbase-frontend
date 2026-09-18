@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Search, UserPlus, X, Upload, Download, Users } from "lucide-react";
+import { Search, UserPlus, X, Upload, Download, Users, Send, Mail, CheckSquare } from "lucide-react";
 import { playCloseTone, playOpenTone } from "@/lib/sounds";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { Pagination } from "@/components/ui/pagination";
@@ -124,6 +124,12 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
   const [importErrors, setImportErrors] = useState<string[]>([]);
   const [importSummary, setImportSummary] = useState<string | null>(null);
   const [isImporting, setIsImporting] = useState(false);
+  const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(new Set());
+  const [isNotifyModalOpen, setIsNotifyModalOpen] = useState(false);
+  const [notifyChannels, setNotifyChannels] = useState<Array<'EMAIL' | 'WHATSAPP'>>(['EMAIL', 'WHATSAPP']);
+  const [forceResend, setForceResend] = useState(false);
+  const [isNotifying, setIsNotifying] = useState(false);
+  const [notifyResult, setNotifyResult] = useState<any>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const importFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -366,6 +372,60 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
     }
   };
 
+  const toggleStudentSelection = (studentId: string) => {
+    setSelectedStudentIds((current) => {
+      const next = new Set(current);
+      if (next.has(studentId)) next.delete(studentId);
+      else next.add(studentId);
+      return next;
+    });
+  };
+
+  const visibleStudentIds = paginatedPupils.map((student) => student.id);
+  const allVisibleSelected = visibleStudentIds.length > 0 && visibleStudentIds.every((id) => selectedStudentIds.has(id));
+
+  const toggleVisibleSelection = () => {
+    setSelectedStudentIds((current) => {
+      const next = new Set(current);
+      if (allVisibleSelected) visibleStudentIds.forEach((id) => next.delete(id));
+      else visibleStudentIds.forEach((id) => next.add(id));
+      return next;
+    });
+  };
+
+  const handleNotifyParents = async () => {
+    setIsNotifying(true);
+    setNotifyResult(null);
+    try {
+      const response = await fetch('/api/admin/students/send-access-notifications', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pupilIds: Array.from(selectedStudentIds),
+          channels: notifyChannels,
+          forceResend,
+          approvedForBulk: true,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Parent notifications could not be sent.');
+      setNotifyResult(data);
+    } catch (error) {
+      setNotifyResult({ error: error instanceof Error ? error.message : 'Parent notifications could not be sent.' });
+    } finally {
+      setIsNotifying(false);
+    }
+  };
+
+  const closeNotifyModal = () => {
+    playCloseTone();
+    setIsNotifyModalOpen(false);
+    setNotifyResult(null);
+    setSelectedStudentIds(new Set());
+    setForceResend(false);
+  };
+
   const handleDownloadImportTemplate = () => {
     const template = [
       'firstName,lastName,middleName,className,guardianFirst,guardianLast,guardianPhone,guardianEmail,dateOfBirth,gender,address,status',
@@ -570,6 +630,20 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
               <UserPlus className="h-4 w-4" />
               Register Student
             </Button>
+            {selectedStudentIds.size > 0 && (
+              <Button
+                type="button"
+                onClick={() => {
+                  playOpenTone();
+                  setNotifyResult(null);
+                  setIsNotifyModalOpen(true);
+                }}
+                className="h-9 w-full rounded-md border border-brand bg-brand px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-brand-hover sm:w-auto"
+              >
+                <Send className="h-4 w-4" />
+                Notify parents ({selectedStudentIds.size})
+              </Button>
+            )}
           </div>
         </div>
         </div>
@@ -742,6 +816,9 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
             <table className="w-full text-left text-sm">
               <thead className="border-b border-border bg-background text-muted">
                 <tr>
+                  <th className="w-12 px-4 py-2">
+                    <input type="checkbox" checked={allVisibleSelected} onChange={toggleVisibleSelection} aria-label="Select visible students" className="h-4 w-4 accent-brand" />
+                  </th>
                   <th className="px-4 py-2 font-medium">Photo</th>
                   <th className="px-4 py-2 font-medium">Name</th>
                   <th className="px-4 py-2 font-medium">Class</th>
@@ -759,6 +836,9 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
 
                   return (
                     <tr key={p.id} className="border-t border-border hover:bg-background/50 transition-colors">
+                      <td className="px-4 py-2">
+                        <input type="checkbox" checked={selectedStudentIds.has(p.id)} onChange={() => toggleStudentSelection(p.id)} aria-label={`Select ${p.firstName} ${p.lastName}`} className="h-4 w-4 accent-brand" />
+                      </td>
                       <td className="px-4 py-2">
                         {p.photoUrl ? (
                           <img
@@ -818,11 +898,14 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                   className="border border-border bg-surface px-3 py-2 hover:bg-background/50 transition-colors"
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <input type="checkbox" checked={selectedStudentIds.has(p.id)} onChange={() => toggleStudentSelection(p.id)} aria-label={`Select ${p.firstName} ${p.lastName}`} className="h-4 w-4 shrink-0 accent-brand" />
+                      <div className="min-w-0">
                       <p className="font-medium text-sm truncate">
                         {[p.lastName, p.firstName].filter(Boolean).join(" ")}
                       </p>
                       <p className="text-xs text-muted mt-1">{classLabel}</p>
+                      </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <button
@@ -906,6 +989,66 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
           </p>
         </div>
       )}
+
+      {isNotifyModalOpen ? (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
+          <style>{`
+            @keyframes students_notify_modal_enter { from { transform: translateX(36px) scale(.98); opacity: 0 } to { transform: translateX(0) scale(1); opacity: 1 } }
+          `}</style>
+          <div className="w-full max-w-2xl overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]" style={{ animation: "students_notify_modal_enter 320ms cubic-bezier(.2,.9,.2,1)" }}>
+            <div className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-4 py-4 sm:px-6 sm:py-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.12em] text-brand"><Send className="h-4 w-4" /> Parent engagement</div>
+                  <h2 className="mt-2 text-2xl font-bold text-foreground">Notify selected parents</h2>
+                  <p className="mt-1 text-sm leading-6 text-muted">Send secure parent portal access details for {selectedStudentIds.size} selected student{selectedStudentIds.size === 1 ? '' : 's'}.</p>
+                </div>
+              </div>
+              <button type="button" onClick={closeNotifyModal} className="flex h-8 w-8 items-center justify-center rounded-md border border-border transition-colors hover:bg-background" aria-label="Close notification dialog"><X className="h-4 w-4" /></button>
+            </div>
+
+            <div className="space-y-5 px-4 py-4 sm:space-y-6 sm:px-6 sm:py-6">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Delivery channels</p>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  {([
+                    ['EMAIL', 'Email', Mail],
+                    ['WHATSAPP', 'WhatsApp', WhatsAppIcon],
+                  ] as const).map(([channel, label, Icon]) => {
+                    const checked = notifyChannels.includes(channel);
+                    return (
+                      <label key={channel} className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition ${checked ? 'border-brand bg-brand/5' : 'border-border bg-background'}`}>
+                        <input type="checkbox" checked={checked} onChange={() => setNotifyChannels((current) => checked ? current.filter((item) => item !== channel) : [...current, channel])} className="h-4 w-4 accent-brand" />
+                        <Icon className="h-4 w-4 text-brand" />
+                        <span className="text-sm font-semibold text-foreground">{label}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-border bg-background p-4 text-sm text-muted">
+                <div className="flex items-start gap-3"><CheckSquare className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /><p>The message contains the student name, admission number, class, parent portal link, and sign-in instructions. It does not send private academic or medical records.</p></div>
+              </div>
+
+              <label className="flex items-start gap-3 text-sm text-foreground">
+                <input type="checkbox" checked={forceResend} onChange={(event) => setForceResend(event.target.checked)} className="mt-0.5 h-4 w-4 accent-brand" />
+                <span><span className="font-semibold">Send again even if recently sent</span><span className="mt-1 block text-muted">Use this only when a parent confirms the previous message was lost.</span></span>
+              </label>
+
+              {notifyResult?.error ? <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{notifyResult.error}</div> : null}
+              {notifyResult?.totals ? <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">Completed: {notifyResult.totals.sent} sent, {notifyResult.totals.queued} queued, {notifyResult.totals.failed} failed, {notifyResult.totals.duplicateSuppressed} duplicate{notifyResult.totals.duplicateSuppressed === 1 ? '' : 's'} suppressed.</div> : null}
+
+              <div className="flex flex-col-reverse gap-3 border-t border-border pt-4 sm:flex-row sm:justify-end">
+                <button type="button" onClick={closeNotifyModal} disabled={isNotifying} className="flex-1 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-background disabled:opacity-50">Cancel</button>
+                <button type="button" disabled={isNotifying || notifyChannels.length === 0 || Boolean(notifyResult?.totals)} onClick={handleNotifyParents} className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:opacity-50">
+                  <Send className="mr-2 h-4 w-4" />{isNotifying ? 'Sending...' : 'Send notifications'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {isImportModalOpen ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
