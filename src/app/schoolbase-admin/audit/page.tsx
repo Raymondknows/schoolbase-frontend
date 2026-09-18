@@ -152,7 +152,7 @@ export default function AuditPage() {
   const [schools, setSchools] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(50);
   const [search, setSearch] = useState("");
   const [schoolFilter, setSchoolFilter] = useState("ALL");
   const [actionFilter, setActionFilter] = useState("ALL");
@@ -165,7 +165,7 @@ export default function AuditPage() {
       try {
         const backendUrl = getBackendUrl();
         const [response, schoolsResponse, summaryResponse] = await Promise.all([
-          fetch(`${backendUrl}/schoolbase-admin/api/audit-logs?limit=10000`, {
+          fetch(`${backendUrl}/schoolbase-admin/api/audit-logs?limit=50000`, {
             credentials: "include",
             headers: { "Content-Type": "application/json" },
           }),
@@ -255,7 +255,7 @@ export default function AuditPage() {
     // Reset pagination when the active report view changes.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setPage(1);
-  }, [actionFilter, logs.length, schoolFilter, search, timeFilter]);
+  }, [actionFilter, logs.length, pageSize, schoolFilter, search, timeFilter]);
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-2 py-6 sm:px-8 sm:py-8 lg:px-12">
@@ -341,7 +341,7 @@ export default function AuditPage() {
               </select>
               <button type="button" onClick={() => { setSearch(""); setSchoolFilter("ALL"); setActionFilter("ALL"); setTimeFilter("ALL"); }} className="inline-flex items-center justify-center gap-2 border border-border bg-surface px-3 py-2.5 text-sm font-semibold text-brand hover:bg-brand-light"><RotateCcw className="h-4 w-4" /> Reset</button>
             </div>
-            <p className="mt-3 text-xs text-muted">Showing {filteredLogs.length} of {logs.length} recorded events across all schools.</p>
+            <p className="mt-3 text-xs text-muted">Showing {filteredLogs.length} matching events from {totalEvents} recorded events across all schools.</p>
           </div>
           {loading ? (
             <div className="border border-border bg-background px-4 py-8 text-sm text-muted">Loading audit logs…</div>
@@ -352,7 +352,12 @@ export default function AuditPage() {
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm font-semibold text-foreground">Recent platform activity</p>
-                  <p className="text-sm text-muted">Showing {Math.min(pageSize, filteredLogs.length)} entries per page</p>
+                  <label className="mt-1 flex items-center gap-2 text-sm text-muted">
+                    <span>Entries per page</span>
+                    <select value={pageSize} onChange={(event) => setPageSize(Number(event.target.value))} className="border border-border bg-background px-2 py-1 text-sm text-foreground outline-none focus:border-brand">
+                      {[25, 50, 100].map((size) => <option key={size} value={size}>{size}</option>)}
+                    </select>
+                  </label>
                 </div>
                 <div className="text-sm text-muted">Page {page} of {totalPages}</div>
               </div>
