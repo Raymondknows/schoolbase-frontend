@@ -33,9 +33,34 @@ function formatAuditDate(value?: string | null) {
   return Number.isNaN(date.getTime()) ? "—" : date.toLocaleString();
 }
 
-function formatActionLabel(action?: string | null) {
+function formatApiActionLabel(details?: string | null) {
+  const match = details?.match(/^\s*(GET|POST|PUT|PATCH|DELETE)\s+(\S+)/i);
+  if (!match) return "Platform activity";
+
+  const method = match[1].toUpperCase();
+  const path = match[2].toLowerCase();
+  const isFailed = /(?:status|statusCode):\s*[45]\d\d\b/i.test(details || "");
+
+  if (path.includes("/whatsapp/send-message")) return isFailed ? "WhatsApp message failed" : "WhatsApp message sent";
+  if (path.includes("/whatsapp/connect")) return "WhatsApp connection started";
+  if (path.includes("/whatsapp/disconnect")) return "WhatsApp disconnected";
+  if (path.includes("/signups/approve")) return "Signup approved";
+  if (path.includes("/signups/remind")) return "Signup reminder sent";
+  if (path.includes("/settings")) return "Platform settings updated";
+  if (path.includes("/schools")) return method === "GET" ? "Viewed school records" : "School records updated";
+
+  const resource = path.split("/").filter(Boolean).at(-1)?.replace(/[-_]/g, " ") || "platform records";
+  const verb = method === "GET" ? "Viewed" : method === "DELETE" ? "Removed" : method === "POST" ? "Created" : "Updated";
+  return `${verb} ${resource}`.replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function formatActionLabel(action?: string | null, details?: string | null) {
   const value = (action || "").toString().trim().toUpperCase();
   if (!value) return "Platform activity";
+
+  if (value.startsWith("API_")) {
+    return formatApiActionLabel(details);
+  }
 
   const map: Record<string, string> = {
     UPGRADE: "Plan upgrade",
@@ -91,11 +116,15 @@ function getActionTone(action?: string | null) {
   return "bg-slate-100 text-slate-700";
 }
 
-function formatDetailText(details?: string | null) {
+function formatDetailText(details?: string | null, action?: string | null) {
   if (!details) return null;
 
   const trimmed = details.trim();
   if (!trimmed) return null;
+
+  if ((action || "").toString().trim().toUpperCase().startsWith("API_") && /^\s*(GET|POST|PUT|PATCH|DELETE)\s+\S+/i.test(trimmed)) {
+    return null;
+  }
 
   try {
     const parsed = JSON.parse(trimmed);
@@ -119,6 +148,7 @@ function formatDetailText(details?: string | null) {
 
 export default function AuditPage() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [totalEvents, setTotalEvents] = useState(0);
   const [schools, setSchools] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -135,7 +165,7 @@ export default function AuditPage() {
       try {
         const backendUrl = getBackendUrl();
         const [response, schoolsResponse, summaryResponse] = await Promise.all([
-          fetch(`${backendUrl}/schoolbase-admin/api/audit-logs?limit=200`, {
+          fetch(`${backendUrl}/schoolbase-admin/api/audit-logs?limit=10000`, {
             credentials: "include",
             headers: { "Content-Type": "application/json" },
           }),
@@ -154,7 +184,8 @@ export default function AuditPage() {
         }
 
         const data = await response.json();
-        setLogs((data.logs || []).filter((log: AuditLog) => !log.action?.startsWith("API_")));
+        setLogs(data.logs || []);
+        setTotalEvents(Number(data.pagination?.total || data.logs?.length || 0));
         if (schoolsResponse.ok) {
           const schoolsData = await schoolsResponse.json();
           setSchools((schoolsData.schools || []).map((school: { name?: string | null }) => school.name).filter(Boolean).sort());
@@ -174,7 +205,7 @@ export default function AuditPage() {
   }, []);
 
   const stats = useMemo(() => {
-    const total = logs.length;
+    const total = summary?.totals.events ?? totalEvents;
     const recent = logs.filter((log) => {
       if (!log.createdAt) return false;
       const created = new Date(log.createdAt).getTime();
@@ -183,7 +214,7 @@ export default function AuditPage() {
     }).length;
 
     return { total, recent };
-  }, [logs, now]);
+  }, [logs, now, summary, totalEvents]);
 
   const schoolOptions = useMemo(
     () => Array.from(new Set([
@@ -198,17 +229,17 @@ export default function AuditPage() {
       "Login failed",
       "Parent login succeeded",
       "Parent login failed",
-      ...logs.map((log) => formatActionLabel(log.action)),
+      ...logs.map((log) => formatActionLabel(log.action, log.details)),
     ])).sort(),
     [logs],
   );
   const filteredLogs = useMemo(() => {
     const query = search.trim().toLowerCase();
     return logs.filter((log) => {
-      const haystack = `${formatActionLabel(log.action)} ${log.details || ""} ${log.user?.name || ""} ${log.user?.email || ""} ${log.school?.name || ""}`.toLowerCase();
+      const haystack = `${formatActionLabel(log.action, log.details)} ${log.details || ""} ${log.user?.name || ""} ${log.user?.email || ""} ${log.school?.name || ""}`.toLowerCase();
       const matchesSearch = !query || haystack.includes(query);
       const matchesSchool = schoolFilter === "ALL" || log.school?.name === schoolFilter;
-      const matchesAction = actionFilter === "ALL" || formatActionLabel(log.action) === actionFilter;
+      const matchesAction = actionFilter === "ALL" || formatActionLabel(log.action, log.details) === actionFilter;
       const age = log.createdAt ? now - new Date(log.createdAt).getTime() : Number.POSITIVE_INFINITY;
       const matchesTime = timeFilter === "ALL" || (timeFilter === "24H" && age <= 24 * 60 * 60 * 1000) || (timeFilter === "7D" && age <= 7 * 24 * 60 * 60 * 1000);
       return matchesSearch && matchesSchool && matchesAction && matchesTime;
@@ -333,10 +364,10 @@ export default function AuditPage() {
                   <div>School</div>
                   <div>Time</div>
                 </div>
-                <div className="divide-y divide-border bg-white">
+                <div className="divide-y divide-border bg-surface">
                   {paginatedLogs.map((log) => {
-                    const actionLabel = formatActionLabel(log.action);
-                    const detailText = formatDetailText(log.details);
+                    const actionLabel = formatActionLabel(log.action, log.details);
+                    const detailText = formatDetailText(log.details, log.action);
                     const actorName = log.user?.name || log.user?.email || "Platform admin";
                     const schoolName = log.school?.name || "—";
 
