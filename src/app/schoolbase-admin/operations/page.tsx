@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Activity, AlertTriangle, CheckCircle2, ClipboardList, Database, Download, LifeBuoy, RefreshCw, ShieldCheck } from "lucide-react";
+import { playCloseTone, playOpenTone } from "@/lib/sounds";
 
 type OperationsStatus = {
   service?: string;
@@ -20,6 +21,7 @@ export default function OperationsPage() {
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [message, setMessage] = useState("");
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   const loadStatus = async () => {
     setLoading(true);
@@ -35,7 +37,6 @@ export default function OperationsPage() {
   }, []);
 
   const downloadDatabase = async () => {
-    if (!window.confirm('Download a complete database dump? This file contains all SchoolBase records and must be stored securely.')) return;
     setExporting(true);
     setMessage("");
     try {
@@ -49,11 +50,25 @@ export default function OperationsPage() {
       link.click();
       URL.revokeObjectURL(url);
       setMessage('Database export downloaded. Store it in an encrypted backup location.');
+      playCloseTone();
+      setIsExportModalOpen(false);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Database export failed');
     } finally {
       setExporting(false);
     }
+  };
+
+  const openExportModal = () => {
+    playOpenTone();
+    setMessage("");
+    setIsExportModalOpen(true);
+  };
+
+  const closeExportModal = () => {
+    if (exporting) return;
+    playCloseTone();
+    setIsExportModalOpen(false);
   };
 
   const overallStatus = status?.service === 'ready' ? 'OPERATIONAL' : status?.service === 'degraded' ? 'DEGRADED' : 'DOWN';
@@ -103,11 +118,33 @@ export default function OperationsPage() {
         </section>
 
         <section className="border border-border bg-surface p-5 sm:p-6">
-          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start"><div><p className="text-xs font-bold uppercase tracking-[.14em] text-brand">Recovery control</p><h2 className="mt-2 text-xl font-semibold text-foreground">Complete database export</h2><p className="mt-1 max-w-2xl text-sm leading-6 text-muted">Downloads a full MySQL dump including tables, routines, and triggers. Every request is recorded in the platform audit log.</p></div><button type="button" disabled={exporting} onClick={() => void downloadDatabase()} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-md bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-50"><Download className="h-4 w-4" />{exporting ? 'Preparing export...' : 'Download database'}</button></div>
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start"><div><p className="text-xs font-bold uppercase tracking-[.14em] text-brand">Recovery control</p><h2 className="mt-2 text-xl font-semibold text-foreground">Complete database export</h2><p className="mt-1 max-w-2xl text-sm leading-6 text-muted">Downloads a full MySQL dump including tables, routines, and triggers. Every request is recorded in the platform audit log.</p></div><button type="button" disabled={exporting} onClick={openExportModal} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-md bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-50"><Download className="h-4 w-4" />{exporting ? 'Preparing export...' : 'Download database'}</button></div>
           {message ? <div className="mt-5 rounded-md border border-border bg-background p-3 text-sm text-foreground">{message}</div> : null}
           <div className="mt-5 flex items-start gap-3 border-t border-border pt-4 text-xs leading-5 text-muted"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand" /><p>Store downloaded exports encrypted, restrict access, and test restoration in a separate environment. This control is intentionally limited to platform administrators.</p></div>
         </section>
       </div>
+
+      {isExportModalOpen ? (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
+          <style>{`@keyframes operations_export_modal_enter { from { transform: translateX(36px) scale(.98); opacity: 0 } to { transform: translateX(0) scale(1); opacity: 1 } }`}</style>
+          <div className="w-full max-w-2xl overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]" style={{ animation: "operations_export_modal_enter 320ms cubic-bezier(.2,.9,.2,1)" }}>
+            <div className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-4 py-4 sm:px-6 sm:py-5">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.12em] text-brand"><Database className="h-4 w-4" /> Recovery control</div>
+                <h2 className="mt-2 text-2xl font-bold text-foreground">Download complete database</h2>
+                <p className="mt-1 text-sm text-muted">Create a full SQL export for secure backup and recovery.</p>
+              </div>
+              <button type="button" onClick={closeExportModal} disabled={exporting} aria-label="Close database export dialog" className="flex h-8 w-8 items-center justify-center rounded-md border border-border transition-colors hover:bg-background disabled:opacity-50">×</button>
+            </div>
+            <div className="space-y-5 px-4 py-4 sm:space-y-6 sm:px-6 sm:py-6">
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"><div className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" /><div><p className="font-semibold">This file contains all SchoolBase records.</p><p className="mt-1 leading-6">Store it only in an encrypted, access-controlled backup location. Do not email it, upload it to public storage, or commit it to source control.</p></div></div></div>
+              <div className="grid gap-3 sm:grid-cols-3"><div className="rounded-lg border border-border bg-background p-3"><p className="text-xs text-muted">Format</p><p className="mt-1 text-sm font-semibold text-foreground">MySQL SQL</p></div><div className="rounded-lg border border-border bg-background p-3"><p className="text-xs text-muted">Contents</p><p className="mt-1 text-sm font-semibold text-foreground">Full database</p></div><div className="rounded-lg border border-border bg-background p-3"><p className="text-xs text-muted">Audit</p><p className="mt-1 text-sm font-semibold text-foreground">Recorded</p></div></div>
+              {message ? <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{message}</div> : null}
+              <div className="flex flex-col-reverse gap-3 border-t border-border pt-4 sm:flex-row sm:justify-end"><button type="button" onClick={closeExportModal} disabled={exporting} className="flex-1 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-background disabled:opacity-50">Cancel</button><button type="button" onClick={() => void downloadDatabase()} disabled={exporting} className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:opacity-50"><Download className="h-4 w-4" />{exporting ? 'Preparing export...' : 'Confirm download'}</button></div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
