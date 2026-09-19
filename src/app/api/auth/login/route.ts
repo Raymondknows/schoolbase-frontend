@@ -33,9 +33,14 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const BACKEND_URL = getBackendUrl();
+    const host = request.headers.get('host') || '';
+    const isSchoolbaseHost = host.includes('schoolbase.live') || host.includes('vercel.app');
+    const isLocalHost = host.includes('localhost') || host.includes('127.0.0.1');
+    const isSecureCookie = !isLocalHost;
 
     console.log('=== LOGIN API ROUTE ===');
     console.log('Backend URL:', BACKEND_URL);
+    console.log('Request host:', host, { isSchoolbaseHost, isLocalHost, isSecureCookie });
 
     const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
       method: 'POST',
@@ -86,11 +91,11 @@ export async function POST(request: NextRequest) {
     if (data?.token) {
       res.cookies.set('schoolbase_session', data.token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        secure: isSecureCookie,
+        sameSite: isSecureCookie ? 'none' : 'lax',
         maxAge: 7 * 24 * 60 * 60,
         path: '/',
-        ...(process.env.NODE_ENV === 'production' ? { domain: '.schoolbase.live' } : {}),
+        ...(isSchoolbaseHost ? { domain: '.schoolbase.live' } : {}),
       });
     }
 

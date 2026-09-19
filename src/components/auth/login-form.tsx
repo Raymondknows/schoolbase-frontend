@@ -68,31 +68,32 @@ export function LoginForm({ redirectTo }: { redirectTo: string }) {
 
       // ✅ Token is set in cookie by /api/auth/login (httpOnly cookie can't be accessed from JS)
       // Wait a moment to ensure cookie is set
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
+      await new Promise(resolve => setTimeout(resolve, 150));
+
       // ✅ INTELLIGENT REDIRECT: Route based on user role
-      let redirectUrl = redirectTo; // fallback to provided prop
-      
-      if (data.session?.role === "TEACHER") {
+      let redirectUrl = redirectTo;
+
+      const sessionRole = data?.session?.role ?? data?.user?.role ?? data?.role ?? null;
+
+      if (sessionRole === "TEACHER") {
         redirectUrl = "/teacher";
         console.log('Teacher login detected, redirecting to /teacher');
-      } else if (data.session?.role === "PLATFORM_ADMIN") {
+      } else if (sessionRole === "PLATFORM_ADMIN") {
         redirectUrl = "/schoolbase-admin";
         console.log('Platform admin login detected, redirecting to /schoolbase-admin');
-      } else if (data.session?.role === "SCHOOL_ADMIN") {
+      } else if (sessionRole === "SCHOOL_ADMIN") {
         redirectUrl = "/admin?onboarding=1";
         console.log('School admin login detected, redirecting to /admin?onboarding=1');
-      } else if (data.session?.role === "BURSAR") {
+      } else if (sessionRole === "BURSAR") {
         redirectUrl = "/accounting";
         console.log('Bursar login detected, redirecting to /accounting');
       }
-      
+
       console.log('Performing full page redirect to:', redirectUrl);
-      
-      // ✅ CRITICAL: Use window.location instead of router.push()
-      // This ensures the cookie is sent with the request to the server
-      // Client-side routing won't send httpOnly cookies to middleware!
-      window.location.href = redirectUrl;
+
+      // Use a full page navigation so the browser includes the httpOnly session cookie
+      // on the next request to the protected route.
+      window.location.assign(redirectUrl);
     } catch (err) {
       setError("An error occurred. Please try again.");
       console.error("Login error:", err);
