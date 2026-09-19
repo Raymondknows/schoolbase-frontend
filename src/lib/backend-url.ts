@@ -22,6 +22,12 @@ export function getBackendUrl(): string {
     }
   }
 
+  // Do not let production values from the shared .env file redirect local
+  // server-side requests to the live API.
+  if (process.env.NODE_ENV !== 'production') {
+    return process.env.BACKEND_URL || 'http://localhost:3006';
+  }
+
   // First, check if explicitly set in environment
   if (process.env.NEXT_PUBLIC_API_URL) {
     return normalizeBackendUrl(process.env.NEXT_PUBLIC_API_URL);

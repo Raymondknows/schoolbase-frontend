@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 
 function getBackendUrl() {
+  // Keep local development isolated from production values that may be present
+  // in the shared .env file.
+  if (process.env.NODE_ENV !== 'production') {
+    return process.env.BACKEND_URL || 'http://localhost:3006';
+  }
+
   if (process.env.NEXT_PUBLIC_API_URL) {
     return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '').replace(/\/api$/, '');
   }
