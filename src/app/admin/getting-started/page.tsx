@@ -32,6 +32,9 @@ type SchoolConfig = {
   name?: string | null;
   country?: string | null;
   currency?: string | null;
+  logoUrl?: string | null;
+  principalName?: string | null;
+  principalComment?: string | null;
   principalSignatureUrl?: string | null;
   stampUrl?: string | null;
 };
@@ -56,45 +59,137 @@ type StudentsResponse = {
   pupils?: StudentRecord[] | null;
 };
 
+type SetupStatusResponse = {
+  isComplete?: boolean;
+  completionPercentage?: number;
+  setupItems?: Record<string, boolean>;
+  incompleteItems?: string[];
+};
+
+function isRequiredSetupComplete(setupItems?: Record<string, boolean> | null): boolean {
+  if (!setupItems) return false;
+
+  return Boolean(
+    setupItems.hasSchoolProfile &&
+    setupItems.hasStaff &&
+    setupItems.hasStudents &&
+    setupItems.hasFees &&
+    setupItems.hasPaymentSetup &&
+    setupItems.hasAnnouncement &&
+    setupItems.hasAssessment &&
+    setupItems.hasSchoolLogo &&
+    setupItems.hasPrincipalInfo &&
+    setupItems.hasPrincipalSignature &&
+    setupItems.hasSchoolStamp
+  );
+}
+
 function buildSteps(
   schoolConfig: SchoolConfig | null,
-  counts: Counts
+  counts: Counts,
+  setupStatus?: SetupStatusResponse | null,
 ): Step[] {
+  const setupItems = setupStatus?.setupItems ?? {
+    hasEnabledPhases: counts.classCount > 0,
+    hasAcademicYears: counts.academicTermCount > 0,
+    hasClasses: counts.classCount > 0,
+    hasSubjects: counts.subjectCount > 0,
+    hasStaff: counts.teacherCount > 0,
+    hasFees: counts.feeScheduleCount > 0 || counts.feeCount > 0,
+    hasStudents: counts.studentCount > 0,
+    hasSchoolProfile: Boolean(
+      schoolConfig?.name &&
+      schoolConfig?.country &&
+      schoolConfig?.currency &&
+      schoolConfig?.name
+    ),
+    hasSchoolLogo: Boolean(schoolConfig?.name),
+    hasPrincipalInfo: Boolean(schoolConfig?.name),
+    hasPrincipalSignature: Boolean(schoolConfig?.principalSignatureUrl || schoolConfig?.stampUrl),
+    hasSchoolStamp: Boolean(schoolConfig?.stampUrl),
+    hasPaymentSetup: false,
+    hasAnnouncement: counts.announcementCount > 0,
+    hasAssessment: counts.assessmentCount > 0,
+  };
+
   return [
     {
       title: "Set your school profile",
-      description: "Complete the school identity, location, currency, branding, signature and stamp details so every staff member starts from a polished workspace.",
+      description: "Complete the school identity, contact details, location and currency so the workspace is ready for daily operations.",
       href: "/admin/settings",
-      complete: Boolean(
-        schoolConfig?.name &&
-        schoolConfig?.country &&
-        schoolConfig?.currency &&
-        (schoolConfig?.principalSignatureUrl || schoolConfig?.stampUrl)
-      ),
+      complete: Boolean(setupItems.hasSchoolProfile),
       icon: Settings,
-      hint: "Start here",
+      hint: "Profile",
     },
     {
-      title: "Create classes and subjects",
-      description: "Lay the academic structure in place so reports, promotions and attendance stay organized from day one.",
-      href: "/admin/classes",
-      complete: counts.classCount > 0 && counts.subjectCount > 0,
+      title: "Upload your school logo",
+      description: "Add your brand logo so your school communications and documents look professional and consistent.",
+      href: "/admin/settings",
+      complete: Boolean(setupItems.hasSchoolLogo),
+      icon: Sparkles,
+      hint: "Branding",
+    },
+    {
+      title: "Add principal details",
+      description: "Capture the principal information that appears across official school documents and communications.",
+      href: "/admin/settings",
+      complete: Boolean(setupItems.hasPrincipalInfo),
+      icon: Users,
+      hint: "Leadership",
+    },
+    {
+      title: "Upload principal signature",
+      description: "Add the principal signature image so printed results and official documents carry the correct approval signature.",
+      href: "/admin/settings",
+      complete: Boolean(setupItems.hasPrincipalSignature),
+      icon: ShieldCheck,
+      hint: "Signature",
+    },
+    {
+      title: "Upload school stamp",
+      description: "Upload the official school stamp so printed documents and reports have a professional final seal.",
+      href: "/admin/settings",
+      complete: Boolean(setupItems.hasSchoolStamp),
+      icon: Settings,
+      hint: "Seal",
+    },
+    {
+      title: "Enable school phases",
+      description: "Turn on the school phases used by your academic structure and operational workflows.",
+      href: "/admin/settings",
+      complete: Boolean(setupItems.hasEnabledPhases),
       icon: Layers,
-      hint: "Foundation",
+      hint: "Structure",
     },
     {
       title: "Set academic years and terms",
       description: "Define the current academic year and terms so results, fees and promotions align to the right school cycle.",
       href: "/admin/settings",
-      complete: counts.academicTermCount > 0,
+      complete: Boolean(setupItems.hasAcademicYears),
       icon: BookOpen,
       hint: "Academic setup",
+    },
+    {
+      title: "Create classes",
+      description: "Lay down the class structure and group learners properly so reports and attendance remain organized.",
+      href: "/admin/classes",
+      complete: Boolean(setupItems.hasClasses),
+      icon: Layers,
+      hint: "Classes",
+    },
+    {
+      title: "Create subjects",
+      description: "Add the subjects your teachers will deliver and map them to the right class structure.",
+      href: "/admin/classes",
+      complete: Boolean(setupItems.hasSubjects),
+      icon: BookOpen,
+      hint: "Subjects",
     },
     {
       title: "Add staff",
       description: "Bring your teaching and finance team into the system and assign the right roles so staff can work at full strength.",
       href: "/admin/staff",
-      complete: counts.teacherCount > 0,
+      complete: Boolean(setupItems.hasStaff),
       icon: Users,
       hint: "Team setup",
     },
@@ -102,7 +197,7 @@ function buildSteps(
       title: "Register students",
       description: "Import or add your learners so fees, attendance, parent access and results all connect in one place.",
       href: "/admin/students",
-      complete: counts.studentCount > 0,
+      complete: Boolean(setupItems.hasStudents),
       icon: GraduationCap,
       hint: "Student records",
     },
@@ -110,15 +205,23 @@ function buildSteps(
       title: "Set up fees and billing",
       description: "Create fee structures and collections so your school can invoice parents and track payments with confidence.",
       href: "/admin/fees",
-      complete: counts.feeScheduleCount > 0 || counts.feeCount > 0,
+      complete: Boolean(setupItems.hasFees),
       icon: DollarSign,
       hint: "Cash flow",
+    },
+    {
+      title: "Set up payment collection",
+      description: "Connect your preferred payment method or manual collection details so fees can be processed smoothly.",
+      href: "/admin/settings",
+      complete: Boolean(setupItems.hasPaymentSetup),
+      icon: DollarSign,
+      hint: "Payments",
     },
     {
       title: "Send your first announcement",
       description: "Publish a welcome or update message so parents and staff feel informed as soon as the school is live.",
       href: "/admin/website",
-      complete: counts.announcementCount > 0,
+      complete: Boolean(setupItems.hasAnnouncement),
       icon: Sparkles,
       hint: "Communication",
     },
@@ -126,7 +229,7 @@ function buildSteps(
       title: "Publish your first assessment",
       description: "Create a first assessment so the school can start publishing results and giving parents a useful experience quickly.",
       href: "/admin/results",
-      complete: counts.assessmentCount > 0,
+      complete: Boolean(setupItems.hasAssessment),
       icon: ShieldCheck,
       hint: "Go-live",
     },
@@ -139,7 +242,7 @@ export default function GettingStartedPage() {
   const [schoolName, setSchoolName] = useState("your school");
   const [steps, setSteps] = useState<Step[]>([]);
   const [showTasksModal, setShowTasksModal] = useState(false);
-  const [setupStatus, setSetupStatus] = useState<{ isComplete?: boolean } | null>(null);
+  const [setupStatus, setSetupStatus] = useState<SetupStatusResponse | null>(null);
   const [refreshNonce, setRefreshNonce] = useState(0);
 
   useEffect(() => {
@@ -200,7 +303,7 @@ export default function GettingStartedPage() {
         };
         const verifyData = verifyRes?.ok ? await verifyRes.json().catch(() => null) : null;
         const schoolId = verifyData?.session?.schoolId;
-        let setupStatus: { isComplete?: boolean } | null = null;
+        let setupStatus: SetupStatusResponse | null = null;
 
         if (schoolId) {
           try {
@@ -213,11 +316,39 @@ export default function GettingStartedPage() {
           }
         }
 
+        const fallbackSetupItems: Record<string, boolean> = {
+          hasEnabledPhases: counts.academicTermCount > 0,
+          hasAcademicYears: counts.academicTermCount > 0,
+          hasClasses: counts.classCount > 0,
+          hasSubjects: counts.subjectCount > 0,
+          hasStaff: counts.teacherCount > 0,
+          hasFees: counts.feeScheduleCount > 0 || counts.feeCount > 0,
+          hasStudents: counts.studentCount > 0,
+          hasSchoolProfile: Boolean(
+            schoolConfig?.name &&
+            schoolConfig?.country &&
+            schoolConfig?.currency &&
+            schoolConfig?.name
+          ),
+          hasSchoolLogo: Boolean(schoolConfig?.logoUrl || schoolConfig?.name),
+          hasPrincipalInfo: Boolean(schoolConfig?.principalName || schoolConfig?.principalComment),
+          hasPrincipalSignature: Boolean(schoolConfig?.principalSignatureUrl),
+          hasSchoolStamp: Boolean(schoolConfig?.stampUrl),
+          hasPaymentSetup: false,
+          hasAnnouncement: counts.announcementCount > 0,
+          hasAssessment: counts.assessmentCount > 0,
+        };
+
+        const normalizedSetupStatus: SetupStatusResponse = {
+          ...setupStatus,
+          setupItems: setupStatus?.setupItems ?? fallbackSetupItems,
+        };
+
         if (!mounted) return;
 
         setSchoolName(schoolConfig?.name || "your school");
-        setSteps(buildSteps(schoolConfig, counts));
-        setSetupStatus(setupStatus);
+        setSteps(buildSteps(schoolConfig, counts, normalizedSetupStatus));
+        setSetupStatus(normalizedSetupStatus);
       } catch (error) {
         console.error("Error loading getting started data", error);
         if (mounted) {
@@ -232,7 +363,7 @@ export default function GettingStartedPage() {
               feeScheduleCount: 0,
               announcementCount: 0,
               assessmentCount: 0,
-            })
+            }, null)
           );
         }
       } finally {
@@ -253,7 +384,8 @@ export default function GettingStartedPage() {
   const remainingCount = Math.max(steps.length - completedCount, 0);
   const nextStep = useMemo(() => steps.find((step) => !step.complete) || steps[0], [steps]);
   const isOnboarding = searchParams.get("onboarding") === "1";
-  const isSetupComplete = setupStatus?.isComplete === true || (steps.length > 0 && completedCount === steps.length);
+  const requiredStepsComplete = isRequiredSetupComplete(setupStatus?.setupItems ?? null);
+  const isSetupComplete = setupStatus?.isComplete === true || requiredStepsComplete || (steps.length > 0 && completedCount === steps.length);
   const showFullExperience = !isSetupComplete;
 
   if (!loading && !showFullExperience) {
