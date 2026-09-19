@@ -28,16 +28,19 @@ export default async function LoginPage({
 
   return (
     <main className="min-h-screen bg-background px-4 py-6 sm:px-8 sm:py-10">
-      <div className="mx-auto grid min-h-[calc(100vh-3rem)] max-w-6xl overflow-hidden border border-border bg-surface lg:grid-cols-[minmax(0,.9fr)_minmax(420px,.75fr)]">
-        <section className="relative hidden overflow-hidden border-r border-border bg-brand/5 p-10 lg:flex lg:flex-col lg:justify-between">
+      <div className="mx-auto grid max-w-6xl overflow-hidden border border-border bg-surface lg:grid-cols-[minmax(0,.9fr)_minmax(420px,.75fr)]">
+        <section className="relative hidden overflow-hidden border-r border-border bg-brand/5 p-10 lg:flex lg:flex-col lg:justify-start">
           <div className="absolute right-0 top-0 h-2/3 w-2/3 bg-brand-light/50 [clip-path:polygon(35%_0,100%_0,100%_100%,0_60%)]" />
           <div className="relative">
             <AppLogo href="/" size="lg" />
             <p className="mt-16 text-xs font-bold uppercase tracking-[.18em] text-brand">School operations platform</p>
             <h2 className="mt-4 max-w-md text-4xl font-semibold tracking-tight text-foreground">Run your school with clarity.</h2>
             <p className="mt-4 max-w-md text-sm leading-7 text-muted">One secure workspace for people, learning, finance, communication, and the daily work that keeps your school moving.</p>
+            <div className="mt-6">
+              <LoginPageAdSlot />
+            </div>
           </div>
-          <div className="relative grid gap-3 text-sm text-muted">
+          <div className="relative mt-8 grid gap-3 text-sm text-muted">
             <div className="flex items-center gap-3 border border-border bg-surface px-4 py-3"><ShieldCheck className="h-4 w-4 text-brand" /> Secure role-based access</div>
             <div className="flex items-center gap-3 border border-border bg-surface px-4 py-3"><LockKeyhole className="h-4 w-4 text-brand" /> Protected school data</div>
           </div>
@@ -96,9 +99,6 @@ export default async function LoginPage({
           </p>
         </div>
 
-        <div className="mt-6">
-          <LoginPageAdSlot />
-        </div>
           </div>
           </div>
         </section>

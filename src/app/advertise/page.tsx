@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { ArrowRight, BadgeCheck, Megaphone, ShieldCheck } from "lucide-react";
+import { getBackendUrl } from "@/lib/backend-url";
 
 const placementOptions = [
   { value: "LOGIN_PAGE_BANNER", label: "Staff login banner" },
@@ -25,7 +26,7 @@ export default function AdvertisePage() {
     const placementTypes = formData.getAll("placementTypes");
     const payload = Object.fromEntries(formData.entries());
     try {
-      const response = await fetch("/api/ads/apply", {
+      const response = await fetch(`${getBackendUrl()}/api/ads/apply`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...payload, placementTypes }),

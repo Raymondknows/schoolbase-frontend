@@ -52,12 +52,12 @@ function ResultWorkspace({ children }: { children: React.ReactNode }) {
           <div className="relative grid gap-3 text-sm text-muted">
             <div className="flex items-center gap-3 border border-border bg-surface px-4 py-3"><Building2 className="h-4 w-4 text-brand" /> Built for school communities</div>
             <div className="flex items-center gap-3 border border-border bg-surface px-4 py-3"><ShieldCheck className="h-4 w-4 text-brand" /> PIN-protected access</div>
+            <ContextualAdSlot path="/results/check" compact />
           </div>
         </section>
         <section className="p-6 sm:p-10">
           <div className="mb-8 flex justify-center lg:hidden"><AppLogo href="/" size="lg" /></div>
           {children}
-          <div className="mt-6"><ContextualAdSlot path="/results/check" compact /></div>
         </section>
       </div>
     </div>

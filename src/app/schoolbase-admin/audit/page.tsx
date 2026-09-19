@@ -46,6 +46,12 @@ function formatApiActionLabel(details?: string | null) {
   if (path.includes("/whatsapp/disconnect")) return "WhatsApp disconnected";
   if (path.includes("/signups/approve")) return "Signup approved";
   if (path.includes("/signups/remind")) return "Signup reminder sent";
+  if (path.includes("/ads/apply")) return "Advertiser application received";
+  if (path.includes("/ads/advertisers") && path.includes("/verify")) return "Advertiser verified";
+  if (path.includes("/ads/advertisers") && path.includes("/reject")) return "Advertiser rejected";
+  if (path.includes("/ads/campaigns") && path.includes("/submit")) return "Campaign submitted for review";
+  if (path.includes("/ads/campaigns") && path.includes("/approve")) return "Campaign approved";
+  if (path.includes("/ads/campaigns") && path.includes("/live")) return "Campaign activated";
   if (path.includes("/settings")) return "Platform settings updated";
   if (path.includes("/schools")) return method === "GET" ? "Viewed school records" : "School records updated";
 

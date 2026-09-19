@@ -144,6 +144,7 @@ export default function SignupPage() {
           <div className="relative grid gap-3 text-sm text-muted">
             <div className="flex items-center gap-3 border border-border bg-surface px-4 py-3"><Building2 className="h-4 w-4 text-brand" /> Designed for school teams</div>
             <div className="flex items-center gap-3 border border-border bg-surface px-4 py-3"><ShieldCheck className="h-4 w-4 text-brand" /> Verify your email before activation</div>
+            <ContextualAdSlot path="/signup" compact />
           </div>
         </section>
 
@@ -326,8 +327,6 @@ export default function SignupPage() {
             {step < 3 ? <Button type="button" onClick={nextStep} disabled={isLoading} className="gap-2 bg-brand font-semibold hover:bg-brand-hover">Continue <ArrowRight className="h-4 w-4" /></Button> : <Button type="submit" className="gap-2 bg-brand font-semibold hover:bg-brand-hover" disabled={isLoading}>{isLoading ? "Creating school..." : "Create my school"}<ArrowRight className="h-4 w-4" /></Button>}
           </div>
         </form>
-
-        <div className="mt-6"><ContextualAdSlot path="/signup" compact /></div>
 
         <p className="mt-6 border-t border-border pt-5 text-center text-sm text-muted">
           After signup, sign in as staff at the normal login page.

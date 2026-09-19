@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { getBackendUrl } from "@/lib/backend-url";
 
 export type LoginPageAd = {
   id: string;
@@ -26,13 +27,14 @@ export function ContextualAdSlot({ path = "/login", compact = false }: { path?: 
     async function loadAd() {
       try {
         setLoading(true);
-        const response = await fetch(`/api/ads/placements?path=${encodeURIComponent(path)}`, { cache: "no-store" });
+        const backendUrl = getBackendUrl();
+        const response = await fetch(`${backendUrl}/api/ads/placements?path=${encodeURIComponent(path)}`, { cache: "no-store" });
         const data = await response.json().catch(() => ({ ads: [] }));
         if (!active) return;
         const nextAd = Array.isArray(data?.ads) && data.ads[0] ? data.ads[0] : null;
         setAd(nextAd);
         if (nextAd) {
-          void fetch(`/api/ads/placements?path=${encodeURIComponent(path)}&id=${encodeURIComponent(nextAd.id)}&event=impression`, { method: "POST", keepalive: true }).catch(() => {});
+          void fetch(`${backendUrl}/api/ads/placements?path=${encodeURIComponent(path)}&id=${encodeURIComponent(nextAd.id)}&event=impression`, { method: "POST", keepalive: true }).catch(() => {});
         }
       } catch {
         if (active) setAd(null);
@@ -53,7 +55,7 @@ export function ContextualAdSlot({ path = "/login", compact = false }: { path?: 
   const linkTarget = ad.landingUrl.startsWith("http") ? "_blank" : "_self";
 
   return (
-    <div className={`border border-border bg-surface ${compact ? "p-3" : "rounded-xl p-4 shadow-sm"}`}>
+    <div className={`text-foreground ${compact ? "py-3" : "py-4"}`}>
       <div className="mb-3 flex items-center justify-between gap-3 text-[11px] font-bold uppercase tracking-[0.16em] text-brand">
         <span>{ad.label}</span>
         {ad.advertiser ? <span className="text-muted">{ad.advertiser}</span> : null}
@@ -62,11 +64,11 @@ export function ContextualAdSlot({ path = "/login", compact = false }: { path?: 
         href={ad.landingUrl}
         target={linkTarget}
         rel={linkTarget === "_blank" ? "noopener noreferrer" : undefined}
-        onClick={() => { void fetch(`/api/ads/placements?path=${encodeURIComponent(path)}&id=${encodeURIComponent(ad.id)}&event=click`, { method: "POST", keepalive: true }).catch(() => {}); }}
-        className="group block overflow-hidden rounded-lg border border-border bg-background transition hover:border-brand/40"
+        onClick={() => { void fetch(`${getBackendUrl()}/api/ads/placements?path=${encodeURIComponent(path)}&id=${encodeURIComponent(ad.id)}&event=click`, { method: "POST", keepalive: true }).catch(() => {}); }}
+        className="group block overflow-hidden border-t border-brand/20 pt-3 transition"
       >
         {ad.imageUrl ? (
-          <div className="relative h-28 w-full overflow-hidden border-b border-border bg-muted/20">
+            <div className="relative h-28 w-full overflow-hidden border-y border-brand/20 bg-transparent">
             <img src={ad.imageUrl} alt={ad.headline || ad.title} className="h-full w-full object-cover transition duration-200 group-hover:scale-[1.02]" />
           </div>
         ) : null}
