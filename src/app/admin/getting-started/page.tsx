@@ -379,13 +379,33 @@ export default function GettingStartedPage() {
     };
   }, [refreshNonce, searchParams]);
 
+  const requiredSetupKeys = [
+    "hasSchoolProfile",
+    "hasStaff",
+    "hasStudents",
+    "hasFees",
+    "hasPaymentSetup",
+    "hasAnnouncement",
+    "hasAssessment",
+    "hasSchoolLogo",
+    "hasPrincipalInfo",
+    "hasPrincipalSignature",
+    "hasSchoolStamp",
+  ] as const;
+
+  const requiredCompletedCount = useMemo(() => {
+    const items = setupStatus?.setupItems ?? {};
+    return requiredSetupKeys.filter((key) => Boolean(items[key])).length;
+  }, [setupStatus?.setupItems]);
+
   const completedCount = useMemo(() => steps.filter((step) => step.complete).length, [steps]);
-  const progressPercent = steps.length ? Math.round((completedCount / steps.length) * 100) : 0;
-  const remainingCount = Math.max(steps.length - completedCount, 0);
+  const requiredTotalCount = requiredSetupKeys.length;
+  const progressPercent = requiredTotalCount ? Math.round((requiredCompletedCount / requiredTotalCount) * 100) : 0;
+  const remainingCount = Math.max(requiredTotalCount - requiredCompletedCount, 0);
   const nextStep = useMemo(() => steps.find((step) => !step.complete) || steps[0], [steps]);
   const isOnboarding = searchParams.get("onboarding") === "1";
   const requiredStepsComplete = isRequiredSetupComplete(setupStatus?.setupItems ?? null);
-  const isSetupComplete = setupStatus?.isComplete === true || requiredStepsComplete || (steps.length > 0 && completedCount === steps.length);
+  const isSetupComplete = setupStatus?.isComplete === true || requiredStepsComplete || (requiredTotalCount > 0 && requiredCompletedCount === requiredTotalCount);
   const showFullExperience = !isSetupComplete;
 
   if (!loading && !showFullExperience) {
@@ -407,8 +427,8 @@ export default function GettingStartedPage() {
               </div>
             </div>
             <div className="text-sm text-muted">
-              <div className="text-3xl font-semibold text-foreground">{completedCount}/{steps.length}</div>
-              <div>tasks complete</div>
+              <div className="text-3xl font-semibold text-foreground">{requiredCompletedCount}/{requiredTotalCount}</div>
+              <div>required go-live tasks complete</div>
             </div>
           </div>
         </div>
@@ -528,14 +548,14 @@ export default function GettingStartedPage() {
 
               <div className="mt-6 border border-brand/20 bg-background p-5">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium text-foreground">Workspace progress</span>
+                  <span className="font-medium text-foreground">Required for go-live</span>
                   <span className="font-semibold text-brand">{progressPercent}%</span>
                 </div>
                 <div className="mt-3 h-2.5 w-full overflow-hidden bg-border">
                   <div className="h-full bg-brand transition-all duration-500" style={{ width: `${progressPercent}%` }} />
                 </div>
                 <div className="mt-4 flex items-center justify-between text-sm text-muted">
-                  <span>{completedCount} completed</span>
+                  <span>{requiredCompletedCount}/{requiredTotalCount} completed</span>
                   <span>{remainingCount} remaining</span>
                 </div>
               </div>
@@ -582,10 +602,12 @@ export default function GettingStartedPage() {
         <div className="mb-5 flex items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-foreground">Setup checklist</h2>
-            <p className="text-sm text-muted">Each step is arranged to move the school from configuration to everyday use.</p>
+            <p className="text-sm text-muted">
+              This checklist includes {steps.length} total items. {requiredTotalCount} are required for the school to be ready for daily operations.
+            </p>
           </div>
           <div className="border border-border bg-background px-3 py-1.5 text-sm font-semibold text-muted">
-            {completedCount}/{steps.length}
+            {requiredCompletedCount}/{requiredTotalCount} required
           </div>
         </div>
 

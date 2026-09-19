@@ -93,10 +93,31 @@ export default function SetupRemindersClient({
               if (statusRes.ok) {
                 const statusData = await statusRes.json();
                 // Map backend field names to frontend field names
+                const setupItems = statusData.setupItems ?? {};
+                const requiredKeys = [
+                  "hasSchoolProfile",
+                  "hasStaff",
+                  "hasStudents",
+                  "hasFees",
+                  "hasPaymentSetup",
+                  "hasAnnouncement",
+                  "hasAssessment",
+                  "hasSchoolLogo",
+                  "hasPrincipalInfo",
+                  "hasPrincipalSignature",
+                  "hasSchoolStamp",
+                ];
+                const requiredTotal = requiredKeys.length;
+                const requiredCompleted = requiredKeys.filter((key) => Boolean(setupItems[key])).length;
+                const checklistTotal = Object.keys(setupItems).length || requiredTotal;
+
                 statuses[school.id] = {
                   isComplete: statusData.isComplete,
-                  completionPercent: statusData.completionPercentage || 0,
+                  completionPercent: statusData.completionPercentage || Math.round((requiredCompleted / requiredTotal) * 100),
                   incompleteTasks: statusData.incompleteItems || [],
+                  requiredCompleted,
+                  requiredTotal,
+                  checklistTotal,
                 };
               } else {
                 // Default status if endpoint fails
@@ -277,9 +298,9 @@ export default function SetupRemindersClient({
             href: "/schoolbase-admin/schools",
           },
           {
-            label: "Setup complete",
+            label: "Required setup complete",
             value: completeCount,
-            sub: "Schools with full setup",
+            sub: "Schools ready for daily operations",
             icon: CheckCircle2,
             iconClass: "bg-emerald-100 text-emerald-700",
             href: "/schoolbase-admin/schools",
@@ -433,16 +454,19 @@ export default function SetupRemindersClient({
                             {status.completionPercent}%
                           </span>
                         </div>
+                        <div className="mt-1 text-[11px] text-muted">
+                          {status.requiredCompleted ?? 0}/{status.requiredTotal ?? 0} required complete · {status.checklistTotal ?? status.requiredTotal ?? 0} total checklist
+                        </div>
                       </td>
                       <td className="px-4 py-4">
                         {(!status.incompleteTasks || status.incompleteTasks.length === 0) ? (
                           <span className="inline-flex rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-700">
-                            ✓ Complete
+                            ✓ Ready
                           </span>
                         ) : (
                           <span className="text-sm text-muted">
-                            {status.incompleteTasks.length} item
-                            {status.incompleteTasks.length > 1 ? "s" : ""}
+                            {status.incompleteTasks.length} required item
+                            {status.incompleteTasks.length > 1 ? "s" : ""} missing
                           </span>
                         )}
                       </td>
