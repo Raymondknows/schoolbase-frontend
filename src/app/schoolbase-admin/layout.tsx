@@ -14,6 +14,7 @@ const nav = [
   { href: "/schoolbase-admin/email-center", label: "Email Center", icon: "Mail" },
   { href: "/schoolbase-admin/whatsapp", label: "WhatsApp", icon: "WhatsApp" },
   { href: "/schoolbase-admin/campaign", label: "Campaign", icon: "Send" },
+  { href: "/schoolbase-admin/ads", label: "Ads & Marketplace", icon: "Megaphone" },
   { href: "/schoolbase-admin/support", label: "Support", icon: "Bell" },
   { href: "/schoolbase-admin/shared-workspace", label: "Shared Workspace", icon: "CheckSquare" },
   { href: "/schoolbase-admin/videos", label: "Video Library", icon: "FileText" },

@@ -3,6 +3,7 @@ import { BookOpen, ShieldCheck } from "lucide-react";
 import { AppLogo } from "@/components/app-logo";
 import { ParentLoginForm } from "@/components/auth/parent-login-form";
 import { getParentSession } from "@/lib/auth";
+import { ContextualAdSlot } from "@/components/login-page-ad-slot";
 
 export default async function ParentLoginPage() {
   const session = await getParentSession();
@@ -37,6 +38,7 @@ export default async function ParentLoginPage() {
           school. Add the school slug if you are using a specific campus.
         </p>
         <ParentLoginForm />
+        <div className="mt-6"><ContextualAdSlot path="/parent/login" /></div>
         <p className="mt-6 border-t border-border pt-5 text-center text-sm">
           <a href="/login" className="text-brand hover:underline">
             Staff sign in →

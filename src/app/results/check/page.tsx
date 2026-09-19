@@ -9,6 +9,7 @@ import { ErrorModal } from "@/components/ui/error-modal";
 import { getBackendUrl } from "@/lib/backend-url";
 import ParentPageShell from "@/components/parent-page-shell";
 import { WaecReportCard } from "@/components/teacher/waec-report-card";
+import { ContextualAdSlot } from "@/components/login-page-ad-slot";
 
 interface Result {
   id: string;
@@ -56,6 +57,7 @@ function ResultWorkspace({ children }: { children: React.ReactNode }) {
         <section className="p-6 sm:p-10">
           <div className="mb-8 flex justify-center lg:hidden"><AppLogo href="/" size="lg" /></div>
           {children}
+          <div className="mt-6"><ContextualAdSlot path="/results/check" compact /></div>
         </section>
       </div>
     </div>

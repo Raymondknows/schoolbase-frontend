@@ -7,6 +7,7 @@ import { ErrorModal } from "@/components/ui/error-modal";
 import countriesData from "../../../config/countries.json";
 import { requestSignupOtpAction } from "@/app/signup/actions";
 import { ArrowLeft, ArrowRight, Building2, Check, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { ContextualAdSlot } from "@/components/login-page-ad-slot";
 
 export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -325,6 +326,8 @@ export default function SignupPage() {
             {step < 3 ? <Button type="button" onClick={nextStep} disabled={isLoading} className="gap-2 bg-brand font-semibold hover:bg-brand-hover">Continue <ArrowRight className="h-4 w-4" /></Button> : <Button type="submit" className="gap-2 bg-brand font-semibold hover:bg-brand-hover" disabled={isLoading}>{isLoading ? "Creating school..." : "Create my school"}<ArrowRight className="h-4 w-4" /></Button>}
           </div>
         </form>
+
+        <div className="mt-6"><ContextualAdSlot path="/signup" compact /></div>
 
         <p className="mt-6 border-t border-border pt-5 text-center text-sm text-muted">
           After signup, sign in as staff at the normal login page.

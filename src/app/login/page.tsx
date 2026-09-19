@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { CheckCircle2, LockKeyhole, ShieldCheck } from "lucide-react";
 import { AppLogo } from "@/components/app-logo";
 import { LoginForm } from "@/components/auth/login-form";
+import { LoginPageAdSlot } from "@/components/login-page-ad-slot";
 import { getStaffSession, getPlatformAdminSession } from "@/lib/auth";
 
 export const metadata = {
@@ -93,6 +94,10 @@ export default async function LoginPage({
               Parent sign in →
             </a>
           </p>
+        </div>
+
+        <div className="mt-6">
+          <LoginPageAdSlot />
         </div>
           </div>
           </div>

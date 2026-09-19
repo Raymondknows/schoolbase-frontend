@@ -344,6 +344,9 @@ export default function Footer() {
               <Link href="/contact" className="hover:text-white">
                 Contact Support
               </Link>
+              <Link href="/advertise" className="hover:text-white">
+                Advertise with us
+              </Link>
             </div>
             <div className="text-right">
               <p>
