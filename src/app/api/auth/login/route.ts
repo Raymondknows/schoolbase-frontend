@@ -87,11 +87,26 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // The backend already returns the authenticated identity. Preserve it when
+    // local JWT verification is unavailable because the secrets are out of sync.
+    if (!session && data?.role) {
+      session = {
+        userId: data.userId,
+        role: data.role,
+        email: data.email,
+        name: data.name,
+        schoolId: data.schoolId ?? null,
+      };
+    }
+
     const res = NextResponse.json({
       success: true,
       session,
       token: data.token,
       user: data.user ?? null,
+      role: data.role ?? session?.role ?? null,
+      userId: data.userId ?? session?.userId ?? null,
+      schoolId: data.schoolId ?? session?.schoolId ?? null,
     });
 
     if (data?.token) {
