@@ -112,6 +112,15 @@ export default function AdminLayout({
           role: sessionData.session.role,
         });
 
+        const sessionRole = sessionData.session?.role;
+        if (sessionRole === 'PLATFORM_ADMIN') {
+          console.log('[AdminLayout] Platform admin session detected; redirecting to platform admin portal.');
+          if (typeof window !== 'undefined') {
+            window.location.href = '/schoolbase-admin';
+          }
+          return;
+        }
+
         const schoolId = sessionData.session?.schoolId;
         if (!schoolId) {
           console.error('[AdminLayout] Verified session missing schoolId:', sessionData.session);

@@ -13,20 +13,19 @@ function secret() {
   return new TextEncoder().encode(key);
 }
 
-async function hasValidToken(cookie?: string) {
-  if (!cookie) return false;
+async function readValidToken(cookie?: string) {
+  if (!cookie) return null;
   try {
     const result = await jwtVerify(cookie, secret());
-    // Check if token is expired
     if (result.payload.exp) {
       const now = Math.floor(Date.now() / 1000);
       if (result.payload.exp < now) {
-        return false; // Token is expired
+        return null;
       }
     }
-    return true;
+    return result.payload as Record<string, unknown>;
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -35,7 +34,8 @@ export async function middleware(request: NextRequest) {
 
   // Check for unified session cookie
   const sessionCookie = request.cookies.get(SESSION_COOKIE)?.value;
-  const isValidToken = sessionCookie ? await hasValidToken(sessionCookie) : false;
+  const tokenPayload = sessionCookie ? await readValidToken(sessionCookie) : null;
+  const isValidToken = Boolean(tokenPayload);
 
   // Protect platform admin routes
   if (pathname.startsWith("/schoolbase-admin")) {
@@ -55,6 +55,10 @@ export async function middleware(request: NextRequest) {
       response.cookies.delete(SESSION_COOKIE);
       return response;
     }
+
+    if (tokenPayload?.role === "PLATFORM_ADMIN") {
+      return NextResponse.redirect(new URL("/schoolbase-admin", request.url));
+    }
   }
 
   if (pathname.startsWith("/teacher")) {
@@ -72,8 +76,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/parent") &&
     !pathname.startsWith("/parent/login")
   ) {
-    const ok = await hasValidToken(request.cookies.get(SESSION_COOKIE)?.value);
-    if (!ok) {
+    const parentToken = request.cookies.get(SESSION_COOKIE)?.value;
+    if (!parentToken || !(await readValidToken(parentToken))) {
       return NextResponse.redirect(new URL("/parent/login", request.url));
     }
   }
