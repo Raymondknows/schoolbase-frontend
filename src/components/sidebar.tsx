@@ -43,6 +43,7 @@ import {
   Calculator,
   Clock,
   Music,
+  Activity,
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/ui/icons";
 
@@ -87,6 +88,7 @@ const icons: Record<string, ComponentType<{ className?: string }>> = {
   Sparkles,
   CalendarDays,
   CheckSquare,
+  Activity,
 };
 
 export default function Sidebar({

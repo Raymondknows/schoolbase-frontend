@@ -19,6 +19,7 @@ const nav = [
   { href: "/schoolbase-admin/videos", label: "Video Library", icon: "FileText" },
   { href: "/schoolbase-admin/subscriptions", label: "Subscriptions", icon: "CreditCard" },
   { href: "/schoolbase-admin/settings", label: "Settings", icon: "Settings" },
+  { href: "/schoolbase-admin/operations", label: "Operations", icon: "Activity" },
 ];
 
 export default async function PlatformAdminLayout({
