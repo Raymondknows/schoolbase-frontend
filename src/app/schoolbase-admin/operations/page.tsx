@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Activity, AlertTriangle, CheckCircle2, ClipboardList, Database, Download, LifeBuoy, RefreshCw, ShieldCheck } from "lucide-react";
-import { playBellTone, playCloseTone, playOpenTone } from "@/lib/sounds";
+import { playBellTone, playCloseTone, playOpenTone, unlockAudio } from "@/lib/sounds";
 
 type OperationsStatus = {
   service?: string;
@@ -31,6 +31,8 @@ export default function OperationsPage() {
     const nextService = nextStatus?.service || 'unavailable';
     const previousService = previousServiceRef.current;
 
+    unlockAudio();
+
     if (previousService && previousService !== nextService) {
       if (nextService === 'ready') {
         playCloseTone();
@@ -47,9 +49,17 @@ export default function OperationsPage() {
   };
 
   useEffect(() => {
+    const unlock = () => unlockAudio();
+    window.addEventListener("pointerdown", unlock, { once: true, passive: true });
+    window.addEventListener("keydown", unlock, { once: true, passive: true });
+
     void loadStatus();
     const interval = window.setInterval(() => void loadStatus(), 30000);
-    return () => window.clearInterval(interval);
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+      window.clearInterval(interval);
+    };
   }, []);
 
   const downloadDatabase = async () => {
