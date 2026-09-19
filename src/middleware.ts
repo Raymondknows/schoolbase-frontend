@@ -13,17 +13,36 @@ function secret() {
   return new TextEncoder().encode(key);
 }
 
+function getAuthBackendUrl() {
+  if (process.env.NODE_ENV === "production") {
+    return (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "https://api.schoolbase.live")
+      .trim()
+      .replace(/\/+$/, "")
+      .replace(/\/api$/, "");
+  }
+
+  return (process.env.BACKEND_URL || "http://localhost:3006")
+    .trim()
+    .replace(/\/+$/, "")
+    .replace(/\/api$/, "");
+}
+
 async function readValidToken(cookie?: string) {
   if (!cookie) return null;
+
   try {
-    const result = await jwtVerify(cookie, secret());
-    if (result.payload.exp) {
-      const now = Math.floor(Date.now() / 1000);
-      if (result.payload.exp < now) {
-        return null;
-      }
+    const response = await fetch(`${getAuthBackendUrl()}/api/auth/verify`, {
+      method: "GET",
+      headers: { Cookie: `${SESSION_COOKIE}=${cookie}` },
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return null;
     }
-    return result.payload as Record<string, unknown>;
+
+    const data = await response.json();
+    return data?.session || data?.user || null;
   } catch {
     return null;
   }
