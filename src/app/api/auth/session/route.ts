@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 
 function secret() {
-  return new TextEncoder().encode(
-    process.env.SESSION_SECRET ?? 'schoolbase-dev-secret-change-me',
-  );
+  const value = process.env.SESSION_SECRET?.trim();
+  if (!value) {
+    throw new Error('SESSION_SECRET is not configured for this frontend deployment');
+  }
+  return new TextEncoder().encode(value);
 }
 
 export async function GET(request: NextRequest) {

@@ -3,9 +3,11 @@ import { jwtVerify } from 'jose';
 import { getBackendUrl } from '@/lib/backend-url';
 
 function secret() {
-  return new TextEncoder().encode(
-    process.env.SESSION_SECRET ?? 'schoolbase-dev-secret-change-me',
-  );
+  const value = process.env.SESSION_SECRET?.trim();
+  if (!value) {
+    throw new Error('SESSION_SECRET is not configured for this frontend deployment');
+  }
+  return new TextEncoder().encode(value);
 }
 
 export async function POST(request: NextRequest) {

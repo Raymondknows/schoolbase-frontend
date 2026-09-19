@@ -6,9 +6,11 @@ import type { NextRequest } from "next/server";
 const SESSION_COOKIE = "schoolbase_session";
 
 function secret() {
-  return new TextEncoder().encode(
-    process.env.SESSION_SECRET ?? "schoolbase-dev-secret-change-me",
-  );
+  const key = process.env.SESSION_SECRET?.trim();
+  if (!key) {
+    throw new Error("SESSION_SECRET is not configured for this frontend deployment");
+  }
+  return new TextEncoder().encode(key);
 }
 
 async function hasValidToken(cookie?: string) {
