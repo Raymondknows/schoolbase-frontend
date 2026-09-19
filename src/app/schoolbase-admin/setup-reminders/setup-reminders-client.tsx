@@ -384,7 +384,7 @@ export default function SetupRemindersClient({
           <table className="w-full divide-y divide-border text-sm">
             <thead className="bg-[#f6f8fa] text-left text-xs font-bold uppercase tracking-[.1em] text-muted">
               <tr>
-                <th className="px-4 py-3 font-semibold">School Name</th>
+                <th className="px-4 py-3 font-semibold">School Name </th>
                 <th className="px-4 py-3 font-semibold">Progress</th>
                 <th className="px-4 py-3 font-semibold">Incomplete</th>
                 <th className="px-4 py-3 font-semibold text-right">Actions</th>
