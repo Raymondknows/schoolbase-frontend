@@ -334,7 +334,7 @@ export default function Footer() {
             <div>
               <p>© 2026 SchoolBase. A ClickBase Group product.</p>
             </div>
-            <div className="flex gap-6">
+            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
               <Link href="/privacy" className="hover:text-white">
                 Privacy Policy
               </Link>
@@ -344,7 +344,7 @@ export default function Footer() {
               <Link href="/contact" className="hover:text-white">
                 Contact Support
               </Link>
-              <Link href="/advertise" className="hover:text-white">
+              <Link href="/advertise" className="rounded-full border border-brand/30 bg-brand px-3 py-1.5 font-medium text-white transition hover:bg-brand-hover">
                 Advertise with us
               </Link>
             </div>

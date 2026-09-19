@@ -142,9 +142,9 @@ export default function SignupPage() {
             <p className="mt-4 max-w-sm text-sm leading-7 text-muted">Create a secure operating system for your school, from the first student record to everyday finance and communication.</p>
           </div>
           <div className="relative grid gap-3 text-sm text-muted">
+            <ContextualAdSlot path="/signup" compact />
             <div className="flex items-center gap-3 border border-border bg-surface px-4 py-3"><Building2 className="h-4 w-4 text-brand" /> Designed for school teams</div>
             <div className="flex items-center gap-3 border border-border bg-surface px-4 py-3"><ShieldCheck className="h-4 w-4 text-brand" /> Verify your email before activation</div>
-            <ContextualAdSlot path="/signup" compact />
           </div>
         </section>
 
