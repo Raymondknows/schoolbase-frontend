@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Activity, AlertTriangle, CheckCircle2, ClipboardList, Database, Download, LifeBuoy, RefreshCw, ShieldCheck } from "lucide-react";
-import { playCloseTone, playOpenTone } from "@/lib/sounds";
+import { playBellTone, playCloseTone, playOpenTone } from "@/lib/sounds";
 
 type OperationsStatus = {
   service?: string;
@@ -22,11 +22,26 @@ export default function OperationsPage() {
   const [exporting, setExporting] = useState(false);
   const [message, setMessage] = useState("");
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const previousServiceRef = useRef<string | null>(null);
 
   const loadStatus = async () => {
     setLoading(true);
     const response = await fetch('/schoolbase-admin/api/operations/status', { credentials: 'include', cache: 'no-store' });
     const nextStatus = await response.json().catch(() => ({ service: 'unavailable' }));
+    const nextService = nextStatus?.service || 'unavailable';
+    const previousService = previousServiceRef.current;
+
+    if (previousService && previousService !== nextService) {
+      if (nextService === 'ready') {
+        playCloseTone();
+      } else if (nextService === 'degraded') {
+        playBellTone('alert', 0.9);
+      } else if (nextService === 'down' || nextService === 'unavailable') {
+        playBellTone('urgent', 1.1);
+      }
+    }
+
+    previousServiceRef.current = nextService;
     setStatus(nextStatus);
     setLoading(false);
   };
