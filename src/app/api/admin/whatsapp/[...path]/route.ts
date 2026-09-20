@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { buildApiUrl } from "@/lib/api-client";
 
-const BACKEND_URL = process.env.BACKEND_URL || process.env.API_URL || "http://localhost:3006";
-
-const getBackendUrl = (pathSegments: string[]): string => {
+const buildWhatsAppBackendUrl = (pathSegments: string[], search: string): string => {
   const path = pathSegments.join("/");
-  // Forward to internal backend Baileys endpoints while exposing neutral frontend path
-  return `${BACKEND_URL.replace(/\/+$/, "")}/api/admin/whatsapp-baileys/${path}`;
+  // Keep the public proxy path neutral while targeting the backend Baileys route.
+  return buildApiUrl(`/admin/whatsapp-baileys/${path}`, search);
 };
 
 const resolvePathSegments = async (params: Promise<{ path?: string[] }> | { path?: string[] }) => {
@@ -14,9 +13,7 @@ const resolvePathSegments = async (params: Promise<{ path?: string[] }> | { path
 };
 
 const forwardRequest = async (request: NextRequest, pathSegments: string[]) => {
-  const url = new URL(getBackendUrl(pathSegments));
-  // Preserve incoming search params, then add dev schoolId if missing
-  url.search = request.nextUrl.search;
+  const url = new URL(buildWhatsAppBackendUrl(pathSegments, request.nextUrl.search));
 
   try {
     const hasCookie = Boolean(request.headers.get('cookie'));
@@ -68,7 +65,7 @@ const forwardRequest = async (request: NextRequest, pathSegments: string[]) => {
       headers: responseHeaders,
     });
   } catch (error) {
-    console.error('[WHATSAPP PROXY] Failed to forward request to backend:', url.toString(), error);
+    console.error('[WHATSAPP PROXY] Failed to forward request to backend:', error);
     return NextResponse.json(
       { error: 'Failed to forward request to backend', details: String(error) },
       { status: 502 }

@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
+import { getBackendUrl } from "@/lib/backend-url";
 
 export async function POST(req: Request) {
   try {
-    const backend = process.env.BACKEND_URL || process.env.API_URL || "http://127.0.0.1:3006";
-    const url = `${backend.replace(/\/$/, '')}/api/whatsapp/retry`;
+    const url = `${getBackendUrl()}/api/whatsapp/retry`;
 
     const resp = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        cookie: req.headers.get('cookie') || '',
+      },
       body: await req.text(),
     });
 
