@@ -1,51 +1,31 @@
-import { jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
-
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3006';
-
-function secret() {
-  const value = process.env.SESSION_SECRET?.trim();
-  if (!value) {
-    throw new Error('SESSION_SECRET is not configured for this frontend deployment');
-  }
-  return new TextEncoder().encode(value);
-}
+import { getStaffSession } from '@/lib/auth';
+import { buildApiUrl } from '@/lib/api-client';
 
 export async function GET() {
   try {
-    const cookieStore = await cookies();
-    const sessionToken = cookieStore.get('schoolbase_session')?.value;
-
-    if (!sessionToken) {
+    const session = await getStaffSession();
+    if (!session) {
       console.error('[api/admin/school] No token found');
       return Response.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    // Verify token to extract schoolId
-    let schoolId: string;
-    try {
-      const { payload } = await jwtVerify(sessionToken, secret());
-      
-      if (!payload || typeof payload !== 'object' || !('schoolId' in payload)) {
-        console.error('[api/admin/school] Invalid token payload');
-        return Response.json({ error: 'Invalid token' }, { status: 401 });
-      }
-
-      schoolId = (payload as any).schoolId;
-    } catch (err) {
-      console.error('[api/admin/school] Token verification failed:', err);
+    const schoolId = session.schoolId;
+    if (!schoolId) {
+      console.error('[api/admin/school] Session has no schoolId');
       return Response.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    console.log('[api/admin/school] Fetching school for ID:', schoolId);
-    console.log('[api/admin/school] Backend URL:', BACKEND_URL);
+    const cookieStore = await cookies();
 
+    console.log('[api/admin/school] Fetching school for ID:', schoolId);
     // Fetch school data from backend
-    const url = `${BACKEND_URL}/api/admin/school/${schoolId}`;
+    const url = buildApiUrl(`/admin/school/${schoolId}`);
     const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        cookie: cookieStore.get('schoolbase_session')?.value ? `schoolbase_session=${cookieStore.get('schoolbase_session')?.value}` : '',
       },
     });
 

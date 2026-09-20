@@ -1,4 +1,5 @@
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3006';
+import { buildApiUrl } from '@/lib/api-client';
 
 export async function GET(
   request: Request,
@@ -11,7 +12,7 @@ export async function GET(
       return Response.json({ error: 'School ID is required' }, { status: 400 });
     }
 
-    const url = `${BACKEND_URL}/api/admin/school/${schoolId}/setup-status`;
+    const url = buildApiUrl(`/admin/school/${schoolId}/setup-status`);
     const response = await fetch(url, {
       method: 'GET',
       headers: {

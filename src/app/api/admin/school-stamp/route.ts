@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getStaffSession, getParentSession } from "@/lib/auth";
+import { buildApiUrl } from "@/lib/api-client";
 
 export async function GET(request: Request) {
   try {
@@ -15,8 +16,7 @@ export async function GET(request: Request) {
       return new Response("Unauthorized", { status: 401 });
     }
 
-    const backendUrl = process.env.BACKEND_URL || process.env.API_URL || "http://localhost:3006";
-    const resp = await fetch(`${backendUrl}/api/admin/school-stamp/${schoolId}`, {
+    const resp = await fetch(buildApiUrl(`/admin/school-stamp/${schoolId}`), {
       headers: { cookie: request.headers.get("cookie") || "" },
       redirect: "follow",
     });

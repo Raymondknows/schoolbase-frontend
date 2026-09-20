@@ -1,6 +1,6 @@
 import { getStaffSession } from "@/lib/auth";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3006";
+import { buildApiUrl } from "@/lib/api-client";
 
 export async function DELETE(
   req: Request,
@@ -15,12 +15,13 @@ export async function DELETE(
     const { id } = await params;
 
     const response = await fetch(
-      `${API_BASE}/api/admin/assessments/${id}`,
+      buildApiUrl(`/admin/assessments/${id}`),
       {
         method: "DELETE",
         headers: {
           "x-school-id": session.schoolId,
           "Content-Type": "application/json",
+          cookie: req.headers.get("cookie") || "",
         },
       }
     );

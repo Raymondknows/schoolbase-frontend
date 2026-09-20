@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { buildApiUrl } from '@/lib/api-client';
 
 export async function GET(request: NextRequest) {
   try {
     // Get the staff token from cookies
-    const staffToken = request.cookies.get('schoolbase_staff')?.value;
+    const staffToken = request.cookies.get('schoolbase_session')?.value || request.cookies.get('schoolbase_staff')?.value;
     
     if (!staffToken) {
       return NextResponse.json(
@@ -12,10 +13,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3006';
-
     // Fetch dashboard data from backend
-    const response = await fetch(`${BACKEND_URL}/api/admin/dashboard`, {
+    const response = await fetch(buildApiUrl('/admin/dashboard'), {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${staffToken}`,
