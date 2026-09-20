@@ -43,31 +43,35 @@ function getSessionTokenFromJar(jar: Awaited<ReturnType<typeof cookies>>): strin
   );
 }
 
+function getAuthBackendUrl() {
+  return (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'https://api.schoolbase.live')
+    .trim()
+    .replace(/\/+$/, '')
+    .replace(/\/api$/, '');
+}
+
+async function getBackendSession(token: string): Promise<StaffSession | null> {
+  try {
+    const response = await fetch(`${getAuthBackendUrl()}/api/auth/verify`, {
+      headers: { Cookie: `${SESSION_COOKIE}=${token}` },
+      cache: 'no-store',
+    });
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    return (data?.session || data?.user || null) as StaffSession | null;
+  } catch {
+    return null;
+  }
+}
+
 export async function getStaffSession(): Promise<StaffSession | null> {
   const jar = await cookies();
   const token = getSessionTokenFromJar(jar);
   if (!token) return null;
 
-  const backendUrl = (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'https://api.schoolbase.live')
-    .trim()
-    .replace(/\/+$/, '')
-    .replace(/\/api$/, '');
-
-  try {
-    const response = await fetch(`${backendUrl}/api/auth/verify`, {
-      headers: { Cookie: `${SESSION_COOKIE}=${token}` },
-      cache: 'no-store',
-    });
-    if (response.ok) {
-      const data = await response.json();
-      const backendSession = (data?.session || data?.user) as StaffSession | undefined;
-      if (backendSession) {
-        return backendSession;
-      }
-    }
-  } catch {
-    // Fall back to local verification for local development or transient API issues.
-  }
+  const backendSession = await getBackendSession(token);
+  if (backendSession) return backendSession;
 
   try {
     const { payload } = await jwtVerify(token, secret());
@@ -82,26 +86,8 @@ export async function getPlatformAdminSession(): Promise<StaffSession | null> {
   const token = jar.get(SESSION_COOKIE)?.value;
   if (!token) return null;
 
-  const backendUrl = (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'https://api.schoolbase.live')
-    .trim()
-    .replace(/\/+$/, '')
-    .replace(/\/api$/, '');
-
-  try {
-    const response = await fetch(`${backendUrl}/api/auth/verify`, {
-      headers: { Cookie: `${SESSION_COOKIE}=${token}` },
-      cache: 'no-store',
-    });
-    if (response.ok) {
-      const data = await response.json();
-      const backendSession = (data?.session || data?.user) as StaffSession | undefined;
-      if (backendSession?.role === 'PLATFORM_ADMIN') {
-        return backendSession;
-      }
-    }
-  } catch {
-    // Fall back to local verification for local development or transient API issues.
-  }
+  const backendSession = await getBackendSession(token);
+  if (backendSession?.role === 'PLATFORM_ADMIN') return backendSession;
 
   try {
     const { payload } = await jwtVerify(token, secret());
@@ -124,6 +110,10 @@ export async function getParentSession(): Promise<ParentSession | null> {
   const jar = await cookies();
   const token = jar.get(SESSION_COOKIE)?.value;
   if (!token) return null;
+
+  const backendSession = await getBackendSession(token);
+  if (backendSession) return backendSession as unknown as ParentSession;
+
   try {
     const { payload } = await jwtVerify(token, secret());
     return payload as unknown as ParentSession;
