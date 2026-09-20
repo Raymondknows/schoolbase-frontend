@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-function getBackendUrl() {
-  if (process.env.NODE_ENV === 'production') {
-    return 'https://api.schoolbase.live';
-  }
-  return process.env.BACKEND_URL || 'http://localhost:3006';
-}
+import { getBackendUrl } from '@/lib/backend-url';
 
 /**
  * POST /api/signup/verify-otp

@@ -1,4 +1,3 @@
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3006';
 import { buildApiUrl } from '@/lib/api-client';
 
 export async function GET(

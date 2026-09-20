@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getBackendUrl } from '@/lib/backend-url';
 
 /**
  * Proxy handler for /api/uploads/* paths
@@ -28,7 +29,7 @@ export async function GET(request: Request) {
     // Build backend URL
     // Backend serves from /uploads/... (not /api/uploads/...)
     // So /api/uploads/photos/x.jpg should proxy to /uploads/photos/x.jpg
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3006';
+    const backendUrl = getBackendUrl();
     const fullBackendUrl = `${backendUrl}/uploads${uploadPath}`;
 
     try {

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { buildApiUrl } from "@/lib/api-client";
 
 export async function GET(
   request: Request,
@@ -6,9 +7,7 @@ export async function GET(
 ) {
   try {
     const { schoolId } = await params;
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:3006";
-
-    const resp = await fetch(`${backendUrl}/api/admin/school-logo/${schoolId}`, {
+    const resp = await fetch(buildApiUrl(`/admin/school-logo/${schoolId}`), {
       headers: { cookie: request.headers.get("cookie") || "" },
       redirect: "follow",
     });
