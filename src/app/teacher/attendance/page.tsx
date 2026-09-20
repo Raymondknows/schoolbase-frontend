@@ -15,6 +15,7 @@ import {
   Users,
   X,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { getBackendUrl } from '@/lib/backend-url';
 import { ErrorModal } from '@/components/ui/error-modal';
 import AdminSkeleton from '@/components/ui/skeleton';
@@ -41,6 +42,13 @@ interface AttendanceRecord {
 }
 
 type ViewMode = 'grid' | 'list';
+
+const STATUS_CONFIG: Record<AttendanceRecord['status'], { label: string; icon: LucideIcon; active: string }> = {
+  PRESENT: { label: 'Present', icon: CheckCircle2, active: 'border-emerald-200 bg-emerald-50 text-emerald-700' },
+  ABSENT: { label: 'Absent', icon: AlertCircle, active: 'border-red-200 bg-red-50 text-red-700' },
+  LATE: { label: 'Late', icon: Clock, active: 'border-amber-200 bg-amber-50 text-amber-700' },
+  EXCUSED: { label: 'Excused', icon: CheckCircle2, active: 'border-sky-200 bg-sky-50 text-sky-700' },
+};
 
 export default function AttendancePage() {
   const router = useRouter();
@@ -211,6 +219,30 @@ export default function AttendancePage() {
       setSaving(false);
     }
   };
+
+  const renderStatusControls = (studentId: string) => (
+    <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Attendance status">
+      {(Object.keys(STATUS_CONFIG) as AttendanceRecord['status'][]).map((status) => {
+        const config = STATUS_CONFIG[status];
+        const Icon = config.icon;
+        const isActive = attendance[studentId]?.status === status;
+        return (
+          <button
+            key={status}
+            type="button"
+            onClick={() => handleStatusChange(studentId, status)}
+            disabled={attendanceAlreadyTaken}
+            aria-pressed={isActive}
+            title={`Mark ${config.label.toLowerCase()}`}
+            className={`inline-flex h-7 items-center gap-1 rounded-md border px-2 text-[11px] font-semibold transition focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-50 ${isActive ? config.active : 'border-border bg-background text-muted hover:border-brand/40 hover:text-foreground'}`}
+          >
+            <Icon className="h-3.5 w-3.5" />
+            <span>{config.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
 
   if (loading) {
     return <AdminSkeleton />;
@@ -479,33 +511,7 @@ export default function AttendancePage() {
                               <tr key={student.id} className="bg-surface transition-colors hover:bg-background/60">
                                 <td className="px-4 py-3.5 font-medium text-foreground">{studentName}</td>
                                 <td className="px-4 py-3.5 text-muted">{student.admissionNo || '—'}</td>
-                                <td className="px-4 py-3.5">
-                                  <div className="flex flex-wrap gap-2">
-                                    {(['PRESENT', 'ABSENT', 'LATE', 'EXCUSED'] as const).map((status) => {
-                                      const isActive = attendance[student.id]?.status === status;
-                                      return (
-                                        <button
-                                          key={status}
-                                          type="button"
-                                          onClick={() => handleStatusChange(student.id, status)}
-                                          disabled={attendanceAlreadyTaken}
-                                          className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold transition ${
-                                            isActive
-                                              ? {
-                                                  PRESENT: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-                                                  ABSENT: 'bg-red-100 text-red-700 border-red-200',
-                                                  LATE: 'bg-amber-100 text-amber-700 border-amber-200',
-                                                  EXCUSED: 'bg-blue-100 text-blue-700 border-blue-200',
-                                                }[status]
-                                              : 'bg-background text-muted border-border hover:border-brand/50 disabled:opacity-50 disabled:cursor-not-allowed'
-                                          }`}
-                                        >
-                                          {status}
-                                        </button>
-                                      );
-                                    })}
-                                  </div>
-                                </td>
+                                <td className="px-4 py-3.5">{renderStatusControls(student.id)}</td>
                               </tr>
                             );
                           })}
@@ -525,31 +531,7 @@ export default function AttendancePage() {
                               <p className="mt-1 text-xs text-muted">{student.admissionNo || '—'}</p>
                             </div>
                           </div>
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            {(['PRESENT', 'ABSENT', 'LATE', 'EXCUSED'] as const).map((status) => {
-                              const isActive = attendance[student.id]?.status === status;
-                              return (
-                                <button
-                                  key={status}
-                                  type="button"
-                                  onClick={() => handleStatusChange(student.id, status)}
-                                  disabled={attendanceAlreadyTaken}
-                                  className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold transition ${
-                                    isActive
-                                      ? {
-                                          PRESENT: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-                                          ABSENT: 'bg-red-100 text-red-700 border-red-200',
-                                          LATE: 'bg-amber-100 text-amber-700 border-amber-200',
-                                          EXCUSED: 'bg-blue-100 text-blue-700 border-blue-200',
-                                        }[status]
-                                      : 'bg-background text-muted border-border disabled:opacity-50 disabled:cursor-not-allowed'
-                                  }`}
-                                >
-                                  {status}
-                                </button>
-                              );
-                            })}
-                          </div>
+                          <div className="mt-3">{renderStatusControls(student.id)}</div>
                         </div>
                       );
                     })}
@@ -566,36 +548,12 @@ export default function AttendancePage() {
                             <p className="truncate text-sm font-semibold text-foreground">{studentName}</p>
                             <p className="mt-1 truncate text-xs text-muted">{student.admissionNo || '—'}</p>
                           </div>
-                          <span className="shrink-0 rounded-full bg-background px-2.5 py-1 text-xs font-medium text-muted border border-border">
-                            {attendance[student.id]?.status || 'Not set'}
+                          <span className="shrink-0 rounded-md border border-border bg-surface px-2 py-1 text-[11px] font-semibold text-muted">
+                            {attendance[student.id] ? STATUS_CONFIG[attendance[student.id].status].label : 'Not set'}
                           </span>
                         </div>
                         <div className="mt-4 border-t border-border pt-3">
-                          <div className="flex flex-wrap gap-2">
-                            {(['PRESENT', 'ABSENT', 'LATE', 'EXCUSED'] as const).map((status) => {
-                              const isActive = attendance[student.id]?.status === status;
-                              return (
-                                <button
-                                  key={status}
-                                  type="button"
-                                  onClick={() => handleStatusChange(student.id, status)}
-                                  disabled={attendanceAlreadyTaken}
-                                  className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold transition ${
-                                    isActive
-                                      ? {
-                                          PRESENT: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-                                          ABSENT: 'bg-red-100 text-red-700 border-red-200',
-                                          LATE: 'bg-amber-100 text-amber-700 border-amber-200',
-                                          EXCUSED: 'bg-blue-100 text-blue-700 border-blue-200',
-                                        }[status]
-                                      : 'bg-background text-muted border-border disabled:opacity-50 disabled:cursor-not-allowed'
-                                  }`}
-                                >
-                                  {status}
-                                </button>
-                              );
-                            })}
-                          </div>
+                          {renderStatusControls(student.id)}
                         </div>
                       </div>
                     );

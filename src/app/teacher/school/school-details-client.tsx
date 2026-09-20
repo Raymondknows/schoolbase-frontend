@@ -18,6 +18,18 @@ type TeacherSchoolDetailsProps = {
     manualPaymentAccountName?: string | null;
     manualPaymentAccountNumber?: string | null;
     manualPaymentBankName?: string | null;
+    paymentAccounts?: Array<{
+      id?: string;
+      label?: string | null;
+      bankName?: string | null;
+      accountName?: string | null;
+      accountNumber?: string | null;
+      branchName?: string | null;
+      currency?: string | null;
+      purpose?: string | null;
+      isDefault?: boolean;
+      isActive?: boolean;
+    }>;
     currency?: string | null;
     timezone?: string | null;
     websiteEnabled?: boolean | null;
@@ -56,6 +68,7 @@ export function TeacherSchoolDetailsContent({ school }: TeacherSchoolDetailsProp
   }, [school?.currency]);
 
   const paymentDetailsAvailable =
+    Boolean(school.paymentAccounts?.some((account) => account.isActive !== false && (account.accountName || account.accountNumber || account.bankName))) ||
     Boolean(school.manualPaymentAccountName) ||
     Boolean(school.manualPaymentAccountNumber) ||
     Boolean(school.manualPaymentBankName);
@@ -113,10 +126,22 @@ export function TeacherSchoolDetailsContent({ school }: TeacherSchoolDetailsProp
           <div className="border-t border-border pt-5">
             <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-muted"><CreditCard className="h-4 w-4 text-brand" /> School account</p>
             {paymentDetailsAvailable ? (
-              <div className="mt-3 space-y-2 text-sm text-foreground">
-                {school.manualPaymentAccountName ? <div>Account name: {school.manualPaymentAccountName}</div> : null}
-                {school.manualPaymentAccountNumber ? <div>Account number: {school.manualPaymentAccountNumber}</div> : null}
-                {school.manualPaymentBankName ? <div>Bank: {school.manualPaymentBankName}</div> : null}
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {school.paymentAccounts?.filter((account) => account.isActive !== false && (account.accountName || account.accountNumber || account.bankName)).map((account, index) => (
+                  <div key={account.id || `${account.label || "account"}-${index}`} className="border border-border bg-background p-4 text-sm text-foreground">
+                    <p className="font-semibold">{account.label || account.purpose || "School account"}{account.isDefault ? " · Default" : ""}</p>
+                    {account.accountName ? <div className="mt-2">Account name: {account.accountName}</div> : null}
+                    {account.accountNumber ? <div>Account number: {account.accountNumber}</div> : null}
+                    {account.bankName ? <div>Bank: {account.bankName}</div> : null}
+                    {account.branchName ? <div>Branch: {account.branchName}</div> : null}
+                    {account.currency ? <div>Currency: {account.currency}</div> : null}
+                  </div>
+                ))}
+                {!school.paymentAccounts?.length ? <div className="text-sm text-foreground">
+                  {school.manualPaymentAccountName ? <div>Account name: {school.manualPaymentAccountName}</div> : null}
+                  {school.manualPaymentAccountNumber ? <div>Account number: {school.manualPaymentAccountNumber}</div> : null}
+                  {school.manualPaymentBankName ? <div>Bank: {school.manualPaymentBankName}</div> : null}
+                </div> : null}
               </div>
             ) : (
               <p className="mt-2 text-sm text-muted">Account details have not been published yet.</p>

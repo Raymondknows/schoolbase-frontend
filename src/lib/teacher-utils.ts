@@ -211,6 +211,7 @@ export function getTeacherNavigation(phase: SchoolPhase) {
     { href: '/teacher/timetable', label: 'Timetable', icon: 'CalendarDays' },
     { href: '/teacher/announcements', label: 'Announcements', icon: 'Megaphone' },
     { href: '/teacher/profile', label: 'Profile', icon: 'UserCircle' },
+    { href: '/teacher/settings', label: 'Settings', icon: 'Settings' },
     { href: '/teacher/school', label: 'School', icon: 'Building2' },
   ];
 
@@ -254,6 +255,7 @@ export function getTeacherMobileNav(phase: SchoolPhase) {
       { href: '/teacher/results', label: '📊 Results' },
       { href: '/teacher/announcements', label: '📢 Announcements' },
       { href: '/teacher/profile', label: '👤 Profile' },
+      { href: '/teacher/settings', label: '⚙️ Settings' },
       { href: '/teacher/school', label: '🏫 School' },
     ],
     PRIMARY: [
@@ -265,6 +267,7 @@ export function getTeacherMobileNav(phase: SchoolPhase) {
       { href: '/teacher/timetable', label: '🗓️ Timetable' },
       { href: '/teacher/results', label: '📊 Results' },
       { href: '/teacher/profile', label: '👤 Profile' },
+      { href: '/teacher/settings', label: '⚙️ Settings' },
       { href: '/teacher/school', label: '🏢 School' },
     ],
     SECONDARY: [
@@ -275,6 +278,7 @@ export function getTeacherMobileNav(phase: SchoolPhase) {
       { href: '/teacher/attendance', label: '✅ Attendance' },
       { href: '/teacher/timetable', label: '🗓️ Timetable' },
       { href: '/teacher/profile', label: '👤 Profile' },
+      { href: '/teacher/settings', label: '⚙️ Settings' },
       { href: '/teacher/school', label: '🏢 School' },
     ],
   };
