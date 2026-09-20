@@ -1,6 +1,5 @@
 import { getStaffSession } from "@/lib/auth";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3006";
+import { buildApiUrl } from "@/lib/api-client";
 
 export async function GET(req: Request) {
   try {
@@ -10,7 +9,7 @@ export async function GET(req: Request) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const response = await fetch(`${API_BASE}/api/admin/academic-years`, {
+    const response = await fetch(buildApiUrl("/admin/academic-years"), {
       headers: {
         "x-school-id": schoolId,
         cookie: req.headers.get("cookie") || "",
@@ -18,15 +17,14 @@ export async function GET(req: Request) {
     });
 
     if (!response.ok) {
-      // Fallback: return empty if backend endpoint doesn't exist yet
-      return Response.json({ academicYears: [] });
+      const error = await response.json().catch(() => ({ error: "Failed to fetch academic years" }));
+      return Response.json(error, { status: response.status });
     }
 
     const data = await response.json();
     return Response.json(data);
   } catch (error) {
     console.error("Error fetching academic years:", error);
-    // Return empty array on error (fallback)
-    return Response.json({ academicYears: [] });
+    return Response.json({ error: "Failed to fetch academic years" }, { status: 500 });
   }
 }

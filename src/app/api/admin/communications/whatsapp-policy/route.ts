@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const BACKEND_URL = process.env.BACKEND_URL || process.env.API_URL || "http://localhost:3006";
+import { buildApiUrl } from "@/lib/api-client";
 
 async function forward(request: NextRequest) {
-  const url = `${BACKEND_URL.replace(/\/+$/, "")}/api/admin/communications/whatsapp-policy`;
+  const url = buildApiUrl("/admin/communications/whatsapp-policy");
   const headers = new Headers(request.headers);
   headers.delete("host");
   headers.delete("content-length");

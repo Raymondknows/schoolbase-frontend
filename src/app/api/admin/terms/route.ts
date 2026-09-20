@@ -1,6 +1,5 @@
 import { getStaffSession } from "@/lib/auth";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3006";
+import { buildApiUrl } from "@/lib/api-client";
 
 export async function GET(req: Request) {
   try {
@@ -10,7 +9,7 @@ export async function GET(req: Request) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const response = await fetch(`${API_BASE}/api/admin/terms`, {
+    const response = await fetch(buildApiUrl("/admin/terms"), {
       headers: {
         "x-school-id": schoolId,
         cookie: req.headers.get("cookie") || "",
@@ -18,15 +17,14 @@ export async function GET(req: Request) {
     });
 
     if (!response.ok) {
-      // Fallback: return empty if backend endpoint doesn't exist yet
-      return Response.json({ terms: [] });
+      const error = await response.json().catch(() => ({ error: "Failed to fetch terms" }));
+      return Response.json(error, { status: response.status });
     }
 
     const data = await response.json();
     return Response.json(data);
   } catch (error) {
     console.error("Error fetching terms:", error);
-    // Return empty array on error (fallback)
-    return Response.json({ terms: [] });
+    return Response.json({ error: "Failed to fetch terms" }, { status: 500 });
   }
 }
