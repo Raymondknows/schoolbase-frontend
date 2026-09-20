@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 
 function getBackendUrl() {
-  if (process.env.NODE_ENV === 'production') {
-    return 'https://api.schoolbase.live';
+  if (process.env.NODE_ENV !== 'production') {
+    return process.env.BACKEND_URL || 'http://localhost:3006';
   }
-  return process.env.BACKEND_URL || 'http://localhost:3006';
+
+  return (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'https://api.schoolbase.live')
+    .replace(/\/+$/, '')
+    .replace(/\/api$/, '');
 }
 
 function secret() {
@@ -31,23 +34,40 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
+    const rawText = await response.text();
+    let data: any = {};
+    try {
+      data = rawText ? JSON.parse(rawText) : {};
+    } catch {
+      data = { error: 'Authentication service returned an unexpected response.' };
+    }
 
     if (!response.ok) {
       console.error('Platform login failed:', { status: response.status, data });
       return NextResponse.json(data, { status: response.status });
     }
 
-    // Decode token to get session data
-    let session = null;
+    // Decode the token when possible, then preserve the backend identity fields
+    // even if frontend/backend secrets are temporarily out of sync.
+    let session = data?.session ?? null;
     if (data.token) {
       try {
         const decoded = await jwtVerify(data.token, secret());
         session = decoded.payload;
         console.log('Platform admin login successful:', { role: session?.role, userId: session?.userId });
       } catch (e) {
-        console.error('Token decode error:', e);
+        console.warn('Token decode warning; using backend login identity:', e);
       }
+    }
+
+    if (!session && data?.role) {
+      session = {
+        userId: data.userId,
+        role: data.role,
+        email: data.email,
+        name: data.name,
+        schoolId: data.schoolId ?? null,
+      };
     }
 
     // Set httpOnly session cookie
@@ -55,6 +75,10 @@ export async function POST(request: NextRequest) {
       success: true,
       session,
       token: data.token,
+      role: data.role ?? session?.role ?? null,
+      userId: data.userId ?? session?.userId ?? null,
+      email: data.email ?? session?.email ?? null,
+      name: data.name ?? session?.name ?? null,
     });
     
     if (data.token) {
