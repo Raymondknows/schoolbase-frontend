@@ -18,38 +18,60 @@ export type LoginPageAd = {
 };
 
 export function ContextualAdSlot({ path = "/login", compact = false }: { path?: string; compact?: boolean }) {
-  const [ad, setAd] = useState<LoginPageAd | null>(null);
+  const [ads, setAds] = useState<LoginPageAd[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
 
-    async function loadAd() {
+    async function loadAds() {
       try {
         setLoading(true);
         const backendUrl = getBackendUrl();
         const response = await fetch(`${backendUrl}/api/ads/placements?path=${encodeURIComponent(path)}`, { cache: "no-store" });
         const data = await response.json().catch(() => ({ ads: [] }));
         if (!active) return;
-        const nextAd = Array.isArray(data?.ads) && data.ads[0] ? data.ads[0] : null;
-        setAd(nextAd);
-        if (nextAd) {
-          void fetch(`${backendUrl}/api/ads/placements?path=${encodeURIComponent(path)}&id=${encodeURIComponent(nextAd.id)}&event=impression`, { method: "POST", keepalive: true }).catch(() => {});
+
+        const nextAds = Array.isArray(data?.ads) ? data.ads : [];
+        setAds(nextAds);
+        setCurrentIndex(0);
+
+        if (nextAds[0]) {
+          void fetch(`${backendUrl}/api/ads/placements?path=${encodeURIComponent(path)}&id=${encodeURIComponent(nextAds[0].id)}&event=impression`, { method: "POST", keepalive: true }).catch(() => {});
         }
       } catch {
-        if (active) setAd(null);
+        if (active) setAds([]);
       } finally {
         if (active) setLoading(false);
       }
     }
 
-    void loadAd();
+    void loadAds();
     return () => {
       active = false;
     };
   }, [path]);
 
+  useEffect(() => {
+    if (ads.length <= 1) return;
+
+    const timer = window.setInterval(() => {
+      setCurrentIndex((previous) => (previous + 1) % ads.length);
+    }, 7000);
+
+    return () => window.clearInterval(timer);
+  }, [ads]);
+
+  useEffect(() => {
+    if (!ads[currentIndex]) return;
+    const ad = ads[currentIndex];
+    void fetch(`${getBackendUrl()}/api/ads/placements?path=${encodeURIComponent(path)}&id=${encodeURIComponent(ad.id)}&event=impression`, { method: "POST", keepalive: true }).catch(() => {});
+  }, [ads, currentIndex, path]);
+
   if (loading) return null;
+
+  const ad = ads[currentIndex];
   if (!ad) return null;
 
   const linkTarget = ad.landingUrl.startsWith("http") ? "_blank" : "_self";
@@ -68,7 +90,7 @@ export function ContextualAdSlot({ path = "/login", compact = false }: { path?: 
         className="group block overflow-hidden border-t border-brand/20 pt-3 transition"
       >
         {ad.imageUrl ? (
-            <div className="relative h-28 w-full overflow-hidden border-y border-brand/20 bg-transparent">
+          <div className="relative h-28 w-full overflow-hidden border-y border-brand/20 bg-transparent">
             <img src={ad.imageUrl} alt={ad.headline || ad.title} className="h-full w-full object-cover transition duration-200 group-hover:scale-[1.02]" />
           </div>
         ) : null}

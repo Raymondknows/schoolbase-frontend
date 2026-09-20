@@ -138,10 +138,11 @@ export default function PlatformAdsPage() {
     }
   }
 
-  async function updateCampaign(id: string, action: "approve" | "reject" | "pause" | "submit" | "live") {
+  async function updateCampaign(id: string, action: "approve" | "reject" | "pause" | "resume" | "submit" | "live") {
     setSaving(true);
     try {
-      const response = await fetch(`/schoolbase-admin/api/ads/campaigns/${id}/${action === "pause" ? "" : action}`, {
+      const endpoint = action === "pause" ? "" : action;
+      const response = await fetch(`/schoolbase-admin/api/ads/campaigns/${id}/${endpoint}`, {
         method: action === "pause" ? "PATCH" : "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -149,8 +150,8 @@ export default function PlatformAdsPage() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Unable to update campaign.");
-      const actionLabel = action === "approve" ? "approved" : action === "reject" ? "rejected" : action === "submit" ? "marked submitted" : action === "live" ? "is now live" : "paused";
-      showSuccess(`Campaign ${actionLabel}`, action === "live" ? "The campaign is now eligible to appear on its assigned public placement." : `The platform admin action completed successfully.`);
+      const actionLabel = action === "approve" ? "approved" : action === "reject" ? "rejected" : action === "submit" ? "marked submitted" : action === "live" ? "is now live" : action === "resume" ? "resumed" : "paused";
+      showSuccess(`Campaign ${actionLabel}`, action === "live" || action === "resume" ? "The campaign is now eligible to appear on its assigned public placement again." : `The platform admin action completed successfully.`);
       await loadData({ silent: true });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unable to update campaign.";
@@ -332,6 +333,7 @@ export default function PlatformAdsPage() {
                               {campaign.status === "DRAFT" && <button type="button" disabled={saving} onClick={() => void updateCampaign(campaign.id, "submit")} className="rounded-md border border-brand/30 bg-brand/10 px-2 py-1 text-xs font-semibold text-brand">Mark submitted</button>}
                               {campaign.status === "APPROVED" && <button type="button" disabled={saving} onClick={() => void updateCampaign(campaign.id, "live")} className="rounded-md bg-brand px-2 py-1 text-xs font-semibold text-white">Go live</button>}
                               {campaign.status === "LIVE" && <button type="button" disabled={saving} onClick={() => void updateCampaign(campaign.id, "pause")} className="rounded-md border border-brand/30 bg-brand/10 px-2 py-1 text-xs font-semibold text-brand">Pause</button>}
+                              {campaign.status === "PAUSED" && <button type="button" disabled={saving} onClick={() => void updateCampaign(campaign.id, "resume")} className="rounded-md bg-brand px-2 py-1 text-xs font-semibold text-white">Resume</button>}
                             </div>
                           </td>
                         </tr>
@@ -649,6 +651,8 @@ export default function PlatformAdsPage() {
                     <>
                       {reviewTarget.campaign.status === "DRAFT" ? (
                         <button type="button" disabled={saving} onClick={() => { void updateCampaign(reviewTarget.campaign.id, "submit"); setReviewTarget(null); }} className="rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover">Mark submitted</button>
+                      ) : reviewTarget.campaign.status === "PAUSED" ? (
+                        <button type="button" disabled={saving} onClick={() => { void updateCampaign(reviewTarget.campaign.id, "resume"); setReviewTarget(null); }} className="rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover">Resume ad</button>
                       ) : (
                         <>
                           <button type="button" disabled={saving} onClick={() => { void updateCampaign(reviewTarget.campaign.id, "reject"); setReviewTarget(null); }} className="rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface">Reject</button>
