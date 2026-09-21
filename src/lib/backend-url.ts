@@ -17,7 +17,8 @@ export function getBackendUrl(): string {
     const protectedPrefixes = ['/admin', '/accounting', '/teacher', '/parent', '/schoolbase-admin'];
     const pathname = window.location.pathname || '/';
 
-    if (protectedPrefixes.some((prefix) => pathname.startsWith(prefix))) {
+    const isParentLoginPage = pathname === '/parent/login';
+    if (!isParentLoginPage && protectedPrefixes.some((prefix) => pathname.startsWith(prefix))) {
       return window.location.origin;
     }
   }
