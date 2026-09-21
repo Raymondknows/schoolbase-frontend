@@ -40,6 +40,7 @@ import {
   CreditCard,
   Eye,
   Bell,
+  Info,
   X,
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/ui/icons";
@@ -896,9 +897,18 @@ export default function FeesPageClient({
                 <span className="sm:hidden">{issuingBills ? "..." : "Issue"}</span>
                 <span className="hidden sm:inline">{issuingBills ? "Issuing..." : "Issue Bills"}</span>
               </Button>
-              <label className="flex w-full items-center gap-2 text-[11px] text-muted sm:w-auto sm:max-w-[220px] sm:text-xs">
-                <input type="checkbox" checked={bulkApproval} onChange={(e) => setBulkApproval(e.target.checked)} />
-                Approve WhatsApp delivery to eligible guardians
+              <label
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background text-muted transition hover:border-brand hover:text-brand sm:h-auto sm:w-auto sm:px-2 sm:py-2"
+                title="Approve WhatsApp delivery to eligible guardians for this invoice run"
+              >
+                <input
+                  type="checkbox"
+                  checked={bulkApproval}
+                  onChange={(e) => setBulkApproval(e.target.checked)}
+                  aria-label="Approve WhatsApp delivery to eligible guardians"
+                  className="sr-only"
+                />
+                <Info className={`h-4 w-4 ${bulkApproval ? "text-brand" : ""}`} aria-hidden="true" />
               </label>
             </form>
 
