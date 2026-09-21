@@ -79,8 +79,7 @@ export function ContextualAdSlot({ path = "/login", compact = false }: { path?: 
   return (
     <div className={`text-foreground ${compact ? "py-3" : "py-4"}`}>
       <div className="mb-3 flex items-center justify-between gap-3 text-[11px] font-bold uppercase tracking-[0.16em] text-brand">
-        <span>{ad.label}</span>
-        {ad.advertiser ? <span className="text-muted">{ad.advertiser}</span> : null}
+        <span>Sponsored</span>
       </div>
       <Link
         href={ad.landingUrl}
@@ -95,7 +94,6 @@ export function ContextualAdSlot({ path = "/login", compact = false }: { path?: 
           </div>
         ) : null}
         <div className={`space-y-2 ${compact ? "p-3" : "p-4"}`}>
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">SchoolBase Partner</p>
           <h3 className="text-lg font-semibold text-foreground">{ad.headline || ad.title}</h3>
           <p className="text-sm leading-6 text-muted">{ad.summary || ad.description || "Explore this trusted education resource."}</p>
           <span className="inline-flex items-center text-sm font-semibold text-brand">{ad.ctaText || "Learn more"} →</span>
