@@ -82,6 +82,7 @@ interface Assessment {
   studentCount?: number;
   entryCount?: number;
   subjectCount?: number;
+  subjects?: Array<{ id: string | null; name: string }>;
   results?: Array<{
     pupilId: string;
     totalScore: number | null;
@@ -180,11 +181,11 @@ export default function TeacherResultsEnhancedClient({
       filtered = filtered.filter((a) => {
         const name = (a.name || "").toLowerCase();
         const termName = (a.term?.name || "").toLowerCase();
-        const subjectName = (a.subject?.name || "").toLowerCase();
+        const subjectNames = (a.subjects || []).map((subject) => subject.name.toLowerCase());
         return (
           name.includes(query) ||
           termName.includes(query) ||
-          subjectName.includes(query)
+          subjectNames.some((subjectName) => subjectName.includes(query))
         );
       });
     }

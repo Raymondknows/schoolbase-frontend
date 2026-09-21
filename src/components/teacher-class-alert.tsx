@@ -88,7 +88,7 @@ export default function TeacherClassAlert() {
   };
 
   return (
-    <div className="fixed inset-x-0 top-16 z-[80] flex justify-center px-3 print:hidden sm:top-20 sm:px-4" role="alertdialog" aria-label="Upcoming class reminder">
+    <div className="fixed inset-x-0 top-16 z-[80] flex justify-center px-3 print:hidden sm:top-20 sm:px-4 md:left-64" role="alertdialog" aria-label="Upcoming class reminder">
       <div className="w-full max-w-xl rounded-[20px] border border-brand/20 bg-blue-50/95 p-4 shadow-2xl shadow-blue-600/15 backdrop-blur-sm">
         <div className="flex items-start gap-3">
           <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#0A66C2] text-white shadow-lg shadow-blue-500/20">

@@ -262,7 +262,7 @@ export default function TeacherDashboardPage() {
         </section>
 
         {selectedLesson && (
-          <div className="fixed inset-0 z-50 flex" role="dialog" aria-modal="true" aria-labelledby="lesson-drawer-title">
+          <div className="fixed inset-0 z-50 flex md:left-64" role="dialog" aria-modal="true" aria-labelledby="lesson-drawer-title">
             <button
               type="button"
               aria-label="Close lesson details"

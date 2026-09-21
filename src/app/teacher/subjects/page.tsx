@@ -1,16 +1,12 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import {
   AlertCircle,
   BookOpen,
   ChevronLeft,
   ChevronRight,
-  Grid3X3,
-  List,
   Search,
-  Users,
   X,
 } from 'lucide-react';
 import { getBackendUrl } from '@/lib/backend-url';
@@ -19,16 +15,11 @@ import TeacherPageHeader from '@/components/teacher-page-header';
 interface Subject {
   id: string;
   name: string;
-  code?: string;
+  classes: Array<{ id: string; name: string; arm?: string | null; phase?: string | null }>;
 }
-
-type ViewMode = 'grid' | 'list';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100] as const;
 const DEFAULT_ITEMS_PER_PAGE = 20;
-
-const getSubjectMetaLabel = (subject: Subject) =>
-  subject.code ? `Code ${subject.code}` : '';
 
 export default function SubjectsPage() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -37,7 +28,6 @@ export default function SubjectsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
 
   useEffect(() => {
     async function loadSubjects() {
@@ -73,17 +63,9 @@ export default function SubjectsPage() {
 
     return subjects.filter((subject) => {
       const name = subject.name.toLowerCase();
-      const code = (subject.code || '').toLowerCase();
-      return name.includes(query) || code.includes(query);
+      return name.includes(query);
     });
   }, [subjects, searchQuery]);
-
-  const stats = useMemo(
-    () => ({
-      total: subjects.length,
-    }),
-    [subjects.length],
-  );
 
   const totalPages = Math.max(1, Math.ceil(filteredSubjects.length / itemsPerPage));
   const safeCurrentPage = Math.min(currentPage, totalPages);
@@ -116,16 +98,13 @@ export default function SubjectsPage() {
             <div className="h-4 w-72 animate-pulse rounded bg-surface" />
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3">
-            {[1, 2, 3].map((item) => (
-              <div
-                key={item}
-                className="h-24 animate-pulse border border-border bg-surface"
-              />
-            ))}
-          </div>
+          <div className="h-24 animate-pulse border border-border bg-surface" />
 
-          <div className="h-96 animate-pulse border border-border bg-surface" />
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {[1, 2, 3, 4, 5, 6].map((item) => (
+                <div key={item} className="h-28 animate-pulse border border-border bg-surface" />
+              ))}
+            </div>
         </div>
       </div>
     );
@@ -134,7 +113,7 @@ export default function SubjectsPage() {
   return (
     <main className="min-h-screen pb-12">
       <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
-        <TeacherPageHeader icon={BookOpen} title="Your Subjects" description="Find your assigned subjects quickly and move directly into the results workflow." count={`${subjects.length} subjects`} />
+        <TeacherPageHeader icon={BookOpen} title="Your Subjects" description="A clear view of the subjects assigned to you." count={`${subjects.length} subjects`} />
 
         {error && (
           <div className="flex items-start gap-3 border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3">
@@ -146,41 +125,13 @@ export default function SubjectsPage() {
           </div>
         )}
 
-        <section className="grid gap-4 sm:grid-cols-2">
-          <article className="group border border-border bg-surface p-5 transition hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-sm">
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
-                <BookOpen className="h-5 w-5 text-blue-600" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted">Total Subjects</p>
-                <p className="mt-1 text-2xl font-semibold text-foreground">{stats.total}</p>
-              </div>
-            </div>
-            <p className="mt-3 text-sm text-muted">Subjects currently assigned to you.</p>
-          </article>
-
-          <article className="group border border-border bg-surface p-5 transition hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-sm">
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
-                <BookOpen className="h-5 w-5 text-blue-600" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted">Subject codes</p>
-                <p className="mt-1 text-2xl font-semibold text-foreground">{subjects.filter((subject) => subject.code).length}</p>
-              </div>
-            </div>
-            <p className="mt-3 text-sm text-muted">Assigned subjects with a code.</p>
-          </article>
-        </section>
-
         <section className="border border-border bg-surface">
           <div className="border-b border-border px-5 py-4">
             <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand">Teaching directory</p>
+                <p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand">Subject directory</p>
                 <h2 className="mt-1 text-lg font-semibold text-foreground">Find a subject</h2>
-                <p className="mt-1 text-sm text-muted">Search by subject name or code, then open its results workspace.</p>
+                <p className="mt-1 text-sm text-muted">Search your assigned subjects.</p>
               </div>
               <span className="text-xs font-semibold text-muted">{filteredSubjects.length} matching</span>
             </div>
@@ -196,7 +147,7 @@ export default function SubjectsPage() {
                     setSearchQuery(event.target.value);
                     setCurrentPage(1);
                   }}
-                  placeholder="Search by subject name or code..."
+                  placeholder="Search subjects..."
                   className="w-full rounded-lg border border-border bg-surface py-2.5 pl-10 pr-10 text-sm text-foreground outline-none transition placeholder:text-muted focus:border-brand"
                 />
 
@@ -213,35 +164,6 @@ export default function SubjectsPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <div className="flex rounded-lg border border-border bg-background p-1">
-                <button
-                  type="button"
-                  onClick={() => setViewMode('list')}
-                  aria-label="List view"
-                    className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition ${
-                    viewMode === 'list'
-                      ? 'bg-brand text-white'
-                      : 'text-muted hover:text-foreground'
-                  }`}
-                >
-                  <List className="h-3.5 w-3.5" />
-                  List
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('grid')}
-                  aria-label="Grid view"
-                    className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition ${
-                    viewMode === 'grid'
-                      ? 'bg-brand text-white'
-                      : 'text-muted hover:text-foreground'
-                  }`}
-                >
-                  <Grid3X3 className="h-3.5 w-3.5" />
-                  Grid
-                </button>
-              </div>
-
               <label className="flex items-center gap-2 text-xs text-muted">
                 Show
                 <select
@@ -267,7 +189,7 @@ export default function SubjectsPage() {
           </div>
         </section>
 
-        {paginatedSubjects.length > 0 && viewMode === 'grid' && (
+        {paginatedSubjects.length > 0 && (
           <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
             {paginatedSubjects.map((subject) => (
               <div
@@ -280,111 +202,19 @@ export default function SubjectsPage() {
                   </div>
 
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">{subject.name}</p>
-                    {getSubjectMetaLabel(subject) ? (
-                      <p className="mt-1 text-xs text-muted">{getSubjectMetaLabel(subject)}</p>
-                    ) : null}
+                    <p className="text-base font-semibold text-foreground truncate">{subject.name}</p>
                   </div>
                 </div>
 
-                <div className="mt-5 flex flex-wrap gap-2">
-                  <Link
-                    href={`/teacher/results?subject=${encodeURIComponent(subject.name)}`}
-                    className="inline-flex items-center justify-center rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-brand transition hover:bg-background"
-                  >
-                    View results
-                  </Link>
-                          <Link
-                            href={`/teacher/results?subject=${encodeURIComponent(subject.name)}`}
-                            className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-surface"
-                          >
-                            Open workspace
-                          </Link>
-                </div>
               </div>
             ))}
           </div>
         )}
 
-        {paginatedSubjects.length > 0 && viewMode === 'list' && (
-          <>
-            <div className="hidden overflow-hidden rounded-lg border border-border bg-surface sm:block">
-              <table className="w-full text-left text-sm">
-                <thead className="border-b border-border bg-background text-muted">
-                  <tr>
-                    <th className="px-4 py-3 font-medium">Subject</th>
-                    <th className="px-4 py-3 font-medium">Actions</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {paginatedSubjects.map((subject) => (
-                    <tr key={subject.id} className="border-t border-border hover:bg-background/50 transition-colors">
-                      <td className="px-4 py-3">
-                        <div className="min-w-0">
-                          <p className="font-semibold text-foreground">{subject.name}</p>
-                          {getSubjectMetaLabel(subject) ? (
-                            <p className="mt-1 text-xs text-muted">{getSubjectMetaLabel(subject)}</p>
-                          ) : null}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-wrap gap-2">
-                          <Link
-                            href={`/teacher/results?subject=${encodeURIComponent(subject.name)}`}
-                            className="rounded-lg border border-border bg-surface px-3 py-1 text-xs font-semibold text-brand transition hover:bg-background"
-                          >
-                            View results
-                          </Link>
-                          <Link
-                            href={`/teacher/results?subject=${encodeURIComponent(subject.name)}`}
-                            className="rounded-lg border border-border bg-background px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-surface"
-                          >
-                            Open workspace
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="sm:hidden space-y-2">
-              {paginatedSubjects.map((subject) => (
-                <div key={subject.id} className="border border-border bg-background p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-foreground">{subject.name}</p>
-                      <p className="mt-1 text-xs text-muted">{getSubjectMetaLabel(subject)}</p>
-                    </div>
-                    {/* Removed status badge for teacher subjects list */}
-                  </div>
-
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <Link
-                      href={`/teacher/results?subject=${encodeURIComponent(subject.name)}`}
-                      className="rounded-lg border border-border bg-surface px-3 py-1 text-xs font-semibold text-brand transition hover:bg-background"
-                    >
-                      View results
-                    </Link>
-                      <Link
-                        href={`/teacher/results?subject=${encodeURIComponent(subject.name)}`}
-                        className="rounded-lg border border-border bg-background px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-surface"
-                      >
-                        Open workspace
-                      </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-
         {paginatedSubjects.length === 0 && !error && (
           <div className="rounded-lg border border-dashed border-[#9ac7ea] bg-[#f3f9fe] px-6 py-12 text-center">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-brand/10 text-brand">
-              <Users className="h-6 w-6" />
+              <BookOpen className="h-6 w-6" />
             </div>
             <p className="mt-3 text-sm font-semibold text-foreground">No subjects found</p>
             <p className="mt-1 text-sm text-muted">
