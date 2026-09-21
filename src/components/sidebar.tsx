@@ -251,7 +251,7 @@ export default function Sidebar({
                     onClick={() => tool === "audio" ? onAudioOpen?.() : onToolSelect?.(tool as WorkspaceTool)}
                     title={label as string}
                     aria-label={label as string}
-                    className="flex h-9 items-center justify-center rounded-md text-muted transition hover:bg-brand-light hover:text-brand"
+                    className="flex h-9 cursor-pointer items-center justify-center rounded-md text-muted transition hover:bg-brand-light hover:text-brand"
                   >
                     {createElement(Icon as ComponentType<{ className?: string }>, { className: "h-4 w-4" })}
                   </button>

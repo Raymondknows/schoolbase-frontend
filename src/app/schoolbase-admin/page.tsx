@@ -425,7 +425,11 @@ export default function PlatformOverviewPage() {
           <h1 className="mt-2 text-3xl font-bold text-foreground">Platform Overview</h1>
           <p className="mt-1 text-muted">Manage schools, monitor platform health, and respond to support activity</p>
         </div>
-        <button type="button" onClick={() => { setIsPanelOpen(true); setExpandedSections((current) => ({ ...current, activity: true })); playOpenTone(); }} className="inline-flex items-center justify-center gap-2 self-start rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover sm:self-auto">
+        <button
+          type="button"
+          onClick={() => { setIsPanelOpen(true); setExpandedSections((current) => ({ ...current, activity: true })); playOpenTone(); }}
+          className="inline-flex cursor-pointer items-center justify-center gap-2 self-start rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover sm:self-auto"
+        >
           <ShieldCheck className="h-4 w-4" /> Open admin panel
         </button>
       </div>
