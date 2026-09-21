@@ -855,7 +855,12 @@ export default function FeesPageClient({
                 <div className="flex min-w-0 items-center gap-1.5">
                   <select
                     value={selectedAcademicYearId}
-                    onChange={(e) => setSelectedAcademicYearId(e.target.value)}
+                    onChange={(e) => {
+                      const nextAcademicYearId = e.target.value;
+                      const nextYear = academicYears.find((year) => year.id === nextAcademicYearId);
+                      setSelectedAcademicYearId(nextAcademicYearId);
+                      setSelectedTermId(nextYear?.terms?.[0]?.id || "");
+                    }}
                     className="min-w-0 max-w-[8.5rem] bg-transparent text-xs text-foreground outline-none sm:text-sm"
                   >
                     <option value="">Session</option>
