@@ -31,6 +31,7 @@ export default function PlatformAdsPage() {
   const [loading, setLoading] = useState(true);
   const [dialog, setDialog] = useState<"advertiser" | "campaign" | null>(null);
   const [reviewTarget, setReviewTarget] = useState<ReviewTarget | null>(null);
+  const [placementEditor, setPlacementEditor] = useState<{ campaignId: string; selected: string[] } | null>(null);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ open: boolean; type: "success" | "error"; title: string; message: string; details?: string }>({ open: false, type: "success", title: "", message: "" });
   const [advertiserForm, setAdvertiserForm] = useState({ companyName: "", contactName: "", email: "", category: "" });
@@ -173,6 +174,28 @@ export default function PlatformAdsPage() {
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unable to update advertiser.";
       showError("Advertiser action failed", message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function updateCampaignPlacements(campaignId: string, nextPlacementIds: string[]) {
+    setSaving(true);
+    try {
+      const response = await fetch(`/schoolbase-admin/api/ads/campaigns/${campaignId}/placements`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ placements: nextPlacementIds }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Unable to update campaign placement.");
+      showSuccess("Placement updated", "Only platform admins can change this campaign’s public placement.");
+      setPlacementEditor(null);
+      await loadData({ silent: true });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to update placement.";
+      showError("Placement update failed", message);
     } finally {
       setSaving(false);
     }
@@ -330,6 +353,7 @@ export default function PlatformAdsPage() {
                           <td className="px-4 py-3">
                             <div className="flex flex-wrap gap-2">
                               <button type="button" onClick={() => openReviewModal({ type: "campaign", campaign })} className="rounded-md border border-brand/30 bg-brand/10 px-2 py-1 text-xs font-semibold text-brand inline-flex items-center gap-1"><Eye className="h-3.5 w-3.5" /> View</button>
+                              <button type="button" disabled={saving} onClick={() => setPlacementEditor({ campaignId: campaign.id, selected: campaign.placements?.map((item: any) => item.placementId || item.placement?.id).filter(Boolean) || [] })} className="rounded-md border border-border bg-background px-2 py-1 text-xs font-semibold text-foreground">Change placement</button>
                               {campaign.status === "DRAFT" && <button type="button" disabled={saving} onClick={() => void updateCampaign(campaign.id, "submit")} className="rounded-md border border-brand/30 bg-brand/10 px-2 py-1 text-xs font-semibold text-brand">Mark submitted</button>}
                               {campaign.status === "APPROVED" && <button type="button" disabled={saving} onClick={() => void updateCampaign(campaign.id, "live")} className="rounded-md bg-brand px-2 py-1 text-xs font-semibold text-white">Go live</button>}
                               {campaign.status === "LIVE" && <button type="button" disabled={saving} onClick={() => void updateCampaign(campaign.id, "pause")} className="rounded-md border border-brand/30 bg-brand/10 px-2 py-1 text-xs font-semibold text-brand">Pause</button>}
@@ -411,6 +435,43 @@ export default function PlatformAdsPage() {
               </p>
             </div>
           ))}
+        </div>
+      )}
+
+      {placementEditor && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 px-4" role="dialog" aria-modal="true">
+          <div className="w-full max-w-lg overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]">
+            <div className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-4 py-4 sm:px-6 sm:py-5">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.12em] text-brand">
+                  <ShieldCheck className="h-4 w-4" /> Admin placement update
+                </div>
+                <h2 className="mt-2 text-2xl font-bold text-foreground">Change campaign placement</h2>
+              </div>
+              <button type="button" onClick={() => setPlacementEditor(null)} disabled={saving} aria-label="Close placement editor" className="flex h-8 w-8 items-center justify-center rounded-md border border-border text-lg transition-colors hover:bg-background disabled:opacity-50"><X className="h-4 w-4" /></button>
+            </div>
+
+            <div className="space-y-5 px-4 py-4 sm:px-6 sm:py-6">
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+                <p className="font-semibold">Admin-only change</p>
+                <p className="mt-1 leading-6">Only platform admins can move a submitted campaign away from a placement after it has been submitted.</p>
+              </div>
+
+              <label className="block space-y-2 text-sm font-medium text-foreground">
+                <span>Available public placements</span>
+                <select multiple value={placementEditor.selected} onChange={(event) => setPlacementEditor({ ...placementEditor, selected: Array.from(event.target.selectedOptions, (option) => option.value) })} className="min-h-[140px] w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground">
+                  {placements.map((placement) => (
+                    <option key={placement.id} value={placement.id}>{placement.name} — {placement.label}</option>
+                  ))}
+                </select>
+              </label>
+
+              <div className="flex flex-col-reverse gap-3 border-t border-border pt-4 sm:flex-row sm:justify-end">
+                <button type="button" onClick={() => setPlacementEditor(null)} disabled={saving} className="rounded-md border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground">Cancel</button>
+                <button type="button" disabled={saving} onClick={() => void updateCampaignPlacements(placementEditor.campaignId, placementEditor.selected)} className="rounded-md bg-brand px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60">{saving ? "Saving…" : "Save placement"}</button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -649,6 +710,14 @@ export default function PlatformAdsPage() {
                 <div className="flex flex-wrap gap-2">
                   {reviewTarget.type === "campaign" && reviewTarget.campaign && (
                     <>
+                      <button type="button" disabled={saving} onClick={() => {
+                        setReviewTarget(null);
+                        setPlacementEditor({
+                          campaignId: reviewTarget.campaign.id,
+                          selected: reviewTarget.campaign.placements?.map((item: any) => item.placementId || item.placement?.id).filter(Boolean) || [],
+                        });
+                      }} className="rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface">Change placement</button>
+
                       {reviewTarget.campaign.status === "DRAFT" ? (
                         <button type="button" disabled={saving} onClick={() => { void updateCampaign(reviewTarget.campaign.id, "submit"); setReviewTarget(null); }} className="rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover">Mark submitted</button>
                       ) : reviewTarget.campaign.status === "PAUSED" ? (
