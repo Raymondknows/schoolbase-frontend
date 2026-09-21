@@ -118,6 +118,27 @@ export default function SharedLayout({
   }, [themeMode]);
 
   useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlHeight = document.documentElement.style.height;
+    const previousBodyHeight = document.body.style.height;
+
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.height = "100%";
+    document.body.style.height = "100%";
+
+    return () => {
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.height = previousHtmlHeight;
+      document.body.style.height = previousBodyHeight;
+    };
+  }, []);
+
+  useEffect(() => {
     window.sessionStorage.setItem("schoolbase-admin-session-notes", adminSessionNotes);
   }, [adminSessionNotes]);
 
@@ -736,7 +757,7 @@ export default function SharedLayout({
 
   if (hideSidebar) {
     return (
-      <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-6 md:p-8 print:overflow-visible print:p-0">
+      <div className="min-h-0 flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-6 md:p-8 print:overflow-visible print:p-0">
         {children}
       </div>
     );
@@ -794,7 +815,7 @@ export default function SharedLayout({
         />
       </div>
 
-      <div className="flex flex-1 flex-col min-w-0">
+      <div className="flex min-h-0 flex-1 flex-col min-w-0">
         {/* Mobile Header */}
         <div className="border-b border-border bg-surface px-4 py-3 md:hidden flex items-center gap-3 print:hidden">
           <Button
@@ -814,7 +835,7 @@ export default function SharedLayout({
           </div>
         </div>
 
-        <main className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-background p-4 sm:p-6 md:p-8 print:overflow-visible print:p-0">{children}</main>
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-background p-4 sm:p-6 md:p-8 print:overflow-visible print:p-0">{children}</main>
 
         <div className="fixed z-50 flex flex-col items-end gap-2" style={{ left: audioPanelPosition.x, top: audioPanelPosition.y }}>
           {isAudioPlayerOpen ? (

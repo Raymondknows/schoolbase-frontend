@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ShieldCheck, Activity, Clock3, ClipboardList, ExternalLink, Search, ListFilter, RotateCcw, TrendingUp, Users, AlertTriangle } from "lucide-react";
 import { getBackendUrl } from "@/lib/backend-url";
+import { Pagination } from "@/components/ui/pagination";
 
 interface AuditLog {
   id: string;
@@ -168,10 +169,11 @@ export default function AuditPage() {
 
   useEffect(() => {
     async function fetchLogs() {
+      setLoading(true);
       try {
         const backendUrl = getBackendUrl();
         const [response, schoolsResponse, summaryResponse] = await Promise.all([
-          fetch(`${backendUrl}/schoolbase-admin/api/audit-logs?limit=50000`, {
+          fetch(`${backendUrl}/schoolbase-admin/api/audit-logs?page=${page}&limit=${pageSize}&days=90`, {
             credentials: "include",
             headers: { "Content-Type": "application/json" },
           }),
@@ -179,7 +181,7 @@ export default function AuditPage() {
             credentials: "include",
             headers: { "Content-Type": "application/json" },
           }),
-          fetch(`${backendUrl}/schoolbase-admin/api/activity-summary?days=30`, {
+          fetch(`${backendUrl}/schoolbase-admin/api/activity-summary?days=90`, {
             credentials: "include",
             headers: { "Content-Type": "application/json" },
           }),
@@ -202,13 +204,14 @@ export default function AuditPage() {
       } catch (error) {
         console.error("Failed to load audit logs:", error);
         setLogs([]);
+        setTotalEvents(0);
       } finally {
         setLoading(false);
       }
     }
 
     fetchLogs();
-  }, []);
+  }, [page, pageSize]);
 
   const stats = useMemo(() => {
     const total = summary?.totals.events ?? totalEvents;
@@ -251,7 +254,7 @@ export default function AuditPage() {
       return matchesSearch && matchesSchool && matchesAction && matchesTime;
     });
   }, [actionFilter, logs, now, schoolFilter, search, timeFilter]);
-  const totalPages = Math.max(1, Math.ceil(filteredLogs.length / pageSize));
+  const totalPages = Math.max(1, Math.ceil(totalEvents / pageSize));
   const startIndex = (page - 1) * pageSize;
   const paginatedLogs = filteredLogs.slice(startIndex, startIndex + pageSize);
   const peakDay = summary?.trend.reduce((peak, day) => day.count > peak.count ? day : peak, { date: "", count: 0 });
@@ -405,25 +408,14 @@ export default function AuditPage() {
                 <p className="text-sm text-muted">
                   Showing {filteredLogs.length === 0 ? 0 : (page - 1) * pageSize + 1}–{Math.min(page * pageSize, filteredLogs.length)} of {filteredLogs.length} events
                 </p>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setPage((current) => Math.max(1, current - 1))}
-                    disabled={page === 1}
-                    className="rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-foreground transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
-                    disabled={page === totalPages}
-                    className="rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-foreground transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Next
-                  </button>
-                </div>
               </div>
+
+              <Pagination
+                currentPage={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                className="mt-2 justify-end"
+              />
             </div>
           )}
         </section>
