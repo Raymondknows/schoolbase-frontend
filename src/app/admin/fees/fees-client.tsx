@@ -898,7 +898,7 @@ export default function FeesPageClient({
                 <span className="hidden sm:inline">{issuingBills ? "Issuing..." : "Issue Bills"}</span>
               </Button>
               <label
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background text-muted transition hover:border-brand hover:text-brand sm:h-auto sm:w-auto sm:px-2 sm:py-2"
+                className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-background px-2 text-xs text-muted transition hover:border-brand hover:text-brand sm:h-auto sm:py-2"
                 title="Approve WhatsApp delivery to eligible guardians for this invoice run"
               >
                 <input
@@ -906,9 +906,9 @@ export default function FeesPageClient({
                   checked={bulkApproval}
                   onChange={(e) => setBulkApproval(e.target.checked)}
                   aria-label="Approve WhatsApp delivery to eligible guardians"
-                  className="sr-only"
                 />
-                <Info className={`h-4 w-4 ${bulkApproval ? "text-brand" : ""}`} aria-hidden="true" />
+                <span>WhatsApp</span>
+                <Info className="h-3.5 w-3.5" aria-hidden="true" />
               </label>
             </form>
 
