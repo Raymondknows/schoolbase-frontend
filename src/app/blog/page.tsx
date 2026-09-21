@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { ArrowRight, BookOpen, Sparkles } from 'lucide-react'
 import { blogPosts } from './data'
+import { ContextualAdSlot } from '@/components/login-page-ad-slot'
 
 export const metadata: Metadata = {
   title: 'Blog | SchoolBase School Management Software',
@@ -55,6 +56,10 @@ export default function BlogPage() {
                 {tag}
               </div>
             ))}
+          </div>
+
+          <div className="mt-10 max-w-xl">
+            <ContextualAdSlot path="/blog" compact />
           </div>
         </div>
       </section>

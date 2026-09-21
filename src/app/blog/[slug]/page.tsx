@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { ArrowRight, BookOpen, Sparkles } from 'lucide-react'
 import { blogPosts, getBlogPostBySlug, getRelatedPosts } from '../data'
+import { ContextualAdSlot } from '@/components/login-page-ad-slot'
 
 const INTERNAL_LINKS = {
   'best school management software': '/blog/best-school-management-software',
@@ -162,6 +163,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                 {keyword}
               </span>
             ))}
+          </div>
+          <div className="mt-8 max-w-xl">
+            <ContextualAdSlot path={`/blog/${post.slug}`} compact />
           </div>
           <div className={`mt-10 grid gap-8 ${post.image ? 'lg:grid-cols-[420px_minmax(0,1fr)]' : 'lg:grid-cols-1'}`}>
             {post.image ? (
