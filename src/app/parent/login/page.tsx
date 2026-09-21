@@ -39,6 +39,9 @@ export default async function ParentLoginPage() {
           school. Add the school slug if you are using a specific campus.
         </p>
         <ParentLoginForm />
+        <div className="mt-8 lg:hidden">
+          <ContextualAdSlot path="/parent/login" compact />
+        </div>
         <p className="mt-6 border-t border-border pt-5 text-center text-sm">
           <a href="/login" className="text-brand hover:underline">
             Staff sign in →
