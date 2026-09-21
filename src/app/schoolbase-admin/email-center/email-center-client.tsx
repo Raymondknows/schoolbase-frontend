@@ -20,22 +20,47 @@ interface EmailLog {
 }
 
 const EMAIL_TYPES = [
+  { value: "PLATFORM_OUTREACH", label: "Platform outreach" },
+  { value: "TRIAL_STARTED", label: "Trial started" },
   { value: "PRODUCT_UPDATE", label: "Product update" },
   { value: "PRICE_UPDATE", label: "Pricing update" },
   { value: "SUBSCRIPTION_THANK_YOU", label: "Payment Confirmation" },
   { value: "PAYMENT_ISSUE", label: "Payment issue" },
   { value: "SUPPORT_UPDATE", label: "Support update" },
   { value: "ONBOARDING_GUIDANCE", label: "Onboarding" },
+  { value: "ONBOARDING_CHECKLIST", label: "Onboarding checklist" },
   { value: "BEST_PRACTICE_TIP", label: "Best-practice guidance" },
   { value: "MANUAL_ANNOUNCEMENT", label: "Announcement" },
   { value: "POLICY_UPDATE", label: "Compliance update" },
   { value: "ACCOUNT_SECURITY", label: "Security notice" },
+  { value: "TRIAL_EXPIRY_WARNING", label: "Trial expiry warning" },
+  { value: "SUBSCRIPTION_EXPIRY_WARNING", label: "Subscription expiry warning" },
   { value: "ACCOUNT_VERIFICATION_SUSPENSION", label: "Account verification suspension" },
 ];
 
 const PLATFORM_FEATURES = "Admissions, Student Records, Attendance, Fees, Payments, Timetable & Lesson Planning, Results, Report Cards, Staff Management, Parent Portal, School Website, and WhatsApp Communication";
 
 const EMAIL_TEMPLATES: Record<string, { subject: string; body: string }> = {
+  PLATFORM_OUTREACH: {
+    subject: "SchoolBase platform update: keep your school supported and informed",
+    body: `Hello {{schoolName}},
+
+This is SchoolBase, and we are reaching out to keep your school informed, supported, and aligned with the latest platform developments. We know how important it is for schools to have reliable systems, timely communication, and a trusted partner supporting day-to-day operations.
+
+We are sharing this update to ensure your team has the information needed to stay ahead, act confidently, and continue delivering a stronger experience for staff, parents, and students. Please review the details in your SchoolBase workspace and complete any next steps that may be relevant to your school.
+
+Your partnership matters to us, and we are committed to helping your school operate more smoothly, communicate more effectively, and grow with confidence. If you need support or guidance, our team is ready to assist.`,
+  },
+  TRIAL_STARTED: {
+    subject: "Your SchoolBase trial has started",
+    body: `Hello {{schoolName}},
+
+Your SchoolBase trial is now active, and your school can begin exploring the platform right away.
+
+You now have access to the core tools that help you manage admissions, records, attendance, fees, results, communication, and parent engagement from one simple dashboard.
+
+To get started smoothly, we recommend reviewing your school setup, adding your team, and activating your key workflows early. Our support team is available to help you with onboarding and implementation guidance whenever you need it.`,
+  },
   PRODUCT_UPDATE: {
     subject: "SchoolBase is more powerful: explore your latest school tools",
     body: `Hello,
@@ -58,12 +83,7 @@ If your school is already using SchoolBase, please log in today and explore the 
 Log in here:
 https://schoolbase.live/login
 
-If you would like help reviewing the new features or setting them up for your school, reply to this email or contact our support team. We will be happy to guide you.
-
-Thank you for building with SchoolBase.
-
-SchoolBase
-Professional school operations. Clearer communication. Better experiences for schools and parents.`,
+If you would like help reviewing the new features or setting them up for your school, reply to this email or contact our support team. We will be happy to guide you.`,
   },
   PRICE_UPDATE: {
     subject: "Important SchoolBase pricing update: more value, more flexibility, and better support",
@@ -128,12 +148,7 @@ After making a bank transfer, please reply with your transaction ID or payment r
 You can retry your payment here:
 https://schoolbase.live/admin/subscribe
 
-We apologise for the inconvenience and are ready to help you complete your subscription.
-
-Warm regards,
-SchoolBase Support
-SchoolBase — Everything your school needs in one simple platform.
-Website: https://schoolbase.live`,
+We apologise for the inconvenience and are ready to help you complete your subscription.`,
   },
   SUPPORT_UPDATE: {
     subject: "SchoolBase support update: we are actively handling your request",
@@ -164,6 +179,16 @@ Key next steps:
 If you need help with any part of the setup, please reach out to me via WhatsApp at +234 703 961 3940. We’ll be happy to guide you through the process and help your school get started smoothly.
 
 We look forward to helping your school get the most out of SchoolBase.`,
+  },
+  ONBOARDING_CHECKLIST: {
+    subject: "Your SchoolBase onboarding checklist is ready",
+    body: `Hello,
+
+To help your school get set up smoothly, we have prepared your onboarding checklist to guide you through the most important setup steps.
+
+Please review your dashboard and complete the remaining items for your profile, team setup, fees, timetables, parent access, and communication settings.
+
+A complete setup will help your school go live faster and give staff, parents, and students a more consistent experience. If you would like help completing any part of the process, please reply to this email and our team will support you.`,
   },
   BEST_PRACTICE_TIP: {
     subject: "Best-practice guidance: improve school operations with SchoolBase",
@@ -220,6 +245,24 @@ We recommend reviewing the following areas across SchoolBase modules, including 
 
 If you need support securing your account or reviewing the appropriate access settings for your school, please reply to this email and our team will be happy to assist.`,
   },
+  TRIAL_EXPIRY_WARNING: {
+    subject: "Your SchoolBase trial is ending soon",
+    body: `Hello,
+
+This is a reminder that your SchoolBase trial is approaching its expiry date.
+
+To avoid any disruption to your school operations, we encourage you to review your trial status and decide whether you would like to continue with the platform after the trial period ends.
+
+If you need help choosing the right plan or want a quick review of the platform’s value for your school, our team is ready to assist and guide you.`,
+  },
+  SUBSCRIPTION_EXPIRY_WARNING: {
+    subject: "Your SchoolBase subscription needs attention",
+    body: `Hello,
+
+This is a reminder that your SchoolBase subscription is nearing its expiry date and may require attention to keep your school operations running without interruption.
+
+Please log in to review your current plan and renew or update your subscription as needed. Our support team is available if you need help choosing the best option for your school.`,
+  },
   ACCOUNT_VERIFICATION_SUSPENSION: {
     subject: "Action required: SchoolBase account verification review",
     body: `Hello,
@@ -269,6 +312,7 @@ function InfoTooltip({ content }: { content: string }) {
 }
 
 const DEFAULT_SUBJECTS: Record<string, string> = {
+  PLATFORM_OUTREACH: "SchoolBase platform update: keep your school supported and informed",
   PRODUCT_UPDATE: "SchoolBase is more powerful: explore your latest school tools",
   SUPPORT_UPDATE: "SchoolBase support update: we are actively handling your request",
   ONBOARDING_GUIDANCE: "Welcome to SchoolBase — we’re excited to have your school on board",
