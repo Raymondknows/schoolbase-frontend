@@ -160,7 +160,8 @@ export default function AcademicYearsPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create academic year");
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.error || "Failed to create academic year");
       }
 
       setNewYearData({ name: "", isCurrent: false });
@@ -188,7 +189,8 @@ export default function AcademicYearsPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create term");
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.error || "Failed to create term");
       }
 
       setNewTermData({
