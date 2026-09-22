@@ -143,6 +143,7 @@ export default function FeesPageClient({
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [localInvoices, setLocalInvoices] = useState(invoices);
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentAllocations, setPaymentAllocations] = useState<Record<string, string>>({});
   const [selectedPaymentItems, setSelectedPaymentItems] = useState<Record<string, boolean>>({});
@@ -173,6 +174,10 @@ export default function FeesPageClient({
       searchInputRef.current.focus();
     }
   }, [isSearchOpen]);
+
+  useEffect(() => {
+    setLocalInvoices(invoices);
+  }, [invoices]);
 
   useEffect(() => {
     if (!searchParams) return;
@@ -284,7 +289,7 @@ export default function FeesPageClient({
 
   // Filter invoices
   const filteredInvoices = useMemo(() => {
-    let filtered = invoices;
+    let filtered = localInvoices;
 
     // Filter by academic year if selected
     if (selectedAcademicYearId) {
@@ -322,7 +327,7 @@ export default function FeesPageClient({
     }
 
     return filtered;
-  }, [invoices, activePhase, activeStatus, searchQuery, selectedAcademicYearId, selectedTermId]);
+  }, [localInvoices, activePhase, activeStatus, searchQuery, selectedAcademicYearId, selectedTermId]);
 
   const totalPages = Math.max(1, Math.ceil(filteredInvoices.length / itemsPerPage));
   const paginatedInvoices = filteredInvoices.slice(
@@ -358,15 +363,23 @@ export default function FeesPageClient({
     setSelectedInvoice(invoice);
     const outstanding = Math.max(0, invoice.amountDue - invoice.amountPaid);
     const hasItems = (invoice.items?.length || 0) > 0;
+    const checkedItems = (invoice.items || []).reduce<Record<string, boolean>>((acc, item) => {
+      acc[item.id] = getItemPaidAmount(item) > 0;
+      return acc;
+    }, {});
     setPaymentAmount(hasItems ? "0.00" : (outstanding / 100).toFixed(2));
     setPaymentAllocations(hasItems ? {} : distributePaymentAcrossItems(invoice.items || [], outstanding));
-    setSelectedPaymentItems({});
+    setSelectedPaymentItems(checkedItems);
     setPaymentMethod("CASH");
     setPaymentReference("");
   };
 
+  const getItemPaidAmount = (item: NonNullable<Invoice["items"]>[number]) => {
+    return (item.allocations || []).reduce((sum, allocation) => sum + allocation.amount, 0);
+  };
+
   const getItemRemaining = (item: NonNullable<Invoice["items"]>[number]) => {
-    const alreadyPaid = (item.allocations || []).reduce((sum, allocation) => sum + allocation.amount, 0);
+    const alreadyPaid = getItemPaidAmount(item);
     return Math.max(0, item.amount * item.quantity - alreadyPaid);
   };
 
@@ -488,18 +501,37 @@ export default function FeesPageClient({
                   }),
                 });
 
+                const result = await response.json();
                 if (!response.ok) {
-                  const errorData = await response.json();
-                  throw new Error(errorData.error || "Failed to record payment");
+                  throw new Error(result?.error || "Failed to record payment");
                 }
+
+                const nextInvoice = result?.invoice;
+                const nextAmountPaid = Number(nextInvoice?.amountPaid ?? (selectedInvoice.amountPaid + Math.round(Number(paymentAmount) * 100))) * 100;
+                const nextAmountDue = Number(nextInvoice?.amountDue ?? selectedInvoice.amountDue) * 100;
+                const nextStatus = nextInvoice?.status ?? (nextAmountPaid >= selectedInvoice.amountDue ? "PAID" : "PART_PAID");
+
+                setLocalInvoices((current) => current.map((invoice) => invoice.id === selectedInvoice.id ? {
+                  ...invoice,
+                  amountPaid: nextAmountPaid,
+                  amountDue: nextAmountDue,
+                  status: nextStatus,
+                  items: nextInvoice?.items || invoice.items,
+                } : invoice));
 
                 setSelectedInvoice(null);
                 setPaymentAmount("");
                 setPaymentAllocations({});
-                  setSelectedPaymentItems({});
+                setSelectedPaymentItems({});
                 setPaymentMethod("CASH");
                 setPaymentReference("");
-                router.push(`${basePath}?paymentRecorded=1`);
+
+                setModalType('success');
+                setModalTitle('Payment recorded');
+                setModalMessage('The invoice has been updated and the dashboard reflects the new balance immediately.');
+                setModalDetails(`New balance: ${formatMoney(Math.max(0, nextAmountDue - nextAmountPaid), currency)}`);
+                setModalOpen(true);
+                playOpenTone();
               } catch (error) {
                 setIsSubmittingPayment(false);
                 const message = error instanceof Error ? error.message : "Failed to record payment";
@@ -596,33 +628,55 @@ export default function FeesPageClient({
                   </div>
                   {selectedInvoice.items!.map((item) => {
                     const itemBalance = getItemRemaining(item);
+                    const paidAmount = getItemPaidAmount(item);
+                    const itemTotal = item.amount * item.quantity;
+                    const hasExistingPayment = paidAmount > 0;
 
                     return (
-                      <div key={item.id} className="grid grid-cols-[minmax(0,1fr)_8rem] items-center gap-3 text-sm">
+                      <div
+                        key={item.id}
+                        className={`grid grid-cols-[minmax(0,1fr)_8rem] items-center gap-3 rounded-lg border px-3 py-2 text-sm transition-colors ${hasExistingPayment ? "border-green-200 bg-green-50" : "border-border bg-surface"}`}
+                      >
                         <div className="flex items-start gap-3">
                           <input
                             type="checkbox"
-                            checked={selectedPaymentItems[item.id] === true}
+                            checked={selectedPaymentItems[item.id] === true || hasExistingPayment}
                             onChange={(event) => togglePaymentItem(item, event.target.checked)}
                             disabled={isSubmittingPayment || itemBalance <= 0}
                             className="mt-1 h-4 w-4 rounded border-border text-brand focus:ring-brand"
                             aria-label={`Mark ${item.name} as paid`}
                           />
-                          <div>
-                          <p className="font-medium text-foreground">{item.name}</p>
-                          <p className="text-xs text-muted">Remaining: {formatStatMoney(itemBalance)}</p>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-foreground">{item.name}</p>
+                              {hasExistingPayment && (
+                                <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-green-700">
+                                  Paid
+                                </span>
+                              )}
+                            </div>
+                            <p className="mt-1 text-xs text-muted">
+                              {hasExistingPayment ? `Paid: ${formatStatMoney(paidAmount)} • Remaining: ${formatStatMoney(itemBalance)}` : `Remaining: ${formatStatMoney(itemBalance)}`}
+                            </p>
                           </div>
                         </div>
-                        <input
-                          type="number"
-                          min="0"
-                          max={(itemBalance / 100).toFixed(2)}
-                          step="0.01"
-                          value={paymentAllocations[item.id] || "0.00"}
-                          readOnly
-                          disabled={isSubmittingPayment}
-                          className="w-full rounded-lg border border-border bg-surface px-2 py-2 text-right text-sm text-foreground focus:border-brand focus:outline-none"
-                        />
+                        <div className="flex flex-col items-end gap-1">
+                          <input
+                            type="number"
+                            min="0"
+                            max={(itemBalance / 100).toFixed(2)}
+                            step="0.01"
+                            value={paymentAllocations[item.id] || "0.00"}
+                            readOnly
+                            disabled={isSubmittingPayment}
+                            className="w-full rounded-lg border border-border bg-white px-2 py-2 text-right text-sm text-foreground focus:border-brand focus:outline-none"
+                          />
+                          {hasExistingPayment && (
+                            <span className="text-[10px] font-medium text-green-700">
+                              {formatStatMoney(paidAmount)} paid
+                            </span>
+                          )}
+                        </div>
                       </div>
                     );
                   })}

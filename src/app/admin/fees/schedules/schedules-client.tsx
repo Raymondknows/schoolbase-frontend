@@ -216,7 +216,22 @@ export default function FeeSchedulesPageClient({
         throw new Error(data?.error || "Failed to update fee schedule");
       }
 
-      router.refresh();
+      const data = await response.json().catch(() => null);
+      const updatedSchedule = data?.feeSchedule as FeeScheduleItem | undefined;
+
+      if (updatedSchedule) {
+        setFeeScheduleItems((current) =>
+          current.map((schedule) => (schedule.id === editingId ? {
+            ...schedule,
+            name: updatedSchedule.name,
+            amount: updatedSchedule.amount,
+            term: updatedSchedule.term ?? schedule.term,
+            class: updatedSchedule.class ?? schedule.class,
+            items: updatedSchedule.items ?? schedule.items,
+          } : schedule)),
+        );
+      }
+
       setEditingId(null);
       setEditFormData(null);
       setEditScheduleContext(null);
