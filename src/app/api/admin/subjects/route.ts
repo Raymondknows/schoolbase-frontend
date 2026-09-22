@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getStaffSession } from '@/lib/auth';
 import { getBackendUrl } from '@/lib/backend-url';
 
 async function proxySubjectRequest(request: NextRequest, method: string, body?: string) {
   try {
+    const session = await getStaffSession();
+    if (!session?.schoolId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const backendUrl = getBackendUrl();
     const response = await fetch(`${backendUrl}/api/admin/subjects`, {
       method,
@@ -19,7 +25,14 @@ async function proxySubjectRequest(request: NextRequest, method: string, body?: 
     });
 
     const rawText = await response.text();
-    let data: unknown = rawText ? JSON.parse(rawText) : {};
+    let data: unknown = {};
+    if (rawText) {
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        data = { error: 'The subjects service returned an invalid response' };
+      }
+    }
 
     if (!response.ok) {
       return NextResponse.json(

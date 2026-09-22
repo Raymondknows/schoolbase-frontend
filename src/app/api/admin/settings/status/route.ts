@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const API_URL = process.env.BACKEND_API_URL || "http://localhost:3006";
+import { getStaffSession } from "@/lib/auth";
+import { buildApiUrl } from "@/lib/api-client";
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await getStaffSession();
+    if (!session?.schoolId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     // Get auth cookie to pass to backend
     const cookies = request.headers.get("cookie") || "";
 
-    const response = await fetch(`${API_URL}/api/admin/settings/status`, {
+    const response = await fetch(buildApiUrl("/admin/settings/status"), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

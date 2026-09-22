@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getStaffSession } from '@/lib/auth';
 import { buildApiUrl } from '@/lib/api-client';
 
 async function forward(request: NextRequest) {
   try {
+    const session = await getStaffSession();
+    if (!session?.schoolId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const backendUrl = buildApiUrl(`/admin/settings${request.nextUrl.search}`);
     const headers = new Headers();
     const cookie = request.headers.get('cookie');

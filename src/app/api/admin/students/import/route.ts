@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getStaffSession } from '@/lib/auth';
 import { buildApiUrl } from '@/lib/api-client';
 
 export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getStaffSession();
+    if (!session?.schoolId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const backendUrl = `${buildApiUrl('/admin/students/import')}${request.nextUrl.search}`;
     const headers: Record<string, string> = {
       cookie: request.headers.get('cookie') || '',

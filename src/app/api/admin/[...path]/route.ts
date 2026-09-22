@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getStaffSession } from '@/lib/auth';
 import { buildApiUrl } from '@/lib/api-client';
 
 async function forward(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
   try {
+    const session = await getStaffSession();
+    if (!session?.schoolId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { path } = await context.params;
     const backendUrl = buildApiUrl(`/admin/${path.join('/')}${request.nextUrl.search}`);
     const headers = new Headers();
