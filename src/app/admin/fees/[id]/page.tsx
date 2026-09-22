@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { getBackendUrl } from "@/lib/backend-url";
 import { formatMoney, pupilName as formatPupilName, invoiceStatusLabel } from "@/lib/format";
 import { playOpenTone, playCloseTone } from "@/lib/sounds";
-import { Download, Printer, ChevronLeft, Check, AlertCircle, Edit2, BadgePercent, Plus, X } from "lucide-react";
+import { Download, Printer, ChevronLeft, Check, AlertCircle, BadgePercent, Plus, X } from "lucide-react";
 
 const BRAND_BLUE = "#0A66C2";
 const LIGHT_BLUE = "#E7F1F8";
@@ -21,10 +21,6 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
   const [school, setSchool] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [editingPayment, setEditingPayment] = useState<any | null>(null);
-  const [editPaymentAmount, setEditPaymentAmount] = useState("");
-  const [editPaymentReference, setEditPaymentReference] = useState("");
-  const [isUpdatingPayment, setIsUpdatingPayment] = useState(false);
   const [adjustmentModalOpen, setAdjustmentModalOpen] = useState(false);
   const [pendingDeleteAdjustmentId, setPendingDeleteAdjustmentId] = useState<string | null>(null);
 
@@ -129,87 +125,6 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
       await fetchInvoice(p.id);
     })();
   }, [params]);
-
-  const openEditPaymentModal = (payment: any) => {
-    setEditingPayment(payment);
-    setEditPaymentAmount((payment.amount / 100).toFixed(2));
-    setEditPaymentReference(payment.reference || "");
-    playOpenTone();
-  };
-
-  const closeEditPaymentModal = () => {
-    setEditingPayment(null);
-    setEditPaymentAmount("");
-    setEditPaymentReference("");
-    playCloseTone();
-  };
-
-  const handleUpdatePayment = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!editingPayment || isUpdatingPayment) return;
-
-    const amountValue = parseFloat(editPaymentAmount);
-    if (!Number.isFinite(amountValue) || amountValue < 0) {
-      alert("Please enter a valid payment amount. Use 0 to zero out a mistaken entry.");
-      return;
-    }
-
-    setIsUpdatingPayment(true);
-    try {
-      const backendUrl = getBackendUrl();
-      const res = await fetch(`${backendUrl}/api/admin/fees/payments/${editingPayment.id}`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: amountValue,
-          reference: editPaymentReference || null,
-        }),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => null);
-        throw new Error(errorData?.error || "Failed to update payment");
-      }
-
-      await fetchInvoice(invoiceId);
-      closeEditPaymentModal();
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to update payment");
-      console.error(err);
-    } finally {
-      setIsUpdatingPayment(false);
-    }
-  };
-
-  const handleDeletePayment = async () => {
-    if (!editingPayment || isUpdatingPayment) return;
-
-    const confirmed = window.confirm("Delete this payment history item? This will remove it from the invoice total.");
-    if (!confirmed) return;
-
-    setIsUpdatingPayment(true);
-    try {
-      const backendUrl = getBackendUrl();
-      const res = await fetch(`${backendUrl}/api/admin/fees/payments/${editingPayment.id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => null);
-        throw new Error(errorData?.error || "Failed to delete payment");
-      }
-
-      await fetchInvoice(invoiceId);
-      closeEditPaymentModal();
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete payment");
-      console.error(err);
-    } finally {
-      setIsUpdatingPayment(false);
-    }
-  };
 
   const handleCreateAdjustment = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -562,14 +477,6 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                       </div>
                       <div className="flex items-center gap-2">
                         <p className="font-semibold text-gray-900">{formatMoney(payment.amount, currency)}</p>
-                        <button
-                          type="button"
-                          onClick={() => openEditPaymentModal(payment)}
-                          className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-100"
-                        >
-                          <Edit2 className="h-3.5 w-3.5" />
-                          Edit
-                        </button>
                       </div>
                     </div>
                   ))}
@@ -803,88 +710,6 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                 )}
               </div>
             </div>
-          </div>
-        </div>
-      )}
-
-      {editingPayment && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
-          <style>{`
-            @keyframes payment_edit_enter { from { transform: translateX(36px) scale(.98); opacity: 0 } to { transform: translateX(0) scale(1); opacity: 1 } }
-          `}</style>
-
-          <div
-            className="w-full max-w-lg overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
-            style={{ animation: `payment_edit_enter 320ms cubic-bezier(.2,.9,.2,1)` }}
-          >
-            <div className="border-b border-border px-4 py-4 sm:px-6 sm:py-5" style={{ background: "linear-gradient(90deg, rgba(10,102,194,0.12), rgba(10,102,194,0.04))" }}>
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground">Edit payment</h2>
-                  <p className="mt-1 text-sm text-muted">Adjust the recorded payment amount or reference.</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={closeEditPaymentModal}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border hover:bg-background transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-
-            <form onSubmit={handleUpdatePayment} className="space-y-5 px-4 py-4 sm:px-6 sm:py-6">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Payment amount ({currency})</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={editPaymentAmount}
-                  onChange={(event) => setEditPaymentAmount(event.target.value)}
-                  className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand"
-                  required
-                />
-                <p className="mt-2 text-xs text-slate-500">Use 0 to zero out a mistaken payment entry, or delete it completely below.</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Reference</label>
-                <input
-                  type="text"
-                  value={editPaymentReference}
-                  onChange={(event) => setEditPaymentReference(event.target.value)}
-                  placeholder="Update receipt or transfer reference"
-                  className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand"
-                />
-              </div>
-
-              <div className="flex justify-between gap-3 pt-4 border-t border-border">
-                <button
-                  type="button"
-                  onClick={closeEditPaymentModal}
-                  disabled={isUpdatingPayment}
-                  className="flex-1 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDeletePayment}
-                  disabled={isUpdatingPayment}
-                  className="flex-1 rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50"
-                >
-                  {isUpdatingPayment ? "Working..." : "Delete"}
-                </button>
-                <button
-                  type="submit"
-                  disabled={isUpdatingPayment}
-                  className="flex-1 rounded-lg bg-brand px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand/90 disabled:opacity-50"
-                >
-                  {isUpdatingPayment ? "Saving..." : "Save changes"}
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}
