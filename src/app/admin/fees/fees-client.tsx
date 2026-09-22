@@ -44,6 +44,7 @@ import {
   X,
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/ui/icons";
+import { playCloseTone, playOpenTone } from "@/lib/sounds";
 
 const STATUS_CONFIG = {
   DRAFT: { label: "Draft", color: "bg-gray-100 text-gray-800" },
@@ -361,15 +362,24 @@ export default function FeesPageClient({
 
   const selectInvoiceForPayment = (invoice: Invoice) => {
     setSelectedInvoice(invoice);
+    playOpenTone();
     const outstanding = Math.max(0, invoice.amountDue - invoice.amountPaid);
     const hasItems = (invoice.items?.length || 0) > 0;
-    const checkedItems = (invoice.items || []).reduce<Record<string, boolean>>((acc, item) => {
-      acc[item.id] = getItemPaidAmount(item) > 0;
+    const existingAllocations = (invoice.items || []).reduce<Record<string, string>>((acc, item) => {
+      const paid = getItemPaidAmount(item);
+      acc[item.id] = paid > 0 ? (paid / 100).toFixed(2) : "0.00";
       return acc;
     }, {});
-    setPaymentAmount(hasItems ? "0.00" : (outstanding / 100).toFixed(2));
-    setPaymentAllocations(hasItems ? {} : distributePaymentAcrossItems(invoice.items || [], outstanding));
-    setSelectedPaymentItems(checkedItems);
+    const existingTotal = Object.values(existingAllocations).reduce((sum, value) => sum + Number(value || 0), 0);
+
+    setPaymentAmount(hasItems ? existingTotal.toFixed(2) : (outstanding / 100).toFixed(2));
+    setPaymentAllocations(hasItems ? existingAllocations : distributePaymentAcrossItems(invoice.items || [], outstanding));
+    setSelectedPaymentItems(
+      (invoice.items || []).reduce<Record<string, boolean>>((acc, item) => {
+        acc[item.id] = getItemPaidAmount(item) > 0;
+        return acc;
+      }, {}),
+    );
     setPaymentMethod("CASH");
     setPaymentReference("");
   };
@@ -459,7 +469,7 @@ export default function FeesPageClient({
           <form
             onSubmit={async (e) => {
               e.preventDefault();
-              
+
               // Prevent double submission
               if (isSubmittingPayment) return;
 
@@ -519,6 +529,7 @@ export default function FeesPageClient({
                   items: nextInvoice?.items || invoice.items,
                 } : invoice));
 
+                playCloseTone();
                 setSelectedInvoice(null);
                 setPaymentAmount("");
                 setPaymentAllocations({});
@@ -539,27 +550,31 @@ export default function FeesPageClient({
                 alert(message);
               }
             }}
-            className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
+            className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
           >
-            <div className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-6 py-5">
+            <div className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-4 py-4 sm:px-6 sm:py-5">
               <div>
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-brand">
-                  <CreditCard size={15} /> Fee collection
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.12em] text-brand">
+                  <CreditCard className="h-4 w-4" /> Fee collection
                 </div>
                 <h2 className="mt-2 text-2xl font-bold text-foreground">Record payment</h2>
-                <p className="mt-2 text-sm text-muted">Apply this payment to the invoice and its fee items.</p>
+                <p className="mt-1 text-sm text-muted">Apply this payment to the invoice and its fee items.</p>
               </div>
               <button
                 type="button"
-                onClick={() => setSelectedInvoice(null)}
+                onClick={() => {
+                  playCloseTone();
+                  setSelectedInvoice(null);
+                }}
                 aria-label="Close"
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-border transition-colors hover:bg-background"
+                className="flex h-8 w-8 items-center justify-center rounded-md border border-border transition-colors hover:bg-background"
               >
-                <X size={20} />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
-            <div className="mx-6 mt-6 grid gap-4 rounded-lg border border-border bg-background p-4 sm:grid-cols-3">
+            <div className="space-y-5 px-4 py-4 sm:px-6 sm:py-6">
+              <div className="grid gap-4 sm:grid-cols-3">
               <div>
                 <p className="text-xs font-bold uppercase tracking-wide text-muted">Student</p>
                 <p className="mt-2 text-sm font-semibold text-foreground">{pupilName(selectedInvoice.pupil.firstName, selectedInvoice.pupil.lastName)}</p>
@@ -574,118 +589,104 @@ export default function FeesPageClient({
               </div>
             </div>
 
-            <div className="mx-6 mt-6 grid gap-4 sm:grid-cols-2">
-              <input type="hidden" name="invoiceId" value={selectedInvoice.id} />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <input type="hidden" name="invoiceId" value={selectedInvoice.id} />
 
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Amount Paid ({currency})
-                </label>
-                <input
-                  type="number"
-                  name="amount"
-                  value={paymentAmount}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setPaymentAmount(value);
-                    if (selectedInvoice.items?.length) {
-                      setPaymentAllocations(distributePaymentAcrossItems(selectedInvoice.items, Math.round(Number(value || 0) * 100)));
-                    }
-                  }}
-                  step="0.01"
-                  required
-                  readOnly={(selectedInvoice.items?.length || 0) > 0}
-                  disabled={isSubmittingPayment}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-              </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-foreground">
+                    Amount Paid ({currency})
+                  </label>
+                  <input
+                    type="number"
+                    name="amount"
+                    value={paymentAmount}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setPaymentAmount(value);
+                      if (selectedInvoice.items?.length) {
+                        setPaymentAllocations(distributePaymentAcrossItems(selectedInvoice.items, Math.round(Number(value || 0) * 100)));
+                      }
+                    }}
+                    step="0.01"
+                    required
+                    readOnly={(selectedInvoice.items?.length || 0) > 0}
+                    disabled={isSubmittingPayment}
+                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-brand disabled:cursor-not-allowed disabled:opacity-50"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Payment Method
-                </label>
-                <select
-                  name="method"
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                  disabled={isSubmittingPayment}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {PAYMENT_METHODS.map((method) => (
-                    <option key={method} value={method}>
-                      {method.replace(/_/g, " ")}
-                    </option>
-                  ))}
-                </select>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-foreground">
+                    Payment Method
+                  </label>
+                  <select
+                    name="method"
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
+                    disabled={isSubmittingPayment}
+                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {PAYMENT_METHODS.map((method) => (
+                      <option key={method} value={method}>
+                        {method.replace(/_/g, " ")}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
-            </div>
 
               {(selectedInvoice.items?.length || 0) > 0 && (
-                <div className="mx-6 mt-6 space-y-3 rounded-lg border border-border bg-background p-4">
-                  <div>
+                <div>
+                  <div className="mb-3">
                     <p className="text-sm font-semibold text-foreground">Allocate payment by fee item</p>
                     <p className="text-xs text-muted">The item allocations must equal the payment amount.</p>
                   </div>
-                  {selectedInvoice.items!.map((item) => {
-                    const itemBalance = getItemRemaining(item);
-                    const paidAmount = getItemPaidAmount(item);
-                    const itemTotal = item.amount * item.quantity;
-                    const hasExistingPayment = paidAmount > 0;
+                  <div className="space-y-2">
+                    {selectedInvoice.items!.map((item) => {
+                      const itemBalance = getItemRemaining(item);
+                      const paidAmount = getItemPaidAmount(item);
+                      const hasExistingPayment = paidAmount > 0;
+                      const rowValue = hasExistingPayment
+                        ? (paidAmount / 100).toFixed(2)
+                        : (paymentAllocations[item.id] || "0.00");
+                      const statusLabel = hasExistingPayment
+                        ? "Paid"
+                        : `${formatStatMoney(itemBalance)} Remaining`;
 
-                    return (
-                      <div
-                        key={item.id}
-                        className={`grid grid-cols-[minmax(0,1fr)_8rem] items-center gap-3 rounded-lg border px-3 py-2 text-sm transition-colors ${hasExistingPayment ? "border-green-200 bg-green-50" : "border-border bg-surface"}`}
-                      >
-                        <div className="flex items-start gap-3">
-                          <input
-                            type="checkbox"
-                            checked={selectedPaymentItems[item.id] === true || hasExistingPayment}
-                            onChange={(event) => togglePaymentItem(item, event.target.checked)}
-                            disabled={isSubmittingPayment || itemBalance <= 0}
-                            className="mt-1 h-4 w-4 rounded border-border text-brand focus:ring-brand"
-                            aria-label={`Mark ${item.name} as paid`}
-                          />
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium text-foreground">{item.name}</p>
-                              {hasExistingPayment && (
-                                <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-green-700">
-                                  Paid
-                                </span>
-                              )}
+                      return (
+                        <div
+                          key={item.id}
+                          className={`grid grid-cols-[minmax(0,1fr)_90px] items-center gap-2 rounded-md border px-2.5 py-1.5 text-sm transition-colors ${hasExistingPayment ? "border-brand/20 bg-brand/5" : "border-border bg-surface"}`}
+                        >
+                          <div className="flex min-w-0 items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={selectedPaymentItems[item.id] === true || hasExistingPayment}
+                              onChange={(event) => togglePaymentItem(item, event.target.checked)}
+                              disabled={isSubmittingPayment || itemBalance <= 0}
+                              className="h-4 w-4 rounded border-border text-brand focus:ring-brand"
+                              aria-label={`Mark ${item.name} as paid`}
+                            />
+                            <div className="flex min-w-0 items-center gap-1.5 text-xs sm:text-sm">
+                              <span className="truncate font-medium text-foreground">{item.name}</span>
+                              <span className="text-muted">|</span>
+                              <span className={hasExistingPayment ? "font-semibold text-brand" : "text-muted"}>{statusLabel}</span>
                             </div>
-                            <p className="mt-1 text-xs text-muted">
-                              {hasExistingPayment ? `Paid: ${formatStatMoney(paidAmount)} • Remaining: ${formatStatMoney(itemBalance)}` : `Remaining: ${formatStatMoney(itemBalance)}`}
-                            </p>
+                          </div>
+                          <div
+                            className={`flex min-w-[90px] items-center justify-end rounded-full px-2.5 py-1 text-right text-xs font-semibold text-white ${hasExistingPayment ? "bg-brand" : "bg-brand/80"}`}
+                          >
+                            {rowValue}
                           </div>
                         </div>
-                        <div className="flex flex-col items-end gap-1">
-                          <input
-                            type="number"
-                            min="0"
-                            max={(itemBalance / 100).toFixed(2)}
-                            step="0.01"
-                            value={paymentAllocations[item.id] || "0.00"}
-                            readOnly
-                            disabled={isSubmittingPayment}
-                            className="w-full rounded-lg border border-border bg-white px-2 py-2 text-right text-sm text-foreground focus:border-brand focus:outline-none"
-                          />
-                          {hasExistingPayment && (
-                            <span className="text-[10px] font-medium text-green-700">
-                              {formatStatMoney(paidAmount)} paid
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
-            <div className="mx-6 mt-6 grid gap-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wide text-muted mb-2">
+                <label className="mb-2 block text-xs font-bold uppercase tracking-[.14em] text-muted">
                   Reference (optional)
                 </label>
                 <input
@@ -695,26 +696,31 @@ export default function FeesPageClient({
                   onChange={(e) => setPaymentReference(e.target.value)}
                   placeholder="Receipt number, bank reference, etc."
                   disabled={isSubmittingPayment}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-brand disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </div>
-            </div>
 
-            <div className="mx-6 mt-7 flex justify-end gap-3 border-t border-border py-5">
-                <button
-                  type="button"
-                  onClick={() => setSelectedInvoice(null)}
-                  className="rounded-lg border border-border px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Cancel
-                </button>
+              <div className="flex justify-between gap-3 border-t border-border pt-4">
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playCloseTone();
+                      setSelectedInvoice(null);
+                    }}
+                    className="rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-background"
+                  >
+                    Cancel
+                  </button>
+                </div>
                 <button
                   type="submit"
                   disabled={isSubmittingPayment}
-                  className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isSubmittingPayment ? "Recording..." : "Record Payment"}
                 </button>
+              </div>
             </div>
           </form>
         </div>
@@ -1218,52 +1224,3 @@ export default function FeesPageClient({
   );
 }
 
-// Sound effects for modals
-function playOpenTone() {
-  try {
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const now = ctx.currentTime;
-
-    const playTone = (freq: number, duration: number, gain: number, delay = 0) => {
-      const osc = ctx.createOscillator();
-      const gainNode = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(freq, now + delay);
-      gainNode.gain.setValueAtTime(0.0001, now + delay);
-      gainNode.gain.exponentialRampToValueAtTime(gain, now + delay + 0.01);
-      gainNode.gain.exponentialRampToValueAtTime(0.0001, now + delay + duration);
-      osc.connect(gainNode);
-      gainNode.connect(ctx.destination);
-      osc.start(now + delay);
-      osc.stop(now + delay + duration);
-    };
-
-    playTone(880, 0.16, 0.05, 0);
-    playTone(1174, 0.16, 0.05, 0.08);
-
-    setTimeout(() => ctx.close(), 700);
-  } catch (e) {
-    // ignore
-  }
-}
-
-function playCloseTone() {
-  try {
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.type = "sine";
-    o.frequency.value = 420;
-    g.gain.value = 0.0001;
-    o.connect(g);
-    g.connect(ctx.destination);
-    const now = ctx.currentTime;
-    g.gain.linearRampToValueAtTime(0.045, now + 0.01);
-    o.start(now);
-    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
-    o.stop(now + 0.24);
-    setTimeout(() => ctx.close(), 500);
-  } catch (e) {
-    // ignore
-  }
-}
