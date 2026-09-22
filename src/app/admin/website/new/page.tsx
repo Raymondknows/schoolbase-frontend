@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { getBackendUrl } from "@/lib/backend-url";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CheckCircle2, Info, Send } from "lucide-react";
 import { WhatsAppIcon } from "@/components/ui/icons";
@@ -83,7 +82,7 @@ export default function NewAnnouncementPage() {
 
     try {
       const formData = new FormData(event.currentTarget);
-      const response = await fetch(`${getBackendUrl()}/api/admin/announcements`, {
+      const response = await fetch("/api/admin/announcements", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

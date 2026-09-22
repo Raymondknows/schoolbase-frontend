@@ -25,7 +25,7 @@ async function proxyAcademicYears(req: Request, method: "GET" | "POST") {
       try {
         data = JSON.parse(responseBody);
       } catch {
-        data = { error: responseBody };
+        data = { error: "The academic year service returned an invalid response" };
       }
     }
     if (!response.ok) {
