@@ -179,6 +179,7 @@ export default function TimetableClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [errorModal, setErrorModal] = useState<string | null>(null);
+  const [successModal, setSuccessModal] = useState<string | null>(null);
   const [showComposer, setShowComposer] = useState(false);
   const [view, setView] = useState<"week" | "list">("week");
   const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
@@ -202,6 +203,11 @@ export default function TimetableClient() {
 
   function showTimetableError(message: string) {
     setErrorModal(message.replace(/^TIMETABLE_CONFLICT\s*/i, ""));
+    playOpenTone();
+  }
+
+  function showTimetableSuccess(message: string) {
+    setSuccessModal(message);
     playOpenTone();
   }
 
@@ -363,6 +369,7 @@ export default function TimetableClient() {
       showTimetableError(data.error || data.message || "Unable to move lesson");
       return;
     }
+    showTimetableSuccess("The lesson was moved successfully.");
     await load();
   }
 
@@ -387,6 +394,7 @@ export default function TimetableClient() {
       showTimetableError((data.error || data.message || "Unable to paste lesson") + detail);
       return;
     }
+    showTimetableSuccess("The lesson was copied successfully.");
     await load();
   }
 
@@ -730,6 +738,7 @@ export default function TimetableClient() {
           onClose={closeEditingEntry}
           onSaved={() => {
             closeEditingEntry();
+            showTimetableSuccess("The lesson was updated successfully.");
             load();
           }}
           onError={showTimetableError}
@@ -747,6 +756,7 @@ export default function TimetableClient() {
           onClose={closeAddingLesson}
           onSaved={() => {
             closeAddingLesson();
+            showTimetableSuccess("The lesson was added successfully.");
             load();
           }}
           onError={showTimetableError}
@@ -766,6 +776,7 @@ export default function TimetableClient() {
           onClose={closeDuplicatingEntry}
           onSaved={() => {
             closeDuplicatingEntry();
+            showTimetableSuccess("The lesson was copied successfully.");
             load();
           }}
           onError={showTimetableError}
@@ -799,6 +810,7 @@ export default function TimetableClient() {
         />
       )}
       {errorModal ? <TimetableErrorModal message={errorModal} onClose={() => { setErrorModal(null); playCloseTone(); }} /> : null}
+      {successModal ? <TimetableSuccessModal message={successModal} onClose={() => { setSuccessModal(null); playCloseTone(); }} /> : null}
       <UserGuide guide={TIMETABLE_HELP_GUIDE} />
     </main>
   );
@@ -816,6 +828,23 @@ function TimetableErrorModal({ message, onClose }: { message: string; onClose: (
         </div>
         <div className="px-6 py-5"><p className="text-sm leading-6 text-foreground">{message}</p></div>
         <div className="border-t border-border px-6 py-4"><button type="button" onClick={onClose} className="w-full rounded-md bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover">OK</button></div>
+      </div>
+    </div>
+  );
+}
+
+function TimetableSuccessModal({ message, onClose }: { message: string; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 px-4" role="dialog" aria-modal="true" aria-labelledby="timetable-success-title">
+      <div className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-2xl">
+        <div className="border-b border-border/70 bg-emerald-50 px-6 py-5">
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-emerald-200 bg-emerald-100 text-emerald-700"><CheckCircle2 className="h-6 w-6" /></div>
+            <div><h2 id="timetable-success-title" className="text-lg font-semibold text-foreground">Timetable updated</h2><p className="mt-1 text-sm text-muted">Your change was saved successfully.</p></div>
+          </div>
+        </div>
+        <div className="px-6 py-5"><p className="text-sm leading-6 text-foreground">{message}</p></div>
+        <div className="border-t border-border px-6 py-4"><button type="button" onClick={onClose} className="w-full rounded-md bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover">Done</button></div>
       </div>
     </div>
   );
