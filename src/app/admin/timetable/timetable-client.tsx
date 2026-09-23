@@ -178,6 +178,7 @@ export default function TimetableClient() {
   const [selectedConfigId, setSelectedConfigId] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [errorModal, setErrorModal] = useState<string | null>(null);
   const [showComposer, setShowComposer] = useState(false);
   const [view, setView] = useState<"week" | "list">("week");
   const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
@@ -198,6 +199,11 @@ export default function TimetableClient() {
   const [pendingConfirmationSaving, setPendingConfirmationSaving] = useState(false);
   const [bellModalOpen, setBellModalOpen] = useState(false);
   const [periodsModalOpen, setPeriodsModalOpen] = useState(false);
+
+  function showTimetableError(message: string) {
+    setErrorModal(message.replace(/^TIMETABLE_CONFLICT\s*/i, ""));
+    playOpenTone();
+  }
 
   function openComposer() {
     setShowComposer(true);
@@ -354,7 +360,7 @@ export default function TimetableClient() {
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      setError(data.error || data.message || "Unable to move lesson");
+      showTimetableError(data.error || data.message || "Unable to move lesson");
       return;
     }
     await load();
@@ -378,7 +384,7 @@ export default function TimetableClient() {
       const detail = Array.isArray(data.conflicts)
         ? ` ${data.conflicts.map((item: any) => item.message).join(" ")}`
         : "";
-      setError((data.error || data.message || "Unable to paste lesson") + detail);
+      showTimetableError((data.error || data.message || "Unable to paste lesson") + detail);
       return;
     }
     await load();
@@ -691,6 +697,7 @@ export default function TimetableClient() {
             onMove={moveEntry}
             onDuplicate={openDuplicatingEntry}
             onPaste={pasteEntry}
+            onError={showTimetableError}
           />
         ) : (
           <ListView
@@ -725,6 +732,7 @@ export default function TimetableClient() {
             closeEditingEntry();
             load();
           }}
+          onError={showTimetableError}
         />
       )}
       {addingLesson && config && (
@@ -741,6 +749,7 @@ export default function TimetableClient() {
             closeAddingLesson();
             load();
           }}
+          onError={showTimetableError}
         />
       )}
       {duplicatingEntry && config && (
@@ -759,6 +768,7 @@ export default function TimetableClient() {
             closeDuplicatingEntry();
             load();
           }}
+          onError={showTimetableError}
         />
       )}
       {configActionModalOpen && config && (
@@ -788,8 +798,26 @@ export default function TimetableClient() {
           onConfirm={publishConfig}
         />
       )}
+      {errorModal ? <TimetableErrorModal message={errorModal} onClose={() => { setErrorModal(null); playCloseTone(); }} /> : null}
       <UserGuide guide={TIMETABLE_HELP_GUIDE} />
     </main>
+  );
+}
+
+function TimetableErrorModal({ message, onClose }: { message: string; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 px-4" role="alertdialog" aria-modal="true" aria-labelledby="timetable-error-title">
+      <div className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-2xl">
+        <div className="border-b border-border/70 bg-error/10 px-6 py-5">
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-error/20 bg-error/10 text-error"><AlertCircle className="h-6 w-6" /></div>
+            <div><h2 id="timetable-error-title" className="text-lg font-semibold text-foreground">Timetable conflict</h2><p className="mt-1 text-sm text-muted">The lesson was not changed.</p></div>
+          </div>
+        </div>
+        <div className="px-6 py-5"><p className="text-sm leading-6 text-foreground">{message}</p></div>
+        <div className="border-t border-border px-6 py-4"><button type="button" onClick={onClose} className="w-full rounded-md bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover">OK</button></div>
+      </div>
+    </div>
   );
 }
 
@@ -846,6 +874,7 @@ function WeekBoard({
   onMove,
   onDuplicate,
   onPaste,
+  onError: _onError,
 }: {
   config: Config;
   periods: Period[];
@@ -855,6 +884,7 @@ function WeekBoard({
   onMove: (entry: Entry, periodId: string) => void;
   onDuplicate: (entry: Entry) => void;
   onPaste: (entry: Entry, periodId: string) => void;
+  onError: (message: string) => void;
 }) {
   const [copiedEntry, setCopiedEntry] = useState<Entry | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; entry?: Entry; periodId?: string } | null>(null);
@@ -1242,6 +1272,7 @@ function LessonEditor({
   periods,
   onClose,
   onSaved,
+  onError,
 }: {
   timetableName: string;
   existingEntries: Entry[];
@@ -1254,6 +1285,7 @@ function LessonEditor({
   periods: Period[];
   onClose: () => void;
   onSaved: () => void;
+  onError: (message: string) => void;
 }) {
   const isEditing = Boolean(entry) && !duplicate;
   const [form, setForm] = useState({
@@ -1282,11 +1314,7 @@ function LessonEditor({
       const detail = Array.isArray(data.conflicts)
         ? ` ${data.conflicts.map((item: any) => item.message).join(" ")}`
         : "";
-      setError(
-        (data.message ||
-          data.error ||
-          `Unable to ${isEditing ? "update" : "add"} lesson`) + detail,
-      );
+      onError((data.message || data.error || `Unable to ${isEditing ? "update" : "add"} lesson`) + detail);
     } else {
       onSaved();
     }
