@@ -39,6 +39,22 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
   const termSummaries = Array.isArray(student.termSummaries) ? student.termSummaries : [];
   const promotionHistory = Array.isArray(student.promotionHistory) ? student.promotionHistory : [];
   const latestSummary = termSummaries[0];
+  const currentTermId = student.currentTerm?.id || "";
+  const currentInvoices = invoices.filter((invoice: any) => invoice.feeSchedule?.term?.id === currentTermId);
+  const previousInvoices = invoices.filter((invoice: any) => invoice.feeSchedule?.term?.id !== currentTermId);
+  const currentTermDue = currentInvoices.reduce((sum: number, invoice: any) => sum + Number(invoice.amountDue || 0), 0);
+  const currentTermPaid = currentInvoices.reduce((sum: number, invoice: any) => sum + Number(invoice.amountPaid || 0), 0);
+  const currentTermBalance = Math.max(0, currentTermDue - currentTermPaid);
+  const previousTermGroups = Array.from(new Map(previousInvoices.map((invoice: any) => {
+    const term = invoice.feeSchedule?.term;
+    const key = term?.id || `unassigned-${invoice.id}`;
+    const existing = previousInvoices.filter((item: any) => (item.feeSchedule?.term?.id || `unassigned-${item.id}`) === key);
+    return [key, {
+      label: term ? `${term.academicYear?.name || "Previous session"} · ${term.name}` : "Unassigned term",
+      invoices: existing,
+      balance: existing.reduce((sum: number, item: any) => sum + Math.max(0, Number(item.amountDue || 0) - Number(item.amountPaid || 0)), 0),
+    }];
+  }))).map(([, group]) => group as { label: string; invoices: any[]; balance: number });
 
   return (
     <main className="min-h-screen pb-12">
@@ -169,16 +185,26 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
             <p className="text-sm text-muted">Snapshot of the student’s financial and academic status.</p>
           </div>
         </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
           <div className="border border-border bg-surface p-5 text-center transition hover:border-brand/40 hover:bg-brand-light/20">
-            <p className="text-xs uppercase tracking-[0.24em] text-muted mb-3">Fees balance</p>
+            <p className="text-xs uppercase tracking-[0.24em] text-muted mb-3">Current term</p>
+            <p className="text-3xl font-semibold text-foreground">{formatMoney(currentTermBalance)}</p>
+            <p className="text-sm text-muted mt-2">{student.currentTerm?.name || "No active term"}</p>
+          </div>
+          <div className="border border-border bg-surface p-5 text-center transition hover:border-brand/40 hover:bg-brand-light/20">
+            <p className="text-xs uppercase tracking-[0.24em] text-muted mb-3">All-time balance</p>
             <p className="text-3xl font-semibold text-foreground">{formatMoney(student.feesBalance || 0)}</p>
-            <p className="text-sm text-muted mt-2">Outstanding balance</p>
+            <p className="text-sm text-muted mt-2">Includes previous terms</p>
           </div>
           <div className="border border-border bg-surface p-5 text-center transition hover:border-brand/40 hover:bg-brand-light/20">
             <p className="text-xs uppercase tracking-[0.24em] text-muted mb-3">Attendance</p>
             <p className="text-3xl font-semibold text-foreground">{attendance.percentage === null ? "—" : `${attendance.percentage}%`}</p>
             <p className="text-sm text-muted mt-2">{attendance.present} present · {attendance.absent} absent</p>
+          </div>
+          <div className="border border-border bg-surface p-5 text-center transition hover:border-brand/40 hover:bg-brand-light/20">
+            <p className="text-xs uppercase tracking-[0.24em] text-muted mb-3">Previous terms</p>
+            <p className="text-3xl font-semibold text-foreground">{formatMoney(Math.max(0, Number(student.feesBalance || 0) - currentTermBalance))}</p>
+            <p className="text-sm text-muted mt-2">Historical outstanding</p>
           </div>
           <div className="border border-border bg-surface p-5 text-center transition hover:border-brand/40 hover:bg-brand-light/20">
             <p className="text-xs uppercase tracking-[0.24em] text-muted mb-3">Performance</p>
@@ -214,18 +240,41 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
           <section id="fees" className="border border-border bg-surface">
             <div className="border-b border-border px-5 py-4">
               <p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Finance</p>
-              <h3 className="mt-1 text-lg font-semibold text-foreground">Fee ledger</h3>
+              <h3 className="mt-1 text-lg font-semibold text-foreground">Current-term fee ledger</h3>
+              <p className="mt-1 text-xs text-muted">{student.currentAcademicYear?.name || "Current session"} · {student.currentTerm?.name || "No active term"}</p>
             </div>
-            {invoices.length > 0 ? (
+            {currentInvoices.length > 0 ? (
               <div className="divide-y divide-border">
-                {invoices.slice(0, 5).map((invoice: any) => (
+                {currentInvoices.slice(0, 5).map((invoice: any) => (
                   <Link key={invoice.id} href={`/admin/fees/${invoice.id}`} className="flex items-center justify-between gap-3 px-5 py-3 transition hover:bg-background">
                     <div className="min-w-0"><p className="truncate text-sm font-medium text-foreground">{invoice.feeSchedule?.name || invoice.invoiceNo}</p><p className="mt-1 text-xs text-muted">{invoice.feeSchedule?.term?.name || "Invoice"} · {invoice.status}</p></div>
                     <div className="shrink-0 text-right"><p className="text-sm font-semibold text-foreground">{formatMoney(Math.max(0, invoice.amountDue - invoice.amountPaid))}</p><p className="text-[11px] text-muted">Balance</p></div>
                   </Link>
                 ))}
               </div>
-            ) : <p className="px-5 py-8 text-center text-sm text-muted">No invoices have been issued for this student.</p>}
+            ) : <p className="px-5 py-8 text-center text-sm text-muted">No invoices have been issued for the current term.</p>}
+            {previousTermGroups.length > 0 ? (
+              <details className="border-t border-border">
+                <summary className="cursor-pointer px-5 py-4 text-sm font-semibold text-brand hover:bg-background">View previous terms ({previousTermGroups.length})</summary>
+                <div className="divide-y divide-border bg-background">
+                  {previousTermGroups.map((group) => (
+                    <details key={group.label} className="group px-5 py-3">
+                      <summary className="flex cursor-pointer items-center justify-between gap-3 text-sm font-medium text-foreground">
+                        <span>{group.label}</span><span className="text-sm font-semibold">{formatMoney(group.balance)}</span>
+                      </summary>
+                      <div className="mt-3 space-y-2 border-t border-border pt-3">
+                        {group.invoices.map((invoice: any) => (
+                          <Link key={invoice.id} href={`/admin/fees/${invoice.id}`} className="flex items-center justify-between gap-3 text-xs text-muted hover:text-brand">
+                            <span>{invoice.feeSchedule?.name || invoice.invoiceNo}</span>
+                            <span>{formatMoney(Math.max(0, invoice.amountDue - invoice.amountPaid))}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </details>
+                  ))}
+                </div>
+              </details>
+            ) : null}
           </section>
         </div>
 
