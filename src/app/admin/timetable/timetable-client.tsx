@@ -1026,30 +1026,27 @@ function WeekBoard({
                             {entry.room ? ` · ${entry.room}` : ""}
                           </div>
                           {editable && (
-                            <div className="mt-3 flex gap-1 border-t border-border/60 pt-2 sm:absolute sm:right-1.5 sm:top-1.5 sm:mt-0 sm:border-0 sm:pt-0 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100">
+                            <div className="absolute right-1.5 top-1.5 hidden gap-1 group-hover:flex">
                               <button
                                 onClick={() => onEdit(entry)}
                                 aria-label={`Edit ${entry.subject?.name || "lesson"}`}
-                                title="Edit lesson"
-                                className="inline-flex min-h-9 flex-1 items-center justify-center gap-1 rounded border border-border bg-surface px-2 text-brand shadow-sm hover:bg-brand-light sm:min-h-0 sm:flex-none sm:border-0 sm:p-1.5"
+                                className="rounded bg-surface p-1.5 text-brand shadow-sm hover:bg-brand-light"
                               >
-                                <Edit3 size={14} /><span className="text-[11px] font-semibold sm:hidden">Edit</span>
+                                <Edit3 size={13} />
                               </button>
                               <button
                                 onClick={() => onDuplicate(entry)}
                                 aria-label={`Copy ${entry.subject?.name || "lesson"}`}
-                                title="Copy lesson"
-                                className="inline-flex min-h-9 flex-1 items-center justify-center gap-1 rounded border border-border bg-surface px-2 text-brand shadow-sm hover:bg-brand-light sm:min-h-0 sm:flex-none sm:border-0 sm:p-1.5"
+                                className="rounded bg-surface p-1.5 text-brand shadow-sm hover:bg-brand-light"
                               >
-                                <Copy size={14} /><span className="text-[11px] font-semibold sm:hidden">Copy</span>
+                                <Copy size={13} />
                               </button>
                               <button
                                 onClick={() => onDelete(entry)}
                                 aria-label={`Delete ${entry.subject?.name || "lesson"}`}
-                                title="Delete lesson"
-                                className="inline-flex min-h-9 flex-1 items-center justify-center gap-1 rounded border border-error/20 bg-surface px-2 text-error shadow-sm hover:bg-[#fff5f5] sm:min-h-0 sm:flex-none sm:border-0 sm:p-1.5"
+                                className="rounded bg-surface p-1.5 text-error shadow-sm hover:bg-[#fff5f5]"
                               >
-                                <Trash2 size={14} /><span className="text-[11px] font-semibold sm:hidden">Delete</span>
+                                <Trash2 size={13} />
                               </button>
                             </div>
                           )}
@@ -1129,18 +1126,16 @@ function ListView({
               <button
                 onClick={() => onEdit(entry)}
                 aria-label="Edit lesson"
-                title="Edit lesson"
-                className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-lg border border-border px-3 py-2 text-brand hover:bg-brand-light sm:flex-none sm:p-2"
+                className="rounded-lg border border-border p-2 text-brand hover:bg-brand-light"
               >
-                <Edit3 size={15} /><span className="text-xs font-semibold sm:hidden">Edit</span>
+                <Edit3 size={15} />
               </button>
               <button
                 onClick={() => onDelete(entry)}
                 aria-label="Delete lesson"
-                title="Delete lesson"
-                className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-lg border border-border px-3 py-2 text-error hover:bg-[#fff5f5] sm:flex-none sm:p-2"
+                className="rounded-lg border border-border p-2 text-error hover:bg-[#fff5f5]"
               >
-                <Trash2 size={15} /><span className="text-xs font-semibold sm:hidden">Delete</span>
+                <Trash2 size={15} />
               </button>
             </div>
           )}
