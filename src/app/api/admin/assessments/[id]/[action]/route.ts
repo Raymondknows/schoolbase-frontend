@@ -25,12 +25,19 @@ export async function POST(
       }
     );
 
+    const responseText = await response.text();
+    let data: unknown = {};
+    try {
+      data = responseText ? JSON.parse(responseText) : {};
+    } catch {
+      data = { error: "The assessment service returned an invalid response" };
+    }
+
     if (!response.ok) {
-      const error = await response.json();
+      const error = typeof data === "object" && data !== null ? data : { error: String(data) };
       return Response.json(error, { status: response.status });
     }
 
-    const data = await response.json();
     return Response.json(data);
   } catch (error) {
     console.error("Error performing assessment action:", error);

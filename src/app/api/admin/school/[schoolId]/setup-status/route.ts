@@ -1,4 +1,5 @@
 import { buildApiUrl } from '@/lib/api-client';
+import { getStaffSession } from '@/lib/auth';
 
 export async function GET(
   request: Request,
@@ -9,6 +10,11 @@ export async function GET(
 
     if (!schoolId) {
       return Response.json({ error: 'School ID is required' }, { status: 400 });
+    }
+
+    const session = await getStaffSession();
+    if (!session || (session.role !== 'PLATFORM_ADMIN' && (!session.schoolId || session.schoolId !== schoolId))) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const url = buildApiUrl(`/admin/school/${schoolId}/setup-status`);
@@ -28,8 +34,12 @@ export async function GET(
       );
     }
 
-    const data = await response.json();
-    return Response.json(data);
+    const text = await response.text();
+    try {
+      return Response.json(text ? JSON.parse(text) : {});
+    } catch {
+      return Response.json({ error: 'The setup-status service returned an invalid response' }, { status: 502 });
+    }
   } catch (error) {
     console.error('[api/admin/school/:schoolId/setup-status] Error:', error);
     return Response.json(

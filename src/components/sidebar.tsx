@@ -181,7 +181,7 @@ export default function Sidebar({
         </Link>
       </div>
 
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+      <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 py-4">
         {navItemsWithSectionVisibility.map(({ href, label, icon, sectionLabel, showSection }) => {
           const isActive = pathname === href || pathname.startsWith(`${href}/`);
           const IconComponent = typeof icon === "string" ? icons[icon] : icon;
