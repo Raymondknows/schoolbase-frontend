@@ -487,14 +487,17 @@ export default function TimetableClient() {
           }
 
           .timetable-print-header {
-            display: block !important;
+            display: flex !important;
+            align-items: baseline !important;
+            gap: 4mm !important;
+            white-space: nowrap !important;
             position: absolute !important;
             top: 0 !important;
             left: 0 !important;
             width: 100% !important;
             visibility: visible !important;
             border-bottom: 1px solid #d5dbe1 !important;
-            padding-bottom: 5mm !important;
+            padding-bottom: 3mm !important;
           }
 
           .timetable-print-header * {
@@ -506,15 +509,8 @@ export default function TimetableClient() {
         {config && (
           <div className="timetable-print-header hidden">
             <div className="text-xl font-bold text-black">{config.name}</div>
-            <div className="mt-1 text-sm text-black">
-              {config.academicYear?.name || "Academic year"}
-              {config.term?.name ? ` · ${config.term.name}` : ""}
-              {config.term?.startsOn || config.term?.endsOn
-                ? ` · ${formatPrintDate(config.term.startsOn)} - ${formatPrintDate(config.term.endsOn)}`
-                : ""}
-            </div>
-            <div className="mt-1 text-xs text-gray-600">
-              Printed {formatPrintDate(new Date().toISOString())}
+            <div className="text-sm font-semibold text-black">
+              {config.term?.name || "Term"} | {config.academicYear?.name || "Academic year"} | Printed {formatPrintDate(new Date().toISOString())}
             </div>
           </div>
         )}
