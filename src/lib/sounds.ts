@@ -193,6 +193,45 @@ export function playCloseTone() {
   }
 }
 
+function playSessionTone(notes: number[], duration: number, volume: number) {
+  try {
+    const ctx = createAudioContext();
+    if (!ctx) return;
+
+    const schedule = () => {
+      const start = ctx.currentTime;
+      notes.forEach((frequency, index) => {
+        const oscillator = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const noteStart = start + index * duration * 0.72;
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(frequency, noteStart);
+        gain.gain.setValueAtTime(0.0001, noteStart);
+        gain.gain.exponentialRampToValueAtTime(volume, noteStart + 0.018);
+        gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + duration);
+        oscillator.connect(gain);
+        gain.connect(ctx.destination);
+        oscillator.start(noteStart);
+        oscillator.stop(noteStart + duration + 0.03);
+      });
+      window.setTimeout(() => ctx.close().catch(() => {}), (notes.length * duration) * 1000);
+    };
+
+    if (ctx.state === "suspended") ctx.resume().then(schedule).catch(() => {});
+    else schedule();
+  } catch {
+    // Audio is optional and may be unavailable in the browser.
+  }
+}
+
+export function playLoginSuccessTone() {
+  playSessionTone([523, 659, 784], 0.18, 0.045);
+}
+
+export function playLogoutTone() {
+  playSessionTone([659, 523, 392], 0.16, 0.04);
+}
+
 export function startSupportAlertTone() {
   if (supportAlertToneState) return;
 

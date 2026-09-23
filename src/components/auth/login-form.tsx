@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { playLoginSuccessTone } from "@/lib/sounds";
 
 export function LoginForm({ redirectTo }: { redirectTo: string }) {
   const router = useRouter();
@@ -65,6 +66,7 @@ export function LoginForm({ redirectTo }: { redirectTo: string }) {
       }
 
       setNotice("Login successful. Redirecting...");
+      playLoginSuccessTone();
 
       // ✅ Token is set in cookie by /api/auth/login (httpOnly cookie can't be accessed from JS)
       // Wait a moment to ensure cookie is set

@@ -5,7 +5,10 @@ import Sidebar from "@/components/sidebar";
 import { usePathname } from "next/navigation";
 import { Menu, X, Music, Play, Pause, ChevronDown, ChevronLeft, ChevronRight, Volume2, Loader2, Equal, Delete, RefreshCcw, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { playCloseTone, playOpenTone } from "@/lib/sounds";
+import {
+  playCloseTone,
+  playOpenTone,
+} from "@/lib/sounds";
 import { applyTheme, detectSystemTheme, resolveStoredTheme, ThemeMode } from "@/lib/theme";
 import TeacherClassAlert from "@/components/teacher-class-alert";
 import BellScheduler from "@/components/bell-scheduler";
