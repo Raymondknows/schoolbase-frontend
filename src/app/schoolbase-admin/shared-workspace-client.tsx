@@ -27,6 +27,8 @@ type Task = {
 };
 type Props = { mode?: "floating" | "page" };
 const positionKey = "schoolbase:shared-workspace-position";
+const enabledKey = "schoolbase:shared-workspace-enabled";
+const enabledEvent = "schoolbase:shared-workspace-enabled-change";
 
 function priorityClass(priority: string) {
   if (priority === "CRITICAL") return "bg-rose-100 text-rose-800";
@@ -39,6 +41,7 @@ export default function SharedWorkspaceClient({ mode = "floating" }: Props) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [open, setOpen] = useState(mode === "page");
+  const [enabled, setEnabled] = useState(mode === "page");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [assignee, setAssignee] = useState("");
@@ -80,6 +83,7 @@ export default function SharedWorkspaceClient({ mode = "floating" }: Props) {
   useEffect(() => {
     void loadData();
     if (mode === "floating") {
+      setEnabled(window.localStorage.getItem(enabledKey) === "true");
       try {
         const stored = window.localStorage.getItem(positionKey);
         if (stored) {
@@ -98,8 +102,15 @@ export default function SharedWorkspaceClient({ mode = "floating" }: Props) {
         setPosition({ x: Math.max(12, window.innerWidth - width - 12), y: 96 });
       }
     }
+    const handleEnabledChange = () => {
+      setEnabled(window.localStorage.getItem(enabledKey) === "true");
+    };
+    window.addEventListener(enabledEvent, handleEnabledChange);
     const intervalId = window.setInterval(() => void loadData(), 15000);
-    return () => window.clearInterval(intervalId);
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener(enabledEvent, handleEnabledChange);
+    };
   }, [mode]);
 
   useEffect(() => {
@@ -497,6 +508,8 @@ export default function SharedWorkspaceClient({ mode = "floating" }: Props) {
       </div>
     </div>
   );
+  if (mode === "floating" && !enabled) return null;
+
   return open ? (
     panel
   ) : (
