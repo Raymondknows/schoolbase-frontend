@@ -40,6 +40,11 @@ export default function PlatformWhatsAppPage() {
   const [campaignAudience, setCampaignAudience] = useState('All schools');
   const [audienceCounts, setAudienceCounts] = useState<Record<string, number>>({});
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
+  const [showTemplateForm, setShowTemplateForm] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState('');
+  const [newTemplateCategory, setNewTemplateCategory] = useState('GENERAL');
+  const [newTemplateMessage, setNewTemplateMessage] = useState('');
+  const [isCreatingTemplate, setIsCreatingTemplate] = useState(false);
   const [platformAdminName, setPlatformAdminName] = useState('SchoolBase');
   const [campaignMessage, setCampaignMessage] = useState(buildDefaultPlatformMessage('SchoolBase'));
   const [campaignScheduled, setCampaignScheduled] = useState('Tomorrow');
@@ -114,6 +119,41 @@ export default function PlatformWhatsAppPage() {
       setTemplates(data?.data?.items || data?.items || []);
     } catch (error) {
       console.error('Platform templates fetch error:', error);
+    }
+  };
+
+  const createTemplate = async () => {
+    if (!newTemplateName.trim() || !newTemplateMessage.trim()) {
+      setNotice('warning', 'Template name and message are required.');
+      return;
+    }
+
+    setIsCreatingTemplate(true);
+    try {
+      const response = await fetch('/schoolbase-admin/api/whatsapp/templates', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newTemplateName.trim(),
+          category: newTemplateCategory,
+          message: newTemplateMessage.trim(),
+          status: 'DRAFT',
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data?.message || 'Failed to create template.');
+
+      setNewTemplateName('');
+      setNewTemplateCategory('GENERAL');
+      setNewTemplateMessage('');
+      setShowTemplateForm(false);
+      await fetchTemplates();
+      setNotice('success', 'Template saved to the database.');
+    } catch (error) {
+      setNotice('warning', error instanceof Error ? error.message : 'Failed to create template.');
+    } finally {
+      setIsCreatingTemplate(false);
     }
   };
 
@@ -883,10 +923,45 @@ export default function PlatformWhatsAppPage() {
           <div className="border border-border bg-surface p-5">
             <div className="mb-4 flex items-center justify-between gap-3">
               <h2 className="text-lg font-semibold text-foreground">Platform templates</h2>
-              <span className="rounded-full border border-border bg-background px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-muted">
-                {templates.length} templates
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="rounded-full border border-border bg-background px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-muted">
+                  {templates.length} templates
+                </span>
+                <Button type="button" className="h-9 px-3 py-2 text-xs" onClick={() => setShowTemplateForm((current) => !current)}>
+                  {showTemplateForm ? 'Close' : 'New template'}
+                </Button>
+              </div>
             </div>
+            {showTemplateForm ? (
+              <div className="mb-4 space-y-3 border border-brand/20 bg-brand/5 p-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="text-sm font-medium text-foreground">
+                    Template name
+                    <input value={newTemplateName} onChange={(event) => setNewTemplateName(event.target.value)} placeholder="School update" className="mt-2 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm" />
+                  </label>
+                  <label className="text-sm font-medium text-foreground">
+                    Category
+                    <select value={newTemplateCategory} onChange={(event) => setNewTemplateCategory(event.target.value)} className="mt-2 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm">
+                      <option value="GENERAL">General</option>
+                      <option value="ONBOARDING">Onboarding</option>
+                      <option value="PRODUCT_UPDATE">Product update</option>
+                      <option value="SUPPORT">Support</option>
+                      <option value="RENEWAL">Renewal</option>
+                    </select>
+                  </label>
+                </div>
+                <label className="block text-sm font-medium text-foreground">
+                  Message
+                  <textarea value={newTemplateMessage} onChange={(event) => setNewTemplateMessage(event.target.value)} rows={5} placeholder="Hello {{schoolName}}, ..." className="mt-2 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm leading-6" />
+                </label>
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="outline" className="h-9 px-3 py-2 text-xs" onClick={() => setShowTemplateForm(false)}>Cancel</Button>
+                  <Button type="button" className="h-9 px-3 py-2 text-xs" disabled={isCreatingTemplate} onClick={() => void createTemplate()}>
+                    {isCreatingTemplate ? 'Saving…' : 'Save template'}
+                  </Button>
+                </div>
+              </div>
+            ) : null}
             {templates.length ? (
               (() => {
                 const selectedTemplate = templates.find((template) => template.id === selectedTemplateId) || templates[0];
