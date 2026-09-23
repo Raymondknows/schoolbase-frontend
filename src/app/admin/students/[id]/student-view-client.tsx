@@ -35,6 +35,10 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
   const photoUrl = resolveFileUrl(student.photoUrl, student.id);
   const fullName = pupilName(student.firstName, student.lastName);
   const attendance = student.attendance || { total: 0, present: 0, absent: 0, late: 0, percentage: null, records: [] };
+  const attendancePeriods = Array.isArray(attendance.periods) ? attendance.periods : [];
+  const currentAttendance = attendancePeriods.find((period: any) => period.isCurrent);
+  const latestAttendance = currentAttendance || attendancePeriods[0] || attendance;
+  const previousAttendancePeriods = attendancePeriods.filter((period: any) => period !== latestAttendance);
   const invoices = Array.isArray(student.invoices) ? student.invoices : [];
   const termSummaries = Array.isArray(student.termSummaries) ? student.termSummaries : [];
   const promotionHistory = Array.isArray(student.promotionHistory) ? student.promotionHistory : [];
@@ -198,8 +202,8 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
           </div>
           <div className="border border-border bg-surface p-5 text-center transition hover:border-brand/40 hover:bg-brand-light/20">
             <p className="text-xs uppercase tracking-[0.24em] text-muted mb-3">Attendance</p>
-            <p className="text-3xl font-semibold text-foreground">{attendance.percentage === null ? "—" : `${attendance.percentage}%`}</p>
-            <p className="text-sm text-muted mt-2">{attendance.present} present · {attendance.absent} absent</p>
+            <p className="text-3xl font-semibold text-foreground">{latestAttendance.percentage === null ? "—" : `${latestAttendance.percentage}%`}</p>
+            <p className="text-sm text-muted mt-2">Latest term · {latestAttendance.present} present</p>
           </div>
           <div className="border border-border bg-surface p-5 text-center transition hover:border-brand/40 hover:bg-brand-light/20">
             <p className="text-xs uppercase tracking-[0.24em] text-muted mb-3">Previous terms</p>
@@ -217,17 +221,18 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
           <section id="attendance" className="border border-border bg-surface">
             <div className="border-b border-border px-5 py-4">
               <p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Attendance</p>
-              <h3 className="mt-1 text-lg font-semibold text-foreground">Recent attendance</h3>
+              <h3 className="mt-1 text-lg font-semibold text-foreground">Latest-term attendance</h3>
+              <p className="mt-1 text-xs text-muted">{latestAttendance.academicYearName || student.currentAcademicYear?.name || "Latest session"} · {latestAttendance.termName || student.currentTerm?.name || "Latest records"}</p>
             </div>
             <div className="grid grid-cols-4 divide-x divide-border border-b border-border">
-              <div className="p-3 text-center"><p className="text-lg font-semibold text-foreground">{attendance.total}</p><p className="text-[10px] uppercase tracking-wide text-muted">Total</p></div>
-              <div className="p-3 text-center"><p className="text-lg font-semibold text-emerald-700">{attendance.present}</p><p className="text-[10px] uppercase tracking-wide text-muted">Present</p></div>
-              <div className="p-3 text-center"><p className="text-lg font-semibold text-amber-700">{attendance.late}</p><p className="text-[10px] uppercase tracking-wide text-muted">Late</p></div>
-              <div className="p-3 text-center"><p className="text-lg font-semibold text-rose-700">{attendance.absent}</p><p className="text-[10px] uppercase tracking-wide text-muted">Absent</p></div>
+              <div className="p-3 text-center"><p className="text-lg font-semibold text-foreground">{latestAttendance.total}</p><p className="text-[10px] uppercase tracking-wide text-muted">Total</p></div>
+              <div className="p-3 text-center"><p className="text-lg font-semibold text-emerald-700">{latestAttendance.present}</p><p className="text-[10px] uppercase tracking-wide text-muted">Present</p></div>
+              <div className="p-3 text-center"><p className="text-lg font-semibold text-amber-700">{latestAttendance.late}</p><p className="text-[10px] uppercase tracking-wide text-muted">Late</p></div>
+              <div className="p-3 text-center"><p className="text-lg font-semibold text-rose-700">{latestAttendance.absent}</p><p className="text-[10px] uppercase tracking-wide text-muted">Absent</p></div>
             </div>
-            {attendance.records.length > 0 ? (
+            {latestAttendance.records?.length > 0 ? (
               <div className="divide-y divide-border">
-                {attendance.records.slice(0, 5).map((record: any) => (
+                {latestAttendance.records.slice(0, 5).map((record: any) => (
                   <div key={record.id} className="flex items-center justify-between px-5 py-3 text-sm">
                     <span className="text-muted">{new Date(record.date).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}</span>
                     <span className={`text-xs font-semibold ${record.status === "PRESENT" ? "text-emerald-700" : record.status === "LATE" ? "text-amber-700" : "text-rose-700"}`}>{record.status}</span>
@@ -235,6 +240,23 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
                 ))}
               </div>
             ) : <p className="px-5 py-8 text-center text-sm text-muted">No attendance records available yet.</p>}
+            {previousAttendancePeriods.length > 0 ? (
+              <details className="border-t border-border">
+                <summary className="cursor-pointer px-5 py-4 text-sm font-semibold text-brand hover:bg-background">View previous terms ({previousAttendancePeriods.length})</summary>
+                <div className="divide-y divide-border bg-background">
+                  {previousAttendancePeriods.map((period: any) => (
+                    <details key={`${period.academicYearId}-${period.termId}`} className="group px-5 py-3">
+                      <summary className="flex cursor-pointer items-center justify-between gap-3 text-sm font-medium text-foreground">
+                        <span>{period.academicYearName} · {period.termName}</span><span className="text-sm font-semibold">{period.percentage === null ? "—" : `${period.percentage}%`}</span>
+                      </summary>
+                      <div className="mt-3 grid grid-cols-4 gap-2 border-t border-border pt-3 text-center text-xs text-muted">
+                        <span>{period.total} total</span><span className="text-emerald-700">{period.present} present</span><span className="text-amber-700">{period.late} late</span><span className="text-rose-700">{period.absent} absent</span>
+                      </div>
+                    </details>
+                  ))}
+                </div>
+              </details>
+            ) : null}
           </section>
 
           <section id="fees" className="border border-border bg-surface">

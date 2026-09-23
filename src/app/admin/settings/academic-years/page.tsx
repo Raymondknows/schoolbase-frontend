@@ -295,9 +295,8 @@ export default function AcademicYearsPage() {
     setError(null);
 
     try {
-      const backendUrl = getBackendUrl();
       const response = await fetch(
-        `${backendUrl}/api/admin/terms/${pendingDeleteTermId}`,
+        `/api/admin/terms/${pendingDeleteTermId}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -305,7 +304,8 @@ export default function AcademicYearsPage() {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to delete term");
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error || "Failed to delete term");
       }
 
       setPendingDeleteTermId(null);
@@ -336,9 +336,8 @@ export default function AcademicYearsPage() {
     setError(null);
 
     try {
-      const backendUrl = getBackendUrl();
       const response = await fetch(
-        `${backendUrl}/api/admin/terms/${editTermData.id}`,
+        `/api/admin/terms/${editTermData.id}`,
         {
           method: "PATCH",
           credentials: "include",
@@ -352,7 +351,8 @@ export default function AcademicYearsPage() {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to update term");
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error || "Failed to update term");
       }
 
       setEditingTermId(null);
