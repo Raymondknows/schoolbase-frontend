@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { BellRing, Volume2, X } from "lucide-react";
 import { getBackendUrl } from "@/lib/backend-url";
-import { playBellTone, playOpenTone, unlockAudio } from "@/lib/sounds";
+import { playBellTone, playLoginSuccessTone, playOpenTone, unlockAudio } from "@/lib/sounds";
 
 type ActivityLog = {
   id?: string;
@@ -97,13 +97,15 @@ export default function PlatformActivityMonitor() {
           return;
         }
 
-        const latest = freshLogs.map(getActivityNotice).find(Boolean) as ActivityNotice | undefined;
-        if (!latest) return;
+        const latestLog = freshLogs.find((log) => Boolean(getActivityNotice(log)));
+        const latest = latestLog ? getActivityNotice(latestLog) : null;
+        if (!latest || !latestLog) return;
 
         setNotice(latest);
         window.setTimeout(() => setNotice(null), 7000);
         if (soundReady) {
           if (latest.signup) playBellTone("school", 1.8);
+          else if (getEventKey(latestLog).includes("LOGIN")) playLoginSuccessTone();
           else playOpenTone(1.8);
         }
       } catch {
