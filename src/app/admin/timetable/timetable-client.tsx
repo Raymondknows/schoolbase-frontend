@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
   Archive,
@@ -8,6 +8,7 @@ import {
   CalendarDays,
   Check,
   CheckCircle2,
+  Copy,
   Clock3,
   Edit3,
   ListPlus,
@@ -180,6 +181,7 @@ export default function TimetableClient() {
   const [showComposer, setShowComposer] = useState(false);
   const [view, setView] = useState<"week" | "list">("week");
   const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
+  const [duplicatingEntry, setDuplicatingEntry] = useState<Entry | null>(null);
   const [addingLesson, setAddingLesson] = useState(false);
   const [configActionModalOpen, setConfigActionModalOpen] = useState(false);
   const [configActionAnimateState, setConfigActionAnimateState] = useState<
@@ -219,6 +221,16 @@ export default function TimetableClient() {
   }
   function closeEditingEntry() {
     setEditingEntry(null);
+    playCloseTone();
+  }
+
+  function openDuplicatingEntry(entry: Entry) {
+    setDuplicatingEntry(entry);
+    playOpenTone();
+  }
+
+  function closeDuplicatingEntry() {
+    setDuplicatingEntry(null);
     playCloseTone();
   }
 
@@ -331,6 +343,45 @@ export default function TimetableClient() {
   async function deleteEntry(entry: Entry) {
     setPendingConfirmation({ kind: "deleteLesson", entry });
     playOpenTone();
+  }
+
+  async function moveEntry(entry: Entry, periodId: string) {
+    if (!config || entry.periodId === periodId) return;
+    setError("");
+    const response = await api(`/admin/timetable/entries/${entry.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ periodId }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      setError(data.error || data.message || "Unable to move lesson");
+      return;
+    }
+    await load();
+  }
+
+  async function pasteEntry(entry: Entry, periodId: string) {
+    if (!config) return;
+    setError("");
+    const response = await api(`/admin/timetable/configs/${config.id}/entries`, {
+      method: "POST",
+      body: JSON.stringify({
+        classId: entry.classId,
+        subjectId: entry.subjectId,
+        teacherId: entry.teacherId,
+        periodId,
+        room: entry.room || "",
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const detail = Array.isArray(data.conflicts)
+        ? ` ${data.conflicts.map((item: any) => item.message).join(" ")}`
+        : "";
+      setError((data.error || data.message || "Unable to paste lesson") + detail);
+      return;
+    }
+    await load();
   }
 
   async function removeConfig() {
@@ -637,6 +688,9 @@ export default function TimetableClient() {
             editable={!published}
             onEdit={openEditingEntry}
             onDelete={deleteEntry}
+            onMove={moveEntry}
+            onDuplicate={openDuplicatingEntry}
+            onPaste={pasteEntry}
           />
         ) : (
           <ListView
@@ -685,6 +739,24 @@ export default function TimetableClient() {
           onClose={closeAddingLesson}
           onSaved={() => {
             closeAddingLesson();
+            load();
+          }}
+        />
+      )}
+      {duplicatingEntry && config && (
+        <LessonEditor
+          timetableName={config.name}
+          existingEntries={entries}
+          entry={duplicatingEntry}
+          duplicate
+          classes={classes}
+          subjects={subjects}
+          teachers={teachers}
+          periods={config.periods}
+          configId={config.id}
+          onClose={closeDuplicatingEntry}
+          onSaved={() => {
+            closeDuplicatingEntry();
             load();
           }}
         />
@@ -771,13 +843,53 @@ function WeekBoard({
   editable,
   onEdit,
   onDelete,
+  onMove,
+  onDuplicate,
+  onPaste,
 }: {
   config: Config;
   periods: Period[];
   editable: boolean;
   onEdit: (entry: Entry) => void;
   onDelete: (entry: Entry) => void;
+  onMove: (entry: Entry, periodId: string) => void;
+  onDuplicate: (entry: Entry) => void;
+  onPaste: (entry: Entry, periodId: string) => void;
 }) {
+  const [copiedEntry, setCopiedEntry] = useState<Entry | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; entry?: Entry; periodId?: string } | null>(null);
+  const longPressRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const closeMenu = () => setContextMenu(null);
+    window.addEventListener("pointerdown", closeMenu);
+    return () => window.removeEventListener("pointerdown", closeMenu);
+  }, []);
+
+  const openLessonMenu = (event: React.MouseEvent, entry: Entry) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setContextMenu({ x: event.clientX, y: event.clientY, entry });
+  };
+
+  const startLongPress = (event: React.PointerEvent, entry: Entry) => {
+    if (event.pointerType !== "touch") return;
+    longPressRef.current = window.setTimeout(() => {
+      setContextMenu({ x: event.clientX, y: event.clientY, entry });
+    }, 500);
+  };
+
+  const cancelLongPress = () => {
+    if (longPressRef.current !== null) window.clearTimeout(longPressRef.current);
+    longPressRef.current = null;
+  };
+
+  const openCellMenu = (event: React.MouseEvent, periodId?: string) => {
+    if (!copiedEntry || !periodId) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setContextMenu({ x: event.clientX, y: event.clientY, periodId });
+  };
   return (
     <div className="timetable-print-target overflow-x-auto rounded-lg border border-border bg-surface shadow-sm">
       <div className="min-w-[880px]">
@@ -812,14 +924,39 @@ function WeekBoard({
               return (
                 <div
                   key={`${period.sortOrder}-${index}`}
-                  className="border-l border-border p-2"
+                  className="border-l border-border p-2 transition-colors"
+                  onContextMenu={(event) => openCellMenu(event, dayPeriod?.id)}
+                  onDragOver={(event) => {
+                    if (editable) event.preventDefault();
+                  }}
+                  onDrop={(event) => {
+                    if (!editable) return;
+                    event.preventDefault();
+                    const entryId = event.dataTransfer.getData("text/timetable-entry");
+                    const entry = config.entries.find((item) => item.id === entryId);
+                    if (entry && dayPeriod) {
+                      const copy = event.dataTransfer.getData("text/timetable-copy") === "true";
+                      if (copy) onDuplicate({ ...entry, periodId: dayPeriod.id, period: dayPeriod });
+                      else onMove(entry, dayPeriod.id);
+                    }
+                  }}
                 >
                   {entries.length > 0 && (
                     <div className="max-h-[190px] space-y-1 overflow-y-auto pr-1">
                       {entries.map((entry) => (
                         <div
                           key={entry.id}
-                          className="group relative border-l-4 bg-brand-light/30 px-2.5 py-2"
+                          draggable={editable}
+                          onContextMenu={(event) => openLessonMenu(event, entry)}
+                          onPointerDown={(event) => startLongPress(event, entry)}
+                          onPointerUp={cancelLongPress}
+                          onPointerCancel={cancelLongPress}
+                          onDragStart={(event) => {
+                            event.dataTransfer.effectAllowed = event.altKey ? "copy" : "move";
+                            event.dataTransfer.setData("text/timetable-entry", entry.id);
+                            event.dataTransfer.setData("text/timetable-copy", event.altKey ? "true" : "false");
+                          }}
+                          className={`group relative border-l-4 bg-brand-light/30 px-2.5 py-2 ${editable ? "cursor-grab active:cursor-grabbing" : ""}`}
                           style={{ borderColor: accents[index] }}
                         >
                           <div className="pr-8 text-sm font-bold text-foreground">
@@ -843,6 +980,13 @@ function WeekBoard({
                                 <Edit3 size={13} />
                               </button>
                               <button
+                                onClick={() => onDuplicate(entry)}
+                                aria-label={`Copy ${entry.subject?.name || "lesson"}`}
+                                className="rounded bg-surface p-1.5 text-brand shadow-sm hover:bg-brand-light"
+                              >
+                                <Copy size={13} />
+                              </button>
+                              <button
                                 onClick={() => onDelete(entry)}
                                 aria-label={`Delete ${entry.subject?.name || "lesson"}`}
                                 className="rounded bg-surface p-1.5 text-error shadow-sm hover:bg-[#fff5f5]"
@@ -861,6 +1005,29 @@ function WeekBoard({
           </div>
         ))}
       </div>
+      {contextMenu ? (
+        <div
+          className="fixed z-[80] min-w-40 border border-border bg-surface p-1 shadow-2xl"
+          style={{ left: Math.min(contextMenu.x, window.innerWidth - 180), top: Math.min(contextMenu.y, window.innerHeight - 90) }}
+          onPointerDown={(event) => event.stopPropagation()}
+        >
+          {contextMenu.entry ? (
+            <button type="button" className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-semibold text-foreground hover:bg-brand-light" onClick={() => { setCopiedEntry(contextMenu.entry!); setContextMenu(null); }}>
+              <Copy size={14} className="text-brand" /> Copy lesson
+            </button>
+          ) : null}
+          {contextMenu.periodId && copiedEntry ? (
+            <button type="button" className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-semibold text-foreground hover:bg-brand-light" onClick={() => { onPaste(copiedEntry, contextMenu.periodId!); setContextMenu(null); }}>
+              <ListPlus size={14} className="text-brand" /> Paste lesson here
+            </button>
+          ) : null}
+          {contextMenu.entry ? (
+            <button type="button" className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-semibold text-foreground hover:bg-brand-light" onClick={() => { onDuplicate(contextMenu.entry!); setContextMenu(null); }}>
+              <Edit3 size={14} className="text-brand" /> Copy and edit
+            </button>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -1068,6 +1235,7 @@ function LessonEditor({
   existingEntries,
   entry,
   configId,
+  duplicate = false,
   classes,
   subjects,
   teachers,
@@ -1078,6 +1246,7 @@ function LessonEditor({
   timetableName: string;
   existingEntries: Entry[];
   entry?: Entry;
+  duplicate?: boolean;
   configId?: string;
   classes: SelectorData[];
   subjects: SelectorData[];
@@ -1086,7 +1255,7 @@ function LessonEditor({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const isEditing = Boolean(entry);
+  const isEditing = Boolean(entry) && !duplicate;
   const [form, setForm] = useState({
     classId: entry?.classId || "",
     subjectId: entry?.subjectId || "",
@@ -1133,13 +1302,13 @@ function LessonEditor({
         <div className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-6 py-5">
           <div>
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-brand">
-              {isEditing ? <Edit3 size={15} /> : <ListPlus size={15} />}{" "}
-              {isEditing ? "Edit lesson" : "Add lesson"}
+              {isEditing ? <Edit3 size={15} /> : duplicate ? <Copy size={15} /> : <ListPlus size={15} />} {" "}
+              {isEditing ? "Edit lesson" : duplicate ? "Copy lesson" : "Add lesson"}
             </div>
             <h2 className="mt-2 text-2xl font-semibold text-foreground">
               {isEditing
                 ? "Update timetable assignment"
-                : "Add a lesson to this timetable"}
+                : duplicate ? "Create a second lesson assignment" : "Add a lesson to this timetable"}
             </h2>
             <div className="mt-3 inline-flex max-w-full items-center gap-2 rounded-lg bg-brand-light px-3 py-2 text-sm font-semibold text-brand">
               <CalendarDays size={15} />{" "}
@@ -1148,7 +1317,7 @@ function LessonEditor({
             <p className="mt-2 text-sm text-muted">
               {isEditing
                 ? "Changes are checked for class, teacher, and room conflicts."
-                : "Choose where and when this lesson should take place."}
+                : duplicate ? "Choose a new day or period. Existing assignments remain unchanged." : "Choose where and when this lesson should take place."}
             </p>
           </div>
           <button
@@ -1288,7 +1457,7 @@ function LessonEditor({
             disabled={saving}
             className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
           >
-            {saving ? "Saving..." : isEditing ? "Save changes" : "Add lesson"}
+            {saving ? "Saving..." : isEditing ? "Save changes" : duplicate ? "Create copy" : "Add lesson"}
           </button>
         </div>
       </form>
