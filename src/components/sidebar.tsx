@@ -150,7 +150,7 @@ export default function Sidebar({
   };
 
   return (
-    <aside className={`relative flex h-screen w-64 flex-col border-r border-border bg-surface overflow-hidden print:hidden ${
+    <aside className={`relative flex h-[100dvh] min-h-0 w-64 flex-col border-r border-border bg-surface overflow-hidden print:hidden ${
       isMobile ? "" : "hidden md:flex"
     }`}>
       {onThemeToggle ? (

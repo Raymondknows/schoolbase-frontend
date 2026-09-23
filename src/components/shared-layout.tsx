@@ -796,7 +796,7 @@ export default function SharedLayout({
 
       {/* Mobile Sidebar */}
       <div
-          className={`fixed left-0 top-0 z-40 h-screen w-64 transform bg-surface shadow-2xl md:hidden print:hidden transition-transform duration-300 ease-in-out overflow-hidden ${
+          className={`fixed bottom-0 left-0 top-0 z-40 w-64 transform bg-surface shadow-2xl md:hidden print:hidden transition-transform duration-300 ease-in-out overflow-hidden ${
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
