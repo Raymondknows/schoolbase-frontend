@@ -11,7 +11,7 @@ import { Analytics } from "@vercel/analytics/react";
 export const metadata: Metadata = {
   title: "SchoolBase — Everything your school needs in one simple platform",
   description:
-    "Collect fees, publish results, communicate with families, and run school operations in one connected platform.",
+    "Collect fees, publish results, communicate with families, and run school operations in one connected platform. ",
   keywords: [
     "school management",
     "fee collection",
