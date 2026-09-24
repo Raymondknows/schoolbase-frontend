@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   AlertCircle,
@@ -43,11 +43,11 @@ interface AttendanceRecord {
 
 type ViewMode = 'grid' | 'list';
 
-const STATUS_CONFIG: Record<AttendanceRecord['status'], { label: string; icon: LucideIcon; active: string }> = {
-  PRESENT: { label: 'Present', icon: CheckCircle2, active: 'border-emerald-200 bg-emerald-50 text-emerald-700' },
-  ABSENT: { label: 'Absent', icon: AlertCircle, active: 'border-red-200 bg-red-50 text-red-700' },
-  LATE: { label: 'Late', icon: Clock, active: 'border-amber-200 bg-amber-50 text-amber-700' },
-  EXCUSED: { label: 'Excused', icon: CheckCircle2, active: 'border-sky-200 bg-sky-50 text-sky-700' },
+const STATUS_CONFIG: Record<AttendanceRecord['status'], { label: string; icon: LucideIcon; active: string; idle: string }> = {
+  PRESENT: { label: 'Present', icon: CheckCircle2, active: 'border-emerald-300 bg-emerald-100 text-emerald-800', idle: 'bg-emerald-50/70 text-emerald-700 hover:bg-emerald-100' },
+  ABSENT: { label: 'Absent', icon: AlertCircle, active: 'border-red-300 bg-red-100 text-red-800', idle: 'bg-red-50/70 text-red-700 hover:bg-red-100' },
+  LATE: { label: 'Late', icon: Clock, active: 'border-amber-300 bg-amber-100 text-amber-800', idle: 'bg-amber-50/70 text-amber-700 hover:bg-amber-100' },
+  EXCUSED: { label: 'Excused', icon: CheckCircle2, active: 'border-sky-300 bg-sky-100 text-sky-800', idle: 'bg-sky-50/70 text-sky-700 hover:bg-sky-100' },
 };
 
 export default function AttendancePage() {
@@ -69,6 +69,48 @@ export default function AttendancePage() {
   const [saveModalTitle, setSaveModalTitle] = useState('Attendance saved');
   const [saveModalMessage, setSaveModalMessage] = useState('');
   const [attendanceAlreadyTaken, setAttendanceAlreadyTaken] = useState(false);
+  const [draftSaved, setDraftSaved] = useState(false);
+  const [syncPending, setSyncPending] = useState(false);
+  const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
+  const [lastSyncError, setLastSyncError] = useState<string | null>(null);
+
+  const getDraftKey = (classId: string, attendanceDate: string) =>
+    `schoolbase-teacher-attendance-draft:${classId}:${attendanceDate}`;
+
+  const getLastSyncKey = (classId: string, attendanceDate: string) =>
+    `schoolbase-teacher-attendance-last-sync:${classId}:${attendanceDate}`;
+
+  const formatLastSync = (value: string | null) => {
+    if (!value) return 'Not synced yet';
+
+    const parsedDate = new Date(value);
+    if (Number.isNaN(parsedDate.getTime())) return 'Not synced yet';
+
+    return new Intl.DateTimeFormat('en-NG', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }).format(parsedDate);
+  };
+
+  const persistDraft = (nextAttendance: Record<string, AttendanceRecord>) => {
+    if (!selectedClass || !date) return;
+    window.sessionStorage.setItem(getDraftKey(selectedClass, date), JSON.stringify(nextAttendance));
+    setDraftSaved(true);
+    setSyncPending(true);
+    setLastSyncAt(null);
+    setLastSyncError(null);
+  };
+
+  const clearDraft = useCallback(() => {
+    if (!selectedClass || !date) return;
+    const timestamp = new Date().toISOString();
+    window.sessionStorage.removeItem(getDraftKey(selectedClass, date));
+    window.sessionStorage.setItem(getLastSyncKey(selectedClass, date), timestamp);
+    setDraftSaved(false);
+    setSyncPending(false);
+    setLastSyncAt(timestamp);
+    setLastSyncError(null);
+  }, [date, selectedClass]);
 
   const filteredStudents = useMemo(() => {
     if (!searchQuery.trim()) return students;
@@ -138,7 +180,36 @@ export default function AttendancePage() {
           initial[student.id] = { studentId: student.id, status: 'PRESENT' };
         });
 
-        setAttendance(initial);
+        const draftKey = getDraftKey(selectedClass, date);
+        const syncKey = getLastSyncKey(selectedClass, date);
+        let restoredAttendance = initial;
+        try {
+          const storedDraft = window.sessionStorage.getItem(draftKey);
+          const storedSync = window.sessionStorage.getItem(syncKey);
+          if (storedSync) {
+            setLastSyncAt(storedSync);
+          } else {
+            setLastSyncAt(null);
+          }
+
+          if (storedDraft) {
+            const parsedDraft = JSON.parse(storedDraft) as Record<string, AttendanceRecord>;
+            restoredAttendance = Object.fromEntries(
+              Object.entries(initial).map(([studentId, record]) => [
+                studentId,
+                parsedDraft[studentId]?.studentId === studentId ? parsedDraft[studentId] : record,
+              ]),
+            );
+            setDraftSaved(true);
+          } else {
+            setDraftSaved(false);
+          }
+        } catch {
+          setDraftSaved(false);
+          setLastSyncAt(null);
+        }
+
+        setAttendance(restoredAttendance);
         setCurrentPage(1);
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : 'Failed to load students');
@@ -147,7 +218,7 @@ export default function AttendancePage() {
     }
 
     loadStudents();
-  }, [selectedClass]);
+  }, [selectedClass, date]);
 
   useEffect(() => {
     if (!selectedClass || !date) return;
@@ -179,15 +250,86 @@ export default function AttendancePage() {
   };
 
   const handleStatusChange = (studentId: string, status: AttendanceRecord['status']) => {
-    setAttendance((prev) => ({
-      ...prev,
-      [studentId]: { ...prev[studentId], status },
-    }));
+    setAttendance((prev) => {
+      const nextAttendance = {
+        ...prev,
+        [studentId]: { ...prev[studentId], status },
+      };
+      if (selectedClass && date) {
+        persistDraft(nextAttendance);
+      }
+      return nextAttendance;
+    });
   };
+
+  const retryQueuedAttendance = useCallback(async () => {
+    if (!selectedClass || !date) return;
+    if (!navigator.onLine) {
+      setLastSyncError('Connection unavailable. The draft will retry when the connection returns.');
+      return;
+    }
+
+    const queuedDraft = window.sessionStorage.getItem(getDraftKey(selectedClass, date));
+    if (!queuedDraft) {
+      setSyncPending(false);
+      setDraftSaved(false);
+      return;
+    }
+
+    try {
+      const backendUrl = getBackendUrl();
+      const parsedDraft = JSON.parse(queuedDraft) as Record<string, AttendanceRecord>;
+      const res = await fetch(`${backendUrl}/api/teacher/attendance`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          classId: selectedClass,
+          date,
+          attendanceData: Object.values(parsedDraft),
+        }),
+      });
+
+      if (!res.ok) throw new Error('Failed to save attendance');
+
+      const timestamp = new Date().toISOString();
+      window.sessionStorage.setItem(getLastSyncKey(selectedClass, date), timestamp);
+      setLastSyncAt(timestamp);
+      clearDraft();
+      setSaveModalType('success');
+      setSaveModalTitle('Attendance saved');
+      setSaveModalMessage('Attendance was saved successfully.');
+      setSaveModalOpen(true);
+    } catch (err: unknown) {
+      setSyncPending(true);
+      setLastSyncError(err instanceof Error ? err.message : 'Failed to save attendance');
+    }
+  }, [clearDraft, date, selectedClass]);
+
+  useEffect(() => {
+    if (!selectedClass || !date) return;
+
+    const handleOnline = () => {
+      const draftKey = getDraftKey(selectedClass, date);
+      if (window.sessionStorage.getItem(draftKey)) {
+        void retryQueuedAttendance();
+      }
+    };
+
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, [date, retryQueuedAttendance, selectedClass]);
 
   const handleSave = async () => {
     if (!selectedClass) {
       setError('Please select a class');
+      return;
+    }
+
+    if (!navigator.onLine) {
+      persistDraft(attendance);
+      setError('Connection lost. Your attendance draft has been saved on this device and will retry automatically when you are back online.');
+      setSyncPending(true);
       return;
     }
 
@@ -209,19 +351,33 @@ export default function AttendancePage() {
 
       if (!res.ok) throw new Error('Failed to save attendance');
 
+      const timestamp = new Date().toISOString();
+      window.sessionStorage.setItem(getLastSyncKey(selectedClass, date), timestamp);
+      setLastSyncAt(timestamp);
+      clearDraft();
       setSaveModalType('success');
       setSaveModalTitle('Attendance saved');
       setSaveModalMessage('Attendance was saved successfully.');
       setSaveModalOpen(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to save attendance');
+      persistDraft(attendance);
+      setSyncPending(true);
+      setLastSyncError(err instanceof Error ? err.message : 'Failed to save attendance');
+      setError('Connection issue while saving. Your attendance is queued and will retry automatically when online.');
     } finally {
       setSaving(false);
     }
   };
 
   const renderStatusControls = (studentId: string) => (
-    <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Attendance status">
+    <div className="w-full max-w-full" role="group" aria-label="Attendance status">
+      <div className="mb-1.5 flex items-center justify-between gap-3">
+        <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Attendance status</span>
+        <span className="text-[11px] font-semibold text-foreground">
+          {attendance[studentId] ? STATUS_CONFIG[attendance[studentId].status].label : 'Not set'}
+        </span>
+      </div>
+      <div className="grid grid-cols-2 overflow-hidden border border-border bg-background sm:grid-cols-4">
       {(Object.keys(STATUS_CONFIG) as AttendanceRecord['status'][]).map((status) => {
         const config = STATUS_CONFIG[status];
         const Icon = config.icon;
@@ -234,13 +390,14 @@ export default function AttendancePage() {
             disabled={attendanceAlreadyTaken}
             aria-pressed={isActive}
             title={`Mark ${config.label.toLowerCase()}`}
-            className={`inline-flex h-7 items-center gap-1 rounded-md border px-2 text-[11px] font-semibold transition focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-50 ${isActive ? config.active : 'border-border bg-background text-muted hover:border-brand/40 hover:text-foreground'}`}
+            className={`inline-flex h-9 min-w-0 items-center justify-center gap-1 border-r border-b border-border px-1.5 text-[10px] font-semibold transition last:border-r-0 focus:relative focus:z-10 focus:outline-none focus:ring-2 focus:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-50 sm:border-b-0 sm:gap-1.5 sm:px-2 sm:text-[11px] ${isActive ? config.active : config.idle}`}
           >
-            <Icon className="h-3.5 w-3.5" />
-            <span>{config.label}</span>
+            <Icon className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{config.label}</span>
           </button>
         );
       })}
+      </div>
     </div>
   );
 
@@ -260,29 +417,58 @@ export default function AttendancePage() {
       <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
         <TeacherPageHeader icon={Users} title="Attendance" description="Mark and track student attendance by class and date." actionLabel="Attendance summary" actionHref="/teacher/attendance/summary" />
 
-        {(error || attendanceAlreadyTaken) && (
+        {(error || attendanceAlreadyTaken || syncPending || lastSyncError) && (
           <div className="space-y-3">
             {error && (
-              <div className="border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 flex gap-3">
-                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
+              <div className="flex gap-3 border border-brand/20 bg-brand-light px-4 py-3">
+                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-red-800">Unable to save attendance</p>
-                  <p className="mt-1 text-sm text-red-700">{error}</p>
+                  <p className="text-sm font-semibold text-foreground">Unable to save attendance</p>
+                  <p className="mt-1 text-sm text-muted">{error}</p>
+                </div>
+              </div>
+            )}
+
+            {syncPending && (
+              <div className="flex items-start gap-3 border border-brand/20 bg-brand-light px-4 py-3 text-sm text-foreground" role="status">
+                <Clock className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold">Sync pending</p>
+                  <p className="mt-1 text-muted">
+                    {lastSyncError || `Your attendance draft is queued and will retry automatically when your connection returns. Last successful sync: ${formatLastSync(lastSyncAt)}.`}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => void retryQueuedAttendance()}
+                    className="mt-2 inline-flex items-center bg-brand px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-hover"
+                  >
+                    Retry now
+                  </button>
                 </div>
               </div>
             )}
 
             {attendanceAlreadyTaken && (
-              <div className="border border-[#f0d58a] bg-[#fff9e8] px-4 py-3 flex gap-3">
-                <Clock className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+              <div className="flex gap-3 border border-brand/20 bg-brand-light px-4 py-3">
+                <Clock className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-amber-900">Attendance Already Recorded</p>
-                  <p className="mt-1 text-sm text-amber-800">
+                  <p className="text-sm font-semibold text-foreground">Attendance already recorded</p>
+                  <p className="mt-1 text-sm text-muted">
                     Attendance for {selectedClassName || 'this class'} on {new Date(date).toLocaleDateString()} has already been recorded.
                   </p>
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {draftSaved && !attendanceAlreadyTaken && !syncPending && (
+          <div className="flex items-start gap-3 border border-brand/20 bg-brand-light px-4 py-3 text-sm text-foreground" role="status">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
+            <div>
+              <p className="font-semibold">Draft saved on this device</p>
+              <p className="mt-1 text-muted">Your attendance selections will remain available if this page is refreshed before you save.</p>
+            </div>
           </div>
         )}
 
@@ -307,7 +493,7 @@ export default function AttendancePage() {
                     setSearchQuery('');
                     setCurrentPage(1);
                   }}
-                  className="w-full appearance-none rounded-lg border border-border bg-surface px-3 py-2.5 text-sm font-semibold text-foreground outline-none transition focus:border-brand"
+                  className="w-full appearance-none border border-border bg-surface px-3 py-2.5 text-sm font-semibold text-foreground outline-none transition focus:border-brand"
                 >
                   {classes.map((teacherClass) => <option key={teacherClass.id} value={teacherClass.id}>{teacherClass.name}</option>)}
                 </select>
@@ -321,21 +507,26 @@ export default function AttendancePage() {
             </div>
             <label className="flex items-center gap-2 whitespace-nowrap text-sm font-medium text-foreground">
               Date
-              <input type="date" value={date} onChange={(event) => setDate(event.target.value)} className="rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-brand" />
+              <input type="date" value={date} onChange={(event) => setDate(event.target.value)} className="border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-brand" />
             </label>
-            <button type="button" onClick={() => router.push('/teacher/attendance/summary')} className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light">
+            <button type="button" onClick={() => router.push('/teacher/attendance/summary')} className="inline-flex w-fit shrink-0 self-start items-center justify-center gap-2 border border-brand/25 bg-brand-light px-3 py-2.5 text-sm font-semibold text-brand transition hover:border-brand hover:bg-brand hover:text-white xl:self-auto">
               <BarChart3 className="h-4 w-4" /> Summary
             </button>
-            <button type="button" onClick={handleSave} disabled={saving || attendanceAlreadyTaken || !selectedClass} className="rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50">
-              {saving ? 'Saving...' : 'Save attendance'}
-            </button>
+            <div className="flex flex-col items-end gap-2">
+              <button type="button" onClick={handleSave} disabled={saving || attendanceAlreadyTaken || !selectedClass} className="bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50">
+                {saving ? 'Saving...' : 'Save attendance'}
+              </button>
+              <span className="text-[11px] font-medium text-muted">
+                {syncPending ? 'Sync pending' : `Last synced: ${formatLastSync(lastSyncAt)}`}
+              </span>
+            </div>
           </div>
         </section>
 
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <article className="border border-border bg-surface p-5">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-blue-50">
                 <Users className="h-5 w-5 text-blue-600" />
               </div>
               <div className="min-w-0">
@@ -348,7 +539,7 @@ export default function AttendancePage() {
 
           <article className="border border-border bg-surface p-5">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-emerald-50">
                 <CheckCircle2 className="h-5 w-5 text-emerald-600" />
               </div>
               <div className="min-w-0">
@@ -361,7 +552,7 @@ export default function AttendancePage() {
 
           <article className="border border-border bg-surface p-5">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-50">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-red-50">
                 <AlertCircle className="h-5 w-5 text-red-600" />
               </div>
               <div className="min-w-0">
@@ -374,7 +565,7 @@ export default function AttendancePage() {
 
           <article className="border border-border bg-surface p-5">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-50">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-amber-50">
                 <Clock className="h-5 w-5 text-amber-600" />
               </div>
               <div className="min-w-0">
@@ -408,14 +599,14 @@ export default function AttendancePage() {
                   setCurrentPage(1);
                 }}
                 placeholder="Search students by name or admission number..."
-                className="w-full rounded-lg border border-border bg-surface py-2.5 pl-10 pr-10 text-sm text-foreground outline-none transition placeholder:text-muted focus:border-brand"
+                className="w-full border border-border bg-surface py-2.5 pl-10 pr-10 text-sm text-foreground outline-none transition placeholder:text-muted focus:border-brand"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={clearSearch}
                   aria-label="Clear search"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted transition hover:bg-surface hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted transition hover:bg-surface hover:text-foreground"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -423,12 +614,12 @@ export default function AttendancePage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="flex rounded-lg border border-border bg-background p-1">
+              <div className="flex border border-border bg-background p-1">
                 <button
                   type="button"
                   onClick={() => setViewMode('list')}
                   aria-label="List view"
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition ${
                     viewMode === 'list'
                       ? 'bg-brand text-white'
                       : 'text-muted hover:text-foreground'
@@ -442,7 +633,7 @@ export default function AttendancePage() {
                   type="button"
                   onClick={() => setViewMode('grid')}
                   aria-label="Grid view"
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition ${
                     viewMode === 'grid'
                       ? 'bg-brand text-white'
                       : 'text-muted hover:text-foreground'
@@ -461,7 +652,7 @@ export default function AttendancePage() {
                     setItemsPerPage(Number(event.target.value));
                     setCurrentPage(1);
                   }}
-                  className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs font-medium text-foreground outline-none focus:border-brand focus:ring-1 focus:ring-brand/10"
+                  className="border border-border bg-background px-2 py-1.5 text-xs font-medium text-foreground outline-none focus:border-brand focus:ring-1 focus:ring-brand/10"
                 >
                   {[10, 20, 50, 100].map((size) => (
                     <option key={size} value={size}>
@@ -481,8 +672,8 @@ export default function AttendancePage() {
           </div>
 
           {filteredStudents.length === 0 ? (
-            <div className="mt-5 rounded-lg border border-dashed border-[#9ac7ea] bg-[#f3f9fe] px-6 py-12 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-brand/10 text-brand">
+            <div className="mt-5 border border-dashed border-[#9ac7ea] bg-[#f3f9fe] px-6 py-12 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center bg-brand/10 text-brand">
                 <Users className="h-6 w-6" />
               </div>
               <p className="mt-3 text-sm font-semibold text-foreground">No students found</p>
@@ -494,7 +685,7 @@ export default function AttendancePage() {
             <>
               {viewMode === 'list' ? (
                 <>
-                  <div className="mt-4 hidden overflow-hidden rounded-lg border border-border sm:block">
+                  <div className="mt-4 hidden overflow-hidden border border-border sm:block">
                     <div className="overflow-x-auto">
                       <table className="w-full min-w-[650px] text-left text-sm">
                         <thead className="border-b border-border bg-background">
@@ -548,7 +739,7 @@ export default function AttendancePage() {
                             <p className="truncate text-sm font-semibold text-foreground">{studentName}</p>
                             <p className="mt-1 truncate text-xs text-muted">{student.admissionNo || '—'}</p>
                           </div>
-                          <span className="shrink-0 rounded-md border border-border bg-surface px-2 py-1 text-[11px] font-semibold text-muted">
+                          <span className="shrink-0 border border-border bg-surface px-2 py-1 text-[11px] font-semibold text-muted">
                             {attendance[student.id] ? STATUS_CONFIG[attendance[student.id].status].label : 'Not set'}
                           </span>
                         </div>
@@ -572,7 +763,7 @@ export default function AttendancePage() {
                       type="button"
                       onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
                       disabled={safeCurrentPage === 1}
-                      className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-2 text-xs font-medium text-foreground transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-40"
+                      className="inline-flex items-center gap-1 border border-border px-3 py-2 text-xs font-medium text-foreground transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       <ChevronLeft className="h-3.5 w-3.5" />
                       Previous
@@ -597,7 +788,7 @@ export default function AttendancePage() {
                             key={pageNumber}
                             type="button"
                             onClick={() => setCurrentPage(pageNumber)}
-                            className={`h-9 min-w-[2.25rem] rounded-lg px-2.5 text-xs font-medium transition ${
+                            className={`h-9 min-w-[2.25rem] px-2.5 text-xs font-medium transition ${
                               safeCurrentPage === pageNumber
                                 ? 'bg-brand text-white shadow-sm'
                                 : 'border border-border text-foreground hover:bg-background'
@@ -613,7 +804,7 @@ export default function AttendancePage() {
                       type="button"
                       onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
                       disabled={safeCurrentPage === totalPages}
-                      className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-2 text-xs font-medium text-foreground transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-40"
+                      className="inline-flex items-center gap-1 border border-border px-3 py-2 text-xs font-medium text-foreground transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       Next
                       <ChevronRight className="h-3.5 w-3.5" />

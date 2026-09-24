@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "@/components/header";
 import FooterWrapper from "@/components/footer-wrapper";
 import PublicShellGate from "@/components/public-shell-gate";
+import OfflineStatus from "@/components/offline-status";
 import PwaInstallPrompt from "@/components/pwa-install-prompt";
 import { Analytics } from "@vercel/analytics/react";
 
@@ -124,6 +125,7 @@ export default function RootLayout({
         <PublicShellGate>
           <FooterWrapper />
         </PublicShellGate>
+        <OfflineStatus />
         <PwaInstallPrompt />
         <Analytics />
       </body>
