@@ -27,7 +27,7 @@ const included = [
   "Attendance, fees, results, communication, and parent access orientation",
   "Role-based questions answered during the session",
   "Practical implementation guidance for your existing school process",
-  "Seven days of training-related follow-up support",
+  "Seven days of training-related follow-up support" ,
 ];
 
 const whatsappUrl = "https://wa.me/2349032250338?text=Hello%20SchoolBase%2C%20I%27d%20like%20to%20book%20school-wide%20staff%20training.";
