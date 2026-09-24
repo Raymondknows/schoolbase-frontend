@@ -5,6 +5,7 @@ import FooterWrapper from "@/components/footer-wrapper";
 import PublicShellGate from "@/components/public-shell-gate";
 import OfflineStatus from "@/components/offline-status";
 import PwaInstallPrompt from "@/components/pwa-install-prompt";
+import PublicWhatsAppContact from "@/components/public-whatsapp-contact";
 import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
@@ -124,6 +125,9 @@ export default function RootLayout({
         <main className="flex-1">{children}</main>
         <PublicShellGate>
           <FooterWrapper />
+        </PublicShellGate>
+        <PublicShellGate>
+          <PublicWhatsAppContact />
         </PublicShellGate>
         <OfflineStatus />
         <PwaInstallPrompt />
