@@ -162,6 +162,14 @@ export default function Footer() {
                   Video Tutorials
                 </Link>
               </li>
+              <li>
+                <Link
+                  href={`${siteUrl}/staff-training`}
+                  className="text-white/70 hover:text-white"
+                >
+                  School-wide staff training
+                </Link>
+              </li>
             </ul>
           </div>
 

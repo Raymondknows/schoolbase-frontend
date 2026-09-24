@@ -202,7 +202,10 @@ export default async function HomePage() {
               </div>
             ))}
           </div>
-          <p className="mt-8 text-center text-sm text-muted">Onboarding support included · clear plan limits · one connected school platform</p>
+          <p className="mt-8 text-center text-sm text-muted">Administrator onboarding included · clear plan limits · one connected school platform</p>
+          <div className="mt-6 border-l-2 border-brand bg-brand-light px-4 py-3 text-center text-sm text-foreground sm:text-left">
+            Need to train your whole team? <Link href="/staff-training" className="font-semibold text-brand hover:text-brand-hover">Explore optional school-wide staff training</Link>.
+          </div>
         </div>
       </section>
 

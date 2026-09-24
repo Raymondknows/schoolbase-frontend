@@ -400,6 +400,16 @@ export default function SubscribePage() {
       </div>
       </section>
 
+      <section className="border-l-4 border-brand border-y border-r border-brand/20 bg-brand-light px-5 py-4">
+        <p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand">Optional staff enablement</p>
+        <p className="mt-1 text-sm leading-6 text-foreground">
+          Administrator onboarding is included with your subscription. School-wide training for teachers, bursars, and front-office staff is available separately at an introductory rate of <span className="font-semibold">NGN 28,295</span>.
+        </p>
+        <a href="/staff-training" target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center text-sm font-semibold text-brand hover:text-brand-hover">
+          View staff training details <span className="ml-1" aria-hidden="true">-&gt;</span>
+        </a>
+      </section>
+
       {/* Checkout */}
       {!selectedPlan.disabled && (
         <section className="border border-border bg-surface p-5 sm:p-6">
