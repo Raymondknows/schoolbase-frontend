@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CalendarDays,
   CheckCircle2,
   Clock3,
   MapPin,
   RefreshCw,
-  X,
+  Timer,
 } from "lucide-react";
 import TeacherPageHeader from "@/components/teacher-page-header";
 
@@ -50,7 +50,9 @@ export default function TeacherTimetablePage() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [now, setNow] = useState(() => new Date());
-  const [dismissedNextLessonId, setDismissedNextLessonId] = useState<string | null>(null);
+  const [countdownPosition, setCountdownPosition] = useState({ x: 24, y: 96 });
+  const [isDraggingCountdown, setIsDraggingCountdown] = useState(false);
+  const countdownDragOffsetRef = useRef({ x: 0, y: 0 });
 
   async function load(isRefresh = false) {
     if (isRefresh) setRefreshing(true);
@@ -85,6 +87,25 @@ export default function TeacherTimetablePage() {
     return () => window.clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    if (!isDraggingCountdown) return;
+
+    const handlePointerMove = (event: PointerEvent) => {
+      setCountdownPosition({
+        x: Math.max(12, Math.min(window.innerWidth - 280, event.clientX - countdownDragOffsetRef.current.x)),
+        y: Math.max(72, Math.min(window.innerHeight - 120, event.clientY - countdownDragOffsetRef.current.y)),
+      });
+    };
+    const handlePointerUp = () => setIsDraggingCountdown(false);
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+  }, [isDraggingCountdown]);
+
   const sortedEntries = useMemo(
     () =>
       [...entries].sort(
@@ -111,23 +132,17 @@ export default function TeacherTimetablePage() {
 
   return (
     <main className="min-h-screen px-2 py-8 sm:px-8 lg:px-12">
-      <style jsx>{`
-        @keyframes sb_timetable_drawer_in {
-          from { transform: translateX(100%); }
-          to { transform: translateX(0); }
-        }
-      `}</style>
       <div className="mx-auto max-w-7xl space-y-6">
         <TeacherPageHeader icon={CalendarDays} title="Timetable" description="Plan your teaching week with published classes, subjects, rooms, and live lesson timing." count={boardName}>
-          <button onClick={() => load(true)} disabled={refreshing} className="inline-flex items-center justify-center gap-2 border border-brand/25 bg-brand-light px-4 py-2.5 text-sm font-semibold text-brand hover:border-brand hover:bg-brand hover:text-white disabled:opacity-50"><RefreshCw size={16} className={refreshing ? "animate-spin" : ""} /> Refresh</button>
+          <button onClick={() => load(true)} disabled={refreshing} className="inline-flex items-center justify-center gap-2 rounded-md border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground hover:border-brand hover:text-brand disabled:opacity-50"><RefreshCw size={16} className={refreshing ? "animate-spin" : ""} /> Refresh</button>
         </TeacherPageHeader>
         {error && (
-          <div className="border-l-4 border-error border-y border-r border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-error">
+          <div className="rounded-lg border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-error">
             {error}
           </div>
         )}
         {loading ? (
-          <div className="border border-border bg-surface p-16 text-center text-muted">
+          <div className="rounded-lg border border-border bg-surface p-16 text-center text-muted">
             Loading your published timetable...
           </div>
         ) : (
@@ -152,6 +167,32 @@ export default function TeacherTimetablePage() {
                 detail="Days with a class"
               />
             </section>
+            {countdown && nextLesson ? (
+              <div
+                className="fixed z-40 w-[min(280px,calc(100vw-24px))] touch-none select-none rounded-lg border border-brand/20 bg-surface/95 p-3 shadow-xl shadow-blue-900/10 backdrop-blur-sm print:hidden"
+                style={{ left: countdownPosition.x, top: countdownPosition.y }}
+              >
+                <div
+                  className={`flex cursor-grab items-center gap-3 ${isDraggingCountdown ? "cursor-grabbing" : ""}`}
+                  onPointerDown={(event) => {
+                    countdownDragOffsetRef.current = {
+                      x: event.clientX - countdownPosition.x,
+                      y: event.clientY - countdownPosition.y,
+                    };
+                    setIsDraggingCountdown(true);
+                  }}
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                    <Timer size={18} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Next lesson</p>
+                    <p className="truncate text-sm font-semibold text-foreground">{nextLesson.subject?.name || "Lesson"}</p>
+                    <p className="text-xs text-muted">Starts in <span className="font-bold text-brand">{countdown}</span> · {nextLesson.period.startsAt}</p>
+                  </div>
+                </div>
+              </div>
+            ) : null}
             <section className="border border-border bg-surface">
               <div className="flex flex-col justify-between gap-4 border-b border-border bg-background px-5 py-4 sm:flex-row sm:items-center">
                 <div>
@@ -161,14 +202,12 @@ export default function TeacherTimetablePage() {
                   </h2>
                   <p className="mt-1 text-sm text-muted">Choose a day to review your scheduled lessons.</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
-                  <div className="inline-flex items-center gap-2 border border-brand/20 bg-brand-light px-3 py-2 text-sm text-brand">
-                    <Clock3 size={15} />
-                    <span>
-                      <span className="font-semibold">{todayEntries.length}</span>{" "}
-                      {todayEntries.length === 1 ? "lesson" : "lessons"} scheduled
-                    </span>
-                  </div>
+                <div className="inline-flex items-center gap-2 self-start border border-brand/20 bg-brand-light px-3 py-2 text-sm text-brand sm:self-auto">
+                  <Clock3 size={15} />
+                  <span>
+                    <span className="font-semibold">{todayEntries.length}</span>{" "}
+                    {todayEntries.length === 1 ? "lesson" : "lessons"} scheduled
+                  </span>
                 </div>
               </div>
               <div className="grid grid-cols-5 gap-2 p-4">
@@ -176,7 +215,7 @@ export default function TeacherTimetablePage() {
                   <button
                     key={day}
                     onClick={() => setSelectedDay(index)}
-                    className={`border px-2 py-3 text-sm font-semibold transition-colors ${selectedDay === index ? "border-brand bg-brand text-white" : "border-border bg-background text-muted hover:border-brand hover:text-brand"}`}
+                    className={`rounded-lg border px-2 py-3 text-sm font-semibold transition-colors ${selectedDay === index ? "border-brand bg-brand text-white" : "border-border bg-background text-muted hover:border-brand hover:text-brand"}`}
                   >
                     <span className="hidden sm:inline">{day}</span>
                     <span className="sm:hidden">{day.slice(0, 3)}</span>
@@ -192,51 +231,6 @@ export default function TeacherTimetablePage() {
                 ))}
               </div>
             </section>
-            {countdown && nextLesson && dismissedNextLessonId !== nextLesson.id && (
-              <div className="fixed inset-0 z-50 flex">
-                <div
-                  className="absolute inset-0 bg-slate-950/35 backdrop-blur-[2px]"
-                  onClick={() => setDismissedNextLessonId(nextLesson.id)}
-                />
-                <aside
-                  className="relative ml-auto flex h-full w-full max-w-md flex-col overflow-hidden border-l border-border bg-surface shadow-2xl motion-safe:animate-[sb_timetable_drawer_in_300ms_ease-out]"
-                  role="dialog"
-                  aria-label="Next lesson notification"
-                >
-                  <div className="flex items-start justify-between gap-4 border-b border-border bg-surface px-6 py-5">
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-brand/10 text-brand">
-                        <Clock3 size={20} />
-                      </div>
-                      <div>
-                        <p className="text-[11px] font-bold uppercase tracking-[.12em] text-muted">Timetable notification</p>
-                        <h2 className="mt-1 text-xl font-semibold text-foreground">Next lesson</h2>
-                        <p className="mt-1 text-sm text-muted">Your next scheduled class is approaching.</p>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setDismissedNextLessonId(nextLesson.id)}
-                      aria-label="Dismiss next lesson notification"
-                      className="p-2 text-muted transition hover:bg-background hover:text-foreground"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                  <div className="flex-1 bg-background p-4 sm:p-6">
-                    <div className="border-l-4 border-brand border-y border-r border-border bg-surface p-4">
-                      <p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand">Starts in</p>
-                      <p className="mt-2 text-4xl font-semibold tracking-tight text-foreground">{countdown}</p>
-                      <p className="mt-2 text-sm text-muted">{nextLesson.period.startsAt} · {nextLesson.subject?.name || "Lesson"}</p>
-                      <p className="mt-1 text-sm text-muted">
-                        {nextLesson.class?.name || "Class"}
-                        {nextLesson.class?.arm ? ` · ${nextLesson.class.arm}` : ""}
-                      </p>
-                    </div>
-                  </div>
-                </aside>
-              </div>
-            )}
             <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {todayEntries.map((entry) => (
                 <article
@@ -253,7 +247,7 @@ export default function TeacherTimetablePage() {
                         {entry.subject?.name || "Lesson"}
                       </h3>
                     </div>
-                    <span className="border border-brand/20 bg-brand-light px-2 py-1 text-xs font-bold text-brand">
+                    <span className="rounded-lg bg-brand-light px-2 py-1 text-xs font-bold text-brand">
                       {entry.period.startsAt}
                     </span>
                   </div>
@@ -275,7 +269,7 @@ export default function TeacherTimetablePage() {
                 </article>
               ))}
               {!todayEntries.length && (
-                <div className="border border-dashed border-[#9ac7ea] bg-[#f3f9fe] p-10 text-center md:col-span-2 lg:col-span-3">
+                <div className="rounded-lg border border-dashed border-[#9ac7ea] bg-[#f3f9fe] p-10 text-center md:col-span-2 lg:col-span-3">
                   <CalendarDays className="mx-auto text-brand" size={28} />
                   <h2 className="mt-3 font-semibold text-foreground">
                     No lessons scheduled for {days[selectedDay]}
@@ -308,7 +302,7 @@ function Summary({
   return (
     <div className="group border border-border bg-surface p-5 transition hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-sm">
       <div className="flex items-start justify-between gap-3">
-        <div className="flex h-9 w-9 items-center justify-center bg-brand/10 text-brand">{icon}</div>
+        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-brand/10 text-brand">{icon}</div>
         <CalendarDays className="h-4 w-4 text-muted transition group-hover:text-brand" />
       </div>
       <p className="mt-5 text-[11px] font-bold uppercase tracking-[.14em] text-muted">{label}</p>
