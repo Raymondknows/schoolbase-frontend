@@ -39,11 +39,11 @@ const DEFAULT_POLICY: WhatsAppPolicy = {
   messagesPerMinute: 10,
   messagesPerHour: 100,
   messagesPerDay: 300,
-  batchSize: 25,
+  batchSize: 250,
   batchCooldownSeconds: 120,
   quietHoursStart: '21:00',
   quietHoursEnd: '07:00',
-  requireApprovalForBulk: true,
+  requireApprovalForBulk: false,
   allowAutomaticRetries: true,
   timezone: 'Africa/Lagos',
 };
