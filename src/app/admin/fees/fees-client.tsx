@@ -155,6 +155,7 @@ export default function FeesPageClient({
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'success' | 'error'>('success');
   const [modalTitle, setModalTitle] = useState<string | undefined>(undefined);
+  const [modalSubtitle, setModalSubtitle] = useState<string | null>(null);
   const [modalMessage, setModalMessage] = useState<string | null>(null);
   const [modalDetails, setModalDetails] = useState<string | undefined>(undefined);
 
@@ -201,6 +202,11 @@ export default function FeesPageClient({
     if (success) {
       setModalType('success');
       setModalTitle('Invoices issued');
+      setModalSubtitle(
+        whatsappFailed > 0
+          ? 'Invoices were created, but some WhatsApp notifications failed to send.'
+          : 'Your request was completed successfully.'
+      );
       const outcome = [`${created ?? 0} invoice${(created ?? 0) !== 1 ? 's' : ''} were created`];
       if (whatsappSent > 0) outcome.push(`${whatsappSent} WhatsApp sent`);
       if (whatsappFailed > 0) outcome.push(`${whatsappFailed} WhatsApp failed`);
@@ -209,6 +215,11 @@ export default function FeesPageClient({
     } else if (reminders) {
       setModalType('success');
       setModalTitle('Reminders sent');
+      setModalSubtitle(
+        whatsappFailed > 0
+          ? 'Reminder delivery was processed, but some WhatsApp notifications failed.'
+          : 'Your request was completed successfully.'
+      );
       const outcome = [`${remindersSent ?? 0} reminder deliveries completed`];
       if (whatsappSent > 0) outcome.push(`${whatsappSent} WhatsApp sent`);
       if (whatsappFailed > 0) outcome.push(`${whatsappFailed} WhatsApp failed`);
@@ -217,6 +228,7 @@ export default function FeesPageClient({
     } else if (paymentRecorded) {
       setModalType('success');
       setModalTitle('Payment recorded');
+      setModalSubtitle('Your request was completed successfully.');
       setModalMessage('The invoice has been updated and the dashboard is refreshed.');
     } else if (error) {
       setModalType('error');
@@ -760,7 +772,7 @@ export default function FeesPageClient({
                   </h2>
                   <p className="mt-1 text-sm text-slate-600">
                     {modalType === 'success'
-                      ? 'Your request was completed successfully.'
+                      ? (modalSubtitle || 'Your request was completed successfully.')
                       : 'Please review the details below.'}
                   </p>
                 </div>

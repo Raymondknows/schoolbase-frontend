@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Edit2, Mail, Phone, MapPin, UserRound, CreditCard, CalendarCheck, GraduationCap } from "lucide-react";
+import { ChevronLeft, ChevronRight, Edit2, Download, Mail, Phone, MapPin, UserRound, CreditCard, CalendarCheck, GraduationCap } from "lucide-react";
 import { formatMoney, pupilName } from "@/lib/format";
 import { resolveFileUrl } from "@/lib/api-client";
 
@@ -62,9 +62,167 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
 
   return (
     <main className="min-h-screen pb-12">
+      <style>{`
+        @media print {
+          @page {
+            size: A4 portrait;
+            margin: 12mm;
+          }
+
+          body {
+            background: white !important;
+            color: #111827 !important;
+          }
+
+          body * {
+            visibility: hidden !important;
+          }
+
+          main,
+          header.print-hide,
+          .student-print-header,
+          .student-print-target,
+          .student-print-target * {
+            visibility: visible !important;
+          }
+
+          header.print-hide {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+          }
+
+          main {
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            margin: 0 !important;
+          }
+
+          .student-print-header {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 1mm !important;
+            position: static !important;
+            width: 100% !important;
+            margin: 0 0 2mm 0 !important;
+            padding: 0 0 1mm 0 !important;
+            border-bottom: 1px solid #d5dbe1 !important;
+            color: #111827 !important;
+            background: transparent !important;
+          }
+
+          .student-print-header > * {
+            visibility: visible !important;
+          }
+
+          .student-print-target {
+            position: static !important;
+            left: auto !important;
+            top: auto !important;
+            width: 100% !important;
+            background: white !important;
+            box-shadow: none !important;
+            border: 0 !important;
+            overflow: visible !important;
+            margin-top: 0 !important;
+          }
+
+          .student-print-target .print-hide,
+          .student-print-target button,
+          .student-print-target a,
+          .student-print-target [role="button"],
+          .student-print-target nav,
+          .student-print-target .no-print {
+            display: none !important;
+            visibility: hidden !important;
+          }
+
+          .student-print-target .profile-photo {
+            max-width: 140px !important;
+            max-height: 140px !important;
+            border-radius: 12px !important;
+            object-fit: cover !important;
+          }
+
+          .student-print-target .print-card {
+            break-inside: avoid !important;
+            box-shadow: none !important;
+            border-color: #d5dbe1 !important;
+          }
+
+          .student-print-target .print-profile-layout {
+            display: grid !important;
+            grid-template-columns: 170px minmax(0, 1fr) !important;
+            gap: 18px !important;
+            align-items: start !important;
+          }
+
+          .student-print-target .print-profile-layout > div {
+            width: 100% !important;
+          }
+
+          .student-print-target .print-profile-main {
+            display: block !important;
+            width: 100% !important;
+          }
+
+          .student-print-target .print-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+
+          .student-print-target .print-metrics,
+          .student-print-target .print-hidden {
+            display: none !important;
+          }
+
+          .student-print-target .photo-stack {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 10px !important;
+            margin: 0 !important;
+          }
+
+          .student-print-target .photo-badges {
+            display: flex !important;
+            flex-direction: row !important;
+            gap: 6px !important;
+            margin-top: 0 !important;
+            flex-wrap: nowrap !important;
+          }
+
+          .student-print-target .status-badge,
+          .student-print-target .class-badge {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-width: 0 !important;
+            width: auto !important;
+            padding: 3px 8px !important;
+            border-radius: 9999px !important;
+            font-size: 9px !important;
+            line-height: 1.2 !important;
+            font-weight: 700 !important;
+            white-space: nowrap !important;
+          }
+
+          .student-print-target .photo-group {
+            width: auto !important;
+            max-width: 120px !important;
+            flex-shrink: 0 !important;
+          }
+        }
+      `}</style>
     <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
+      <div className="student-print-header hidden">
+        <div className="text-xl font-bold text-black">SchoolBase Student Profile</div>
+        <div className="text-sm font-semibold text-black">{fullName} • Admission {student.admissionNo || 'N/A'} • Printed {new Date().toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+      </div>
       {/* Header */}
-      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-10 sm:px-8 sm:pb-8 sm:pt-12">
+      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-10 sm:px-8 sm:pb-8 sm:pt-12 print-hide">
         <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
         <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <div>
@@ -77,39 +235,47 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
             <ChevronLeft className="h-5 w-5" />
             <span className="text-sm font-medium">Back</span>
           </Link>
-          <Link href={`/admin/students/${studentId}/edit`}>
-            <Button className="gap-2">
-              <Edit2 className="h-4 w-4" />
-              Edit
+          <div className="flex items-center gap-2">
+            <Button type="button" variant="secondary" className="gap-2" onClick={() => window.print()}>
+              <Download className="h-4 w-4" />
+              Download PDF
             </Button>
-          </Link>
+            <Link href={`/admin/students/${studentId}/edit`}>
+              <Button className="gap-2">
+                <Edit2 className="h-4 w-4" />
+                Edit
+              </Button>
+            </Link>
+          </div>
           </div>
         </div>
       </header>
 
-      <div>
-        <div className="border border-border bg-surface p-5 space-y-6 sm:p-6">
+      <div className="student-print-target">
+        <div className="print-card border border-border bg-surface p-5 space-y-6 sm:p-6">
           {/* Student Info */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="print-profile-layout grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Left: Photo & Badges */}
             <div className="md:col-span-1">
-            <div className="space-y-4">
-              {photoUrl ? (
-                <img src={photoUrl} alt={fullName} className="w-full rounded-md border border-border object-cover aspect-square" />
-              ) : (
-                <div className="flex w-full items-center justify-center rounded-md border border-border bg-surface/80 aspect-square">
-                  <span className="text-6xl text-muted">👤</span>
-                </div>
-              )}
-              <div className="space-y-2">
-                <div className={`rounded-md border p-3 text-center text-sm font-medium ${
+            <div className="photo-stack flex flex-col items-start gap-3">
+              <div className="photo-group">
+                {photoUrl ? (
+                  <img src={photoUrl} alt={fullName} className="profile-photo w-full rounded-md border border-border object-cover aspect-square" />
+                ) : (
+                  <div className="profile-photo flex w-full items-center justify-center rounded-md border border-border bg-surface/80 aspect-square">
+                    <span className="text-6xl text-muted">👤</span>
+                  </div>
+                )}
+              </div>
+              <div className="photo-badges flex flex-wrap items-center gap-2">
+                <div className={`status-badge rounded-full border px-2.5 py-1 text-[10px] font-semibold ${
                   student.status === "ACTIVE"
-                    ? "bg-green-100 text-green-800"
-                    : "bg-surface/80 text-slate-800"
+                    ? "border-green-200 bg-green-100 text-green-800"
+                    : "border-slate-200 bg-slate-100 text-slate-700"
                 }`}>
                   {student.status === "ACTIVE" ? "Active" : "Inactive"}
                 </div>
-                <div className="rounded-md border border-brand/20 bg-brand/10 p-3 text-center text-sm font-medium text-brand">
+                <div className="class-badge rounded-full border border-brand/20 bg-brand/10 px-2.5 py-1 text-[10px] font-semibold text-brand">
                   {student.class?.name || "No Class"}{student.class?.arm ? ` ${student.class.arm}` : ""}
                 </div>
               </div>
@@ -117,7 +283,7 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
           </div>
 
           {/* Right: Main Info */}
-          <div className="md:col-span-2 space-y-6">
+          <div className="print-profile-main md:col-span-2 space-y-6">
             {/* Basic Information */}
             <div>
               <h2 className="text-2xl font-bold text-foreground">{fullName}</h2>
@@ -126,7 +292,7 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
             </div>
 
             {/* Key Details Grid */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="print-grid grid grid-cols-2 gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase text-muted">Gender</p>
                 <p className="mt-1 text-sm font-medium text-foreground">{student.gender || "—"}</p>
@@ -183,13 +349,13 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
         </div>
 
         {/* Key Metrics */}
-        <div className="flex items-center justify-between gap-4">
+        <div className="print-hidden flex items-center justify-between gap-4">
           <div>
             <h3 className="text-lg font-semibold text-foreground">Key metrics</h3>
             <p className="text-sm text-muted">Snapshot of the student’s financial and academic status.</p>
           </div>
         </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+        <div className="print-metrics print-hidden grid grid-cols-1 gap-4 sm:grid-cols-4">
           <div className="border border-border bg-surface p-5 text-center transition hover:border-brand/40 hover:bg-brand-light/20">
             <p className="text-xs uppercase tracking-[0.24em] text-muted mb-3">Current term</p>
             <p className="text-3xl font-semibold text-foreground">{formatMoney(currentTermBalance)}</p>
@@ -218,7 +384,7 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
         </div>
 
         <div className="grid gap-4 xl:grid-cols-2">
-          <section id="attendance" className="border border-border bg-surface">
+          <section id="attendance" className="print-hidden border border-border bg-surface">
             <div className="border-b border-border px-5 py-4">
               <p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Attendance</p>
               <h3 className="mt-1 text-lg font-semibold text-foreground">Latest-term attendance</h3>
@@ -259,7 +425,7 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
             ) : null}
           </section>
 
-          <section id="fees" className="border border-border bg-surface">
+          <section id="fees" className="print-hidden border border-border bg-surface">
             <div className="border-b border-border px-5 py-4">
               <p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Finance</p>
               <h3 className="mt-1 text-lg font-semibold text-foreground">Current-term fee ledger</h3>
@@ -301,18 +467,18 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
         </div>
 
         <div className="grid gap-4 xl:grid-cols-2">
-          <section id="results" className="border border-border bg-surface">
+          <section id="results" className="print-hidden border border-border bg-surface">
             <div className="border-b border-border px-5 py-4"><p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Academic progress</p><h3 className="mt-1 text-lg font-semibold text-foreground">Latest term summary</h3></div>
             {latestSummary ? <div className="grid gap-4 p-5 sm:grid-cols-3"><div><p className="text-xs text-muted">Average score</p><p className="mt-1 text-xl font-semibold text-foreground">{latestSummary.averageScore ?? "—"}</p></div><div><p className="text-xs text-muted">Class position</p><p className="mt-1 text-xl font-semibold text-foreground">{latestSummary.classPosition ?? "—"}</p></div><div><p className="text-xs text-muted">Attendance</p><p className="mt-1 text-xl font-semibold text-foreground">{latestSummary.attendancePercentage ?? attendance.percentage ?? "—"}{latestSummary.attendancePercentage ?? attendance.percentage ? "%" : ""}</p></div><p className="text-sm leading-6 text-muted sm:col-span-3">{latestSummary.classTeacherRemarks || latestSummary.principalRemarks || "No teacher remarks recorded for the latest term."}</p></div> : <p className="px-5 py-8 text-center text-sm text-muted">No academic summary has been published yet.</p>}
           </section>
 
-          <section id="enrollment" className="border border-border bg-surface">
+          <section id="enrollment" className="print-hidden border border-border bg-surface">
             <div className="border-b border-border px-5 py-4"><p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Enrollment history</p><h3 className="mt-1 text-lg font-semibold text-foreground">Promotion timeline</h3></div>
             {promotionHistory.length > 0 ? <div className="divide-y divide-border">{promotionHistory.slice(0, 5).map((record: any) => <div key={record.id} className="flex items-center justify-between gap-3 px-5 py-3 text-sm"><div><p className="font-medium text-foreground">{record.decision?.replace(/_/g, " ") || "Decision recorded"}</p><p className="mt-1 text-xs text-muted">{record.rationale || "No rationale provided"}</p></div><span className="shrink-0 text-xs text-muted">{new Date(record.decidedAt).toLocaleDateString("en-NG", { month: "short", year: "numeric" })}</span></div>)}</div> : <p className="px-5 py-8 text-center text-sm text-muted">No promotion history recorded yet.</p>}
           </section>
         </div>
 
-        <section>
+        <section className="print-hidden">
           <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
             Quick actions
           </div>

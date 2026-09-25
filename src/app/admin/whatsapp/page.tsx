@@ -4,7 +4,7 @@ import { getBackendUrl } from "@/lib/backend-url";
 import { useEffect, useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Send, Mail, AlertCircle, CheckCircle, Clock, TrendingUp } from "lucide-react";
+import { MessageCircle, Send, Mail, AlertCircle, CheckCircle, Clock, TrendingUp, Search } from "lucide-react";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { UserGuide, type PageHelpGuide } from "@/components/ui/user-guide";
 import SubscriptionModal from "@/components/subscription-modal";
@@ -116,7 +116,7 @@ const HELP_GUIDE: PageHelpGuide = {
     },
     {
       question: "Can I resend a failed notification?",
-      answer: "Currently, failed notifications must be resent through their original trigger (e.g., resend reminders or reissue invoices). Manual resend is coming in a future update.",
+      answer: "Yes. Select the failed WhatsApp rows and resend only those failed deliveries; successful ones are not retriggered and invoices or announcements are not reissued.",
     },
   ],
 };
@@ -138,6 +138,9 @@ export default function WhatsAppPage() {
   const [filterChannel, setFilterChannel] = useState("ALL");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
+  const [selectedNotificationIds, setSelectedNotificationIds] = useState<string[]>([]);
+  const [retryingSelected, setRetryingSelected] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   // Fetch notifications on mount and when filters change
   useEffect(() => {
@@ -206,6 +209,11 @@ export default function WhatsAppPage() {
     fetchNotifications();
   }, [filterType, filterStatus, filterChannel, itemsPerPage]);
 
+  const selectedFailedIds = useMemo(() =>
+    new Set(selectedNotificationIds),
+    [selectedNotificationIds],
+  );
+
   // Filter notifications by search query
   const filteredNotifications = useMemo(() => {
     return notifications.filter((notif) =>
@@ -213,6 +221,72 @@ export default function WhatsAppPage() {
       notif.reference?.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [notifications, searchQuery]);
+
+  const failedNotificationsInView = filteredNotifications.filter((n) => n.status === 'FAILED');
+
+  const typeOptions = [
+    { value: 'ALL', label: 'All Types' },
+    { value: 'ISSUE_BILLS', label: 'Invoice' },
+    { value: 'SEND_REMINDER', label: 'Reminder' },
+    { value: 'ATTENDANCE_UPDATE', label: 'Attendance' },
+  ];
+
+  const statusOptions = [
+    { value: 'ALL', label: 'All' },
+    { value: 'SENT', label: 'Sent' },
+    { value: 'FAILED', label: 'Failed' },
+    { value: 'PENDING', label: 'Pending' },
+  ];
+
+  const channelOptions = [
+    { value: 'ALL', label: 'All Channels' },
+    { value: 'WHATSAPP', label: 'WhatsApp' },
+    { value: 'EMAIL', label: 'Email' },
+  ];
+
+  async function handleRetrySelectedFailed() {
+    const idsToRetry = filteredNotifications
+      .filter((notif) => notif.status === 'FAILED' && selectedFailedIds.has(notif.id))
+      .map((notif) => notif.id);
+
+    if (idsToRetry.length === 0) {
+      setError('Select at least one failed WhatsApp notification to retry.');
+      return;
+    }
+
+    setRetryingSelected(true);
+    setError(null);
+
+    try {
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/admin/notifications/retry-failed`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificationIds: idsToRetry }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to retry selected notifications');
+      }
+
+      setNotifications((current) =>
+        current.map((notif) =>
+          idsToRetry.includes(notif.id)
+            ? { ...notif, status: 'PENDING', sentAt: undefined, failureReason: 'Queued for background retry' }
+            : notif,
+        ),
+      );
+      setSelectedNotificationIds([]);
+      setCurrentPage(1);
+      setWhatsAppStatusMessage(data.message || 'Selected failed messages were queued for background retry.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to retry selected notifications.');
+    } finally {
+      setRetryingSelected(false);
+    }
+  }
 
   // Paginate notifications
   const paginatedNotifications = useMemo(() => {
@@ -248,280 +322,369 @@ export default function WhatsAppPage() {
   return (
     <main className="min-h-screen pb-12">
       <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
-      {/* Header */}
-      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
-      <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
-      <div className="relative flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand">
-            <WhatsAppIcon className="h-4 w-4 text-[#25D366]" /> Communication operations
-          </div>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Communications log</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Monitor parent notifications across WhatsApp and email.</p>
-        </div>
-
-        {whatsAppConnected !== null && (
-          <div className="inline-flex items-center gap-2.5 self-start rounded-full border border-border bg-surface px-2.5 py-1.5 shadow-sm sm:self-auto" title={whatsAppConnected ? 'WhatsApp connected — Ready to send messages' : 'WhatsApp disconnected — Reconnect via settings'}>
-            <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${whatsAppConnected ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-              <WhatsAppIcon className="h-4 w-4" />
-            </span>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-semibold text-foreground">
-                {whatsAppConnected ? 'Connected' : 'Disconnected'}
-              </span>
-              <span className="hidden text-[10px] text-muted sm:inline">
-                {whatsAppConnected ? 'Ready' : 'Reconnect'}
-              </span>
+        <header className="relative overflow-hidden border border-border bg-surface px-6 pb-7 pt-8 sm:px-8 sm:pb-8 sm:pt-10">
+          <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
+          <div className="relative flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-brand">
+                <WhatsAppIcon className="h-4 w-4 text-[#25D366]" /> Communication operations
+              </div>
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Communications log</h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Monitor parent notifications across WhatsApp and email.</p>
             </div>
-            <span className={`h-2 w-2 rounded-full ${whatsAppConnected ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+
+            {whatsAppConnected !== null && (
+              <div className="inline-flex items-center gap-2.5 self-start rounded-full border border-border bg-surface px-2.5 py-1.5 shadow-sm sm:self-auto" title={whatsAppConnected ? 'WhatsApp connected — Ready to send messages' : 'WhatsApp disconnected — Reconnect via settings'}>
+                <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${whatsAppConnected ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                  <WhatsAppIcon className="h-4 w-4" />
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-semibold text-foreground">
+                    {whatsAppConnected ? 'Connected' : 'Disconnected'}
+                  </span>
+                  <span className="hidden text-[10px] text-muted sm:inline">
+                    {whatsAppConnected ? 'Ready' : 'Reconnect'}
+                  </span>
+                </div>
+                <span className={`h-2 w-2 rounded-full ${whatsAppConnected ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+              </div>
+            )}
+          </div>
+        </header>
+
+        {error && (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">
+            {error}
           </div>
         )}
-      </div>
-      </header>
 
-      {/* Error Message */}
-      {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+        {stats && (
+          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="border border-border bg-surface p-5 transition-colors hover:border-brand/40 hover:bg-brand-light/20">
+              <div className="mb-4 flex items-center gap-2 text-brand">
+                <TrendingUp className="h-4 w-4 text-brand" />
+                <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">Total</span>
+              </div>
+              <div className="text-3xl font-semibold text-foreground">{stats.total}</div>
+              <div className="mt-1 text-xs text-muted">All notifications</div>
+            </div>
 
-      {/* Summary Stats */}
-      {stats && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Total Sent */}
-          <div className="border border-border bg-surface p-5">
-            <div className="mb-4 flex items-center gap-2 text-brand"><TrendingUp size={18} /><span className="text-xs font-bold uppercase tracking-[.12em] text-muted">Total sent</span></div>
-            <div className="text-3xl font-semibold text-foreground">{stats.total}</div>
-            <div className="mt-1 text-xs text-muted">All channels combined</div>
-          </div>
+            <div className="border border-border bg-surface p-5 transition-colors hover:border-brand/40 hover:bg-brand-light/20">
+              <div className="mb-4 flex items-center gap-2 text-brand">
+                <CheckCircle className="h-4 w-4 text-brand" />
+                <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">Successful</span>
+              </div>
+              <div className="text-3xl font-semibold text-foreground">{stats.sent}</div>
+              <div className="mt-1 text-xs text-muted">{stats.total > 0 ? ((stats.sent / stats.total) * 100).toFixed(0) : 0}% success rate</div>
+            </div>
 
-          {/* Successful */}
-          <div className="border border-border bg-surface p-5">
-            <div className="mb-4 flex items-center gap-2 text-brand"><CheckCircle size={18} /><span className="text-xs font-bold uppercase tracking-[.12em] text-muted">Successful</span></div>
-            <div className="text-3xl font-semibold text-foreground">{stats.sent}</div>
-            <div className="mt-1 text-xs text-muted">{stats.total > 0 ? ((stats.sent / stats.total) * 100).toFixed(0) : 0}% success rate</div>
-          </div>
+            <div className="border border-border bg-surface p-5 transition-colors hover:border-brand/40 hover:bg-brand-light/20">
+              <div className="mb-4 flex items-center gap-2 text-brand">
+                <AlertCircle className="h-4 w-4 text-brand" />
+                <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">Failed</span>
+              </div>
+              <div className="text-3xl font-semibold text-foreground">{stats.failed}</div>
+              <div className="mt-1 text-xs text-muted">Delivery failures</div>
+            </div>
 
-          {/* Failed */}
-          <div className="border border-border bg-surface p-5">
-            <div className="mb-4 flex items-center gap-2 text-brand"><AlertCircle size={18} /><span className="text-xs font-bold uppercase tracking-[.12em] text-muted">Failed</span></div>
-            <div className="text-3xl font-semibold text-foreground">{stats.failed}</div>
-            <div className="mt-1 text-xs text-muted">Delivery failures</div>
-          </div>
+            <div className="border border-border bg-surface p-5 transition-colors hover:border-brand/40 hover:bg-brand-light/20">
+              <div className="mb-4 flex items-center gap-2 text-brand">
+                <Clock className="h-4 w-4 text-brand" />
+                <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">Pending</span>
+              </div>
+              <div className="text-3xl font-semibold text-foreground">{stats.pending}</div>
+              <div className="mt-1 text-xs text-muted">Still processing</div>
+            </div>
+          </section>
+        )}
 
-          {/* Pending */}
-          <div className="border border-border bg-surface p-5">
-            <div className="mb-4 flex items-center gap-2 text-brand"><Clock size={18} /><span className="text-xs font-bold uppercase tracking-[.12em] text-muted">Pending</span></div>
-            <div className="text-3xl font-semibold text-foreground">{stats.pending}</div>
-            <div className="mt-1 text-xs text-muted">Still processing</div>
-          </div>
+        <section className="border border-border bg-surface p-3 sm:p-4">
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className={`overflow-hidden transition-all duration-300 ease-out flex-shrink-0 ${isSearchOpen ? 'w-72 opacity-100 translate-x-0' : 'w-0 opacity-0 translate-x-full'}`}>
+                <input
+                  type="text"
+                  placeholder="Search guardian or reference..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="w-full rounded-md border border-brand bg-background px-4 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-brand/20"
+                />
+              </div>
 
-          {/* Channel Breakdown */}
-          <div className="border border-border bg-surface p-5 sm:col-span-2 lg:col-span-4">
-            <div className="mb-4 flex items-center gap-2 text-brand"><MessageCircle size={18} /><span className="text-xs font-bold uppercase tracking-[.12em] text-muted">Channel mix</span></div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div><div className="text-2xl font-semibold text-foreground">{stats.byChannel.WHATSAPP}</div><div className="mt-1 text-xs text-muted">WhatsApp notifications</div></div>
-              <div><div className="text-2xl font-semibold text-foreground">{stats.byChannel.EMAIL}</div><div className="mt-1 text-xs text-muted">Email notifications</div></div>
+              <Button
+                type="button"
+                variant="primary"
+                onClick={() => setIsSearchOpen((open) => !open)}
+                aria-label={isSearchOpen ? 'Close search' : 'Search notifications'}
+                title={isSearchOpen ? 'Close search' : 'Search notifications'}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-brand p-0 text-sm font-semibold text-white transition hover:bg-brand-hover sm:h-auto sm:w-auto sm:gap-2 sm:px-3 sm:py-2"
+              >
+                <Search className="h-4 w-4" />
+                <span className="hidden sm:inline">{isSearchOpen ? 'Close' : 'Search'}</span>
+              </Button>
+
+              <Button
+                type="button"
+                variant="secondary"
+                className="whitespace-nowrap"
+                onClick={() => {
+                  const failedIds = filteredNotifications
+                    .filter((notif) => notif.status === 'FAILED')
+                    .map((notif) => notif.id);
+                  setSelectedNotificationIds(
+                    selectedNotificationIds.length === failedIds.length && failedIds.length > 0
+                      ? []
+                      : failedIds,
+                  );
+                }}
+                disabled={failedNotificationsInView.length === 0}
+              >
+                {selectedNotificationIds.length > 0 && failedNotificationsInView.length > 0 && selectedNotificationIds.length === failedNotificationsInView.length
+                  ? 'Clear failed'
+                  : 'Select failed'}
+              </Button>
+
+              <Button
+                type="button"
+                variant="primary"
+                className="whitespace-nowrap"
+                onClick={handleRetrySelectedFailed}
+                disabled={retryingSelected || selectedNotificationIds.length === 0}
+              >
+                {retryingSelected ? 'Retrying…' : `Resend selected (${selectedNotificationIds.length})`}
+              </Button>
             </div>
           </div>
-        </div>
-      )}
+        </section>
 
-      {/* Filters and Search */}
-      <section className="flex flex-col justify-between gap-4 border-b border-border pb-5 lg:flex-row lg:items-center">
-      <div className="grid flex-1 gap-3 sm:grid-cols-5">
-        {/* Search Box */}
-        <div className="sm:col-span-2">
-          <input
-            type="text"
-            placeholder="Search by guardian name or reference..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground placeholder-muted outline-none focus:border-brand"
-          />
-        </div>
-
-        {/* Type Filter */}
-        <select
-          value={filterType}
-          onChange={(e) => {
-            setFilterType(e.target.value);
-            setCurrentPage(1);
-          }}
-          className="rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-brand"
-        >
-          <option value="ALL">All Types</option>
-          <option value="ISSUE_BILLS">Invoice Issued</option>
-          <option value="SEND_REMINDER">Fee Reminder</option>
-          <option value="ATTENDANCE_UPDATE">Attendance</option>
-        </select>
-
-        {/* Status Filter */}
-        <select
-          value={filterStatus}
-          onChange={(e) => {
-            setFilterStatus(e.target.value);
-            setCurrentPage(1);
-          }}
-          className="rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-brand"
-        >
-          <option value="ALL">All Status</option>
-          <option value="SENT">Sent</option>
-          <option value="FAILED">Failed</option>
-          <option value="PENDING">Pending</option>
-        </select>
-
-        {/* Channel Filter */}
-        <select
-          value={filterChannel}
-          onChange={(e) => {
-            setFilterChannel(e.target.value);
-            setCurrentPage(1);
-          }}
-          className="rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-brand"
-        >
-          <option value="ALL">All Channels</option>
-          <option value="WHATSAPP">WhatsApp</option>
-          <option value="EMAIL">Email</option>
-        </select>
-      </div>
-      </section>
-
-      {/* Results Info */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-muted">
-          Showing {paginatedNotifications.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}–
-          {Math.min(currentPage * itemsPerPage, filteredNotifications.length)} of {filteredNotifications.length} notification{filteredNotifications.length !== 1 ? "s" : ""}
-          {searchQuery && ` matching "${searchQuery}"`}
-        </p>
-        <label className="text-sm text-muted whitespace-nowrap">
-          Rows per page
-          <select
-            value={itemsPerPage}
-            onChange={(e) => {
-              setItemsPerPage(Number(e.target.value));
-              setCurrentPage(1);
-            }}
-            className="ml-2 rounded-lg border border-border bg-background px-2 py-1 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
-          >
-            {PAGE_SIZE_OPTIONS.map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
+        <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap gap-2">
+            <label className="text-sm font-medium text-muted">Type:</label>
+            {typeOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => {
+                  setFilterType(option.value);
+                  setCurrentPage(1);
+                }}
+                className={`rounded-md border px-3 py-1 text-xs font-semibold transition ${
+                  filterType === option.value
+                    ? 'border-brand bg-brand text-white'
+                    : 'border-border bg-background text-muted hover:border-brand/40 hover:bg-surface'
+                }`}
+              >
+                {option.label}
+              </button>
             ))}
-          </select>
-        </label>
-      </div>
-
-      {/* Notifications Table */}
-      {!loading ? (
-        <div className="overflow-hidden border border-border bg-surface">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border bg-background">
-                  <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-[.1em] text-muted">Date</th>
-                  <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-[.1em] text-muted">Guardian</th>
-                  <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-[.1em] text-muted">Type</th>
-                  <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-[.1em] text-muted">Channel</th>
-                  <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-[.1em] text-muted">Status</th>
-                  <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-[.1em] text-muted">Reference</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {paginatedNotifications.length > 0 ? (
-                  paginatedNotifications.map((notif) => {
-                    const typeConfig = getTypeConfig(notif.type);
-                    const channelConfig = getChannelConfig(notif.channel);
-                    const statusConfig = getStatusConfig(notif.status);
-                    const ChannelIcon = channelConfig.icon;
-                    const StatusIcon = statusConfig.icon;
-                    return (
-                      <tr key={notif.id} className="hover:bg-surface/50 transition-colors">
-                        <td className="px-5 py-4 text-sm text-foreground">
-                          {new Date(notif.date).toLocaleDateString()} {new Date(notif.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </td>
-                        <td className="px-5 py-4 text-sm">
-                          <div className="font-medium text-foreground">{notif.guardian}</div>
-                        </td>
-                        <td className="px-5 py-4 text-sm">
-                          <Badge className={typeConfig.color}>
-                            {typeConfig.label}
-                          </Badge>
-                        </td>
-                        <td className="px-5 py-4 text-sm">
-                          <div className="flex items-center gap-2">
-                            <ChannelIcon className={`h-4 w-4 ${channelConfig.color}`} />
-                            <span className="text-foreground">{channelConfig.label}</span>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4 text-sm">
-                          <div className="flex items-center gap-2">
-                            <StatusIcon className={`h-4 w-4`} />
-                            <Badge className={statusConfig.color}>
-                              {statusConfig.label}
-                            </Badge>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4 text-sm">
-                          <code className="bg-surface-2 px-2 py-1 rounded text-xs text-foreground">
-                            {notif.reference || "-"}
-                          </code>
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan={6} className="px-5 py-12 text-center text-muted">
-                      No communications found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
           </div>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-border bg-background px-5 py-4">
-              <div className="text-sm text-muted">
-                Page {currentPage} of {totalPages} ({filteredNotifications.length} total)
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  variant="secondary"
-                  className="text-sm"
-                >
-                  Previous
-                </Button>
-                <Button
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
-                  variant="secondary"
-                  className="text-sm"
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="rounded-lg border border-border bg-surface p-8 text-center">
-          <p className="text-muted">Loading communications...</p>
-        </div>
-      )}
+          <div className="flex flex-wrap gap-2">
+            <label className="text-sm font-medium text-muted">Status:</label>
+            {statusOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => {
+                  setFilterStatus(option.value);
+                  setCurrentPage(1);
+                }}
+                className={`rounded-md border px-3 py-1 text-xs font-semibold transition ${
+                  filterStatus === option.value
+                    ? 'border-brand bg-brand text-white'
+                    : 'border-border bg-background text-muted hover:border-brand/40 hover:bg-surface'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
 
-      {/* Help & Guide */}
-      <UserGuide guide={HELP_GUIDE} />
-    </div>
+          <div className="flex flex-wrap gap-2">
+            <label className="text-sm font-medium text-muted">Channel:</label>
+            {channelOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => {
+                  setFilterChannel(option.value);
+                  setCurrentPage(1);
+                }}
+                className={`rounded-md border px-3 py-1 text-xs font-semibold transition ${
+                  filterChannel === option.value
+                    ? 'border-brand bg-brand text-white'
+                    : 'border-border bg-background text-muted hover:border-brand/40 hover:bg-surface'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted">
+            Showing {paginatedNotifications.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}–
+            {Math.min(currentPage * itemsPerPage, filteredNotifications.length)} of {filteredNotifications.length} notification{filteredNotifications.length !== 1 ? 's' : ''}
+            {searchQuery && ` matching "${searchQuery}"`}
+          </p>
+          <label className="text-sm text-muted whitespace-nowrap">
+            Rows per page
+            <select
+              value={itemsPerPage}
+              onChange={(e) => {
+                setItemsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="ml-2 rounded-lg border border-border bg-background px-2 py-1 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            >
+              {PAGE_SIZE_OPTIONS.map((size) => (
+                <option key={size} value={size}>{size}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        {!loading ? (
+          <div className="overflow-hidden border border-border bg-surface">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-border bg-background text-muted">
+                  <tr>
+                    <th className="px-3 py-3 text-left text-xs font-bold uppercase tracking-[.1em] text-muted">
+                      <input
+                        type="checkbox"
+                        aria-label="Select failed notifications"
+                        checked={
+                          failedNotificationsInView.length > 0 &&
+                          failedNotificationsInView.every((notif) => selectedFailedIds.has(notif.id))
+                        }
+                        onChange={() => {
+                          const failedIds = failedNotificationsInView.map((notif) => notif.id);
+                          if (failedIds.length === 0) return;
+                          const allSelected = failedIds.every((id) => selectedFailedIds.has(id));
+                          setSelectedNotificationIds((current) => {
+                            if (allSelected) {
+                              return current.filter((id) => !failedIds.includes(id));
+                            }
+                            return [...new Set([...current, ...failedIds])];
+                          });
+                        }}
+                        className="h-4 w-4 rounded border-border"
+                      />
+                    </th>
+                    <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-[.1em] text-muted">Date</th>
+                    <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-[.1em] text-muted">Guardian</th>
+                    <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-[.1em] text-muted">Type</th>
+                    <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-[.1em] text-muted">Channel</th>
+                    <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-[.1em] text-muted">Status</th>
+                    <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-[.1em] text-muted">Reference</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedNotifications.length > 0 ? (
+                    paginatedNotifications.map((notif) => {
+                      const typeConfig = getTypeConfig(notif.type);
+                      const channelConfig = getChannelConfig(notif.channel);
+                      const statusConfig = getStatusConfig(notif.status);
+                      const ChannelIcon = channelConfig.icon;
+                      const StatusIcon = statusConfig.icon;
+                      const isSelected = selectedFailedIds.has(notif.id) && notif.status === 'FAILED';
+
+                      return (
+                        <tr key={notif.id} className="border-t border-border transition-colors hover:bg-surface/50">
+                          <td className="px-3 py-4 text-sm text-foreground">
+                            {notif.status === 'FAILED' ? (
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => {
+                                  setSelectedNotificationIds((current) =>
+                                    current.includes(notif.id)
+                                      ? current.filter((id) => id !== notif.id)
+                                      : [...current, notif.id],
+                                  );
+                                }}
+                                className="h-4 w-4 rounded border-border"
+                                aria-label={`Select failed notification for ${notif.guardian}`}
+                              />
+                            ) : (
+                              <span className="text-xs text-muted">—</span>
+                            )}
+                          </td>
+                          <td className="px-5 py-4 text-sm text-foreground">
+                            {new Date(notif.date).toLocaleDateString()} {new Date(notif.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </td>
+                          <td className="px-5 py-4 text-sm">
+                            <div className="font-medium text-foreground">{notif.guardian}</div>
+                          </td>
+                          <td className="px-5 py-4 text-sm">
+                            <Badge className={typeConfig.color}>{typeConfig.label}</Badge>
+                          </td>
+                          <td className="px-5 py-4 text-sm">
+                            <div className="flex items-center gap-2">
+                              <ChannelIcon className={`h-4 w-4 ${channelConfig.color}`} />
+                              <span className="text-foreground">{channelConfig.label}</span>
+                            </div>
+                          </td>
+                          <td className="px-5 py-4 text-sm">
+                            <div className="flex items-center gap-2">
+                              <StatusIcon className="h-4 w-4" />
+                              <Badge className={statusConfig.color}>{statusConfig.label}</Badge>
+                            </div>
+                          </td>
+                          <td className="px-5 py-4 text-sm">
+                            <code className="rounded bg-surface-2 px-2 py-1 text-xs text-foreground">{notif.reference || '-'}</code>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={7} className="px-5 py-12 text-center text-muted">No communications found</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-border bg-background px-5 py-4">
+                <div className="text-sm text-muted">
+                  Page {currentPage} of {totalPages} ({filteredNotifications.length} total)
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    variant="secondary"
+                    className="text-sm"
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                    variant="secondary"
+                    className="text-sm"
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="rounded-lg border border-border bg-surface p-8 text-center">
+            <p className="text-muted">Loading communications...</p>
+          </div>
+        )}
+
+        <UserGuide guide={HELP_GUIDE} />
+      </div>
     </main>
   );
 }
