@@ -81,16 +81,15 @@ export function ParentLoginForm() {
         />
       </label>
       <label className="block text-sm font-medium text-foreground">
-        <span className="flex items-center gap-2"><UserRound className="h-4 w-4 text-brand" /> Child admission no.</span>
+          <span className="flex items-center gap-2"><UserRound className="h-4 w-4 text-brand" /> Child admission no. <span className="text-xs font-normal text-muted">optional</span></span>
         <input
           name="admissionNo"
-          required
           placeholder="GFA-2041"
           className="mt-2 w-full border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
         />
       </label>
       <Button type="submit" className="mt-6 w-full bg-brand py-3 font-semibold hover:bg-brand-hover" disabled={pending}>
-        {pending ? "Signing in…" : "View my child"}
+        {pending ? "Signing in…" : "View my children"}
       </Button>
     </form>
   );
