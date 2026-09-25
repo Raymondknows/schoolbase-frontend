@@ -9,16 +9,26 @@ import { resolveFileUrl } from "@/lib/api-client";
 
 export default function StudentViewClient({ studentId }: { studentId: string }) {
   const [student, setStudent] = useState<any>(null);
+  const [schoolName, setSchoolName] = useState<string>("SchoolBase");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
     const loadStudent = async () => {
       try {
-        const response = await fetch(`/api/admin/students/${studentId}`);
-        if (!response.ok) throw new Error("Failed to load student");
-        const data = await response.json();
+        const [studentResponse, schoolResponse] = await Promise.all([
+          fetch(`/api/admin/students/${studentId}`),
+          fetch(`/api/admin/school`, { credentials: "include" })
+        ]);
+
+        if (!studentResponse.ok) throw new Error("Failed to load student");
+        const data = await studentResponse.json();
         setStudent(data);
+
+        if (schoolResponse.ok) {
+          const schoolData = await schoolResponse.json();
+          if (schoolData?.name) setSchoolName(schoolData.name);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load student");
       } finally {
@@ -180,15 +190,16 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
 
           .student-print-target .photo-stack {
             display: flex !important;
-            flex-direction: row !important;
-            align-items: center !important;
-            gap: 10px !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 8px !important;
             margin: 0 !important;
           }
 
           .student-print-target .photo-badges {
             display: flex !important;
             flex-direction: row !important;
+            align-items: center !important;
             gap: 6px !important;
             margin-top: 0 !important;
             flex-wrap: nowrap !important;
@@ -207,6 +218,7 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
             line-height: 1.2 !important;
             font-weight: 700 !important;
             white-space: nowrap !important;
+            box-shadow: none !important;
           }
 
           .student-print-target .photo-group {
@@ -218,7 +230,7 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
       `}</style>
     <div className="mx-auto max-w-7xl space-y-6 px-0 py-4 sm:px-8 sm:py-8 lg:px-12">
       <div className="student-print-header hidden">
-        <div className="text-xl font-bold text-black">SchoolBase Student Profile</div>
+        <div className="text-xl font-bold text-black">{schoolName} Student Profile</div>
         <div className="text-sm font-semibold text-black">{fullName} • Admission {student.admissionNo || 'N/A'} • Printed {new Date().toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
       </div>
       {/* Header */}
@@ -258,11 +270,11 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
             {/* Left: Photo & Badges */}
             <div className="md:col-span-1">
             <div className="photo-stack flex flex-col items-start gap-3">
-              <div className="photo-group">
+              <div className="photo-group w-full max-w-[220px] sm:max-w-[240px]">
                 {photoUrl ? (
-                  <img src={photoUrl} alt={fullName} className="profile-photo w-full rounded-md border border-border object-cover aspect-square" />
+                  <img src={photoUrl} alt={fullName} className="profile-photo h-[220px] w-full max-w-[220px] rounded-md border border-border object-cover sm:max-w-[240px]" />
                 ) : (
-                  <div className="profile-photo flex w-full items-center justify-center rounded-md border border-border bg-surface/80 aspect-square">
+                  <div className="profile-photo flex h-[220px] w-full max-w-[220px] items-center justify-center rounded-md border border-border bg-surface/80 sm:max-w-[240px]">
                     <span className="text-6xl text-muted">👤</span>
                   </div>
                 )}
@@ -506,92 +518,94 @@ export default function StudentViewClient({ studentId }: { studentId: string }) 
           </div>
         </section>
 
-        {/* Additional Information */}
-        {student.guardians && student.guardians.length > 0 && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold uppercase text-muted">Family contacts</h3>
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Additional Information */}
+          {student.guardians && student.guardians.length > 0 && (
             <div className="space-y-3">
-              {student.guardians.map((g: any, i: number) => (
-                <div key={i} className="border border-border bg-surface p-4">
-                  <div className="mb-3">
-                    <h4 className="text-sm font-bold text-foreground">
-                      {g.guardian?.firstName} {g.guardian?.lastName}
-                    </h4>
+              <h3 className="text-sm font-semibold uppercase text-muted">Family contacts</h3>
+              <div className="space-y-3">
+                {student.guardians.map((g: any, i: number) => (
+                  <div key={i} className="space-y-2 text-sm">
+                    <div>
+                      <h4 className="text-sm font-bold text-foreground">
+                        {g.guardian?.firstName} {g.guardian?.lastName}
+                      </h4>
                       <p className="text-xs text-muted">{g.relation || g.relationship || "Guardian"}</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {g.guardian?.phone && (
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">Phone</p>
+                          <p className="text-foreground">{g.guardian.phone}</p>
+                        </div>
+                      )}
+                      {g.guardian?.email && (
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">Email</p>
+                          <p className="text-foreground">{g.guardian.email}</p>
+                        </div>
+                      )}
+                      {g.guardian?.occupation && (
+                        <div className="col-span-2">
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">Occupation</p>
+                          <p className="text-foreground">{g.guardian.occupation}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    {g.guardian?.phone && (
-                      <div>
-                        <p className="text-xs text-muted mb-1">Phone</p>
-                        <p className="text-foreground">{g.guardian.phone}</p>
-                      </div>
-                    )}
-                    {g.guardian?.email && (
-                      <div>
-                        <p className="text-xs text-muted mb-1">Email</p>
-                        <p className="text-foreground truncate">{g.guardian.email}</p>
-                      </div>
-                    )}
-                    {g.guardian?.occupation && (
-                      <div className="col-span-2">
-                        <p className="text-xs text-muted mb-1">Occupation</p>
-                        <p className="text-foreground">{g.guardian.occupation}</p>
-                      </div>
-                    )}
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Medical Information */}
+          {(student.bloodGroup || student.genotype || student.medicalNotes) && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold uppercase text-muted">Health record</h3>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                {student.bloodGroup && (
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">Blood Group</p>
+                    <p className="font-medium text-foreground">{student.bloodGroup}</p>
                   </div>
-                </div>
-              ))}
+                )}
+                {student.genotype && (
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">Genotype</p>
+                    <p className="font-medium text-foreground">{student.genotype}</p>
+                  </div>
+                )}
+                {student.medicalNotes && (
+                  <div className="col-span-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">Medical Notes</p>
+                    <p className="text-foreground whitespace-pre-wrap">{student.medicalNotes}</p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Medical Information */}
-        {(student.bloodGroup || student.genotype || student.medicalNotes) && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold uppercase text-muted">Health record</h3>
-            <div className="border border-border bg-surface p-4 grid grid-cols-2 gap-4 text-sm">
-              {student.bloodGroup && (
-                <div>
-                  <p className="text-xs text-muted mb-1">Blood Group</p>
-                  <p className="font-medium text-foreground">{student.bloodGroup}</p>
-                </div>
-              )}
-              {student.genotype && (
-                <div>
-                  <p className="text-xs text-muted mb-1">Genotype</p>
-                  <p className="font-medium text-foreground">{student.genotype}</p>
-                </div>
-              )}
-              {student.medicalNotes && (
-                <div className="col-span-2">
-                  <p className="text-xs text-muted mb-1">Medical Notes</p>
-                  <p className="text-foreground whitespace-pre-wrap">{student.medicalNotes}</p>
-                </div>
-              )}
+          {/* Academic Background */}
+          {(student.previousSchool || student.previousClass) && (
+            <div className="space-y-3 md:col-span-2">
+              <h3 className="text-sm font-semibold uppercase text-muted">Academic background</h3>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                {student.previousSchool && (
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">Previous School</p>
+                    <p className="text-foreground">{student.previousSchool}</p>
+                  </div>
+                )}
+                {student.previousClass && (
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">Previous Class</p>
+                    <p className="text-foreground">{student.previousClass}</p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
-
-        {/* Academic Background */}
-        {(student.previousSchool || student.previousClass) && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold uppercase text-muted">Academic background</h3>
-            <div className="border border-border bg-surface p-4 grid grid-cols-2 gap-4 text-sm">
-              {student.previousSchool && (
-                <div>
-                  <p className="text-xs text-muted mb-1">Previous School</p>
-                  <p className="text-foreground">{student.previousSchool}</p>
-                </div>
-              )}
-              {student.previousClass && (
-                <div>
-                  <p className="text-xs text-muted mb-1">Previous Class</p>
-                  <p className="text-foreground">{student.previousClass}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+          )}
+        </div>
 
       </div>
     </div>
