@@ -1644,34 +1644,46 @@ function LessonEditor({
             />
           </Field>
         </div>
-        {!duplicate && repeatableDays.length > 0 ? (
+        <p className="mx-6 mt-3 text-xs text-muted">
+          Class, subject, and teacher choices are limited to existing assignments. <a href="/admin/staff" className="font-semibold text-brand hover:underline">Manage staff assignments</a>
+        </p>
+        {!duplicate ? (
           <fieldset className="mx-6 mt-5 border border-border bg-background p-4">
             <legend className="px-1 text-sm font-semibold text-foreground">
               {isEditing ? "Also schedule this lesson on other days" : "Repeat this lesson on other days"}
             </legend>
-            <p className="mb-3 text-xs text-muted">
-              {isEditing ? "The current lesson will be updated, with copies added on the days you select." : "Same class, subject, teacher, and period time as the selected day."}
-            </p>
-            <div className="flex flex-wrap gap-x-5 gap-y-2">
-              {repeatableDays.map(({ day, dayOfWeek }) => (
-                <label key={dayOfWeek} className="inline-flex items-center gap-2 text-sm text-foreground">
-                  <input
-                    type="checkbox"
-                    checked={repeatDays.includes(dayOfWeek)}
-                    onChange={(event) => setRepeatDays((current) => event.target.checked
-                      ? [...current, dayOfWeek]
-                      : current.filter((selectedDay) => selectedDay !== dayOfWeek))}
-                    className="accent-brand"
-                  />
-                  {day}
-                </label>
-              ))}
-            </div>
+            {!selectedPeriod ? (
+              <p className="text-xs text-muted">
+                Choose a day and period above to select the other weekdays for this lesson.
+              </p>
+            ) : repeatableDays.length > 0 ? (
+              <>
+                <p className="mb-3 text-xs text-muted">
+                  {isEditing ? "The current lesson will be updated, with copies added on the days you select." : "Same class, subject, teacher, and period time as the selected day."}
+                </p>
+                <div className="flex flex-wrap gap-x-5 gap-y-2">
+                  {repeatableDays.map(({ day, dayOfWeek }) => (
+                    <label key={dayOfWeek} className="inline-flex items-center gap-2 text-sm text-foreground">
+                      <input
+                        type="checkbox"
+                        checked={repeatDays.includes(dayOfWeek)}
+                        onChange={(event) => setRepeatDays((current) => event.target.checked
+                          ? [...current, dayOfWeek]
+                          : current.filter((selectedDay) => selectedDay !== dayOfWeek))}
+                        className="accent-brand"
+                      />
+                      {day}
+                    </label>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="text-xs text-muted">
+                No matching period slots are configured on the other weekdays. Add the same period slot to those days to enable repeating.
+              </p>
+            )}
           </fieldset>
         ) : null}
-        <p className="mx-6 mt-3 text-xs text-muted">
-          Class, subject, and teacher choices are limited to existing assignments. <a href="/admin/staff" className="font-semibold text-brand hover:underline">Manage staff assignments</a>
-        </p>
         {!isEditing && !duplicate ? (
           <div className="mx-6 mt-5 border border-border bg-background p-4">
             <label className="flex items-start gap-2 text-sm font-semibold text-foreground">
