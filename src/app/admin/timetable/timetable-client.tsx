@@ -61,6 +61,12 @@ type Config = {
   entries: Entry[];
 };
 type SelectorData = { id: string; name: string; email?: string; arm?: string | null };
+type LessonTarget = { classId: string; subjectId: string; teacherId: string };
+type TeachingAssignments = {
+  teacherClasses: Array<{ teacherId: string; classId: string }>;
+  teacherSubjects: Array<{ teacherId: string; subjectId: string }>;
+  subjectClasses: Array<{ classId: string; subjectId: string }>;
+};
 
 const TIMETABLE_HELP_GUIDE: PageHelpGuide = {
   title: "Timetable Setup Guide",
@@ -144,6 +150,37 @@ function classLabel(item: Pick<SelectorData, "name" | "arm">) {
   return `${item.name}${item.arm?.trim() ? ` ${item.arm.trim()}` : ""}`;
 }
 
+function completeUniqueAssignment(
+  target: LessonTarget,
+  assignments: TeachingAssignments,
+  classes: SelectorData[],
+  subjects: SelectorData[],
+  teachers: SelectorData[],
+): LessonTarget {
+  const isValid = (candidate: LessonTarget) => (
+    (!candidate.classId || !candidate.teacherId || assignments.teacherClasses.some((item) => item.classId === candidate.classId && item.teacherId === candidate.teacherId)) &&
+    (!candidate.subjectId || !candidate.teacherId || assignments.teacherSubjects.some((item) => item.subjectId === candidate.subjectId && item.teacherId === candidate.teacherId)) &&
+    (!candidate.classId || !candidate.subjectId || assignments.subjectClasses.some((item) => item.classId === candidate.classId && item.subjectId === candidate.subjectId))
+  );
+  const completed = { ...target };
+
+  for (let pass = 0; pass < 3; pass += 1) {
+    if (!completed.classId) {
+      const options = classes.filter((item) => isValid({ ...completed, classId: item.id }));
+      if (options.length === 1) completed.classId = options[0].id;
+    }
+    if (!completed.subjectId) {
+      const options = subjects.filter((item) => isValid({ ...completed, subjectId: item.id }));
+      if (options.length === 1) completed.subjectId = options[0].id;
+    }
+    if (!completed.teacherId) {
+      const options = teachers.filter((item) => isValid({ ...completed, teacherId: item.id }));
+      if (options.length === 1) completed.teacherId = options[0].id;
+    }
+  }
+  return completed;
+}
+
 function formatPrintDate(value?: string | null) {
   if (!value) return "Date not set";
   return new Intl.DateTimeFormat("en", {
@@ -175,6 +212,11 @@ export default function TimetableClient() {
   const [classes, setClasses] = useState<SelectorData[]>([]);
   const [subjects, setSubjects] = useState<SelectorData[]>([]);
   const [teachers, setTeachers] = useState<SelectorData[]>([]);
+  const [teachingAssignments, setTeachingAssignments] = useState<TeachingAssignments>({
+    teacherClasses: [],
+    teacherSubjects: [],
+    subjectClasses: [],
+  });
   const [selectedConfigId, setSelectedConfigId] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -185,6 +227,7 @@ export default function TimetableClient() {
   const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
   const [duplicatingEntry, setDuplicatingEntry] = useState<Entry | null>(null);
   const [addingLesson, setAddingLesson] = useState(false);
+  const [addingLessonPeriodId, setAddingLessonPeriodId] = useState("");
   const [configActionModalOpen, setConfigActionModalOpen] = useState(false);
   const [configActionAnimateState, setConfigActionAnimateState] = useState<
     "enter" | "exit"
@@ -219,12 +262,14 @@ export default function TimetableClient() {
     setShowComposer(false);
     playCloseTone();
   }
-  function openAddingLesson() {
+  function openAddingLesson(periodId = "") {
+    setAddingLessonPeriodId(periodId);
     setAddingLesson(true);
     playOpenTone();
   }
   function closeAddingLesson() {
     setAddingLesson(false);
+    setAddingLessonPeriodId("");
     playCloseTone();
   }
   function openEditingEntry(entry: Entry) {
@@ -276,6 +321,11 @@ export default function TimetableClient() {
       setClasses(data.classes || []);
       setSubjects(data.subjects || []);
       setTeachers(data.teachers || []);
+      setTeachingAssignments({
+        teacherClasses: data.teacherClasses || [],
+        teacherSubjects: data.teacherSubjects || [],
+        subjectClasses: data.subjectClasses || [],
+      });
       if (!response.ok)
         throw new Error(data.error || "Unable to load timetable");
       setConfigs(data.configs || []);
@@ -653,7 +703,7 @@ export default function TimetableClient() {
             )}
             {config && !published && (
               <button
-                onClick={openAddingLesson}
+                onClick={() => openAddingLesson()}
                 className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-semibold text-brand hover:bg-brand-light"
               >
                 <ListPlus size={15} /> Add lesson
@@ -701,6 +751,7 @@ export default function TimetableClient() {
             onMove={moveEntry}
             onDuplicate={openDuplicatingEntry}
             onPaste={pasteEntry}
+            onAdd={openAddingLesson}
             onError={showTimetableError}
           />
         ) : (
@@ -730,6 +781,7 @@ export default function TimetableClient() {
           classes={classes}
           subjects={subjects}
           teachers={teachers}
+          teachingAssignments={teachingAssignments}
           periods={config.periods}
           onClose={closeEditingEntry}
           onSaved={() => {
@@ -747,8 +799,10 @@ export default function TimetableClient() {
           classes={classes}
           subjects={subjects}
           teachers={teachers}
+          teachingAssignments={teachingAssignments}
           periods={config.periods}
           configId={config.id}
+          initialPeriodId={addingLessonPeriodId}
           onClose={closeAddingLesson}
           onSaved={() => {
             closeAddingLesson();
@@ -767,6 +821,7 @@ export default function TimetableClient() {
           classes={classes}
           subjects={subjects}
           teachers={teachers}
+          teachingAssignments={teachingAssignments}
           periods={config.periods}
           configId={config.id}
           onClose={closeDuplicatingEntry}
@@ -899,6 +954,7 @@ function WeekBoard({
   onMove,
   onDuplicate,
   onPaste,
+  onAdd,
   onError: _onError,
 }: {
   config: Config;
@@ -909,6 +965,7 @@ function WeekBoard({
   onMove: (entry: Entry, periodId: string) => void;
   onDuplicate: (entry: Entry) => void;
   onPaste: (entry: Entry, periodId: string) => void;
+  onAdd: (periodId: string) => void;
   onError: (message: string) => void;
 }) {
   const [copiedEntry, setCopiedEntry] = useState<Entry | null>(null);
@@ -1054,6 +1111,16 @@ function WeekBoard({
                       ))}
                     </div>
                   )}
+                  {editable && dayPeriod && entries.length === 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => onAdd(dayPeriod.id)}
+                      className="flex min-h-[88px] w-full items-center justify-center gap-1.5 border border-dashed border-transparent text-xs font-semibold text-muted transition-colors hover:border-brand/30 hover:bg-brand/5 hover:text-brand"
+                      aria-label={`Add lesson ${days[index]} ${dayPeriod.name}`}
+                    >
+                      <Plus size={14} /> Add lesson
+                    </button>
+                  ) : null}
                 </div>
               );
             })}
@@ -1290,10 +1357,12 @@ function LessonEditor({
   existingEntries,
   entry,
   configId,
+  initialPeriodId = "",
   duplicate = false,
   classes,
   subjects,
   teachers,
+  teachingAssignments,
   periods,
   onClose,
   onSaved,
@@ -1304,9 +1373,11 @@ function LessonEditor({
   entry?: Entry;
   duplicate?: boolean;
   configId?: string;
+  initialPeriodId?: string;
   classes: SelectorData[];
   subjects: SelectorData[];
   teachers: SelectorData[];
+  teachingAssignments: TeachingAssignments;
   periods: Period[];
   onClose: () => void;
   onSaved: () => void;
@@ -1314,14 +1385,84 @@ function LessonEditor({
 }) {
   const isEditing = Boolean(entry) && !duplicate;
   const [form, setForm] = useState({
-    classId: entry?.classId || "",
-    subjectId: entry?.subjectId || "",
-    teacherId: entry?.teacherId || "",
-    periodId: entry?.periodId || "",
+    ...completeUniqueAssignment({
+      classId: entry?.classId || "",
+      subjectId: entry?.subjectId || "",
+      teacherId: entry?.teacherId || "",
+    }, teachingAssignments, classes, subjects, teachers),
+    periodId: entry?.periodId || initialPeriodId,
     room: entry?.room || "",
   });
+  const [repeatAssignments, setRepeatAssignments] = useState<LessonTarget[]>([]);
+  const [repeatDays, setRepeatDays] = useState<number[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  function isValidAssignment(target: LessonTarget) {
+    const { teacherClasses, teacherSubjects, subjectClasses } = teachingAssignments;
+    return (
+      (!target.classId || !target.teacherId || teacherClasses.some((item) => item.classId === target.classId && item.teacherId === target.teacherId)) &&
+      (!target.subjectId || !target.teacherId || teacherSubjects.some((item) => item.subjectId === target.subjectId && item.teacherId === target.teacherId)) &&
+      (!target.classId || !target.subjectId || subjectClasses.some((item) => item.classId === target.classId && item.subjectId === target.subjectId))
+    );
+  }
+
+  function availableClasses(target: LessonTarget) {
+    return classes.filter((item) => isValidAssignment({ ...target, classId: item.id }));
+  }
+
+  function availableSubjects(target: LessonTarget) {
+    return subjects.filter((item) => isValidAssignment({ ...target, subjectId: item.id }));
+  }
+
+  function availableTeachers(target: LessonTarget) {
+    return teachers.filter((item) => isValidAssignment({ ...target, teacherId: item.id }));
+  }
+
+  function updateTarget(target: LessonTarget, field: keyof LessonTarget, value: string): LessonTarget {
+    const next = { ...target, [field]: value };
+    if (field === "teacherId") {
+      if (next.classId && !teachingAssignments.teacherClasses.some((item) => item.classId === next.classId && item.teacherId === next.teacherId)) next.classId = "";
+      if (next.subjectId && !teachingAssignments.teacherSubjects.some((item) => item.subjectId === next.subjectId && item.teacherId === next.teacherId)) next.subjectId = "";
+    } else if (field === "classId") {
+      if (next.subjectId && !teachingAssignments.subjectClasses.some((item) => item.classId === next.classId && item.subjectId === next.subjectId)) next.subjectId = "";
+      if (next.teacherId && !teachingAssignments.teacherClasses.some((item) => item.classId === next.classId && item.teacherId === next.teacherId)) next.teacherId = "";
+    } else if (field === "subjectId") {
+      if (next.classId && !teachingAssignments.subjectClasses.some((item) => item.classId === next.classId && item.subjectId === next.subjectId)) next.classId = "";
+      if (next.teacherId && !teachingAssignments.teacherSubjects.some((item) => item.subjectId === next.subjectId && item.teacherId === next.teacherId)) next.teacherId = "";
+    }
+    return completeUniqueAssignment(next, teachingAssignments, classes, subjects, teachers);
+  }
+
+  function updatePrimaryTarget(field: keyof LessonTarget, value: string) {
+    setForm((current) => ({ ...current, ...updateTarget(current, field, value) }));
+  }
+
+  function updateRepeatTarget(index: number, field: keyof LessonTarget, value: string) {
+    setRepeatAssignments((current) => current.map((target, targetIndex) =>
+      targetIndex === index ? updateTarget(target, field, value) : target,
+    ));
+  }
+
+  const primaryTarget = {
+    classId: form.classId,
+    subjectId: form.subjectId,
+    teacherId: form.teacherId,
+  };
+  const selectedPeriod = periods.find((period) => period.id === form.periodId);
+  const repeatableDays = selectedPeriod
+    ? days.flatMap((day, index) => {
+        const dayOfWeek = index + 1;
+        const matchingPeriod = periods.find((period) =>
+          period.dayOfWeek === dayOfWeek &&
+          period.sortOrder === selectedPeriod.sortOrder &&
+          period.name.toLowerCase() !== "break",
+        );
+        return dayOfWeek !== selectedPeriod.dayOfWeek && matchingPeriod
+          ? [{ day, dayOfWeek, periodId: matchingPeriod.id }]
+          : [];
+      })
+    : [];
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -1330,9 +1471,24 @@ function LessonEditor({
     const endpoint = isEditing
       ? `/admin/timetable/entries/${entry?.id}`
       : `/admin/timetable/configs/${configId}/entries`;
+    const payload = repeatAssignments.length > 0 || repeatDays.length > 0
+      ? {
+          periodId: form.periodId,
+          room: form.room,
+          assignments: [
+            { classId: form.classId, subjectId: form.subjectId, teacherId: form.teacherId },
+            ...repeatAssignments,
+          ].flatMap((target) => [
+            { ...target, periodId: form.periodId },
+            ...repeatableDays
+              .filter((item) => repeatDays.includes(item.dayOfWeek))
+              .map((item) => ({ ...target, periodId: item.periodId })),
+          ]),
+        }
+      : form;
     const response = await api(endpoint, {
       method: isEditing ? "PATCH" : "POST",
-      body: JSON.stringify(form),
+      body: JSON.stringify(payload),
     });
     const data = await response.json();
     if (!response.ok) {
@@ -1415,9 +1571,10 @@ function LessonEditor({
             <select
               required
               value={form.periodId}
-              onChange={(event) =>
-                setForm({ ...form, periodId: event.target.value })
-              }
+              onChange={(event) => {
+                setForm({ ...form, periodId: event.target.value });
+                setRepeatDays([]);
+              }}
               className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm"
             >
               <option value="">Select period</option>
@@ -1435,13 +1592,11 @@ function LessonEditor({
             <select
               required
               value={form.classId}
-              onChange={(event) =>
-                setForm({ ...form, classId: event.target.value })
-              }
+              onChange={(event) => updatePrimaryTarget("classId", event.target.value)}
               className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm"
             >
               <option value="">Select class</option>
-              {classes.map((item) => (
+              {availableClasses(primaryTarget).map((item) => (
                 <option key={item.id} value={item.id}>
                   {classLabel(item)}
                 </option>
@@ -1452,13 +1607,11 @@ function LessonEditor({
             <select
               required
               value={form.subjectId}
-              onChange={(event) =>
-                setForm({ ...form, subjectId: event.target.value })
-              }
+              onChange={(event) => updatePrimaryTarget("subjectId", event.target.value)}
               className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm"
             >
               <option value="">Select subject</option>
-              {subjects.map((item) => (
+              {availableSubjects(primaryTarget).map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.name}
                 </option>
@@ -1469,13 +1622,11 @@ function LessonEditor({
             <select
               required
               value={form.teacherId}
-              onChange={(event) =>
-                setForm({ ...form, teacherId: event.target.value })
-              }
+              onChange={(event) => updatePrimaryTarget("teacherId", event.target.value)}
               className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm"
             >
               <option value="">Select teacher</option>
-              {teachers.map((item) => (
+              {availableTeachers(primaryTarget).map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.name}
                 </option>
@@ -1493,6 +1644,106 @@ function LessonEditor({
             />
           </Field>
         </div>
+        {!duplicate && repeatableDays.length > 0 ? (
+          <fieldset className="mx-6 mt-5 border border-border bg-background p-4">
+            <legend className="px-1 text-sm font-semibold text-foreground">
+              {isEditing ? "Also schedule this lesson on other days" : "Repeat this lesson on other days"}
+            </legend>
+            <p className="mb-3 text-xs text-muted">
+              {isEditing ? "The current lesson will be updated, with copies added on the days you select." : "Same class, subject, teacher, and period time as the selected day."}
+            </p>
+            <div className="flex flex-wrap gap-x-5 gap-y-2">
+              {repeatableDays.map(({ day, dayOfWeek }) => (
+                <label key={dayOfWeek} className="inline-flex items-center gap-2 text-sm text-foreground">
+                  <input
+                    type="checkbox"
+                    checked={repeatDays.includes(dayOfWeek)}
+                    onChange={(event) => setRepeatDays((current) => event.target.checked
+                      ? [...current, dayOfWeek]
+                      : current.filter((selectedDay) => selectedDay !== dayOfWeek))}
+                    className="accent-brand"
+                  />
+                  {day}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        ) : null}
+        <p className="mx-6 mt-3 text-xs text-muted">
+          Class, subject, and teacher choices are limited to existing assignments. <a href="/admin/staff" className="font-semibold text-brand hover:underline">Manage staff assignments</a>
+        </p>
+        {!isEditing && !duplicate ? (
+          <div className="mx-6 mt-5 border border-border bg-background p-4">
+            <label className="flex items-start gap-2 text-sm font-semibold text-foreground">
+              <input
+                type="checkbox"
+                checked={repeatAssignments.length > 0}
+                onChange={(event) =>
+                  setRepeatAssignments(event.target.checked ? [{ classId: "", subjectId: form.subjectId, teacherId: form.teacherId }] : [])
+                }
+                className="mt-0.5 accent-brand"
+              />
+              Add this lesson to other classes or subjects
+            </label>
+            {repeatAssignments.length > 0 ? (
+              <div className="mt-4 space-y-3">
+                {repeatAssignments.map((assignment, index) => (
+                  <div key={index} className="grid gap-3 border-t border-border pt-3 sm:grid-cols-[1fr_1fr_1fr_auto]">
+                    <Field label={`Additional class ${index + 1}`}>
+                      <select
+                        required
+                        value={assignment.classId}
+                        onChange={(event) => updateRepeatTarget(index, "classId", event.target.value)}
+                        className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm"
+                      >
+                        <option value="">Select class</option>
+                        {availableClasses(assignment).map((item) => <option key={item.id} value={item.id}>{classLabel(item)}</option>)}
+                      </select>
+                    </Field>
+                    <Field label="Subject">
+                      <select
+                        required
+                        value={assignment.subjectId}
+                        onChange={(event) => updateRepeatTarget(index, "subjectId", event.target.value)}
+                        className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm"
+                      >
+                        <option value="">Select subject</option>
+                        {availableSubjects(assignment).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                      </select>
+                    </Field>
+                    <Field label="Teacher">
+                      <select
+                        required
+                        value={assignment.teacherId}
+                        onChange={(event) => updateRepeatTarget(index, "teacherId", event.target.value)}
+                        className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm"
+                      >
+                        <option value="">Select teacher</option>
+                        {availableTeachers(assignment).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                      </select>
+                    </Field>
+                    <button
+                      type="button"
+                      aria-label={`Remove additional assignment ${index + 1}`}
+                      onClick={() => setRepeatAssignments((current) => current.filter((_, targetIndex) => targetIndex !== index))}
+                      className="mt-5 inline-flex h-10 w-10 items-center justify-center text-muted hover:text-error"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setRepeatAssignments((current) => [...current, { classId: "", subjectId: form.subjectId, teacherId: form.teacherId }])}
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-brand hover:underline"
+                >
+                  <Plus size={15} /> Add another assignment
+                </button>
+                <p className="text-xs text-muted">All assignments use the selected period and room. The batch saves only if every class, teacher, and room is conflict-free.</p>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
         {error && (
           <p className="mx-6 mt-4 rounded-lg bg-[#fff5f5] px-3 py-2 text-sm text-error">
             {error}

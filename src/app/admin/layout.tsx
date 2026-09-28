@@ -13,7 +13,6 @@ const baseNav = [
   { href: "/admin/students", label: "Students", icon: "Users" },
   { href: "/admin/classes", label: "Classes", icon: "Layers" },
   { href: "/admin/staff", label: "Staff", icon: "Users" },
-  // { href: "/admin/teacher-assignments", label: "Assignments", icon: "BookOpen" },
   { href: "/admin/subjects", label: "Subjects", icon: "BookOpen" },
   { href: "/admin/results", label: "Results", icon: "GraduationCap" },
   { href: "/admin/admissions", label: "Admissions", icon: "GraduationCap" },
