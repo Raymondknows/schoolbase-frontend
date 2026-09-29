@@ -1020,9 +1020,6 @@ function WeekBoard({
           >
             <div className="p-4">
               <div className="font-semibold text-foreground">{period.name}</div>
-              <div className="mt-1 text-xs text-muted">
-                {period.startsAt} - {period.endsAt}
-              </div>
             </div>
             {days.map((_, index) => {
               const dayPeriod = config.periods.find(
@@ -1053,6 +1050,11 @@ function WeekBoard({
                     }
                   }}
                 >
+                  {dayPeriod ? (
+                    <div className="mb-1 text-[11px] font-medium text-muted">
+                      {dayPeriod.startsAt} - {dayPeriod.endsAt}
+                    </div>
+                  ) : null}
                   {entries.length > 0 && (
                     <div className="max-h-[190px] space-y-1 overflow-y-auto pr-1">
                       {entries.map((entry) => (
