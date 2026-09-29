@@ -10,6 +10,7 @@ import { ParentSchoolProvider } from './parent-school-context';
 const nav = [
   { href: "/parent", label: "Dashboard", icon: "Home" },
   { href: "/parent/children", label: "My Children", icon: "Users" },
+  { href: "/parent/timetable", label: "Timetable", icon: "CalendarDays" },
   { href: "/parent/results", label: "Results", icon: "BarChart3" },
   { href: "/parent/invoices", label: "Invoices", icon: "FileText" },
   { href: "/parent/payments", label: "Payments", icon: "CreditCard" },
