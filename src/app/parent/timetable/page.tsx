@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { AlertCircle, CalendarDays, Clock3, Printer, RefreshCw } from "lucide-react";
+import { AlertCircle, CalendarDays, Printer, RefreshCw } from "lucide-react";
 import ParentPageShell from "@/components/parent-page-shell";
 import { getBackendUrl } from "@/lib/backend-url";
 import { resolveSchoolAssetUrl } from "@/lib/asset-urls";
@@ -205,6 +205,7 @@ export default function ParentTimetablePage() {
               font-size: 8pt !important;
               font-weight: 700 !important;
             }
+            .parent-timetable-screen-days { display: none !important; }
             .parent-timetable-school-brand img {
               display: block !important;
               max-width: 27mm !important;
@@ -253,7 +254,7 @@ export default function ParentTimetablePage() {
                 </div>
               ) : null}
             </div>
-            <div className="px-5 py-4">
+            <div className="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-end sm:justify-between">
               <label className="block w-full max-w-md text-xs font-bold uppercase tracking-[.12em] text-muted">
                 Child
                 <select
@@ -269,6 +270,21 @@ export default function ParentTimetablePage() {
                   ))}
                 </select>
               </label>
+              {timetableData?.timetable ? (
+                <div className="flex flex-wrap items-center gap-3 sm:justify-end">
+                  <p className="text-sm font-semibold text-foreground">
+                    Class schedule: {selectedChild?.class?.name || timetableData.child.class?.name || "Class"}
+                    {selectedChild?.class?.arm || timetableData.child.class?.arm ? ` · ${selectedChild?.class?.arm || timetableData.child.class?.arm}` : ""}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="print:hidden inline-flex items-center gap-2 rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-hover"
+                  >
+                    <Printer className="h-4 w-4" /> Print timetable
+                  </button>
+                </div>
+              ) : null}
             </div>
           </div>
         ) : null}
@@ -349,25 +365,6 @@ export default function ParentTimetablePage() {
                 </p>
               </div>
             </div>
-            <div className="print:hidden flex items-center justify-between gap-3 border border-border bg-surface px-5 py-4">
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Class schedule</p>
-                <p className="mt-1 text-sm font-semibold text-foreground">
-                  {selectedChild?.class?.name || timetableData.child.class?.name || "Class schedule"}
-                  {selectedChild?.class?.arm || timetableData.child.class?.arm ? ` · ${selectedChild?.class?.arm || timetableData.child.class?.arm}` : ""}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Clock3 className="h-5 w-5 text-brand" />
-                <button
-                  type="button"
-                  onClick={() => window.print()}
-                  className="print:hidden inline-flex items-center gap-2 rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-hover"
-                >
-                  <Printer className="h-4 w-4" /> Print timetable
-                </button>
-              </div>
-            </div>
             <div className="parent-timetable-school-board hidden overflow-hidden border border-border bg-surface print:block">
               <div className="parent-timetable-school-board-grid grid grid-cols-[30mm_repeat(5,minmax(0,1fr))]">
                 <div className="parent-timetable-school-board-cell parent-timetable-school-board-heading">Period</div>
@@ -401,10 +398,10 @@ export default function ParentTimetablePage() {
                 ))}
               </div>
             </div>
-            <div className="parent-timetable-print-grid grid gap-4 sm:grid-cols-2 xl:grid-cols-3 print:hidden">
+            <div className="parent-timetable-print-grid parent-timetable-screen-days grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {entriesByDay.map(({ day, entries }) => (
-                <section key={day} className="border border-border bg-surface">
-                  <div className="flex items-center justify-between border-b border-border bg-background px-5 py-4">
+                <section key={day} className="border border-border bg-white">
+                  <div className="flex items-center justify-between border-b border-border bg-white px-5 py-4">
                     <div>
                       <p className="text-[10px] font-bold uppercase tracking-[.14em] text-muted">Weekly schedule</p>
                       <h2 className="mt-1 text-sm font-semibold text-foreground">{day}</h2>
