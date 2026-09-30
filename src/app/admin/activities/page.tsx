@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Archive, CalendarDays, Plus, RotateCcw, Sparkles } from "lucide-react";
 import AdminSkeleton from "@/components/ui/skeleton";
+import { ErrorModal } from "@/components/ui/error-modal";
 import TeacherPageHeader from "@/components/teacher-page-header";
 
 type Activity = {
@@ -24,7 +25,7 @@ export default function ActivitiesPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const [successModal, setSuccessModal] = useState<{ title: string; message: string } | null>(null);
 
   async function load() {
     setLoading(true);
@@ -49,7 +50,6 @@ export default function ActivitiesPage() {
     event.preventDefault();
     setSaving(true);
     setError("");
-    setNotice("");
     try {
       const response = await fetch("/api/admin/activities", {
         method: "POST",
@@ -62,7 +62,7 @@ export default function ActivitiesPage() {
       setName("");
       setCategory("GENERAL");
       setDescription("");
-      setNotice("Activity added. It is now available to schedule on a timetable.");
+      setSuccessModal({ title: "Activity added", message: "The activity is now available to schedule on a timetable." });
       await load();
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Unable to create activity.");
@@ -73,7 +73,6 @@ export default function ActivitiesPage() {
 
   async function setActivityActive(activity: Activity, isActive: boolean) {
     setError("");
-    setNotice("");
     try {
       const response = await fetch(`/api/admin/activities/${activity.id}`, {
         method: "PATCH",
@@ -83,7 +82,10 @@ export default function ActivitiesPage() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to update activity.");
-      setNotice(isActive ? "Activity restored." : "Activity archived. Existing timetable placements are preserved.");
+      setSuccessModal({
+        title: isActive ? "Activity restored" : "Activity archived",
+        message: isActive ? "The activity is available to schedule again." : "Existing timetable placements are preserved.",
+      });
       await load();
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Unable to update activity.");
@@ -103,7 +105,6 @@ export default function ActivitiesPage() {
         />
 
         {error ? <div role="alert" className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">{error}</div> : null}
-        {notice ? <div role="status" className="border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">{notice}</div> : null}
 
         <section className="border border-border bg-surface p-5 sm:p-6">
           <div className="mb-5">
@@ -174,6 +175,14 @@ export default function ActivitiesPage() {
           )}
         </section>
       </div>
+      <ErrorModal
+        isOpen={Boolean(successModal)}
+        onClose={() => setSuccessModal(null)}
+        title={successModal?.title}
+        message={successModal?.message || ""}
+        type="success"
+        confirmLabel="Done"
+      />
     </main>
   );
 }
