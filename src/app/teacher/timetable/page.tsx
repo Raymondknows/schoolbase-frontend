@@ -1,26 +1,27 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import {
   CalendarDays,
   CheckCircle2,
   Clock3,
-  MapPin,
+  Printer,
   RefreshCw,
   Timer,
 } from "lucide-react";
+import { resolveSchoolAssetUrl } from "@/lib/asset-urls";
 import TeacherPageHeader from "@/components/teacher-page-header";
 
 type Entry = {
   id: string;
   room?: string | null;
-  period: { dayOfWeek: number; name: string; startsAt: string; endsAt: string };
+  period: { dayOfWeek: number; name: string; startsAt: string; endsAt: string; sortOrder: number };
   class?: { name: string; arm?: string | null };
   subject?: { name: string };
 };
 
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-const accents = ["#0a66c2", "#0b7a75", "#7a5af8", "#c2410c", "#b42318"];
 
 function formatCountdown(startsAt: string, now: Date) {
   const [hours, minutes] = startsAt.split(":").map(Number);
@@ -41,11 +42,11 @@ function formatCountdown(startsAt: string, now: Date) {
 export default function TeacherTimetablePage() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [boardName, setBoardName] = useState("Published timetable");
-  const [selectedDay, setSelectedDay] = useState(
-    new Date().getDay() >= 1 && new Date().getDay() <= 5
-      ? new Date().getDay() - 1
-      : 0,
-  );
+  const [teacherName, setTeacherName] = useState("Teacher");
+  const [schoolName, setSchoolName] = useState("School");
+  const [schoolLogoUrl, setSchoolLogoUrl] = useState<string | null>(null);
+  const [academicYear, setAcademicYear] = useState("");
+  const [termName, setTermName] = useState("");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
@@ -58,15 +59,34 @@ export default function TeacherTimetablePage() {
     if (isRefresh) setRefreshing(true);
     else setLoading(true);
     try {
-      const response = await fetch("/api/teacher/timetable", {
-        credentials: "include",
-        cache: "no-store",
-      });
+      const [response, identityResponse] = await Promise.all([
+        fetch("/api/teacher/timetable", {
+          credentials: "include",
+          cache: "no-store",
+        }),
+        fetch("/api/teacher/dashboard", {
+          credentials: "include",
+          cache: "no-store",
+        }).catch(() => null),
+      ]);
       const data = await response.json();
       if (!response.ok)
         throw new Error(data.error || "Unable to load timetable");
-      setBoardName(data.configs?.[0]?.name || "Published timetable");
-      setEntries((data.configs?.[0]?.entries || []) as Entry[]);
+      const config = data.configs?.[0];
+      setBoardName(config?.name || "Published timetable");
+      setAcademicYear(config?.academicYear?.name || "");
+      setTermName(config?.term?.name || "");
+      setEntries((config?.entries || []) as Entry[]);
+      if (identityResponse?.ok) {
+        const identity = await identityResponse.json().catch(() => ({}));
+        setTeacherName(identity.teacher?.name || "Teacher");
+        setSchoolName(identity.school?.name || "School");
+        setSchoolLogoUrl(identity.school?.logoUrl
+          ? identity.school?.id
+            ? `/api/school-logo/${encodeURIComponent(identity.school.id)}`
+            : resolveSchoolAssetUrl(identity.school.logoUrl)
+          : null);
+      }
       setError("");
     } catch (requestError: unknown) {
       setError(requestError instanceof Error ? requestError.message : "Unable to load timetable");
@@ -115,8 +135,9 @@ export default function TeacherTimetablePage() {
       ),
     [entries],
   );
+  const todayDayOfWeek = now.getDay();
   const todayEntries = sortedEntries.filter(
-    (entry) => entry.period.dayOfWeek === selectedDay + 1,
+    (entry) => entry.period.dayOfWeek === todayDayOfWeek,
   );
   const nextLesson = todayEntries.find((entry) => {
     const [hours, minutes] = entry.period.startsAt.split(":").map(Number);
@@ -129,11 +150,61 @@ export default function TeacherTimetablePage() {
     : null;
   const lessonDays = new Set(entries.map((entry) => entry.period.dayOfWeek))
     .size;
+  const entriesByDay = days.map((day, index) => ({
+    day,
+    entries: sortedEntries.filter((entry) => entry.period.dayOfWeek === index + 1),
+  }));
+  const printPeriods = Array.from(
+    new Map(
+      sortedEntries
+        .filter((entry) => entry.period.dayOfWeek >= 1 && entry.period.dayOfWeek <= days.length)
+        .map((entry) => [entry.period.sortOrder, entry.period]),
+    ).values(),
+  ).sort((left, right) => left.sortOrder - right.sortOrder);
 
   return (
     <main className="min-h-screen px-2 py-8 sm:px-8 lg:px-12">
+      <style>{`
+        @media print {
+          @page { size: landscape; margin: 10mm; }
+          body * { visibility: hidden !important; }
+          .teacher-timetable-print,
+          .teacher-timetable-print * { visibility: visible !important; }
+          .teacher-timetable-print {
+            display: block !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            padding: 0 !important;
+            background: #fff !important;
+            color: #111 !important;
+          }
+          .teacher-timetable-print-grid {
+            display: grid !important;
+            grid-template-columns: 30mm repeat(5, minmax(0, 1fr)) !important;
+            width: 100% !important;
+          }
+          .teacher-timetable-print-cell {
+            min-height: 22mm !important;
+            padding: 2.5mm !important;
+            border-right: 1px solid #d5dbe1 !important;
+            border-bottom: 1px solid #d5dbe1 !important;
+            background: #fff !important;
+            color: #111 !important;
+            break-inside: avoid;
+          }
+          .teacher-timetable-print-heading {
+            min-height: 10mm !important;
+            background: #f2f5f7 !important;
+            font-size: 8pt !important;
+            font-weight: 700 !important;
+          }
+        }
+      `}</style>
       <div className="mx-auto max-w-7xl space-y-6">
         <TeacherPageHeader icon={CalendarDays} title="Timetable" description="Plan your teaching week with published classes, subjects, rooms, and live lesson timing." count={boardName}>
+          <button type="button" onClick={() => window.print()} disabled={loading || entries.length === 0} className="inline-flex items-center justify-center gap-2 rounded-md bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50 print:hidden"><Printer size={16} /> Print my timetable</button>
           <button onClick={() => load(true)} disabled={refreshing} className="inline-flex items-center justify-center gap-2 rounded-md border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground hover:border-brand hover:text-brand disabled:opacity-50"><RefreshCw size={16} className={refreshing ? "animate-spin" : ""} /> Refresh</button>
         </TeacherPageHeader>
         {error && (
@@ -147,6 +218,59 @@ export default function TeacherTimetablePage() {
           </div>
         ) : (
           <>
+            <section className="teacher-timetable-print hidden space-y-4 print:block">
+              <header className="flex items-center gap-5 border-b border-border pb-4">
+                {schoolLogoUrl ? (
+                  <Image
+                    src={schoolLogoUrl}
+                    alt={`${schoolName} logo`}
+                    width={112}
+                    height={80}
+                    unoptimized
+                    priority
+                    className="hidden h-20 w-28 object-contain print:block"
+                  />
+                ) : null}
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-xl font-bold text-black">{schoolName}</h1>
+                  <h2 className="mt-3 text-lg font-bold text-black">{teacherName} · Personal Teaching Timetable</h2>
+                  <p className="mt-1 text-sm text-black">
+                    {[academicYear, termName, boardName].filter(Boolean).join(" · ")}
+                  </p>
+                </div>
+              </header>
+              <div className="teacher-timetable-print-grid grid grid-cols-[30mm_repeat(5,minmax(0,1fr))] border-l border-t border-border">
+                <div className="teacher-timetable-print-cell teacher-timetable-print-heading">Period</div>
+                {days.map((day) => (
+                  <div key={day} className="teacher-timetable-print-cell teacher-timetable-print-heading">{day}</div>
+                ))}
+                {printPeriods.map((period) => (
+                  <div key={period.sortOrder} className="contents">
+                    <div className="teacher-timetable-print-cell">
+                      <p className="text-[8pt] font-bold">{period.name}</p>
+                    </div>
+                    {days.map((day, index) => {
+                      const lessons = sortedEntries.filter((entry) =>
+                        entry.period.dayOfWeek === index + 1 && entry.period.sortOrder === period.sortOrder,
+                      );
+                      return (
+                        <div key={`${period.sortOrder}-${day}`} className="teacher-timetable-print-cell">
+                          {lessons.map((lesson) => (
+                            <div key={lesson.id} className="mb-1 border-l-2 border-gray-500 pl-1.5 last:mb-0">
+                              <p className="mb-1 text-[7pt] font-medium text-gray-600">{lesson.period.startsAt}–{lesson.period.endsAt}</p>
+                              <p className="text-[8pt] font-bold">{lesson.subject?.name || "Lesson"}</p>
+                              <p className="text-[7pt] text-gray-700">
+                                {lesson.class?.name || "Class"}{lesson.class?.arm ? ` ${lesson.class.arm}` : ""}{lesson.room ? ` · ${lesson.room}` : ""}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            </section>
             <section className="grid gap-4 sm:grid-cols-3">
               <Summary
                 icon={<CalendarDays size={18} />}
@@ -193,93 +317,45 @@ export default function TeacherTimetablePage() {
                 </div>
               </div>
             ) : null}
-            <section className="border border-border bg-surface">
-              <div className="flex flex-col justify-between gap-4 border-b border-border bg-background px-5 py-4 sm:flex-row sm:items-center">
-                <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand">Weekly plan</p>
-                  <h2 className="mt-1 text-xl font-semibold text-foreground">
-                    {days[selectedDay]}
-                  </h2>
-                  <p className="mt-1 text-sm text-muted">Choose a day to review your scheduled lessons.</p>
-                </div>
-                <div className="inline-flex items-center gap-2 self-start border border-brand/20 bg-brand-light px-3 py-2 text-sm text-brand sm:self-auto">
-                  <Clock3 size={15} />
-                  <span>
-                    <span className="font-semibold">{todayEntries.length}</span>{" "}
-                    {todayEntries.length === 1 ? "lesson" : "lessons"} scheduled
-                  </span>
-                </div>
-              </div>
-              <div className="grid grid-cols-5 gap-2 p-4">
-                {days.map((day, index) => (
-                  <button
-                    key={day}
-                    onClick={() => setSelectedDay(index)}
-                    className={`rounded-lg border px-2 py-3 text-sm font-semibold transition-colors ${selectedDay === index ? "border-brand bg-brand text-white" : "border-border bg-background text-muted hover:border-brand hover:text-brand"}`}
-                  >
-                    <span className="hidden sm:inline">{day}</span>
-                    <span className="sm:hidden">{day.slice(0, 3)}</span>
-                    <span className="mt-1 block text-xs font-normal opacity-75">
-                      {
-                        entries.filter(
-                          (entry) => entry.period.dayOfWeek === index + 1,
-                        ).length
-                      }{" "}
-                      lessons
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </section>
-            <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {todayEntries.map((entry) => (
-                <article
-                  key={entry.id}
-                  className="border border-border bg-surface p-5 transition hover:border-brand/40 hover:bg-brand-light"
-                  style={{ borderTop: `4px solid ${accents[selectedDay]}` }}
-                >
-                  <div className="flex items-start justify-between gap-3">
+            <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {entriesByDay.map(({ day, entries: dayEntries }) => (
+                <section key={day} className="border border-border bg-white">
+                  <div className="flex items-center justify-between border-b border-border bg-white px-5 py-4">
                     <div>
-                      <p className="text-xs font-bold uppercase tracking-[.1em] text-muted">
-                        {entry.period.name}
-                      </p>
-                      <h3 className="mt-2 text-lg font-bold text-foreground">
-                        {entry.subject?.name || "Lesson"}
-                      </h3>
+                      <p className="text-[10px] font-bold uppercase tracking-[.14em] text-muted">Weekly schedule</p>
+                      <h2 className="mt-1 text-sm font-semibold text-foreground">{day}</h2>
                     </div>
-                    <span className="rounded-lg bg-brand-light px-2 py-1 text-xs font-bold text-brand">
-                      {entry.period.startsAt}
+                    <span className="border border-border bg-surface px-2 py-1 text-[10px] font-bold text-muted">
+                      {dayEntries.length} {dayEntries.length === 1 ? "lesson" : "lessons"}
                     </span>
                   </div>
-                  <p className="mt-3 text-sm font-medium text-muted">
-                    {entry.class?.name || "Class"}
-                    {entry.class?.arm ? ` · ${entry.class.arm}` : ""}
-                  </p>
-                  <div className="mt-4 space-y-2 border-t border-border pt-3 text-xs text-muted">
-                    <div className="flex items-center gap-2">
-                      <Clock3 size={14} /> {entry.period.startsAt} -{" "}
-                      {entry.period.endsAt}
+                  {dayEntries.length ? (
+                    <ol className="divide-y divide-border">
+                      {dayEntries.map((entry) => (
+                        <li key={entry.id} className="px-5 py-4 transition-colors hover:bg-background/50">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-foreground">{entry.subject?.name || "Lesson"}</p>
+                              <p className="mt-1 text-xs text-muted">
+                                {entry.class?.name || "Class"}{entry.class?.arm ? ` · ${entry.class.arm}` : ""}{entry.room ? ` · ${entry.room}` : ""}
+                              </p>
+                            </div>
+                            <div className="shrink-0 text-right">
+                              <p className="border border-brand/15 bg-brand/5 px-2 py-1 text-[10px] font-bold text-brand">{entry.period.name}</p>
+                              <p className="mt-1 text-[11px] text-muted">{entry.period.startsAt}–{entry.period.endsAt}</p>
+                            </div>
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                  ) : (
+                    <div className="px-5 py-8 text-center">
+                      <p className="text-xs font-semibold text-foreground">No lessons scheduled</p>
+                      <p className="mt-1 text-[11px] text-muted">There are no class periods for this day.</p>
                     </div>
-                    {entry.room && (
-                      <div className="flex items-center gap-2">
-                        <MapPin size={14} /> {entry.room}
-                      </div>
-                    )}
-                  </div>
-                </article>
+                  )}
+                </section>
               ))}
-              {!todayEntries.length && (
-                <div className="rounded-lg border border-dashed border-[#9ac7ea] bg-[#f3f9fe] p-10 text-center md:col-span-2 lg:col-span-3">
-                  <CalendarDays className="mx-auto text-brand" size={28} />
-                  <h2 className="mt-3 font-semibold text-foreground">
-                    No lessons scheduled for {days[selectedDay]}
-                  </h2>
-                  <p className="mt-1 text-sm text-muted">
-                    Your school has not assigned you a published class on this
-                    day.
-                  </p>
-                </div>
-              )}
             </section>
           </>
         )}

@@ -715,14 +715,17 @@ export default function AttendancePage() {
                     {paginatedStudents.map((student) => {
                       const studentName = `${student.firstName} ${student.lastName}`.trim() || `Student ${student.admissionNo || student.id}`;
                       return (
-                        <div key={student.id} className="border border-border bg-background p-4">
+                        <div key={student.id} className="border border-border bg-white p-5">
                           <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <p className="font-semibold text-sm text-foreground">{studentName}</p>
-                              <p className="mt-1 text-xs text-muted">{student.admissionNo || '—'}</p>
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-foreground">{studentName}</p>
+                              <p className="mt-1 text-xs text-muted">Admission number · {student.admissionNo || '—'}</p>
                             </div>
+                            <span className="shrink-0 border border-border bg-surface px-2 py-1 text-[10px] font-bold text-muted">
+                              {attendance[student.id] ? STATUS_CONFIG[attendance[student.id].status].label : 'Not set'}
+                            </span>
                           </div>
-                          <div className="mt-3">{renderStatusControls(student.id)}</div>
+                          <div className="mt-4 border-t border-border pt-4">{renderStatusControls(student.id)}</div>
                         </div>
                       );
                     })}
@@ -733,17 +736,17 @@ export default function AttendancePage() {
                   {paginatedStudents.map((student) => {
                     const studentName = `${student.firstName} ${student.lastName}`.trim() || `Student ${student.admissionNo || student.id}`;
                     return (
-                      <div key={student.id} className="border border-border bg-background p-4 transition-colors hover:border-brand/30 hover:bg-brand/5">
+                      <div key={student.id} className="border border-border bg-white p-5 transition-colors hover:bg-background/50">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-foreground">{studentName}</p>
-                            <p className="mt-1 truncate text-xs text-muted">{student.admissionNo || '—'}</p>
+                            <p className="text-sm font-semibold text-foreground">{studentName}</p>
+                            <p className="mt-1 text-xs text-muted">Admission number · {student.admissionNo || '—'}</p>
                           </div>
                           <span className="shrink-0 border border-border bg-surface px-2 py-1 text-[11px] font-semibold text-muted">
                             {attendance[student.id] ? STATUS_CONFIG[attendance[student.id].status].label : 'Not set'}
                           </span>
                         </div>
-                        <div className="mt-4 border-t border-border pt-3">
+                        <div className="mt-4 border-t border-border pt-4">
                           {renderStatusControls(student.id)}
                         </div>
                       </div>
