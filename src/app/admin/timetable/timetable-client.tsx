@@ -43,6 +43,16 @@ type Entry = {
   subject?: { name: string };
   teacher?: { name: string };
 };
+type ScheduledActivity = {
+  id: string;
+  periodId: string;
+  period: Period;
+  activity: { name: string; category: string; description?: string | null };
+  audienceType: "SCHOOL" | "CLASSES";
+  location?: string | null;
+  notes?: string | null;
+  classes: Array<{ class: { id: string; name: string; arm?: string | null } }>;
+};
 type Period = {
   id: string;
   dayOfWeek: number;
@@ -59,8 +69,10 @@ type Config = {
   term?: { name: string; startsOn?: string | null; endsOn?: string | null } | null;
   periods: Period[];
   entries: Entry[];
+  scheduledActivities: ScheduledActivity[];
 };
 type SelectorData = { id: string; name: string; email?: string; arm?: string | null };
+type ActivityOption = { id: string; name: string; category: string; description?: string | null };
 type LessonTarget = { classId: string; subjectId: string; teacherId: string };
 type TeachingAssignments = {
   teacherClasses: Array<{ teacherId: string; classId: string }>;
@@ -210,6 +222,7 @@ export default function TimetableClient() {
     Array<{ id: string; name: string }>
   >([]);
   const [classes, setClasses] = useState<SelectorData[]>([]);
+  const [activities, setActivities] = useState<ActivityOption[]>([]);
   const [subjects, setSubjects] = useState<SelectorData[]>([]);
   const [teachers, setTeachers] = useState<SelectorData[]>([]);
   const [teachingAssignments, setTeachingAssignments] = useState<TeachingAssignments>({
@@ -228,6 +241,7 @@ export default function TimetableClient() {
   const [duplicatingEntry, setDuplicatingEntry] = useState<Entry | null>(null);
   const [addingLesson, setAddingLesson] = useState(false);
   const [addingLessonPeriodId, setAddingLessonPeriodId] = useState("");
+  const [addingActivityPeriodId, setAddingActivityPeriodId] = useState("");
   const [configActionModalOpen, setConfigActionModalOpen] = useState(false);
   const [configActionAnimateState, setConfigActionAnimateState] = useState<
     "enter" | "exit"
@@ -270,6 +284,14 @@ export default function TimetableClient() {
   function closeAddingLesson() {
     setAddingLesson(false);
     setAddingLessonPeriodId("");
+    playCloseTone();
+  }
+  function openAddingActivity(periodId: string) {
+    setAddingActivityPeriodId(periodId);
+    playOpenTone();
+  }
+  function closeAddingActivity() {
+    setAddingActivityPeriodId("");
     playCloseTone();
   }
   function openEditingEntry(entry: Entry) {
@@ -319,6 +341,7 @@ export default function TimetableClient() {
         .catch(() => ({ academicYears: [] }));
       setAcademicYears(data.academicYears || yearsData.academicYears || []);
       setClasses(data.classes || []);
+      setActivities(data.activities || []);
       setSubjects(data.subjects || []);
       setTeachers(data.teachers || []);
       setTeachingAssignments({
@@ -328,7 +351,7 @@ export default function TimetableClient() {
       });
       if (!response.ok)
         throw new Error(data.error || "Unable to load timetable");
-      setConfigs(data.configs || []);
+      setConfigs((data.configs || []).map((item: Config) => ({ ...item, scheduledActivities: item.scheduledActivities || [] })));
       if (!selectedConfigId && data.configs?.[0])
         setSelectedConfigId(data.configs[0].id);
     } catch (requestError: any) {
@@ -405,6 +428,18 @@ export default function TimetableClient() {
   async function deleteEntry(entry: Entry) {
     setPendingConfirmation({ kind: "deleteLesson", entry });
     playOpenTone();
+  }
+
+  async function removeScheduledActivity(activity: ScheduledActivity) {
+    if (!config) return;
+    const response = await api(`/admin/timetable/activities/${activity.id}`, { method: "DELETE" });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      showTimetableError(data.error || data.message || "Unable to remove activity");
+      return;
+    }
+    showTimetableSuccess("The activity was removed from the timetable.");
+    await load();
   }
 
   async function moveEntry(entry: Entry, periodId: string) {
@@ -640,8 +675,8 @@ export default function TimetableClient() {
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Stat
             icon={<Clock3 size={18} />}
-            label="Lessons scheduled"
-            value={String(entries.length)}
+            label="Items scheduled"
+            value={String(entries.length + (config?.scheduledActivities?.length || 0))}
             detail={published ? "Live across the school" : "Draft workspace"}
           />
           <Stat
@@ -752,6 +787,7 @@ export default function TimetableClient() {
           <WeekBoard
             config={config}
             periods={periods}
+            activities={activities}
             editable={!published}
             onEdit={openEditingEntry}
             onDelete={deleteEntry}
@@ -759,14 +795,18 @@ export default function TimetableClient() {
             onDuplicate={openDuplicatingEntry}
             onPaste={pasteEntry}
             onAdd={openAddingLesson}
+            onAddActivity={openAddingActivity}
+            onRemoveActivity={removeScheduledActivity}
             onError={showTimetableError}
           />
         ) : (
           <ListView
             entries={entries}
+            scheduledActivities={config.scheduledActivities || []}
             editable={!published}
             onEdit={openEditingEntry}
             onDelete={deleteEntry}
+            onRemoveActivity={removeScheduledActivity}
           />
         )}
       </div>
@@ -814,6 +854,21 @@ export default function TimetableClient() {
           onSaved={() => {
             closeAddingLesson();
             showTimetableSuccess("The lesson was added successfully.");
+            load();
+          }}
+          onError={showTimetableError}
+        />
+      )}
+      {addingActivityPeriodId && config && (
+        <ActivityScheduler
+          configId={config.id}
+          periodId={addingActivityPeriodId}
+          activities={activities}
+          classes={classes}
+          onClose={closeAddingActivity}
+          onSaved={() => {
+            closeAddingActivity();
+            showTimetableSuccess("The activity was added to the timetable.");
             load();
           }}
           onError={showTimetableError}
@@ -955,6 +1010,7 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
 function WeekBoard({
   config,
   periods,
+  activities,
   editable,
   onEdit,
   onDelete,
@@ -962,10 +1018,13 @@ function WeekBoard({
   onDuplicate,
   onPaste,
   onAdd,
+  onAddActivity,
+  onRemoveActivity,
   onError: _onError,
 }: {
   config: Config;
   periods: Period[];
+  activities: ActivityOption[];
   editable: boolean;
   onEdit: (entry: Entry) => void;
   onDelete: (entry: Entry) => void;
@@ -973,6 +1032,8 @@ function WeekBoard({
   onDuplicate: (entry: Entry) => void;
   onPaste: (entry: Entry, periodId: string) => void;
   onAdd: (periodId: string) => void;
+  onAddActivity: (periodId: string) => void;
+  onRemoveActivity: (activity: ScheduledActivity) => void;
   onError: (message: string) => void;
 }) {
   const [copiedEntry, setCopiedEntry] = useState<Entry | null>(null);
@@ -1036,6 +1097,9 @@ function WeekBoard({
               );
               const entries = dayPeriod
                 ? config.entries.filter((item) => item.periodId === dayPeriod.id)
+                : [];
+              const scheduledActivities = dayPeriod
+                ? config.scheduledActivities.filter((item) => item.periodId === dayPeriod.id)
                 : [];
               return (
                 <div
@@ -1120,15 +1184,26 @@ function WeekBoard({
                       ))}
                     </div>
                   )}
-                  {editable && dayPeriod && entries.length === 0 ? (
-                    <button
-                      type="button"
-                      onClick={() => onAdd(dayPeriod.id)}
-                      className="flex min-h-[88px] w-full items-center justify-center gap-1.5 border border-dashed border-transparent text-xs font-semibold text-muted transition-colors hover:border-brand/30 hover:bg-brand/5 hover:text-brand"
-                      aria-label={`Add lesson ${days[index]} ${dayPeriod.name}`}
-                    >
-                      <Plus size={14} /> Add lesson
-                    </button>
+                  {scheduledActivities.map((scheduledActivity) => (
+                    <div key={scheduledActivity.id} className="group/activity relative mb-1 border-l-4 border-amber-500 bg-amber-50 px-2.5 py-2 text-left">
+                      <div className="pr-7 text-[10px] font-bold uppercase tracking-wide text-amber-800">Activity · {scheduledActivity.activity.category}</div>
+                      <div className="mt-0.5 pr-7 text-sm font-bold text-foreground">{scheduledActivity.activity.name}</div>
+                      <div className="mt-0.5 text-[11px] leading-4 text-muted">
+                        {scheduledActivity.audienceType === "SCHOOL" ? "Whole school" : scheduledActivity.classes.map((link) => classLabel(link.class)).join(", ")}
+                        {scheduledActivity.location ? ` · ${scheduledActivity.location}` : ""}
+                      </div>
+                      {editable && <button type="button" onClick={() => onRemoveActivity(scheduledActivity)} aria-label={`Remove ${scheduledActivity.activity.name}`} className="absolute right-1.5 top-1.5 hidden bg-white p-1 text-error shadow-sm group-hover/activity:block"><Trash2 size={13} /></button>}
+                    </div>
+                  ))}
+                  {editable && dayPeriod ? (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      <button type="button" onClick={() => onAdd(dayPeriod.id)} className="inline-flex items-center gap-1 border border-dashed border-border px-2 py-1.5 text-[11px] font-semibold text-muted hover:border-brand/40 hover:bg-brand/5 hover:text-brand" aria-label={`Add lesson ${days[index]} ${dayPeriod.name}`}>
+                        <Plus size={12} /> Lesson
+                      </button>
+                      <button type="button" onClick={() => onAddActivity(dayPeriod.id)} disabled={!activities.length} className="inline-flex items-center gap-1 border border-dashed border-amber-300 px-2 py-1.5 text-[11px] font-semibold text-amber-800 hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-40" aria-label={`Add activity ${days[index]} ${dayPeriod.name}`}>
+                        <Sparkles size={12} /> Activity
+                      </button>
+                    </div>
                   ) : null}
                 </div>
               );
@@ -1164,14 +1239,18 @@ function WeekBoard({
 }
 function ListView({
   entries,
+  scheduledActivities,
   editable,
   onEdit,
   onDelete,
+  onRemoveActivity,
 }: {
   entries: Entry[];
+  scheduledActivities: ScheduledActivity[];
   editable: boolean;
   onEdit: (entry: Entry) => void;
   onDelete: (entry: Entry) => void;
+  onRemoveActivity: (activity: ScheduledActivity) => void;
 }) {
   return (
     <div className="timetable-print-target divide-y divide-border rounded-lg border border-border bg-surface shadow-sm">
@@ -1217,11 +1296,130 @@ function ListView({
           )}
         </div>
       ))}
-      {!entries.length && (
-        <div className="p-10 text-center text-sm text-muted">
-          No lessons have been added yet.
+      {scheduledActivities.map((item) => (
+        <div key={item.id} className="flex flex-col justify-between gap-3 border-l-4 border-amber-500 bg-amber-50/60 p-4 sm:flex-row sm:items-center">
+          <div>
+            <div className="font-semibold text-foreground">{item.activity.name} <span className="ml-1 text-[10px] font-bold uppercase text-amber-800">Activity · {item.activity.category}</span></div>
+            <div className="mt-1 text-xs text-muted">{item.period.name} · {item.period.startsAt} - {item.period.endsAt} · {days[item.period.dayOfWeek - 1]} · {item.audienceType === "SCHOOL" ? "Whole school" : item.classes.map((link) => classLabel(link.class)).join(", ")}{item.location ? ` · ${item.location}` : ""}</div>
+            {item.notes ? <div className="mt-1 text-xs text-muted">{item.notes}</div> : null}
+          </div>
+          {editable ? <button type="button" onClick={() => onRemoveActivity(item)} aria-label={`Remove ${item.activity.name}`} className="self-start border border-border bg-white p-2 text-error hover:bg-[#fff5f5]"><Trash2 size={15} /></button> : null}
         </div>
-      )}
+      ))}
+      {!entries.length && !scheduledActivities.length ? (
+        <div className="p-10 text-center text-sm text-muted">
+          No lessons or activities have been added yet.
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function ActivityScheduler({
+  configId,
+  periodId,
+  activities,
+  classes,
+  onClose,
+  onSaved,
+  onError,
+}: {
+  configId: string;
+  periodId: string;
+  activities: ActivityOption[];
+  classes: SelectorData[];
+  onClose: () => void;
+  onSaved: () => void;
+  onError: (message: string) => void;
+}) {
+  const [activityId, setActivityId] = useState(activities[0]?.id || "");
+  const [audienceType, setAudienceType] = useState<"SCHOOL" | "CLASSES">("SCHOOL");
+  const [selectedClassIds, setSelectedClassIds] = useState<string[]>([]);
+  const [location, setLocation] = useState("");
+  const [notes, setNotes] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    setSaving(true);
+    setError("");
+    try {
+      const response = await api(`/admin/timetable/configs/${configId}/activities`, {
+        method: "POST",
+        body: JSON.stringify({ activityId, periodId, audienceType, classIds: selectedClassIds, location, notes }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || data.error || "Unable to schedule activity.");
+      onSaved();
+    } catch (requestError) {
+      const message = requestError instanceof Error ? requestError.message : "Unable to schedule activity.";
+      setError(message);
+      onError(message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[65] flex items-center justify-center bg-black/50 px-4" role="dialog" aria-modal="true" aria-labelledby="schedule-activity-title">
+      <form onSubmit={submit} className="max-h-[92vh] w-full max-w-xl overflow-y-auto border border-border bg-surface shadow-2xl">
+        <div className="flex items-start justify-between gap-4 border-b border-border bg-amber-50 px-5 py-4">
+          <div>
+            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-amber-800"><Sparkles size={14} /> Timetable activity</p>
+            <h2 id="schedule-activity-title" className="mt-2 text-xl font-semibold text-foreground">Add activity to this period</h2>
+            <p className="mt-1 text-sm text-muted">Choose who the activity is for. It will appear alongside lessons without requiring a subject or teacher.</p>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close" className="flex h-8 w-8 items-center justify-center border border-border bg-white text-muted hover:text-foreground"><X size={17} /></button>
+        </div>
+        <div className="space-y-4 p-5">
+          <Field label="Activity">
+            <select required value={activityId} onChange={(event) => setActivityId(event.target.value)} className="w-full border border-border bg-background px-3 py-2.5 text-sm text-foreground">
+              <option value="">Select activity</option>
+              {activities.map((activity) => <option key={activity.id} value={activity.id}>{activity.name} · {activity.category}</option>)}
+            </select>
+          </Field>
+          <fieldset>
+            <legend className="text-xs font-bold uppercase tracking-wide text-muted">Audience</legend>
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+              <label className={`flex cursor-pointer items-start gap-2 border p-3 text-sm ${audienceType === "SCHOOL" ? "border-brand bg-brand/5" : "border-border bg-background"}`}>
+                <input type="radio" name="activity-audience" checked={audienceType === "SCHOOL"} onChange={() => setAudienceType("SCHOOL")} className="mt-0.5 accent-brand" />
+                <span><span className="block font-semibold text-foreground">Whole school</span><span className="mt-0.5 block text-xs text-muted">Visible across school timetables.</span></span>
+              </label>
+              <label className={`flex cursor-pointer items-start gap-2 border p-3 text-sm ${audienceType === "CLASSES" ? "border-brand bg-brand/5" : "border-border bg-background"}`}>
+                <input type="radio" name="activity-audience" checked={audienceType === "CLASSES"} onChange={() => setAudienceType("CLASSES")} className="mt-0.5 accent-brand" />
+                <span><span className="block font-semibold text-foreground">Selected classes</span><span className="mt-0.5 block text-xs text-muted">Only selected classes see it.</span></span>
+              </label>
+            </div>
+          </fieldset>
+          {audienceType === "CLASSES" ? (
+            <fieldset className="border border-border bg-background p-3">
+              <legend className="px-1 text-xs font-bold uppercase tracking-wide text-muted">Classes</legend>
+              <div className="grid max-h-40 gap-2 overflow-y-auto sm:grid-cols-2">
+                {classes.map((item) => (
+                  <label key={item.id} className="flex items-center gap-2 text-sm text-foreground">
+                    <input type="checkbox" checked={selectedClassIds.includes(item.id)} onChange={(event) => setSelectedClassIds((current) => event.target.checked ? [...current, item.id] : current.filter((id) => id !== item.id))} className="accent-brand" />
+                    {classLabel(item)}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          ) : null}
+          <Field label="Location (optional)">
+            <input maxLength={191} value={location} onChange={(event) => setLocation(event.target.value)} placeholder="e.g. Main hall or sports field" className="w-full border border-border bg-background px-3 py-2.5 text-sm text-foreground" />
+          </Field>
+          <Field label="Notes (optional)">
+            <textarea maxLength={2000} rows={2} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Additional information for staff and families" className="w-full resize-y border border-border bg-background px-3 py-2.5 text-sm text-foreground" />
+          </Field>
+          {error ? <p role="alert" className="text-sm text-error">{error}</p> : null}
+        </div>
+        <div className="flex justify-end gap-3 border-t border-border px-5 py-4">
+          <button type="button" onClick={onClose} className="border border-border px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-background">Cancel</button>
+          <button type="submit" disabled={saving || !activityId || (audienceType === "CLASSES" && selectedClassIds.length === 0)} className="inline-flex items-center gap-2 bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50">
+            <Sparkles size={15} /> {saving ? "Scheduling…" : "Add to timetable"}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

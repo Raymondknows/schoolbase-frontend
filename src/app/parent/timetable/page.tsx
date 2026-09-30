@@ -39,6 +39,14 @@ type Period = {
   sortOrder: number;
 };
 
+type ScheduledActivity = {
+  id: string;
+  period: Period;
+  activity: { name: string; category: string; description?: string | null };
+  location?: string | null;
+  notes?: string | null;
+};
+
 type TimetableData = {
   child: Child;
   timetable: {
@@ -49,6 +57,7 @@ type TimetableData = {
   } | null;
   periods: Period[];
   entries: TimetableEntry[];
+  scheduledActivities: ScheduledActivity[];
 };
 
 const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -391,6 +400,12 @@ export default function ParentTimetablePage() {
                               <p className="text-[7pt] text-gray-700">{entry.teacher?.name || "Teacher"}{entry.room ? ` · ${entry.room}` : ""}</p>
                             </div>
                           ))}
+                          {(timetableData.scheduledActivities || []).filter((item) => item.period.id === dayPeriod?.id).map((item) => (
+                            <div key={item.id} className="mb-1 border-l-2 border-amber-500 bg-amber-50/70 pl-1.5 last:mb-0">
+                              <p className="text-[8pt] font-bold">{item.activity.name} <span className="text-[6pt] font-semibold uppercase text-amber-800">Activity</span></p>
+                              <p className="text-[7pt] text-gray-700">{item.location || item.activity.category}{item.notes ? ` · ${item.notes}` : ""}</p>
+                            </div>
+                          ))}
                         </div>
                       );
                     })}
@@ -428,11 +443,33 @@ export default function ParentTimetablePage() {
                       ))}
                     </ol>
                   ) : (
-                    <div className="px-5 py-8 text-center">
-                      <p className="text-xs font-semibold text-foreground">No lessons scheduled</p>
-                      <p className="mt-1 text-[11px] text-muted">There are no class periods for this day.</p>
-                    </div>
+                    !(timetableData.scheduledActivities || []).some((item) => item.period.dayOfWeek === schoolDays.indexOf(day) + 1) ? (
+                      <div className="px-5 py-8 text-center">
+                        <p className="text-xs font-semibold text-foreground">No lessons or activities scheduled</p>
+                        <p className="mt-1 text-[11px] text-muted">There are no class periods for this day.</p>
+                      </div>
+                    ) : null
                   )}
+                  {(timetableData.scheduledActivities || []).filter((item) => item.period.dayOfWeek === schoolDays.indexOf(day) + 1).length ? (
+                      <ol className="divide-y divide-border border-t border-border">
+                        {(timetableData.scheduledActivities || []).filter((item) => item.period.dayOfWeek === schoolDays.indexOf(day) + 1).map((item) => (
+                          <li key={item.id} className="border-l-2 border-amber-500 bg-amber-50/40 px-5 py-4">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <p className="text-sm font-semibold text-foreground">{item.activity.name}</p>
+                                <p className="mt-1 text-[10px] font-bold uppercase tracking-wide text-amber-800">School activity · {item.activity.category}</p>
+                                {item.notes ? <p className="mt-1 text-xs text-muted">{item.notes}</p> : null}
+                              </div>
+                              <div className="shrink-0 text-right">
+                                <p className="border border-amber-200 bg-white px-2 py-1 text-[10px] font-bold text-amber-800">{item.period.name}</p>
+                                <p className="mt-1 text-[11px] text-muted">{item.period.startsAt}–{item.period.endsAt}</p>
+                                {item.location ? <p className="mt-1 text-[10px] text-muted">{item.location}</p> : null}
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                      </ol>
+                    ) : null}
                 </section>
               ))}
             </div>

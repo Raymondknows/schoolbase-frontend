@@ -19,6 +19,7 @@ const baseNav = [
   { href: "/admin/promotions", label: "Promotions", icon: "TrendingUp" },
   { href: "/admin/analytics", label: "Analytics", icon: "BarChart3" },
   { href: "/admin/attendance", label: "Attendance", icon: "ClipboardList" },
+  { href: "/admin/activities", label: "Activities", icon: "Sparkles" },
   { href: "/admin/timetable", label: "Timetable", icon: "CalendarDays" },
   { href: "/admin/whatsapp", label: "WhatsApp", icon: "WhatsApp" },
   { href: "/admin/support", label: "Support", icon: "HelpCircle" },
