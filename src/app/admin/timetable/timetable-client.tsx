@@ -536,6 +536,13 @@ export default function TimetableClient() {
             display: none !important;
           }
 
+          .timetable-print-lessons {
+            max-height: none !important;
+            height: auto !important;
+            overflow: visible !important;
+            padding-right: 0 !important;
+          }
+
           .timetable-print-header {
             display: flex !important;
             align-items: baseline !important;
@@ -1056,7 +1063,7 @@ function WeekBoard({
                     </div>
                   ) : null}
                   {entries.length > 0 && (
-                    <div className="max-h-[190px] space-y-1 overflow-y-auto pr-1">
+                    <div className="timetable-print-lessons max-h-[190px] space-y-1 overflow-y-auto pr-1">
                       {entries.map((entry) => (
                         <div
                           key={entry.id}
