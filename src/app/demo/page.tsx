@@ -54,7 +54,7 @@ export default function DemoPage() {
             <p className="mt-2 text-sm leading-7 text-muted">Create a school account and begin the guided onboarding flow.</p>
             <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand">Get started <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></span>
           </Link>
-          <a href="https://wa.me/2349031368963" target="_blank" rel="noopener noreferrer" className="group border border-border bg-white p-6 hover:border-brand/50 hover:shadow-lg">
+          <a href="https://wa.me/234903 225 0338" target="_blank" rel="noopener noreferrer" className="group border border-border bg-white p-6 hover:border-brand/50 hover:shadow-lg">
             <h3 className="text-lg font-semibold text-foreground group-hover:text-brand">Talk on WhatsApp</h3>
             <p className="mt-2 text-sm leading-7 text-muted">Message the team with your school name and the areas you want to see.</p>
             <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand">Start a conversation <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></span>

@@ -12,6 +12,7 @@ import {
 import { applyTheme, detectSystemTheme, resolveStoredTheme, ThemeMode } from "@/lib/theme";
 import TeacherClassAlert from "@/components/teacher-class-alert";
 import BellScheduler from "@/components/bell-scheduler";
+import SupportChatWidget from "@/components/support-chat-widget";
 
 export type NavItem = {
   href: string;
@@ -839,6 +840,7 @@ export default function SharedLayout({
         </div>
 
         <main className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-background p-4 sm:p-6 md:p-8 print:overflow-visible print:p-0">{children}</main>
+        {logoHref !== "/schoolbase-admin" ? <SupportChatWidget /> : null}
 
         <div className="fixed z-50 flex flex-col items-end gap-2" style={{ left: audioPanelPosition.x, top: audioPanelPosition.y }}>
           {isAudioPlayerOpen ? (

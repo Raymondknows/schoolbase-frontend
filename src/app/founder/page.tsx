@@ -266,7 +266,7 @@ export default function FounderPage() {
           </div>
           <div className="flex flex-wrap gap-3">
             <a
-              href="https://wa.me/2349031368963"
+              href="https://wa.me/234903 225 0338"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-brand hover:bg-blue-50"

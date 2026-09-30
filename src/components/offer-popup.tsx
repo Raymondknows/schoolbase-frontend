@@ -96,7 +96,7 @@ export function OfferPopup() {
               <p className="text-center text-sm text-gray-600">
                 Questions? WhatsApp us on{' '}
                 <a
-                  href="https://wa.me/2349031368963"
+                  href="https://wa.me/234903 225 0338"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 font-semibold hover:underline"
