@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { LifeBuoy, MessageCircle, Paperclip, Send, X } from "lucide-react";
+import { LifeBuoy, Maximize2, MessageCircle, Minimize2, Paperclip, Send, X } from "lucide-react";
+import { playCloseTone, playOpenTone } from "@/lib/sounds";
 
 type ChatAttachment = { id: string; originalName: string; mimeType: string; size: number; url: string };
 type ChatMessage = { id: string; senderRole: string; senderName: string; body: string; createdAt: string; readAt?: string | null; attachments?: ChatAttachment[] };
@@ -9,7 +10,7 @@ type Conversation = { id: string; subject: string; status: string; lastMessageAt
 
 const topics = ["Student Records", "Fees & Payments", "Results", "Attendance", "Parents & Portal", "WhatsApp", "Account & Subscription", "Other"];
 const allowedFiles = ".jpg,.jpeg,.png,.webp,.pdf";
-const whatsappHref = "https://wa.me/2349031368963";
+const whatsappHref = "https://wa.me/2349032250338";
 
 function formatTime(value: string) {
   return new Date(value).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
@@ -17,6 +18,7 @@ function formatTime(value: string) {
 
 export default function SupportChatWidget() {
   const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selected, setSelected] = useState<Conversation | null>(null);
@@ -78,7 +80,10 @@ export default function SupportChatWidget() {
   }, [selected?.messages?.length, open]);
 
   useEffect(() => {
-    const openChat = () => setOpen(true);
+    const openChat = () => {
+      setOpen(true);
+      playOpenTone();
+    };
     window.addEventListener("schoolbase:open-support-chat", openChat);
     return () => window.removeEventListener("schoolbase:open-support-chat", openChat);
   }, []);
@@ -160,7 +165,7 @@ export default function SupportChatWidget() {
   return (
     <div className="print:hidden">
       {open ? (
-        <section aria-label="SchoolBase Support chat" className="fixed bottom-4 right-4 z-[90] flex h-[min(620px,calc(100dvh-32px))] w-[min(390px,calc(100vw-24px))] flex-col overflow-hidden rounded-lg border border-border bg-surface shadow-[0_16px_60px_rgba(15,23,42,0.22)] sm:bottom-6 sm:right-6">
+        <section aria-label="SchoolBase Support chat" className={`fixed z-[90] flex flex-col overflow-hidden rounded-lg border border-border bg-surface shadow-[0_16px_60px_rgba(15,23,42,0.22)] ${expanded ? "bottom-2 right-2 h-[calc(100dvh-16px)] w-[calc(100vw-16px)] sm:bottom-6 sm:right-6 sm:h-[min(780px,calc(100dvh-48px))] sm:w-[min(560px,calc(100vw-48px))]" : "bottom-4 right-4 h-[min(620px,calc(100dvh-32px))] w-[min(390px,calc(100vw-24px))] sm:bottom-6 sm:right-6"}`}>
           <header className="flex shrink-0 items-center justify-between border-b border-border bg-[#f3f9fe] px-4 py-3">
             <div className="flex min-w-0 items-center gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-brand text-white"><LifeBuoy className="h-4.5 w-4.5" /></div>
@@ -168,7 +173,10 @@ export default function SupportChatWidget() {
             </div>
             <div className="flex items-center gap-1">
               <button type="button" onClick={() => { setSelectedId(null); setSelected(null); setDraft(""); setError(""); }} className="px-2 py-1.5 text-xs font-semibold text-brand hover:bg-white" aria-label="Start a new support conversation">New</button>
-              <button type="button" onClick={() => setOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-md text-muted hover:bg-white hover:text-foreground" aria-label="Minimize support chat"><X className="h-4 w-4" /></button>
+              <button type="button" onClick={() => setExpanded((current) => !current)} className="flex h-8 w-8 items-center justify-center rounded-md text-muted hover:bg-white hover:text-foreground" aria-label={expanded ? "Restore support chat size" : "Expand support chat"} title={expanded ? "Restore size" : "Expand"}>
+                {expanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </button>
+              <button type="button" onClick={() => { setOpen(false); setExpanded(false); playCloseTone(); }} className="flex h-8 w-8 items-center justify-center rounded-md text-muted hover:bg-white hover:text-foreground" aria-label="Minimize support chat" title="Minimize"><X className="h-4 w-4" /></button>
             </div>
           </header>
 
@@ -238,7 +246,7 @@ export default function SupportChatWidget() {
       ) : null}
 
       {!open ? (
-        <button type="button" onClick={() => { setOpen(true); void refreshList(); }} className="fixed bottom-4 right-4 z-[90] inline-flex items-center gap-2 rounded-md bg-brand px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-900/15 transition hover:bg-brand-hover focus:outline-none focus:ring-2 focus:ring-brand/40 focus:ring-offset-2 sm:bottom-6 sm:right-6" aria-label={`Open SchoolBase Support${unreadCount ? `, ${unreadCount} unread messages` : ""}`}>
+        <button type="button" onClick={() => { setOpen(true); playOpenTone(); void refreshList(); }} className="fixed bottom-4 right-4 z-[90] inline-flex items-center gap-2 rounded-md bg-brand px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-900/15 transition hover:bg-brand-hover focus:outline-none focus:ring-2 focus:ring-brand/40 focus:ring-offset-2 sm:bottom-6 sm:right-6" aria-label={`Open SchoolBase Support${unreadCount ? `, ${unreadCount} unread messages` : ""}`}>
           <MessageCircle className="h-4 w-4" /> <span>SchoolBase Support</span>
           {unreadCount ? <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[10px] font-bold text-brand">{unreadCount}</span> : null}
         </button>
