@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { LifeBuoy, Maximize2, MessageCircle, Minimize2, Paperclip, Send, X } from "lucide-react";
-import { playCloseTone, playOpenTone } from "@/lib/sounds";
+import { playBellTone, playCloseTone, playOpenTone } from "@/lib/sounds";
 
 type ChatAttachment = { id: string; originalName: string; mimeType: string; size: number; url: string };
 type ChatMessage = { id: string; senderRole: string; senderName: string; body: string; createdAt: string; readAt?: string | null; attachments?: ChatAttachment[] };
@@ -30,15 +30,27 @@ export default function SupportChatWidget() {
   const [error, setError] = useState("");
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const knownSupportMessageIdsRef = useRef<Set<string> | null>(null);
 
   const refreshList = useCallback(async () => {
     try {
       const response = await fetch("/api/support/conversations?limit=20", { credentials: "include", cache: "no-store" });
       if (!response.ok) return;
       const data = await response.json();
-      setConversations(data.conversations || []);
+      const nextConversations = (data.conversations || []) as Conversation[];
+      const incomingSupportMessages = nextConversations.flatMap((conversation) =>
+        (conversation.messages || [])
+          .filter((message) => message.senderRole === "PLATFORM_ADMIN")
+          .map((message) => message.id),
+      );
+      const knownMessageIds = knownSupportMessageIdsRef.current;
+      if (knownMessageIds && incomingSupportMessages.some((id) => !knownMessageIds.has(id))) {
+        playBellTone("soft", 0.7);
+      }
+      knownSupportMessageIdsRef.current = new Set(incomingSupportMessages);
+      setConversations(nextConversations);
       setUnreadCount(Number(data.unreadCount || 0));
-      if (selectedId && !(data.conversations || []).some((item: Conversation) => item.id === selectedId)) {
+      if (selectedId && !nextConversations.some((item) => item.id === selectedId)) {
         setSelectedId(null);
         setSelected(null);
       }
