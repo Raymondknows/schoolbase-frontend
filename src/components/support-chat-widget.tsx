@@ -175,7 +175,7 @@ export default function SupportChatWidget() {
   const canReply = selected && !["RESOLVED", "CLOSED"].includes(selected.status);
 
   return (
-    <div className="print:hidden">
+    <div className="print:hidden [&_button:not(:disabled)]:cursor-pointer [&_a]:cursor-pointer">
       {open ? (
         <section aria-label="SchoolBase Support chat" className={`fixed z-[90] flex flex-col overflow-hidden rounded-lg border border-border bg-surface shadow-[0_16px_60px_rgba(15,23,42,0.22)] ${expanded ? "bottom-2 right-2 h-[calc(100dvh-16px)] w-[calc(100vw-16px)] sm:bottom-6 sm:right-6 sm:h-[min(780px,calc(100dvh-48px))] sm:w-[min(560px,calc(100vw-48px))]" : "bottom-4 right-4 h-[min(620px,calc(100dvh-32px))] w-[min(390px,calc(100vw-24px))] sm:bottom-6 sm:right-6"}`}>
           <header className="flex shrink-0 items-center justify-between border-b border-border bg-[#f3f9fe] px-4 py-3">
@@ -258,7 +258,7 @@ export default function SupportChatWidget() {
       ) : null}
 
       {!open ? (
-        <button type="button" onClick={() => { setOpen(true); playOpenTone(); void refreshList(); }} className="fixed bottom-4 right-4 z-[90] inline-flex items-center gap-2 rounded-md bg-brand px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-900/15 transition hover:bg-brand-hover focus:outline-none focus:ring-2 focus:ring-brand/40 focus:ring-offset-2 sm:bottom-6 sm:right-6" aria-label={`Open SchoolBase Support${unreadCount ? `, ${unreadCount} unread messages` : ""}`}>
+        <button type="button" onClick={() => { setOpen(true); playOpenTone(); void refreshList(); }} className="fixed bottom-24 right-4 z-[90] inline-flex items-center gap-2 rounded-md bg-brand px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-900/15 transition hover:bg-brand-hover focus:outline-none focus:ring-2 focus:ring-brand/40 focus:ring-offset-2 sm:bottom-24 sm:right-6" aria-label={`Open SchoolBase Support${unreadCount ? `, ${unreadCount} unread messages` : ""}`}>
           <MessageCircle className="h-4 w-4" /> <span>SchoolBase Support</span>
           {unreadCount ? <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[10px] font-bold text-brand">{unreadCount}</span> : null}
         </button>

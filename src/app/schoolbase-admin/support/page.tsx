@@ -10,12 +10,11 @@ export default function SupportPage() {
   const [view, setView] = useState<"chat" | "tickets">("chat");
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-2 py-6 sm:px-8 sm:py-8 lg:px-12">
+    <div className="mx-auto max-w-7xl space-y-6 px-2 py-6 sm:px-8 sm:py-8 lg:px-12 [&_button:not(:disabled)]:cursor-pointer [&_a]:cursor-pointer">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <div className="flex items-center gap-2 text-sm font-medium text-brand"><HelpCircle size={17} /> Support operations</div>
-          <h1 className="mt-2 text-3xl font-bold text-foreground">Support</h1>
-          <p className="mt-1 text-muted">Manage in-app school conversations and existing support tickets.</p>
+          <h1 className="text-3xl font-bold text-foreground">Support</h1>
+          <p className="mt-2 text-muted">Manage in-app school conversations and existing support tickets.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Link href="/schoolbase-admin/email-center" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"><MailPlus className="h-4 w-4" /> Email center</Link>
