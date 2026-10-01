@@ -258,9 +258,9 @@ export default function SupportChatWidget() {
       ) : null}
 
       {!open ? (
-        <button type="button" onClick={() => { setOpen(true); playOpenTone(); void refreshList(); }} className="fixed bottom-24 right-4 z-[90] inline-flex items-center gap-2 rounded-md bg-brand px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-900/15 transition hover:bg-brand-hover focus:outline-none focus:ring-2 focus:ring-brand/40 focus:ring-offset-2 sm:bottom-24 sm:right-6" aria-label={`Open SchoolBase Support${unreadCount ? `, ${unreadCount} unread messages` : ""}`}>
-          <MessageCircle className="h-4 w-4" /> <span>SchoolBase Support</span>
-          {unreadCount ? <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[10px] font-bold text-brand">{unreadCount}</span> : null}
+        <button type="button" onClick={() => { setOpen(true); playOpenTone(); void refreshList(); }} className="fixed bottom-24 right-8 z-[90] flex h-12 w-12 items-center justify-center rounded-full bg-brand text-white shadow-lg shadow-blue-900/15 transition hover:bg-brand-hover focus:outline-none focus:ring-2 focus:ring-brand/40 focus:ring-offset-2 sm:bottom-24 sm:right-8" aria-label={`Open SchoolBase Support${unreadCount ? `, ${unreadCount} unread messages` : ""}`} title="SchoolBase Support">
+          <MessageCircle className="h-5 w-5" />
+          {unreadCount ? <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-rose-600 px-1 text-[10px] font-bold leading-none text-white">{unreadCount > 99 ? "99+" : unreadCount}</span> : null}
         </button>
       ) : null}
     </div>
