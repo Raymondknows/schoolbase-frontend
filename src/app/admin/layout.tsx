@@ -10,6 +10,7 @@ const baseNav = [
   { href: "/admin/getting-started", label: "Setup your workspace", icon: "Sparkles" },
   { href: "/admin", label: "Dashboard", icon: "LayoutDashboard" },
   { href: "/admin/fees", label: "Fees", icon: "CreditCard" },
+  { href: "/admin/id-cards", label: "ID Cards", icon: "WalletCards" },
   { href: "/admin/students", label: "Students", icon: "Users" },
   { href: "/admin/classes", label: "Classes", icon: "Layers" },
   { href: "/admin/staff", label: "Staff", icon: "Users" },
