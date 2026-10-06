@@ -513,10 +513,6 @@ export default function GettingStartedPage() {
           <div className="border-b border-border/70 bg-brand-light/20 p-6 sm:p-8 xl:border-b-0 xl:border-r">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-4">
-                  <div className="inline-flex items-center gap-2 border border-brand/20 bg-brand/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-brand">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    Setup your workspace
-                  </div>
                   <div>
                     <h1 className="text-2xl font-semibold text-foreground">Get {schoolName} ready to run smoothly</h1>
                     <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
@@ -540,9 +536,6 @@ export default function GettingStartedPage() {
                       Open settings
                     </Link>
                   </div>
-                </div>
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center border border-brand/20 bg-brand/10">
-                  <Sparkles className="h-8 w-8 text-brand" />
                 </div>
               </div>
 

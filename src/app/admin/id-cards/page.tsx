@@ -64,6 +64,59 @@ function formatDate(value?: string | null) {
   return date.toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" });
 }
 
+function TemplateArtwork({
+  templateId,
+  orientation,
+  schoolName = "SCHOOL NAME",
+  studentName = "STUDENT NAME",
+  admissionNo = "ADMISSION NO.",
+  className = "CLASS",
+  photoUrl,
+  logoUrl,
+  size = "thumbnail",
+}: {
+  templateId: string;
+  orientation: IdCardOrientation;
+  schoolName?: string;
+  studentName?: string;
+  admissionNo?: string;
+  className?: string;
+  photoUrl?: string | null;
+  logoUrl?: string | null;
+  size?: "thumbnail" | "proof";
+}) {
+  const portrait = orientation === "PORTRAIT";
+  const proof = size === "proof";
+  const frame = `relative mx-auto overflow-hidden border ${portrait ? proof ? "aspect-[154/243] w-44" : "aspect-[154/243] w-24" : proof ? "aspect-[243/154] w-full max-w-sm" : "aspect-[243/154] w-40"}`;
+  const studentInitials = studentName.split(/\s+/).filter(Boolean).map((part) => part[0]).slice(0, 2).join("").toUpperCase();
+  const portraitBlock = (className: string) => photoUrl
+    ? <img src={photoUrl} alt="" className={`${className} shrink-0 object-cover`} />
+    : <span className={`${className} flex shrink-0 items-center justify-center bg-[#e3ebeb] text-[7px] font-bold text-[#31575b]`}>{studentInitials}</span>;
+  const schoolMark = logoUrl ? <img src={logoUrl} alt="" className={`${proof ? "h-6 w-6" : "h-4 w-4"} shrink-0 bg-white object-contain p-0.5`} /> : null;
+
+  if (templateId === "crestClassic") {
+    return <div className={`${frame} border-[#c8a85a] bg-white text-center text-[#173f35]`}><div className={`flex items-center justify-center ${proof ? "gap-2 px-3 py-3 text-[10px]" : "gap-1 px-1 py-2 text-[6px]"} bg-[#173f35] font-bold tracking-wide text-white`}>{schoolMark}<span className="min-w-0 truncate">{schoolName}</span></div><div className={proof ? "h-1 bg-[#c8a85a]" : "h-0.5 bg-[#c8a85a]"}/><div className={`mx-auto flex items-center justify-center rounded-full border border-[#c8a85a] font-bold ${proof ? "mt-4 h-11 w-11 text-[10px]" : "mt-2 h-6 w-6 text-[6px]"}`}>CREST</div>{portraitBlock(`mx-auto border border-[#c8a85a] ${proof ? "mt-2 h-20 w-16" : "mt-1 h-8 w-7"}`)}<div className={`truncate px-2 font-bold ${proof ? "mt-2 text-sm" : "mt-1 px-1 text-[7px]"}`}>{studentName}</div><div className={`truncate px-2 ${proof ? "mt-1 text-[10px]" : "mt-0.5 px-1 text-[5px]"}`}>{admissionNo}</div></div>;
+  }
+
+  if (templateId === "inkSaver") {
+    return <div className={`${frame} border-black bg-white text-black`}><div className={`flex items-center ${proof ? "gap-2 px-3 py-3 text-[10px]" : "gap-1 px-1 py-2 text-[6px]"} font-bold`}>{schoolMark}<span className="min-w-0 truncate">{schoolName}</span></div><div className="h-px bg-black"/><div className={`flex ${proof ? "gap-4 p-4" : "gap-2 p-2"} ${portrait ? "flex-col items-center text-center" : "items-center"}`}>{portraitBlock(`grayscale ${proof ? "h-20 w-16" : "h-10 w-8"}`)}<div className="min-w-0"><div className={`truncate font-bold ${proof ? "text-sm" : "text-[7px]"}`}>{studentName}</div><div className={`truncate ${proof ? "mt-2 text-[10px]" : "mt-1 text-[5px]"}`}>{admissionNo}</div><div className={`truncate ${proof ? "mt-2 text-[10px]" : "mt-1 text-[5px]"}`}>{className}</div><div className={`bg-black ${proof ? "mt-2 h-0.5 w-20" : "mt-1 h-px w-10"}`}/></div></div></div>;
+  }
+
+  if (templateId === "houseTeam") {
+    return <div className={`${frame} border-[#194c91] bg-white text-[#193b65]`}><div className={`absolute inset-y-0 left-0 bg-[#e2a229] ${proof ? "w-3" : "w-2"}`}/><div className={`ml-2 flex items-center bg-[#194c91] text-white ${proof ? "gap-2 px-3 py-3 text-[10px]" : "gap-1 px-1 py-2 text-[6px]"} font-bold`}>{schoolMark}<span className="min-w-0 truncate">{schoolName} · TEAM</span></div><div className={`ml-2 flex ${proof ? "gap-4 p-4" : "gap-2 p-2"} ${portrait ? "flex-col items-center text-center" : "items-center"}`}>{portraitBlock(`border-[#e2a229] ${proof ? "h-20 w-16 border-4" : "h-9 w-7 border-2"}`)}<div className="min-w-0"><div className={`truncate font-bold ${proof ? "text-sm" : "text-[7px]"}`}>{studentName}</div><div className={`mt-2 truncate ${proof ? "text-[10px]" : "mt-1 text-[5px]"}`}>HOUSE / {className}</div><div className={`mt-2 truncate ${proof ? "text-[10px]" : "mt-1 text-[5px]"}`}>{admissionNo}</div></div></div></div>;
+  }
+
+  if (templateId === "earlyLearners") {
+    return <div className={`${frame} border-[#e7c46b] bg-[#fff7df] text-[#394738]`}><div className={`flex items-center text-white ${proof ? "gap-2 px-3 py-3 text-[10px]" : "gap-1 px-1 py-2 text-[6px]"} bg-[#e6a84a] font-bold`}>{schoolMark}<span className="min-w-0 truncate">{schoolName}</span></div><div className={`mx-auto overflow-hidden rounded-full border-4 border-[#e6a84a] ${proof ? "mt-4 h-20 w-20" : "mt-2 h-10 w-10 border-2"}`}>{photoUrl ? <img src={photoUrl} alt="" className="h-full w-full object-cover" /> : <span className={`flex h-full items-center justify-center bg-[#f0dfbb] font-bold ${proof ? "text-sm" : "text-[7px]"}`}>{studentInitials}</span>}</div><div className={`truncate px-2 text-center font-bold ${proof ? "mt-3 text-sm" : "mt-1 px-1 text-[8px]"}`}>{studentName}</div><div className={`truncate px-2 text-center ${proof ? "mt-2 text-[10px]" : "mt-1 px-1 text-[5px]"}`}>{className} · {admissionNo}</div></div>;
+  }
+
+  if (templateId === "seniorCollege") {
+    return <div className={`${frame} border-[#b9c4c4] bg-white text-[#263b3d]`}><div className={proof ? "h-2 bg-[#263b3d]" : "h-1 bg-[#263b3d]"}/><div className={`absolute border border-[#d5dddd] ${proof ? "inset-2" : "inset-1"}`}/><div className={`relative flex h-full items-center ${proof ? "gap-4 p-6" : "gap-2 p-3"}`}>{portraitBlock(proof ? "h-24 w-18" : "h-12 w-9")}<div className="min-w-0"><div className={`truncate font-bold tracking-wide ${proof ? "text-[10px]" : "text-[5px]"}`}>{schoolName}</div><div className={`bg-[#263b3d] ${proof ? "my-2 h-0.5 w-24" : "my-1 h-px w-12"}`}/><div className={`truncate font-bold ${proof ? "text-sm" : "text-[7px]"}`}>{studentName}</div><div className={`mt-2 ${proof ? "text-[10px]" : "mt-1 text-[5px]"}`}>STUDENT IDENTIFICATION</div><div className={`mt-2 truncate ${proof ? "text-[10px]" : "mt-1 text-[5px]"}`}>{admissionNo} · {className}</div></div></div></div>;
+  }
+
+  return <div className={`${frame} border-[#b9c8c9] bg-white text-[#183e48]`}><div className={`flex items-center text-white ${proof ? "gap-2 px-3 py-3 text-[10px]" : "gap-1 px-1 py-2 text-[6px]"} bg-[#146b72] font-bold`}>{schoolMark}<span className="min-w-0 truncate">{schoolName}</span></div><div className={`flex ${proof ? "gap-4 p-4" : "gap-2 p-2"} ${portrait ? "flex-col items-center text-center" : "items-center"}`}>{portraitBlock(proof ? "h-20 w-16" : "h-10 w-8")}<div className="min-w-0"><div className={`font-semibold tracking-wide ${proof ? "text-[10px]" : "text-[5px]"}`}>STUDENT ID</div><div className={`mt-1 truncate font-bold ${proof ? "text-sm" : "text-[7px]"}`}>{studentName}</div><div className={`mt-2 truncate ${proof ? "text-[10px]" : "mt-1 text-[5px]"}`}>{admissionNo}</div><div className={`mt-2 truncate ${proof ? "text-[10px]" : "mt-1 text-[5px]"}`}>{className}</div><div className={`bg-[#146b72]/20 ${proof ? "mt-2 h-2 w-24" : "mt-1 h-1 w-12"}`}/></div></div></div>;
+}
+
 export default function AdminIdCardsPage() {
   const [templates, setTemplates] = useState<IdCardTemplate[]>([]);
   const [students, setStudents] = useState<IdCardStudent[]>([]);
@@ -144,6 +197,7 @@ export default function AdminIdCardsPage() {
       return matchesClass && (!normalizedSearch || searchable.includes(normalizedSearch));
     });
   }, [students, search, classId]);
+  const previewStudent = students.find((student) => selectedIds.has(student.id)) || visibleStudents[0];
 
   const toggleStudent = (studentId: string) => {
     setQuote(null);
@@ -319,6 +373,20 @@ export default function AdminIdCardsPage() {
                     {templates.map((template) => <option key={template.id} value={template.id}>{template.label} · {template.tier}</option>)}
                   </select>
                   <span className="mt-1 block text-xs font-normal text-muted">{templates.find((template) => template.id === selectedTemplate)?.description}</span>
+                  <div className="mt-3 flex items-center gap-3 border-t border-border pt-3">
+                    <TemplateArtwork
+                      templateId={selectedTemplate}
+                      orientation={orientation}
+                      studentName={previewStudent ? [previewStudent.firstName, previewStudent.middleName, previewStudent.lastName].filter(Boolean).join(" ") : undefined}
+                      admissionNo={previewStudent?.admissionNo || undefined}
+                      className={[previewStudent?.class?.name, previewStudent?.class?.arm].filter(Boolean).join(" ") || undefined}
+                      photoUrl={previewStudent ? resolveFileUrl(previewStudent.photoUrl, previewStudent.id) : null}
+                    />
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-foreground">Live design preview</p>
+                      <p className="mt-1 text-xs font-normal text-muted">{templates.find((template) => template.id === selectedTemplate)?.label || "Selected design"} · {orientation === "PORTRAIT" ? "Portrait" : "Landscape"}</p>
+                    </div>
+                  </div>
                 </label>
                 <fieldset className="text-sm font-semibold text-foreground">
                   <legend>Card layout</legend>
@@ -424,21 +492,17 @@ export default function AdminIdCardsPage() {
                           </div>
                         </div>
                       ) : (
-                        <div className={`relative mx-auto overflow-hidden border border-border bg-background ${quote.quote.orientation === "PORTRAIT" ? "aspect-[154/243] w-44" : "aspect-[243/154] w-full max-w-sm"}`}>
-                          <div className="flex min-h-11 items-center gap-2 bg-brand px-3 py-2 text-white">
-                            {quote.preview.school?.logoUrl ? <img src={resolveFileUrl(quote.preview.school.logoUrl) || undefined} alt="" className="h-7 w-7 shrink-0 bg-white object-contain p-0.5" /> : null}
-                            <p className="truncate text-xs font-bold">{schoolName}</p>
-                          </div>
-                          <div className={`flex gap-3 p-3 ${quote.quote.orientation === "PORTRAIT" ? "flex-col items-center text-center" : "items-center"}`}>
-                            {photo ? <img src={photo} alt="" className={`${quote.quote.orientation === "PORTRAIT" ? "h-24 w-20" : "h-20 w-16"} shrink-0 object-cover`} /> : <span className={`flex shrink-0 items-center justify-center bg-brand/10 text-sm font-bold text-brand ${quote.quote.orientation === "PORTRAIT" ? "h-24 w-20" : "h-20 w-16"}`}>{name.split(/\s+/).map((part: string) => part[0]).slice(0, 2).join("").toUpperCase()}</span>}
-                            <div className="min-w-0 self-center">
-                              <p className="truncate text-sm font-bold text-foreground">{name}</p>
-                              <p className="mt-1 text-[10px] font-semibold uppercase text-muted">Admission number</p>
-                              <p className="truncate text-xs text-foreground">{student.admissionNo || "Not assigned"}</p>
-                              <p className="mt-1 truncate text-xs font-semibold text-brand">{student.className || "Class not assigned"}</p>
-                            </div>
-                          </div>
-                        </div>
+                        <TemplateArtwork
+                          templateId={quote.quote.templateId}
+                          orientation={quote.quote.orientation}
+                          schoolName={schoolName}
+                          studentName={name}
+                          admissionNo={student.admissionNo || "Not assigned"}
+                          className={student.className || "Class not assigned"}
+                          photoUrl={photo}
+                          logoUrl={quote.preview.school?.logoUrl ? resolveFileUrl(quote.preview.school.logoUrl) : null}
+                          size="proof"
+                        />
                       )}
                       <p className="mt-2 text-center text-[10px] font-semibold text-amber-700">PREVIEW ONLY · NOT A PRODUCTION CARD</p>
                     </div>
