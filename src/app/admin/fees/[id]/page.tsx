@@ -319,7 +319,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
 
         {/* Invoice Content */}
         <div className="invoice-sheet border border-border bg-surface p-5 sm:p-8 print:border-0 print:p-5 print:bg-white">
-          <div className="flex flex-col gap-7 lg:flex-row lg:items-start lg:justify-between">
+          <div className="invoice-header flex flex-col gap-7 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <div className="flex items-center gap-3">
                 {school?.logoUrl ? (
@@ -352,7 +352,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
           </div>
 
           <div className="mt-6">
-            <div className="grid gap-6 pb-6 md:grid-cols-[1.1fr_0.9fr]">
+            <div className="invoice-meta grid gap-6 pb-6 md:grid-cols-[1.1fr_0.9fr]">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gray-500">Bill To</p>
                 <div className="mt-3 space-y-1 text-sm text-gray-700">
@@ -363,22 +363,22 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                 </div>
               </div>
 
-              <div className="md:text-right">
+              <div className="invoice-detail-panel md:text-right">
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gray-500">Invoice Details</p>
-                <div className="mt-3 space-y-2 text-sm text-gray-700">
-                  <div className="flex items-center justify-between gap-4 md:justify-end">
+                <div className="invoice-detail-rows mt-3 divide-y divide-gray-200 text-sm text-gray-700">
+                  <div className="invoice-detail-row flex items-center justify-between gap-4 py-2 first:pt-0 last:pb-0">
                     <span className="text-gray-500">Date</span>
                     <span className="font-medium text-gray-900">{invoiceDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                   </div>
-                  <div className="flex items-center justify-between gap-4 md:justify-end">
+                  <div className="invoice-detail-row flex items-center justify-between gap-4 py-2 first:pt-0 last:pb-0">
                     <span className="text-gray-500">Due</span>
                     <span className="font-medium text-gray-900">{dueDate ? dueDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : "On Demand"}</span>
                   </div>
-                  <div className="flex items-center justify-between gap-4 md:justify-end">
+                  <div className="invoice-detail-row flex items-center justify-between gap-4 py-2 first:pt-0 last:pb-0">
                     <span className="text-gray-500">Status</span>
                     <span className="font-medium text-gray-900">{invoiceStatusLabel(invoice.status)}</span>
                   </div>
-                  <div className="flex items-center justify-between gap-4 md:justify-end">
+                  <div className="invoice-detail-row flex items-center justify-between gap-4 py-2 first:pt-0 last:pb-0">
                     <span className="text-gray-500">Currency</span>
                     <span className="font-medium text-gray-900">{currency}</span>
                   </div>
@@ -386,7 +386,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
               </div>
             </div>
 
-            <div className="mt-6">
+            <div className="invoice-items mt-6">
               <table className="w-full border-collapse">
                 <thead>
                   <tr>
@@ -397,7 +397,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                 <tbody>
                   {lineItems.map((item: any) => (
                     <tr key={item.id} className="border-b border-gray-100 last:border-0">
-                      <td className="py-5 text-sm text-gray-700">
+                      <td className="invoice-item-description py-5 text-sm text-gray-700">
                         <div className="font-medium text-gray-900">{item.name}</div>
                         {item.description && <div className="mt-1 text-xs text-gray-500">{item.description}</div>}
                         {item.amountPaid !== undefined && (
@@ -406,15 +406,15 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                           </div>
                         )}
                       </td>
-                      <td className="py-4 text-right text-base font-bold text-gray-900">{formatMoney(Number(item.amount || 0) * Number(item.quantity || 1), currency)}</td>
+                      <td className="invoice-item-amount py-4 text-right text-base font-bold text-gray-900">{formatMoney(Number(item.amount || 0) * Number(item.quantity || 1), currency)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
 
-            <div className="mt-6 flex justify-end">
-              <div className="w-full max-w-sm">
+            <div className="invoice-totals mt-6 flex justify-end">
+              <div className="w-full max-w-sm divide-y divide-gray-200 border-y border-gray-200">
                 <div className="flex items-center justify-between px-4 py-3 text-sm text-gray-600">
                   <span>Subtotal</span>
                   <span className="font-medium text-gray-900">{formatMoney(subtotal, currency)}</span>
@@ -429,14 +429,14 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                   <span>Amount Paid</span>
                   <span className="font-medium text-gray-900">{formatMoney(invoice.amountPaid, currency)}</span>
                 </div>
-                <div className="flex items-center justify-between px-4 py-4 text-base font-bold text-gray-900">
+                <div className="flex items-center justify-between border-t border-gray-300 bg-gray-50 px-4 py-4 text-base font-bold text-gray-900">
                   <span>{outstanding > 0 ? "Outstanding Balance" : "Total Paid"}</span>
                   <span>{formatMoney(outstanding > 0 ? outstanding : invoice.amountPaid, currency)}</span>
                 </div>
               </div>
             </div>
 
-            <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="mt-6 pt-6 border-t border-gray-200 print:hidden">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
                   <BadgePercent className="h-4 w-4 text-slate-600" />
@@ -464,8 +464,8 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
               </div>
             </div>
 
-                  {invoice.payments && invoice.payments.length > 0 && (
-              <div className="mt-6 pt-6">
+                    {invoice.payments && invoice.payments.length > 0 && (
+                  <div className="invoice-payments mt-6 pt-6">
                 <h3 className="text-sm font-semibold uppercase tracking-[0.3em] text-gray-500">Payment History</h3>
                 <div className="mt-3 space-y-3">
                   {invoice.payments.map((payment: any, idx: number) => (
@@ -484,7 +484,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
               </div>
             )}
 
-            <div className="mt-6 pt-6">
+            <div className="invoice-instructions mt-6 pt-6">
               <h3 className="text-sm font-semibold uppercase tracking-[0.3em] text-gray-500">Payment Instructions</h3>
               <div className="mt-3 space-y-1 text-sm text-gray-700">
                 {school?.paymentAccounts?.length ? school.paymentAccounts.map((account: any) => (
@@ -504,7 +504,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
               </div>
             </div>
 
-            <div className="mt-6 pt-4 text-center text-xs text-gray-500">
+            <div className="invoice-footer mt-6 pt-4 text-center text-xs text-gray-500">
               <p>This invoice was generated by SchoolBase and should be retained for your records.</p>
             </div>
           </div>
@@ -512,7 +512,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
       </div>
 
       {pendingDeleteAdjustmentId && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 px-4">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 px-4 print:hidden">
           <style>{`
             @keyframes fee_adjustment_confirm_enter { from { transform: translateX(36px) scale(.98); opacity: 0 } to { transform: translateX(0) scale(1); opacity: 1 } }
           `}</style>
@@ -562,7 +562,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
       )}
 
       {adjustmentModalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4 print:hidden">
           <div
             className="w-full max-w-lg overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
             style={{ animation: "payment_edit_enter 320ms cubic-bezier(.2,.9,.2,1)" }}
@@ -725,25 +725,186 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
 
         @page {
           size: A4;
-          margin: 12mm;
+          margin: 8mm;
         }
 
         @media print {
+          html,
           body {
             background: white;
             margin: 0;
             padding: 0;
+            color: #111827 !important;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
           }
 
           .invoice-sheet {
-            width: 210mm !important;
-            min-height: 297mm !important;
-            max-width: none !important;
-            margin: 0 auto;
-            padding: 12mm !important;
+            width: 100% !important;
+            min-height: 0 !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
             border: 0 !important;
             box-shadow: none !important;
             border-radius: 0 !important;
+            font-size: 9pt !important;
+            line-height: 1.2 !important;
+          }
+
+          .invoice-sheet,
+          .invoice-sheet * {
+            color: #111827 !important;
+            box-sizing: border-box;
+          }
+
+          .invoice-sheet * {
+            max-width: 100%;
+            overflow-wrap: anywhere;
+          }
+
+          .invoice-header {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+            gap: 5mm !important;
+          }
+
+          .invoice-header h1 {
+            margin-top: 1mm !important;
+            font-size: 16pt !important;
+          }
+
+          .invoice-header > div:last-child {
+            text-align: right !important;
+          }
+
+          .invoice-header > div:last-child > div:nth-child(2) {
+            margin-top: 1mm !important;
+            font-size: 13pt !important;
+          }
+
+          .invoice-header > div:last-child > div:nth-child(3) {
+            display: inline-flex !important;
+            margin-top: 2mm !important;
+            padding: 1mm 2mm !important;
+          }
+
+          .invoice-header .mt-4 {
+            margin-top: 2mm !important;
+          }
+
+          .invoice-meta {
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr) !important;
+            gap: 4mm !important;
+            padding-bottom: 3mm !important;
+          }
+
+          .invoice-meta .mt-3 {
+            margin-top: 1.5mm !important;
+          }
+
+          .invoice-detail-rows {
+            margin-top: 1.5mm !important;
+          }
+
+          .invoice-detail-row {
+            padding-top: 1mm !important;
+            padding-bottom: 1mm !important;
+            border-color: #d1d5db !important;
+          }
+
+          .invoice-items,
+          .invoice-totals,
+          .invoice-payments {
+            margin-top: 3mm !important;
+          }
+
+          .invoice-sheet {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+          }
+
+          .invoice-sheet .mt-6 {
+            margin-top: 3mm !important;
+          }
+
+          .invoice-sheet .pt-6 {
+            padding-top: 2mm !important;
+          }
+
+          .invoice-sheet .mt-3 {
+            margin-top: 1mm !important;
+          }
+
+          .invoice-sheet .space-y-2 > :not([hidden]) ~ :not([hidden]),
+          .invoice-sheet .space-y-3 > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 1mm !important;
+          }
+
+          .invoice-sheet table {
+            width: 100% !important;
+            table-layout: fixed;
+            border-collapse: collapse;
+          }
+
+          .invoice-sheet th,
+          .invoice-sheet td {
+            padding-top: 1.5mm !important;
+            padding-bottom: 1.5mm !important;
+            padding-left: 3mm !important;
+            padding-right: 3mm !important;
+            vertical-align: top;
+          }
+
+          .invoice-sheet th {
+            font-size: 8pt !important;
+            letter-spacing: 0.05em !important;
+          }
+
+          .invoice-item-description,
+          .invoice-item-amount {
+            font-size: 9pt !important;
+          }
+
+          .invoice-totals > div {
+            max-width: 92mm !important;
+          }
+
+          .invoice-totals > div > div {
+            padding: 1.5mm 2mm !important;
+            font-size: 9pt !important;
+          }
+
+          .invoice-totals > div > div:last-child {
+            font-size: 10pt !important;
+          }
+
+          .invoice-payments {
+            padding-top: 2mm !important;
+          }
+
+          .invoice-payments .py-3 {
+            padding-top: 1mm !important;
+            padding-bottom: 1mm !important;
+          }
+
+          .invoice-instructions,
+          .invoice-footer {
+            display: none !important;
+          }
+
+          .invoice-sheet tr,
+          .invoice-sheet img,
+          .invoice-sheet h1,
+          .invoice-sheet h2,
+          .invoice-sheet h3 {
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+
+          .invoice-sheet img {
+            max-height: 18mm;
+            object-fit: contain;
           }
           
           .print\\:hidden {
