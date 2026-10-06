@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Check, Gift, RotateCw } from "lucide-react";
+import { Check, Gift, RotateCw, X } from "lucide-react";
 
 type School = { id: string; name: string; country?: string | null };
 type Award = {
@@ -108,6 +108,27 @@ export default function IdCardAwardsPage() {
     }
   };
 
+  const revoke = async (awardId: string) => {
+    const reason = window.prompt("Reason for revoking this unused award (at least 8 characters):")?.trim();
+    if (!reason || reason.length < 8) return;
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+    try {
+      await requestJson(`/schoolbase-admin/api/id-cards/awards/${encodeURIComponent(awardId)}/revoke`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      });
+      setNotice("Unused award revoked and recorded in its audit ledger.");
+      await load();
+    } catch (revokeError) {
+      setError(revokeError instanceof Error ? revokeError.message : "Unable to revoke award.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <main className="min-h-screen pb-12">
       <div className="mx-auto max-w-7xl space-y-6 px-2 py-6 sm:px-8 sm:py-8 lg:px-12">
@@ -162,7 +183,7 @@ export default function IdCardAwardsPage() {
               <tbody>
                 {awards.map((award) => {
                   const available = Math.max(0, award.unitsGranted - award.unitsReserved - award.unitsRedeemed);
-                  return <tr key={award.id} className="border-b border-border last:border-0"><td className="py-3 font-semibold text-foreground">{award.schoolName}</td><td className="py-3">{award.status}</td><td className="py-3 text-muted">{award.reasonCategory}{award.reason ? ` · ${award.reason}` : ""}</td><td className="py-3">{award.unitsGranted}</td><td className="py-3">{award.unitsReserved}</td><td className="py-3">{award.unitsRedeemed}</td><td className="py-3 font-semibold text-foreground">{available}</td><td className="py-3 text-right">{award.status === "PENDING_APPROVAL" ? <button type="button" onClick={() => approve(award.id)} disabled={busy} className="inline-flex items-center gap-1.5 border border-border px-3 py-2 text-xs font-semibold text-brand hover:bg-brand-light disabled:opacity-50"><Check className="h-3.5 w-3.5" /> Approve</button> : null}</td></tr>;
+                  return <tr key={award.id} className="border-b border-border last:border-0"><td className="py-3 font-semibold text-foreground">{award.schoolName}</td><td className="py-3">{award.status}</td><td className="py-3 text-muted">{award.reasonCategory}{award.reason ? ` · ${award.reason}` : ""}</td><td className="py-3">{award.unitsGranted}</td><td className="py-3">{award.unitsReserved}</td><td className="py-3">{award.unitsRedeemed}</td><td className="py-3 font-semibold text-foreground">{available}</td><td className="py-3 text-right">{award.status === "PENDING_APPROVAL" ? <button type="button" onClick={() => approve(award.id)} disabled={busy} className="inline-flex items-center gap-1.5 border border-border px-3 py-2 text-xs font-semibold text-brand hover:bg-brand-light disabled:opacity-50"><Check className="h-3.5 w-3.5" /> Approve</button> : null}{award.status === "APPROVED" && award.unitsReserved === 0 ? <button type="button" onClick={() => revoke(award.id)} disabled={busy} className="ml-2 inline-flex items-center gap-1.5 border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50"><X className="h-3.5 w-3.5" /> Revoke unused</button> : null}</td></tr>;
                 })}
                 {!awards.length ? <tr><td colSpan={8} className="py-6 text-center text-muted">No card awards yet.</td></tr> : null}
               </tbody>

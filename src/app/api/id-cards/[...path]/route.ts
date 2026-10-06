@@ -1,21 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getStaffSession } from "@/lib/auth";
 import { buildApiUrl } from "@/lib/api-client";
+
+async function verifySchoolAdminSession(request: NextRequest) {
+  const cookie = request.headers.get("cookie") || "";
+  const backendUrl = buildApiUrl("/auth/verify");
+
+  const response = await fetch(backendUrl, {
+    method: "POST",
+    headers: cookie ? { Cookie: cookie } : {},
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const data = await response.json().catch(() => null);
+  const session = data?.session || data?.user || null;
+  if (!session || !session.schoolId) {
+    return null;
+  }
+  if (session.role !== "SCHOOL_ADMIN") {
+    return null;
+  }
+
+  return session;
+}
 
 async function forwardRequest(
   request: NextRequest,
   context: { params: Promise<{ path: string[] }> },
 ) {
   try {
-    const session = await getStaffSession();
-    if (!session?.schoolId) {
+    const session = await verifySchoolAdminSession(request);
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    if (session.role !== "SCHOOL_ADMIN") {
-      return NextResponse.json({ error: "School administrator access required." }, { status: 403 });
-    }
 
-    if (request.method === "POST") {
+    if (!["GET", "HEAD"].includes(request.method)) {
       const origin = request.headers.get("origin");
       const fetchSite = request.headers.get("sec-fetch-site");
       if (origin !== request.nextUrl.origin || fetchSite === "cross-site") {
@@ -57,3 +79,5 @@ async function forwardRequest(
 
 export const GET = forwardRequest;
 export const POST = forwardRequest;
+export const PUT = forwardRequest;
+export const DELETE = forwardRequest;

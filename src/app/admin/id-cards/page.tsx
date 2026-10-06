@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BadgeDollarSign, Check, CreditCard, Download, FileText, Search, ShieldCheck, Users } from "lucide-react";
 import { resolveFileUrl } from "@/lib/api-client";
 import { UserGuide, type PageHelpGuide } from "@/components/ui/user-guide";
@@ -38,6 +38,16 @@ type IdCardOrder = {
   quantity: number;
   templateId: string;
   templateTier: string;
+};
+type IdCardDraft = {
+  studentIds: string[];
+  templateId: string;
+  orientation: IdCardOrientation;
+  includeCardBack: boolean;
+  includeParentPortalQr: boolean;
+  awardId: string | null;
+  updatedAt: string;
+  expiresAt: string;
 };
 
 const ID_CARD_HELP_GUIDE: PageHelpGuide = {
@@ -133,6 +143,10 @@ function TemplateArtwork({
     return <div className={`${frame} border-[#e7c46b] bg-[#fff7df] text-[#394738]`}><div className={`flex items-center text-white ${proof ? "gap-2 px-3 py-3 text-[10px]" : "gap-1 px-1 py-2 text-[6px]"} bg-[#e6a84a] font-bold`}>{schoolMark}<span className="min-w-0 truncate">{schoolName}</span></div><div className={`mx-auto overflow-hidden rounded-full border-4 border-[#e6a84a] ${proof ? "mt-4 h-20 w-20" : "mt-2 h-10 w-10 border-2"}`}>{photoUrl ? <img src={photoUrl} alt="" className="h-full w-full object-cover" /> : <span className={`flex h-full items-center justify-center bg-[#f0dfbb] font-bold ${proof ? "text-sm" : "text-[7px]"}`}>{studentInitials}</span>}</div><div className={`truncate px-2 text-center font-bold ${proof ? "mt-3 text-sm" : "mt-1 px-1 text-[8px]"}`}>{studentName}</div><div className={`truncate px-2 text-center ${proof ? "mt-2 text-[10px]" : "mt-1 px-1 text-[5px]"}`}>{className} · {admissionNo}</div></div>;
   }
 
+  if (templateId === "signatureCollection") {
+    return <div className={`${frame} border-[#53314b] bg-[#fffefa] text-[#352d36]`}><div className="absolute inset-1 border border-[#c5a96d]"/><div className={`relative flex items-center bg-[#53314b] text-white ${proof ? "gap-2 px-3 py-3 text-[10px]" : "gap-1 px-1 py-2 text-[6px]"} font-bold`}><span className="min-w-0 truncate">{schoolName}</span></div><div className={`relative flex items-center ${proof ? "gap-4 p-4" : "gap-2 p-2"} ${portrait ? "flex-col text-center" : ""}`}>{portraitBlock(proof ? "h-20 w-16" : "h-10 w-8")}<div className="min-w-0"><div className={`font-semibold uppercase tracking-wide text-[#53314b] ${proof ? "text-[10px]" : "text-[5px]"}`}>Student identity</div><div className={`mt-1 truncate font-bold ${proof ? "text-sm" : "text-[7px]"}`}>{studentName}</div><div className={`mt-2 truncate ${proof ? "text-[10px]" : "text-[5px]"}`}>{admissionNo} · {className}</div><div className={`mt-2 bg-[#c5a96d] ${proof ? "h-0.5 w-20" : "h-px w-10"}`}/></div></div></div>;
+  }
+
   if (templateId === "seniorCollege") {
     return <div className={`${frame} border-[#b9c4c4] bg-white text-[#263b3d]`}><div className={proof ? "h-2 bg-[#263b3d]" : "h-1 bg-[#263b3d]"}/><div className={`absolute border border-[#d5dddd] ${proof ? "inset-2" : "inset-1"}`}/><div className={`relative flex h-full items-center ${proof ? "gap-4 p-6" : "gap-2 p-3"}`}>{portraitBlock(proof ? "h-24 w-18" : "h-12 w-9")}<div className="min-w-0"><div className={`truncate font-bold tracking-wide ${proof ? "text-[10px]" : "text-[5px]"}`}>{schoolName}</div><div className={`bg-[#263b3d] ${proof ? "my-2 h-0.5 w-24" : "my-1 h-px w-12"}`}/><div className={`truncate font-bold ${proof ? "text-sm" : "text-[7px]"}`}>{studentName}</div><div className={`mt-2 ${proof ? "text-[10px]" : "mt-1 text-[5px]"}`}>STUDENT IDENTIFICATION</div><div className={`mt-2 truncate ${proof ? "text-[10px]" : "mt-1 text-[5px]"}`}>{admissionNo} · {className}</div></div></div></div>;
   }
@@ -158,6 +172,10 @@ export default function AdminIdCardsPage() {
   const [classId, setClassId] = useState("");
   const [quote, setQuote] = useState<any>(null);
   const [greetingName, setGreetingName] = useState("there");
+  const [draftLoaded, setDraftLoaded] = useState(false);
+  const [draftNotice, setDraftNotice] = useState<string | null>(null);
+  const [draftExpiresAt, setDraftExpiresAt] = useState<string | null>(null);
+  const skipDraftSave = useRef(false);
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -179,11 +197,12 @@ export default function AdminIdCardsPage() {
 
     async function load() {
       try {
-        const [templatesData, ordersData, studentsData, awardsData] = await Promise.all([
+        const [templatesData, ordersData, studentsData, awardsData, draftData] = await Promise.all([
           requestJson<{ templates: IdCardTemplate[]; parentPortalQr: ParentPortalQr }>("/api/id-cards/templates"),
           requestJson<{ orders: IdCardOrder[] }>("/api/id-cards/orders"),
           requestJson<{ students: IdCardStudent[]; classes: Array<{ id: string; name: string; arm?: string | null }> }>("/api/id-cards/students"),
           requestJson<{ awards: CardAward[] }>("/api/id-cards/awards"),
+          requestJson<{ draft: IdCardDraft | null }>("/api/id-cards/draft"),
         ]);
 
         if (!active) return;
@@ -193,8 +212,19 @@ export default function AdminIdCardsPage() {
         setAwards(awardsData.awards || []);
         setStudents(studentsData.students || []);
         setClasses(studentsData.classes || []);
-        setSelectedTemplate((current) => current || templatesData.templates?.[0]?.id || "");
-        setOrientation((current) => templatesData.templates?.find((template) => template.id === selectedTemplate)?.defaultOrientation || templatesData.templates?.[0]?.defaultOrientation || current);
+        const savedDraft = draftData.draft;
+        const defaultTemplate = templatesData.templates?.[0]?.id || "";
+        const selectedDraftTemplate = templatesData.templates?.some((template) => template.id === savedDraft?.templateId)
+          ? savedDraft?.templateId || defaultTemplate
+          : defaultTemplate;
+        setSelectedTemplate(selectedDraftTemplate);
+        setOrientation(savedDraft?.orientation || templatesData.templates?.find((template) => template.id === selectedDraftTemplate)?.defaultOrientation || "PORTRAIT");
+        setSelectedIds(new Set((savedDraft?.studentIds || []).filter((id) => studentsData.students?.some((student) => student.id === id)).slice(0, 200)));
+        setIncludeCardBack(Boolean(savedDraft?.includeCardBack));
+        setSelectedAwardId(savedDraft?.awardId || "");
+        setDraftExpiresAt(savedDraft?.expiresAt || null);
+        if (savedDraft) setDraftNotice("Saved draft restored. It is private to your account at this school and expires after 30 days.");
+        setDraftLoaded(true);
       } catch (err) {
         if (!active) return;
         setError(err instanceof Error ? err.message : "Unable to load ID-card studio data.");
@@ -208,6 +238,32 @@ export default function AdminIdCardsPage() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!draftLoaded || !selectedTemplate) return;
+    if (skipDraftSave.current) {
+      skipDraftSave.current = false;
+      return;
+    }
+    const timeout = window.setTimeout(() => {
+      requestJson<{ saved: boolean; expiresAt: string }>("/api/id-cards/draft", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentIds: Array.from(selectedIds),
+          templateId: selectedTemplate,
+          orientation,
+          includeCardBack,
+          includeParentPortalQr: includeCardBack,
+          awardId: selectedAwardId || null,
+        }),
+      }).then((result) => {
+        setDraftExpiresAt(result.expiresAt);
+        setDraftNotice("Draft saved. Private to your account at this school; expires after 30 days.");
+      }).catch(() => setDraftNotice("Draft could not be saved. Your current selection remains available until you leave this page."));
+    }, 700);
+    return () => window.clearTimeout(timeout);
+  }, [draftLoaded, selectedIds, selectedTemplate, orientation, includeCardBack, selectedAwardId]);
 
   useEffect(() => {
     let active = true;
@@ -276,6 +332,21 @@ export default function AdminIdCardsPage() {
     }
   };
 
+  const clearDraft = async () => {
+    try {
+      await requestJson<{ deleted: boolean }>("/api/id-cards/draft", { method: "DELETE" });
+      skipDraftSave.current = true;
+      setSelectedIds(new Set());
+      setSelectedAwardId("");
+      setIncludeCardBack(false);
+      setQuote(null);
+      setDraftExpiresAt(null);
+      setDraftNotice("Saved draft cleared.");
+    } catch (draftError) {
+      setError(draftError instanceof Error ? draftError.message : "Unable to clear the saved draft.");
+    }
+  };
+
   const createOrderAndPay = async () => {
     if (!quote?.quote?.id) return;
     setError(null);
@@ -333,6 +404,8 @@ export default function AdminIdCardsPage() {
             Student records
           </Link>
         </div>
+
+        {draftNotice ? <div role="status" className="flex flex-wrap items-center justify-between gap-2 border border-border bg-surface px-3 py-2 text-xs text-muted"><span>{draftNotice}{draftExpiresAt ? ` Expires ${new Date(draftExpiresAt).toLocaleDateString()}.` : ""}</span><button type="button" onClick={clearDraft} className="font-semibold text-brand underline underline-offset-2">Clear saved draft</button></div> : null}
 
         {error ? (
           <div className="border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>
@@ -492,6 +565,21 @@ export default function AdminIdCardsPage() {
                 <div className="flex items-center justify-between border-b border-border pb-3 text-sm"><span className="text-muted">Tax</span><span className="font-semibold text-foreground">{formatMinorCurrency(quote.quote.taxMinor, quote.quote.currency)}</span></div>
                 {quote.quote.awardId ? <div className="flex items-center justify-between border-b border-border pb-3 text-sm"><span className="text-muted">Approved free award</span><span className="font-semibold text-emerald-700">{quote.quote.quantity} cards covered</span></div> : null}
                 <div className="flex items-end justify-between gap-3"><span className="text-sm font-semibold text-foreground">{quote.quote.awardId ? "Due now" : "Due before generation"}</span><span className="text-2xl font-bold text-brand">{formatMinorCurrency(quote.quote.totalMinor, quote.quote.currency)}</span></div>
+                {quote.preflight?.warningCount > 0 ? (
+                  <section aria-label="Card data review" className="border border-amber-300 bg-amber-50 p-3 text-amber-950">
+                    <p className="text-sm font-semibold">Review {quote.preflight.warningCount} student data item{quote.preflight.warningCount === 1 ? "" : "s"}</p>
+                    <p className="mt-1 text-xs">Missing details do not block generation. Missing photos will use initials; confirm names and class details before continuing.</p>
+                    <ul className="mt-2 space-y-1 text-xs">
+                      {quote.preflight.warnings.slice(0, 6).map((warning: { pupilId: string; pupilName: string; field: string; message: string }, index: number) => (
+                        <li key={`${warning.pupilId}-${warning.field}-${index}`} className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-t border-amber-200 pt-1.5 first:border-0 first:pt-0">
+                          <span className="min-w-0 flex-1 break-words">{warning.pupilName}: {warning.message}</span>
+                          <Link href={`/admin/students/${encodeURIComponent(warning.pupilId)}/edit`} className="shrink-0 font-semibold underline underline-offset-2 hover:text-amber-800">Update student record</Link>
+                        </li>
+                      ))}
+                    </ul>
+                    {quote.preflight.warningCount > 6 ? <p className="mt-1 text-xs font-medium">And {quote.preflight.warningCount - 6} more item{quote.preflight.warningCount - 6 === 1 ? "" : "s"}.</p> : null}
+                  </section>
+                ) : null}
                 {quote.preview?.students?.[0] ? (() => {
                   const student = quote.preview.students[0];
                   const name = [student.firstName, student.middleName, student.lastName].filter(Boolean).join(" ");

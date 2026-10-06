@@ -71,7 +71,14 @@ export default function IdCardPricingPage() {
     const data = await requestJson<{ defaultRule: PricingRule; rules: PricingVersion[] }>("/schoolbase-admin/api/id-cards/pricing");
     setVersions(data.rules || []);
     const active = data.rules.find((version) => version.isActive && version.rule && new Date(version.effectiveAt).getTime() <= Date.now())?.rule;
-    setRule(active || data.defaultRule);
+    const selectedRule = active || data.defaultRule;
+    setRule({
+      ...selectedRule,
+      premiumTemplateUpliftMinor: {
+        ...data.defaultRule.premiumTemplateUpliftMinor,
+        ...selectedRule.premiumTemplateUpliftMinor,
+      },
+    });
   };
 
   useEffect(() => {
@@ -229,11 +236,12 @@ export default function IdCardPricingPage() {
 
             <div className="mt-5 border-t border-border pt-4">
               <h3 className="text-sm font-semibold text-foreground">Premium design uplift per card</h3>
-              <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {[
                   ["houseTeam", "House & Team"],
                   ["earlyLearners", "Early Learners"],
                   ["seniorCollege", "Senior / College"],
+                  ["signatureCollection", "Signature Collection"],
                 ].map(([id, label]) => (
                   <label key={id} className="text-xs font-semibold text-foreground">{label}
                     <div className="mt-1 flex items-center gap-2"><span className="text-xs text-muted">{rule.currency}</span><input type="number" min="0" step="0.01" value={toMajor(rule.premiumTemplateUpliftMinor[id] || 0)} onChange={(event) => setRule({ ...rule, premiumTemplateUpliftMinor: { ...rule.premiumTemplateUpliftMinor, [id]: toMinor(event.target.value) } })} className="h-10 w-full border border-border bg-background px-3 text-sm font-normal" /></div>
@@ -257,6 +265,7 @@ export default function IdCardPricingPage() {
                     <option value="houseTeam">House &amp; Team · Premium</option>
                     <option value="earlyLearners">Early Learners · Premium</option>
                     <option value="seniorCollege">Senior / College · Premium</option>
+                    <option value="signatureCollection">Signature Collection · Premium</option>
                   </select>
                 </label>
                 <button type="button" onClick={calculatePreview} disabled={busy} className="inline-flex h-10 items-center justify-center border border-border px-3 text-sm font-semibold text-brand hover:bg-brand-light disabled:opacity-50">Calculate quote</button>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { CheckCircle2, Download, LoaderCircle, RotateCw, WalletCards } from "lucide-react";
+import { CheckCircle2, Download, LoaderCircle, Printer, RotateCw, WalletCards } from "lucide-react";
 
 type OrderSummary = {
   id: string;
@@ -14,6 +14,11 @@ type OrderSummary = {
   quantity: number;
   templateId: string;
   templateTier: string;
+  canRetryPayment?: boolean;
+  pricingRuleVersion?: number;
+  schoolName?: string;
+  providerReference?: string | null;
+  providerTransactionId?: string | null;
 };
 type CardIssuance = {
   id: string;
@@ -144,6 +149,25 @@ export default function IdCardOrderPage() {
     }
   };
 
+  const retryPayment = async () => {
+    setWorking(true);
+    setError(null);
+    try {
+      const checkout = await requestJson<{ authorizationUrl: string }>(`/api/id-cards/orders/${encodeURIComponent(orderId)}/pay`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      if (!checkout.authorizationUrl) throw new Error("Paystack did not return a checkout link. Please try again.");
+      window.location.assign(checkout.authorizationUrl);
+    } catch (retryError) {
+      setError(retryError instanceof Error ? retryError.message : "Unable to restart checkout.");
+      setWorking(false);
+      const { order: refreshed } = await requestJson<{ order: OrderSummary }>(`/api/id-cards/orders/${encodeURIComponent(orderId)}`).catch(() => ({ order: null }));
+      if (refreshed) setOrder(refreshed);
+    }
+  };
+
   return (
     <main className="min-h-screen pb-12">
       <div className="mx-auto max-w-4xl space-y-6 px-2 py-6 sm:px-8 sm:py-8 lg:px-12">
@@ -175,6 +199,28 @@ export default function IdCardOrderPage() {
                 <div><dt className="text-xs text-muted">Cards</dt><dd className="mt-1 font-semibold text-foreground">{order.quantity}</dd></div>
                 <div><dt className="text-xs text-muted">Amount</dt><dd className="mt-1 font-semibold text-foreground">{formatMinorCurrency(order.amountMinor, order.currency)}</dd></div>
               </dl>
+              <section className="order-receipt mt-5 border border-border bg-background p-4 sm:p-5">
+                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-muted">SchoolBase · ID Card Order</p>
+                    <h3 className="mt-1 text-base font-semibold text-foreground">{order.schoolName || "School"}</h3>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-muted">Order receipt</p>
+                    <p className="mt-1 break-all text-xs font-semibold text-foreground">{order.id}</p>
+                  </div>
+                </div>
+                <dl className="mt-3 grid gap-x-5 gap-y-2 text-sm sm:grid-cols-2">
+                  <div className="flex justify-between gap-3"><dt className="text-muted">Payment status</dt><dd className="text-right font-medium text-foreground">{order.paymentStatus}</dd></div>
+                  <div className="flex justify-between gap-3"><dt className="text-muted">Production status</dt><dd className="text-right font-medium text-foreground">{order.status}</dd></div>
+                  <div className="flex justify-between gap-3"><dt className="text-muted">Cards</dt><dd className="text-right font-medium text-foreground">{order.quantity}</dd></div>
+                  <div className="flex justify-between gap-3"><dt className="text-muted">Design</dt><dd className="text-right font-medium text-foreground">{order.templateId} · {order.templateTier}</dd></div>
+                  {order.pricingRuleVersion ? <div className="flex justify-between gap-3"><dt className="text-muted">Price version</dt><dd className="text-right font-medium text-foreground">{order.pricingRuleVersion}</dd></div> : null}
+                  {order.providerReference ? <div className="flex justify-between gap-3"><dt className="text-muted">Payment reference</dt><dd className="break-all text-right font-medium text-foreground">{order.providerReference}</dd></div> : null}
+                  {order.providerTransactionId ? <div className="flex justify-between gap-3"><dt className="text-muted">Transaction ID</dt><dd className="break-all text-right font-medium text-foreground">{order.providerTransactionId}</dd></div> : null}
+                </dl>
+                <div className="mt-3 flex justify-between gap-3 border-t border-border pt-3 text-sm font-bold text-foreground"><span>Order total</span><span>{formatMinorCurrency(order.amountMinor, order.currency)}</span></div>
+              </section>
               <div className="flex flex-wrap gap-3 pt-5">
                 {order.status === "READY" && order.paymentStatus === "PAID" ? (
                   <>
@@ -185,6 +231,10 @@ export default function IdCardOrderPage() {
                 {order.status === "GENERATION_FAILED" && order.paymentStatus === "PAID" ? (
                   <button type="button" onClick={retryGeneration} disabled={working} className="inline-flex items-center gap-2 bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-50"><RotateCw className="h-4 w-4" /> {working ? "Retrying…" : "Retry generation"}</button>
                 ) : null}
+                {order.paymentStatus === "PENDING" && order.canRetryPayment ? (
+                  <button type="button" onClick={retryPayment} disabled={working} className="inline-flex items-center gap-2 bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-50"><RotateCw className="h-4 w-4" /> {working ? "Opening checkout…" : "Retry checkout"}</button>
+                ) : null}
+                {order.paymentStatus === "PAID" ? <button type="button" onClick={() => window.print()} className="inline-flex items-center gap-2 border border-border px-4 py-2.5 text-sm font-semibold text-brand hover:bg-brand-light print:hidden"><Printer className="h-4 w-4" /> Print receipt</button> : null}
                 <button type="button" onClick={() => { setError(null); setWorking(true); refreshOrder(true).catch((refreshError) => setError(refreshError instanceof Error ? refreshError.message : "Unable to refresh order status.")).finally(() => setWorking(false)); }} disabled={working} className="border border-border px-4 py-2.5 text-sm font-semibold text-brand hover:bg-brand-light disabled:opacity-50">Refresh status</button>
                 <Link href="/admin/id-cards" className="border border-border px-4 py-2.5 text-sm font-semibold text-brand hover:bg-brand-light">Return to ID Card Studio</Link>
               </div>
@@ -243,6 +293,16 @@ export default function IdCardOrderPage() {
           </ul>
         </section>
       </div>
+      <style jsx global>{`
+        @media print {
+          @page { size: A4; margin: 12mm; }
+          html, body { background: #fff !important; color: #111827 !important; }
+          body * { visibility: hidden !important; }
+          .order-receipt, .order-receipt * { visibility: visible !important; }
+          .order-receipt { position: absolute; inset: 0 auto auto 0; width: 100%; border: 1px solid #d1d5db !important; background: #fff !important; color: #111827 !important; }
+          .order-receipt * { color: #111827 !important; }
+        }
+      `}</style>
     </main>
   );
 }
