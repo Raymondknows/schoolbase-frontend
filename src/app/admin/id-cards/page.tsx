@@ -125,30 +125,67 @@ function TemplateArtwork({
   const portraitBlock = (className: string) => photoUrl
     ? <img src={photoUrl} alt="" className={`${className} shrink-0 object-cover`} />
     : <span className={`${className} flex shrink-0 items-center justify-center bg-[#e3ebeb] text-[7px] font-bold text-[#31575b]`}>{studentInitials}</span>;
-  const schoolMark = logoUrl ? <img src={logoUrl} alt="" className={`${proof ? "h-6 w-6" : "h-4 w-4"} shrink-0 bg-white object-contain p-0.5`} /> : null;
+  const schoolMonogram = schoolName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "SB";
+  const schoolMark = logoUrl
+    ? <img src={logoUrl} alt="" className={`${proof ? "h-6 w-6" : "h-4 w-4"} shrink-0 bg-white object-contain p-0.5`} />
+    : <span className={`flex shrink-0 items-center justify-center rounded-full bg-white font-bold text-[#173f35] ${proof ? "h-6 w-6 text-[7px]" : "h-4 w-4 text-[5px]"}`}>{schoolMonogram}</span>;
 
   if (templateId === "crestClassic") {
-    return <div className={`${frame} border-[#c8a85a] bg-white text-center text-[#173f35]`}><div className={`flex items-center justify-center ${proof ? "gap-2 px-3 py-3 text-[10px]" : "gap-1 px-1 py-2 text-[6px]"} bg-[#173f35] font-bold tracking-wide text-white`}>{schoolMark}<span className="min-w-0 truncate">{schoolName}</span></div><div className={proof ? "h-1 bg-[#c8a85a]" : "h-0.5 bg-[#c8a85a]"}/><div className={`mx-auto flex items-center justify-center rounded-full border border-[#c8a85a] font-bold ${proof ? "mt-4 h-11 w-11 text-[10px]" : "mt-2 h-6 w-6 text-[6px]"}`}>CREST</div>{portraitBlock(`mx-auto border border-[#c8a85a] ${proof ? "mt-2 h-20 w-16" : "mt-1 h-8 w-7"}`)}<div className={`truncate px-2 font-bold ${proof ? "mt-2 text-sm" : "mt-1 px-1 text-[7px]"}`}>{studentName}</div><div className={`truncate px-2 ${proof ? "mt-1 text-[10px]" : "mt-0.5 px-1 text-[5px]"}`}>{admissionNo}</div></div>;
+    return <div className={`${frame} border-[#c8a85a] bg-white text-center text-[#173f35]`}><div className={`flex items-center justify-center ${proof ? "gap-2 px-3 py-3 text-[10px]" : "gap-1 px-1 py-2 text-[6px]"} bg-[#173f35] font-bold tracking-wide text-white`}>{schoolMark}<span className="min-w-0 truncate">{schoolName}</span></div><div className={proof ? "h-1 bg-[#c8a85a]" : "h-0.5 bg-[#c8a85a]"}/><div className={`mx-auto flex items-center justify-center rounded-full border border-[#c8a85a] ${proof ? "mt-4 h-11 w-11" : "mt-2 h-6 w-6"}`}>{schoolMark}</div>{portraitBlock(`mx-auto border border-[#c8a85a] ${proof ? "mt-2 h-20 w-16" : "mt-1 h-8 w-7"}`)}<div className={`truncate px-2 font-bold ${proof ? "mt-2 text-sm" : "mt-1 px-1 text-[7px]"}`}>{studentName}</div><div className={`mt-1 truncate px-2 font-bold uppercase text-[#718078] ${proof ? "text-[7px]" : "text-[4px]"}`}>Admission number</div><div className={`truncate px-2 ${proof ? "text-[10px]" : "text-[5px]"}`}>{admissionNo}</div><div className={`mt-1 truncate px-2 font-bold uppercase text-[#718078] ${proof ? "text-[7px]" : "text-[4px]"}`}>Class · {className}</div></div>;
   }
 
   if (templateId === "inkSaver") {
     return <div className={`${frame} border-black bg-white text-black`}><div className={`flex items-center ${proof ? "gap-2 px-3 py-3 text-[10px]" : "gap-1 px-1 py-2 text-[6px]"} font-bold`}>{schoolMark}<span className="min-w-0 truncate">{schoolName}</span></div><div className="h-px bg-black"/><div className={`flex ${proof ? "gap-4 p-4" : "gap-2 p-2"} ${portrait ? "flex-col items-center text-center" : "items-center"}`}>{portraitBlock(`grayscale ${proof ? "h-20 w-16" : "h-10 w-8"}`)}<div className="min-w-0"><div className={`truncate font-bold ${proof ? "text-sm" : "text-[7px]"}`}>{studentName}</div><div className={`truncate ${proof ? "mt-2 text-[10px]" : "mt-1 text-[5px]"}`}>{admissionNo}</div><div className={`truncate ${proof ? "mt-2 text-[10px]" : "mt-1 text-[5px]"}`}>{className}</div><div className={`bg-black ${proof ? "mt-2 h-0.5 w-20" : "mt-1 h-px w-10"}`}/></div></div></div>;
   }
 
+  if (templateId === "modernInstitution") {
+    return (
+      <div className={`${frame} border-[#b9c8c9] bg-white text-[#183e48]`}>
+        <div className="absolute inset-x-0 top-0 h-[22%] bg-[#146b72]" />
+        <div className="absolute inset-x-0 top-[22%] h-[2%] bg-[#d7e8e6]" />
+        {!portrait ? <div className="absolute bottom-0 left-0 top-[24%] w-[2%] bg-[#146b72]" /> : null}
+        <div className={`absolute left-[5%] top-[5%] flex items-center ${proof ? "gap-2" : "gap-1"}`}>
+          {schoolMark || <span className={`flex shrink-0 items-center justify-center rounded-sm bg-white font-bold text-[#146b72] ${proof ? "h-6 w-6 text-[7px]" : "h-4 w-4 text-[5px]"}`}>{schoolMonogram}</span>}
+          <span className={`max-w-[76%] truncate font-bold text-white ${proof ? "text-[10px]" : "text-[6px]"}`}>{schoolName}</span>
+        </div>
+        {portraitBlock(`absolute border-2 border-white shadow-sm ${portrait ? "left-[30%] top-[25%] h-[29%] w-[40%]" : "left-[6%] top-[31%] h-[55%] w-[27%]"}`)}
+        {portrait ? (
+          <>
+            <span className={`absolute left-[5%] right-[5%] top-[57%] truncate text-center font-bold text-[#173f45] ${proof ? "text-sm" : "text-[7px]"}`}>{studentName}</span>
+            <span className={`absolute left-[5%] right-[5%] top-[70%] text-center font-bold uppercase tracking-wide text-[#64777a] ${proof ? "text-[7px]" : "text-[4px]"}`}>Admission number</span>
+            <span className={`absolute left-[5%] right-[5%] top-[75%] truncate text-center font-semibold text-[#183e48] ${proof ? "text-[10px]" : "text-[6px]"}`}>{admissionNo}</span>
+            <span className={`absolute left-[5%] right-[5%] top-[84%] text-center font-bold uppercase tracking-wide text-[#64777a] ${proof ? "text-[7px]" : "text-[4px]"}`}>Class</span>
+            <span className={`absolute left-[5%] right-[5%] top-[89%] truncate text-center font-semibold text-[#146b72] ${proof ? "text-[10px]" : "text-[6px]"}`}>{className}</span>
+          </>
+        ) : (
+          <>
+            <span className={`absolute left-[38%] top-[32%] font-bold uppercase tracking-wide text-[#146b72] ${proof ? "text-[7px]" : "text-[4px]"}`}>Student identity</span>
+            <span className={`absolute left-[38%] right-[5%] top-[42%] truncate font-bold text-[#173f45] ${proof ? "text-sm" : "text-[7px]"}`}>{studentName}</span>
+            <span className="absolute left-[38%] right-[6%] top-[57%] h-px bg-[#d9e2e1]" />
+            <span className={`absolute left-[38%] top-[63%] font-bold uppercase tracking-wide text-[#64777a] ${proof ? "text-[7px]" : "text-[4px]"}`}>Admission no.</span>
+            <span className={`absolute left-[38%] right-[5%] top-[69%] truncate font-semibold text-[#183e48] ${proof ? "text-[10px]" : "text-[6px]"}`}>{admissionNo}</span>
+            <span className={`absolute left-[38%] top-[79%] font-bold uppercase tracking-wide text-[#64777a] ${proof ? "text-[7px]" : "text-[4px]"}`}>Class</span>
+            <span className={`absolute left-[38%] right-[5%] top-[85%] truncate font-semibold text-[#146b72] ${proof ? "text-[10px]" : "text-[6px]"}`}>{className}</span>
+          </>
+        )}
+      </div>
+    );
+  }
+
   if (templateId === "houseTeam") {
-    return <div className={`${frame} border-[#194c91] bg-white text-[#193b65]`}><div className={`absolute inset-y-0 left-0 bg-[#e2a229] ${proof ? "w-3" : "w-2"}`}/><div className={`ml-2 flex items-center bg-[#194c91] text-white ${proof ? "gap-2 px-3 py-3 text-[10px]" : "gap-1 px-1 py-2 text-[6px]"} font-bold`}>{schoolMark}<span className="min-w-0 truncate">{schoolName} · TEAM</span></div><div className={`ml-2 flex ${proof ? "gap-4 p-4" : "gap-2 p-2"} ${portrait ? "flex-col items-center text-center" : "items-center"}`}>{portraitBlock(`border-[#e2a229] ${proof ? "h-20 w-16 border-4" : "h-9 w-7 border-2"}`)}<div className="min-w-0"><div className={`truncate font-bold ${proof ? "text-sm" : "text-[7px]"}`}>{studentName}</div><div className={`mt-2 truncate ${proof ? "text-[10px]" : "mt-1 text-[5px]"}`}>HOUSE / {className}</div><div className={`mt-2 truncate ${proof ? "text-[10px]" : "mt-1 text-[5px]"}`}>{admissionNo}</div></div></div></div>;
+    return <div className={`${frame} border-[#194c91] bg-white text-[#193b65]`}><div className={`absolute inset-y-0 left-0 bg-[#e2a229] ${proof ? "w-3" : "w-2"}`}/><div className={`ml-2 flex items-center bg-[#194c91] text-white ${proof ? "gap-2 px-3 py-3 text-[10px]" : "gap-1 px-1 py-2 text-[6px]"} font-bold`}>{schoolMark}<span className="min-w-0 truncate">{schoolName} · STUDENT ID</span></div><div className={`ml-2 flex ${proof ? "gap-4 p-4" : "gap-2 p-2"} ${portrait ? "flex-col items-center text-center" : "items-center"}`}>{portraitBlock(`border-[#e2a229] ${proof ? "h-20 w-16 border-4" : "h-9 w-7 border-2"}`)}<div className="min-w-0"><div className={`truncate font-bold ${proof ? "text-sm" : "text-[7px]"}`}>{studentName}</div><div className={`mt-2 truncate font-bold uppercase text-[#75839a] ${proof ? "text-[7px]" : "mt-1 text-[4px]"}`}>Class</div><div className={`truncate font-semibold ${proof ? "text-[10px]" : "text-[5px]"}`}>{className}</div><div className={`mt-2 truncate font-bold uppercase text-[#75839a] ${proof ? "text-[7px]" : "mt-1 text-[4px]"}`}>Admission number</div><div className={`truncate ${proof ? "text-[10px]" : "text-[5px]"}`}>{admissionNo}</div></div></div></div>;
   }
 
   if (templateId === "earlyLearners") {
-    return <div className={`${frame} border-[#e7c46b] bg-[#fff7df] text-[#394738]`}><div className={`flex items-center text-white ${proof ? "gap-2 px-3 py-3 text-[10px]" : "gap-1 px-1 py-2 text-[6px]"} bg-[#e6a84a] font-bold`}>{schoolMark}<span className="min-w-0 truncate">{schoolName}</span></div><div className={`mx-auto overflow-hidden rounded-full border-4 border-[#e6a84a] ${proof ? "mt-4 h-20 w-20" : "mt-2 h-10 w-10 border-2"}`}>{photoUrl ? <img src={photoUrl} alt="" className="h-full w-full object-cover" /> : <span className={`flex h-full items-center justify-center bg-[#f0dfbb] font-bold ${proof ? "text-sm" : "text-[7px]"}`}>{studentInitials}</span>}</div><div className={`truncate px-2 text-center font-bold ${proof ? "mt-3 text-sm" : "mt-1 px-1 text-[8px]"}`}>{studentName}</div><div className={`truncate px-2 text-center ${proof ? "mt-2 text-[10px]" : "mt-1 px-1 text-[5px]"}`}>{className} · {admissionNo}</div></div>;
+    return <div className={`${frame} border-[#e7c46b] bg-[#fff7df] text-[#394738]`}><div className={`flex items-center text-white ${proof ? "gap-2 px-3 py-3 text-[10px]" : "gap-1 px-1 py-2 text-[6px]"} bg-[#e6a84a] font-bold`}>{schoolMark}<span className="min-w-0 truncate">{schoolName}</span></div><div className={`mx-auto overflow-hidden rounded-full border-4 border-[#e6a84a] ${proof ? "mt-4 h-20 w-20" : "mt-2 h-10 w-10 border-2"}`}>{photoUrl ? <img src={photoUrl} alt="" className="h-full w-full object-cover" /> : <span className={`flex h-full items-center justify-center bg-[#f0dfbb] font-bold ${proof ? "text-sm" : "text-[7px]"}`}>{studentInitials}</span>}</div><div className={`truncate px-2 text-center font-bold ${proof ? "mt-3 text-sm" : "mt-1 px-1 text-[8px]"}`}>{studentName}</div><div className={`mt-1 truncate px-2 text-center font-bold uppercase text-[#81765b] ${proof ? "text-[7px]" : "text-[4px]"}`}>Class</div><div className={`truncate px-2 text-center font-semibold ${proof ? "text-[10px]" : "text-[5px]"}`}>{className}</div><div className={`mt-1 truncate px-2 text-center font-bold uppercase text-[#81765b] ${proof ? "text-[7px]" : "text-[4px]"}`}>Admission number · {admissionNo}</div></div>;
   }
 
   if (templateId === "signatureCollection") {
-    return <div className={`${frame} border-[#53314b] bg-[#fffefa] text-[#352d36]`}><div className="absolute inset-1 border border-[#c5a96d]"/><div className={`relative flex items-center bg-[#53314b] text-white ${proof ? "gap-2 px-3 py-3 text-[10px]" : "gap-1 px-1 py-2 text-[6px]"} font-bold`}><span className="min-w-0 truncate">{schoolName}</span></div><div className={`relative flex items-center ${proof ? "gap-4 p-4" : "gap-2 p-2"} ${portrait ? "flex-col text-center" : ""}`}>{portraitBlock(proof ? "h-20 w-16" : "h-10 w-8")}<div className="min-w-0"><div className={`font-semibold uppercase tracking-wide text-[#53314b] ${proof ? "text-[10px]" : "text-[5px]"}`}>Student identity</div><div className={`mt-1 truncate font-bold ${proof ? "text-sm" : "text-[7px]"}`}>{studentName}</div><div className={`mt-2 truncate ${proof ? "text-[10px]" : "text-[5px]"}`}>{admissionNo} · {className}</div><div className={`mt-2 bg-[#c5a96d] ${proof ? "h-0.5 w-20" : "h-px w-10"}`}/></div></div></div>;
+    return <div className={`${frame} border-[#53314b] bg-[#fffefa] text-[#352d36]`}><div className="absolute inset-1 border border-[#c5a96d]"/><div className={`relative flex items-center bg-[#53314b] text-white ${proof ? "gap-2 px-3 py-3 text-[10px]" : "gap-1 px-1 py-2 text-[6px]"} font-bold`}>{schoolMark}<span className="min-w-0 truncate">{schoolName}</span></div><div className={`relative flex items-center ${proof ? "gap-4 p-4" : "gap-2 p-2"} ${portrait ? "flex-col text-center" : ""}`}>{portraitBlock(proof ? "h-20 w-16" : "h-10 w-8")}<div className="min-w-0"><div className={`font-semibold uppercase tracking-wide text-[#53314b] ${proof ? "text-[10px]" : "text-[5px]"}`}>Student identity</div><div className={`mt-1 truncate font-bold ${proof ? "text-sm" : "text-[7px]"}`}>{studentName}</div><div className={`mt-2 font-bold uppercase text-[#8a7a81] ${proof ? "text-[7px]" : "text-[4px]"}`}>Admission number</div><div className={`truncate ${proof ? "text-[10px]" : "text-[5px]"}`}>{admissionNo}</div><div className={`mt-1 font-bold uppercase text-[#8a7a81] ${proof ? "text-[7px]" : "text-[4px]"}`}>Class</div><div className={`truncate font-semibold ${proof ? "text-[10px]" : "text-[5px]"}`}>{className}</div><div className={`mt-2 bg-[#c5a96d] ${proof ? "h-0.5 w-20" : "h-px w-10"}`}/></div></div></div>;
   }
 
   if (templateId === "seniorCollege") {
-    return <div className={`${frame} border-[#b9c4c4] bg-white text-[#263b3d]`}><div className={proof ? "h-2 bg-[#263b3d]" : "h-1 bg-[#263b3d]"}/><div className={`absolute border border-[#d5dddd] ${proof ? "inset-2" : "inset-1"}`}/><div className={`relative flex h-full items-center ${proof ? "gap-4 p-6" : "gap-2 p-3"}`}>{portraitBlock(proof ? "h-24 w-18" : "h-12 w-9")}<div className="min-w-0"><div className={`truncate font-bold tracking-wide ${proof ? "text-[10px]" : "text-[5px]"}`}>{schoolName}</div><div className={`bg-[#263b3d] ${proof ? "my-2 h-0.5 w-24" : "my-1 h-px w-12"}`}/><div className={`truncate font-bold ${proof ? "text-sm" : "text-[7px]"}`}>{studentName}</div><div className={`mt-2 ${proof ? "text-[10px]" : "mt-1 text-[5px]"}`}>STUDENT IDENTIFICATION</div><div className={`mt-2 truncate ${proof ? "text-[10px]" : "mt-1 text-[5px]"}`}>{admissionNo} · {className}</div></div></div></div>;
+    return <div className={`${frame} border-[#b9c4c4] bg-white text-[#263b3d]`}><div className={proof ? "h-2 bg-[#263b3d]" : "h-1 bg-[#263b3d]"}/><div className={`absolute border border-[#d5dddd] ${proof ? "inset-2" : "inset-1"}`}/><div className={`relative flex h-full items-center ${proof ? "gap-4 p-6" : "gap-2 p-3"}`}>{portraitBlock(proof ? "h-24 w-18" : "h-12 w-9")}<div className="min-w-0"><div className={`flex items-center gap-1.5 font-bold tracking-wide ${proof ? "text-[10px]" : "text-[5px]"}`}>{schoolMark}<span className="truncate">{schoolName}</span></div><div className={`bg-[#263b3d] ${proof ? "my-2 h-0.5 w-24" : "my-1 h-px w-12"}`}/><div className={`truncate font-bold ${proof ? "text-sm" : "text-[7px]"}`}>{studentName}</div><div className={`mt-2 font-bold uppercase text-[#718080] ${proof ? "text-[7px]" : "mt-1 text-[4px]"}`}>Admission number</div><div className={`truncate ${proof ? "text-[10px]" : "text-[5px]"}`}>{admissionNo}</div><div className={`mt-1 font-bold uppercase text-[#718080] ${proof ? "text-[7px]" : "text-[4px]"}`}>Class</div><div className={`truncate font-semibold ${proof ? "text-[10px]" : "text-[5px]"}`}>{className}</div></div></div></div>;
   }
 
   return <div className={`${frame} border-[#b9c8c9] bg-white text-[#183e48]`}><div className={`flex items-center text-white ${proof ? "gap-2 px-3 py-3 text-[10px]" : "gap-1 px-1 py-2 text-[6px]"} bg-[#146b72] font-bold`}>{schoolMark}<span className="min-w-0 truncate">{schoolName}</span></div><div className={`flex ${proof ? "gap-4 p-4" : "gap-2 p-2"} ${portrait ? "flex-col items-center text-center" : "items-center"}`}>{portraitBlock(proof ? "h-20 w-16" : "h-10 w-8")}<div className="min-w-0"><div className={`font-semibold tracking-wide ${proof ? "text-[10px]" : "text-[5px]"}`}>STUDENT ID</div><div className={`mt-1 truncate font-bold ${proof ? "text-sm" : "text-[7px]"}`}>{studentName}</div><div className={`mt-2 truncate ${proof ? "text-[10px]" : "mt-1 text-[5px]"}`}>{admissionNo}</div><div className={`mt-2 truncate ${proof ? "text-[10px]" : "mt-1 text-[5px]"}`}>{className}</div><div className={`bg-[#146b72]/20 ${proof ? "mt-2 h-2 w-24" : "mt-1 h-1 w-12"}`}/></div></div></div>;
@@ -585,6 +622,7 @@ export default function AdminIdCardsPage() {
                   const name = [student.firstName, student.middleName, student.lastName].filter(Boolean).join(" ");
                   const photo = resolveFileUrl(student.photoUrl, student.id);
                   const schoolName = quote.preview.school?.name || "School";
+                  const officeContact = [quote.preview.school?.address, quote.preview.school?.phone].filter(Boolean).join(" · ");
                   return (
                     <div>
                       <div className="mb-2 flex items-center justify-between gap-2">
@@ -602,14 +640,15 @@ export default function AdminIdCardsPage() {
                             {quote.preview.school?.logoUrl ? <img src={resolveFileUrl(quote.preview.school.logoUrl) || undefined} alt="" className="h-5 w-5 shrink-0 bg-white object-contain p-0.5" /> : null}
                             <p className="truncate text-[10px] font-bold">STUDENT ID</p>
                           </div>
-                          <div className={`px-3 pt-3 ${quote.quote.orientation === "PORTRAIT" ? "text-center" : ""}`}>
+                          <div className={`px-3 pt-3 ${quote.quote.orientation === "PORTRAIT" ? "pb-14 text-center" : "pr-16"}`}>
                             <p className="text-[8px] font-semibold uppercase tracking-wide text-muted">This card is issued by</p>
                             <p className="mt-0.5 truncate text-xs font-bold text-foreground">{schoolName}</p>
                             <div className="my-2 border-t border-border" />
                             <p className="text-[8px] font-bold uppercase tracking-wide text-brand">If found</p>
                             <p className="mt-0.5 text-[9px] leading-3.5 text-muted">Please return it to the school office or hand it to the nearest police station.</p>
+                            {officeContact ? <p className="mt-2 border-t border-border pt-1.5 text-[7px] leading-3 text-muted"><span className="font-bold uppercase text-brand">School office</span><br />{officeContact}</p> : null}
                           </div>
-                          <div className={`absolute bottom-2 ${quote.quote.orientation === "PORTRAIT" ? "left-0 right-0 flex-col items-center" : "left-3 right-3 items-end justify-between"} flex gap-2 border-t border-border pt-1.5`}>
+                          <div className={`absolute bottom-2 ${quote.quote.orientation === "PORTRAIT" ? "left-0 right-0 flex-col items-center border-t border-border pt-1.5" : "right-2 flex-col items-center"} flex gap-2`}>
                             <div className={`min-w-0 pb-1 ${quote.quote.orientation === "PORTRAIT" ? "text-center" : ""}`}>
                               <p className="text-[8px] font-bold uppercase text-brand">Parent Portal</p>
                             </div>
