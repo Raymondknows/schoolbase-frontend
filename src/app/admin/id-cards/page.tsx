@@ -175,7 +175,7 @@ export default function AdminIdCardsPage() {
       const data = await requestJson<{ quote: any; preview: any }>("/api/id-cards/quotes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentIds: Array.from(selectedIds), templateId: selectedTemplate, orientation, includeParentPortalQr: includeCardBack, awardId: selectedAwardId || undefined }),
+        body: JSON.stringify({ studentIds: Array.from(selectedIds), templateId: selectedTemplate, orientation, includeCardBack, includeParentPortalQr: includeCardBack, awardId: selectedAwardId || undefined }),
       });
       setQuote(data);
       setProofSide("FRONT");
@@ -347,8 +347,8 @@ export default function AdminIdCardsPage() {
                       Front + QR back
                     </label>
                   </div>
-                  <span className="mt-1 block text-xs font-normal text-muted">The back carries only the generic school Parent Portal sign-in URL; scanning does not identify or authenticate a student.</span>
-                  {!parentPortalQr.available && parentPortalQr.reason ? <span className="mt-1 block text-xs font-medium text-amber-800">Back generation unavailable: {parentPortalQr.reason}</span> : null}
+                  <span className="mt-1 block text-xs font-normal text-muted">The card back includes the school return instructions and a Parent Portal QR code.</span>
+                  {!parentPortalQr.available && parentPortalQr.reason ? <span className="mt-1 block text-xs font-medium text-amber-800">QR back unavailable: {parentPortalQr.reason}</span> : null}
                 </fieldset>
                 <label className="block text-sm font-semibold text-foreground">
                   Free card award (optional)
@@ -371,7 +371,7 @@ export default function AdminIdCardsPage() {
             {quote ? (
               <div className="mt-5 space-y-4">
                 <div className="flex items-center justify-between border-b border-border pb-3 text-sm"><span className="text-muted">Cards</span><span className="font-semibold text-foreground">{quote.quote.quantity}</span></div>
-                <div className="flex items-center justify-between gap-3 border-b border-border pb-3 text-sm"><span className="text-muted">Design / layout</span><span className="text-right font-semibold text-foreground">{templates.find((item) => item.id === quote.quote.templateId)?.label || quote.quote.templateId} · {quote.quote.orientation === "PORTRAIT" ? "Portrait" : "Landscape"} · {quote.quote.includeParentPortalQr ? "Front + QR back" : "Front only"} · {quote.quote.templateTier}</span></div>
+                <div className="flex items-center justify-between gap-3 border-b border-border pb-3 text-sm"><span className="text-muted">Design / layout</span><span className="text-right font-semibold text-foreground">{templates.find((item) => item.id === quote.quote.templateId)?.label || quote.quote.templateId} · {quote.quote.orientation === "PORTRAIT" ? "Portrait" : "Landscape"} · {quote.quote.includeCardBack ? "Front + QR back" : "Front only"} · {quote.quote.templateTier}</span></div>
                 <div className="space-y-2 border-b border-border pb-3 text-sm">
                   <p className="font-semibold text-foreground">Price breakdown</p>
                   {quote.quote.bandBreakdown?.map((band: { from: number; through: number; quantity: number; unitPriceMinor: number; lineTotalMinor: number }, index: number) => (
@@ -396,35 +396,31 @@ export default function AdminIdCardsPage() {
                     <div>
                       <div className="mb-2 flex items-center justify-between gap-2">
                         <p className="text-xs font-semibold uppercase tracking-wide text-muted">First card proof</p>
-                        {quote.quote.includeParentPortalQr ? (
+                        {quote.quote.includeCardBack ? (
                           <div className="inline-flex border border-border text-[10px] font-semibold">
                             <button type="button" onClick={() => setProofSide("FRONT")} aria-pressed={proofSide === "FRONT"} className={`px-2 py-1 ${proofSide === "FRONT" ? "bg-brand text-white" : "text-muted"}`}>Front</button>
                             <button type="button" onClick={() => setProofSide("BACK")} aria-pressed={proofSide === "BACK"} className={`px-2 py-1 ${proofSide === "BACK" ? "bg-brand text-white" : "text-muted"}`}>Back</button>
                           </div>
                         ) : null}
                       </div>
-                      {proofSide === "BACK" && quote.quote.includeParentPortalQr ? (
+                      {proofSide === "BACK" && quote.quote.includeCardBack ? (
                         <div className={`relative mx-auto overflow-hidden border border-border bg-[#fbfcfc] text-foreground ${quote.quote.orientation === "PORTRAIT" ? "aspect-[154/243] w-44" : "aspect-[243/154] w-full max-w-sm"}`}>
                           <div className="flex min-h-8 items-center gap-2 bg-brand px-2.5 py-1.5 text-white">
                             {quote.preview.school?.logoUrl ? <img src={resolveFileUrl(quote.preview.school.logoUrl) || undefined} alt="" className="h-5 w-5 shrink-0 bg-white object-contain p-0.5" /> : null}
-                            <p className="truncate text-[10px] font-bold">{schoolName}</p>
+                            <p className="truncate text-[10px] font-bold">STUDENT IDENTIFICATION</p>
                           </div>
-                          <div className="px-3 pt-3">
-                            <p className="text-[9px] font-bold uppercase tracking-wide text-brand">Property of</p>
-                            <p className="mt-0.5 truncate text-xs font-bold">{schoolName}</p>
+                          <div className={`px-3 pt-3 ${quote.quote.orientation === "PORTRAIT" ? "text-center" : ""}`}>
+                            <p className="text-[8px] font-semibold uppercase tracking-wide text-muted">This card is issued by</p>
+                            <p className="mt-0.5 truncate text-xs font-bold text-foreground">{schoolName}</p>
                             <div className="my-2 border-t border-border" />
-                            <p className="text-[9px] font-bold uppercase tracking-wide text-brand">If found</p>
-                            <p className="mt-0.5 text-[10px] leading-4 text-muted">Please return this card to the school office or hand it to the nearest police station.</p>
+                            <p className="text-[8px] font-bold uppercase tracking-wide text-brand">If found</p>
+                            <p className="mt-0.5 text-[9px] leading-3.5 text-muted">Please return it to the school office or hand it to the nearest police station.</p>
                           </div>
-                          <div className="absolute bottom-2 left-3 right-3 flex items-end justify-between gap-2 border-t border-border pt-1.5">
-                            <div className="min-w-0 pb-1">
+                          <div className={`absolute bottom-2 ${quote.quote.orientation === "PORTRAIT" ? "left-0 right-0 flex-col items-center" : "left-3 right-3 items-end justify-between"} flex gap-2 border-t border-border pt-1.5`}>
+                            <div className={`min-w-0 pb-1 ${quote.quote.orientation === "PORTRAIT" ? "text-center" : ""}`}>
                               <p className="text-[8px] font-bold uppercase text-brand">Parent Portal</p>
-                              <p className="mt-0.5 text-[8px] text-muted">Sign-in shortcut</p>
-                              <p className="mt-0.5 text-[7px] text-muted">Parent sign-in required to view linked children.</p>
                             </div>
-                            <div aria-label="QR code preview" className="flex h-11 w-11 shrink-0 items-center justify-center border border-border bg-white p-1">
-                              <span className="grid h-full w-full grid-cols-5 grid-rows-5 gap-px" aria-hidden="true">{Array.from({ length: 25 }, (_, index) => <span key={index} className={(index * 7 + index % 3) % 5 < 2 ? "bg-foreground" : "bg-white"} />)}</span>
-                            </div>
+                            {backQrPreview ? <img src={backQrPreview} alt="Parent Portal sign-in QR code" className="h-11 w-11 shrink-0 bg-white p-0.5" /> : <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-border bg-white text-[7px] text-muted">Preparing QR</span>}
                           </div>
                         </div>
                       ) : (
@@ -448,19 +444,6 @@ export default function AdminIdCardsPage() {
                     </div>
                   );
                 })() : null}
-                {quote.quote.includeParentPortalQr ? (
-                  <div>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">Card back proof</p>
-                    <div className="mx-auto flex min-h-36 max-w-xs items-center justify-center gap-4 border border-border bg-background p-4">
-                      {backQrPreview ? <img src={backQrPreview} alt="QR code linking to the school Parent Portal sign-in" className="h-24 w-24 shrink-0" /> : <span className="flex h-24 w-24 shrink-0 items-center justify-center bg-muted/10 text-xs text-muted">Preparing QR…</span>}
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-foreground">Parent Portal</p>
-                        <p className="mt-1 break-all text-xs text-muted">{quote.preview.parentPortalQrUrl}</p>
-                        <p className="mt-2 text-[10px] leading-4 text-muted">Opens sign-in only. The QR does not identify a student or authenticate a parent.</p>
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
                 <p className="text-xs leading-5 text-muted">Production PDFs are generated only after verified payment. Missing photos render as initials; check student records before checkout.</p>
                 <button type="button" onClick={createOrderAndPay} disabled={working} className="flex h-11 w-full items-center justify-center gap-2 bg-brand px-4 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50">
                   <CreditCard className="h-4 w-4" /> {working ? "Starting…" : quote.quote.awardId ? "Use award and generate" : "Pay and generate"}
