@@ -53,6 +53,7 @@ type NavItem = {
   label: string;
   icon: string | ComponentType<{ className?: string }>;
   section?: string;
+  badge?: string;
 };
 
 type WorkspaceTool = "notes" | "calculator" | "reminders" | "timer";
@@ -184,7 +185,7 @@ export default function Sidebar({
       </div>
 
       <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 py-4">
-        {navItemsWithSectionVisibility.map(({ href, label, icon, sectionLabel, showSection }) => {
+        {navItemsWithSectionVisibility.map(({ href, label, icon, sectionLabel, showSection, badge }) => {
           const isActive = pathname === href || pathname.startsWith(`${href}/`);
           const IconComponent = typeof icon === "string" ? icons[icon] : icon;
 
@@ -229,6 +230,7 @@ export default function Sidebar({
                   </div>
                 ) : IconComponent ? createElement(IconComponent, { className: "h-4 w-4" }) : null}
                 <span className="min-w-0 flex-1 truncate">{label}</span>
+                {badge ? <span className="shrink-0 border border-brand/25 bg-brand/10 px-1.5 py-0.5 text-[9px] font-bold uppercase leading-none tracking-wide text-brand">{badge}</span> : null}
               </Link>
             </div>
           );

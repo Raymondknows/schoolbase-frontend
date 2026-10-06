@@ -90,6 +90,14 @@ export default function SchoolbaseAdminIdCardsPage() {
           <p className="mt-2 text-muted">Track usage, payments, revenue, and free awards across schools.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <Link href="/schoolbase-admin/id-cards/pricing" className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover">
+            <BadgeDollarSign className="h-4 w-4" />
+            Pricing
+          </Link>
+          <Link href="/schoolbase-admin/id-cards/awards" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light">
+            <Sparkles className="h-4 w-4" />
+            Awards
+          </Link>
           <Link href="/schoolbase-admin" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light">
             Back to overview
           </Link>

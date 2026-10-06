@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Globe2, Phone, UserRound } from "lucide-react";
 
 export function ParentLoginForm() {
-  const router = useRouter();
+  const searchParams = useSearchParams();
+  const schoolSlug = searchParams.get("schoolSlug") || "";
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -66,6 +67,7 @@ export function ParentLoginForm() {
         <input
           name="schoolSlug"
           type="text"
+          defaultValue={schoolSlug}
           placeholder="greenfield"
           className="mt-2 w-full border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
         />
