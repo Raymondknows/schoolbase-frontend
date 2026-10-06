@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { BadgeDollarSign, Check, CreditCard, Download, FileText, Search, ShieldCheck, Users } from "lucide-react";
 import { resolveFileUrl } from "@/lib/api-client";
+import { UserGuide, type PageHelpGuide } from "@/components/ui/user-guide";
 import QRCode from "qrcode";
 
 type IdCardOrientation = "PORTRAIT" | "LANDSCAPE";
@@ -37,6 +38,28 @@ type IdCardOrder = {
   quantity: number;
   templateId: string;
   templateTier: string;
+};
+
+const ID_CARD_HELP_GUIDE: PageHelpGuide = {
+  title: "ID Card Studio Guide",
+  overview: "Create school-branded student ID cards from active student records, review the final proof and price, then generate and download the batch.",
+  steps: [
+    "Select students from the list, or filter by class and search by name or admission number. Orders can include up to 200 students.",
+    "Choose a card design and orientation. Select Front + QR back to add the school return instructions and Parent Portal sign-in QR.",
+    "Review the proof and itemized server-calculated price. Check student details and photos before confirming the order.",
+    "Pay and generate, or use an eligible approved free-card award. Production files are available after payment or award processing succeeds.",
+    "Open a completed order to download cards at CR80 size or as an A4 print sheet.",
+  ],
+  faqs: [
+    {
+      question: "What does the Parent Portal QR contain?",
+      answer: "It opens the school-specific Parent Portal sign-in page. It does not identify a student or replace parent sign-in.",
+    },
+    {
+      question: "Can I download the cards again later?",
+      answer: "Yes. Completed orders remain available in Recent orders for status review and file downloads.",
+    },
+  ],
 };
 
 async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
@@ -134,9 +157,22 @@ export default function AdminIdCardsPage() {
   const [search, setSearch] = useState("");
   const [classId, setClassId] = useState("");
   const [quote, setQuote] = useState<any>(null);
+  const [greetingName, setGreetingName] = useState("there");
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    requestJson<{ session?: { name?: string | null } }>("/api/admin/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    }).then((data) => {
+      if (active && data.session?.name?.trim()) setGreetingName(data.session.name.trim());
+    }).catch(() => undefined);
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -288,6 +324,7 @@ export default function AdminIdCardsPage() {
       <div className="mx-auto max-w-7xl space-y-6 px-2 py-6 sm:px-8 sm:py-8 lg:px-12">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
+            <p className="mb-1 text-sm font-medium text-brand">Hello, {greetingName}</p>
             <h1 className="text-3xl font-bold text-foreground">ID Card Studio</h1>
             <p className="mt-2 max-w-3xl text-muted">Select active students, review the server-calculated price, and generate print-ready cards after verified payment.</p>
           </div>
@@ -394,8 +431,8 @@ export default function AdminIdCardsPage() {
                     {(["PORTRAIT", "LANDSCAPE"] as const).map((layout) => {
                       const available = templates.find((template) => template.id === selectedTemplate)?.orientations.includes(layout) ?? true;
                       return (
-                        <label key={layout} className={`flex cursor-pointer items-center justify-center gap-2 text-sm transition ${orientation === layout ? "bg-brand text-white" : "bg-background text-muted hover:text-foreground"} ${available ? "" : "cursor-not-allowed opacity-40"}`}>
-                          <input type="radio" name="id-card-layout" value={layout} checked={orientation === layout} disabled={!available} onChange={() => { setOrientation(layout); setQuote(null); }} className="sr-only" />
+                        <label key={layout} className={`relative flex cursor-pointer items-center justify-center gap-2 text-sm transition focus-within:outline focus-within:outline-2 focus-within:outline-brand focus-within:outline-inset ${orientation === layout ? "bg-brand text-white" : "bg-background text-muted hover:text-foreground"} ${available ? "" : "cursor-not-allowed opacity-40"}`}>
+                          <input type="radio" name="id-card-layout" value={layout} checked={orientation === layout} disabled={!available} onChange={() => { setOrientation(layout); setQuote(null); }} className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0" />
                           <span className={`block border border-current ${layout === "PORTRAIT" ? "h-4 w-3" : "h-3 w-4"}`} aria-hidden="true" />
                           {layout === "PORTRAIT" ? "Portrait" : "Landscape"}
                         </label>
@@ -406,12 +443,12 @@ export default function AdminIdCardsPage() {
                 <fieldset className="text-sm font-semibold text-foreground">
                   <legend>Card sides</legend>
                   <div className="mt-1.5 grid h-11 grid-cols-2 border border-border" role="radiogroup" aria-label="Card sides">
-                    <label className={`flex cursor-pointer items-center justify-center text-sm transition ${!includeCardBack ? "bg-brand text-white" : "bg-background text-muted hover:text-foreground"}`}>
-                      <input type="radio" name="id-card-sides" checked={!includeCardBack} onChange={() => { setIncludeCardBack(false); setQuote(null); }} className="sr-only" />
+                    <label className={`relative flex cursor-pointer items-center justify-center text-sm transition focus-within:outline focus-within:outline-2 focus-within:outline-brand focus-within:outline-inset ${!includeCardBack ? "bg-brand text-white" : "bg-background text-muted hover:text-foreground"}`}>
+                      <input type="radio" name="id-card-sides" checked={!includeCardBack} onChange={() => { setIncludeCardBack(false); setQuote(null); }} className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0" />
                       Front only
                     </label>
-                    <label className={`flex cursor-pointer items-center justify-center text-sm transition ${includeCardBack ? "bg-brand text-white" : "bg-background text-muted hover:text-foreground"} ${parentPortalQr.available ? "" : "cursor-not-allowed opacity-50"}`}>
-                      <input type="radio" name="id-card-sides" checked={includeCardBack} disabled={!parentPortalQr.available} onChange={() => { setIncludeCardBack(true); setQuote(null); }} className="sr-only" />
+                    <label className={`relative flex cursor-pointer items-center justify-center text-sm transition focus-within:outline focus-within:outline-2 focus-within:outline-brand focus-within:outline-inset ${includeCardBack ? "bg-brand text-white" : "bg-background text-muted hover:text-foreground"} ${parentPortalQr.available ? "" : "cursor-not-allowed opacity-50"}`}>
+                      <input type="radio" name="id-card-sides" checked={includeCardBack} disabled={!parentPortalQr.available} onChange={() => { setIncludeCardBack(true); setQuote(null); }} className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0" />
                       Front + QR back
                     </label>
                   </div>
@@ -475,7 +512,7 @@ export default function AdminIdCardsPage() {
                         <div className={`relative mx-auto overflow-hidden border border-border bg-[#fbfcfc] text-foreground ${quote.quote.orientation === "PORTRAIT" ? "aspect-[154/243] w-44" : "aspect-[243/154] w-full max-w-sm"}`}>
                           <div className="flex min-h-8 items-center gap-2 bg-brand px-2.5 py-1.5 text-white">
                             {quote.preview.school?.logoUrl ? <img src={resolveFileUrl(quote.preview.school.logoUrl) || undefined} alt="" className="h-5 w-5 shrink-0 bg-white object-contain p-0.5" /> : null}
-                            <p className="truncate text-[10px] font-bold">STUDENT IDENTIFICATION</p>
+                            <p className="truncate text-[10px] font-bold">STUDENT ID</p>
                           </div>
                           <div className={`px-3 pt-3 ${quote.quote.orientation === "PORTRAIT" ? "text-center" : ""}`}>
                             <p className="text-[8px] font-semibold uppercase tracking-wide text-muted">This card is issued by</p>
@@ -568,6 +605,7 @@ export default function AdminIdCardsPage() {
           )}
         </section>
       </div>
+      <UserGuide guide={ID_CARD_HELP_GUIDE} />
     </main>
   );
 }
