@@ -5,14 +5,14 @@ import { buildApiUrl } from '@/lib/api-client';
 export async function GET(request: NextRequest) {
   try {
     const params = new URL(request.url).searchParams;
-    let backendUrl = buildApiUrl('/admin/students/data');
-
-    if (!params.get('schoolId')) {
-      const schoolId = await getCurrentSchoolId();
-      if (schoolId) {
-        backendUrl += `?schoolId=${encodeURIComponent(schoolId)}`;
-      }
-    }
+    const forwardedParams = new URLSearchParams();
+    const requestedSchoolId = params.get('schoolId');
+    const schoolId = requestedSchoolId || await getCurrentSchoolId();
+    if (schoolId) forwardedParams.set('schoolId', schoolId);
+    const status = params.get('status');
+    if (status) forwardedParams.set('status', status);
+    const query = forwardedParams.toString();
+    const backendUrl = buildApiUrl(`/admin/students/data${query ? `?${query}` : ''}`);
 
     const resp = await fetch(backendUrl, {
       headers: {

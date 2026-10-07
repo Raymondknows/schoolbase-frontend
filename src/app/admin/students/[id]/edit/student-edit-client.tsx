@@ -283,6 +283,7 @@ export default function StudentEditClient({ studentId }: { studentId: string }) 
                   <option value="ACTIVE">Active</option>
                   <option value="INACTIVE">Inactive</option>
                 </select>
+                <span className="mt-1 block text-xs font-normal leading-5 text-muted">Inactive removes the student from the active roster but keeps their record and history. Restore them from Students → Inactive.</span>
               </label>
 
               <label className="text-sm font-semibold text-foreground">

@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Search, UserPlus, X, Upload, Download, Users, Send, Mail, CheckSquare } from "lucide-react";
+import { Search, UserPlus, UserMinus, UserCheck, Eye, Pencil, MoreHorizontal, ChevronLeft, ChevronRight, RotateCcw, X, Upload, Download, Users, Send, Mail, CheckSquare } from "lucide-react";
 import { playCloseTone, playOpenTone } from "@/lib/sounds";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { Pagination } from "@/components/ui/pagination";
 import { UserGuide, type PageHelpGuide } from "@/components/ui/user-guide";
+import { ErrorModal } from "@/components/ui/error-modal";
 import { pupilName } from "@/lib/format";
 import { resolveFileUrl } from "@/lib/api-client";
 
@@ -24,12 +25,13 @@ const DEFAULT_ITEMS_PER_PAGE = 10;
 
 const HELP_GUIDE: PageHelpGuide = {
   title: "Managing Students",
-  overview: "View, search, and manage all active students in your school. Organize by phase (grade level) or search by name and admission number.",
+  overview: "Manage active and inactive student records. Deactivation preserves student history and can be reversed at any time.",
   steps: [
     "Click 'Add student' button to create a new student record",
     "Use the search bar to find students by name or admission number",
     "Filter by phase (Early Years, Primary, Secondary) using tabs",
-    "Click a student to view details and edit information",
+    "Use the Active and Inactive tabs to manage enrollment status",
+    "Deactivate students who leave; their academic history remains available",
     "Use pagination to browse through large student lists",
   ],
   commonTasks: [
@@ -66,8 +68,8 @@ const HELP_GUIDE: PageHelpGuide = {
   ],
   faqs: [
     {
-      question: "How do I deactivate a student?",
-      answer: "Click the student's name to open details, then click 'Deactivate'. The student will no longer appear in active lists but the record is preserved.",
+      question: "What happens when I deactivate a student?",
+      answer: "The student is removed from the active roster and active workflows, but the record and history are preserved. Use the Inactive tab to restore them if they return.",
     },
     {
       question: "Can I bulk import students?",
@@ -82,6 +84,13 @@ const HELP_GUIDE: PageHelpGuide = {
 
 export default function StudentsPageClient({ pupils, classes }: { pupils: any[]; classes: any[] }) {
   const router = useRouter();
+  const [activePupils, setActivePupils] = useState(pupils);
+  const [inactivePupils, setInactivePupils] = useState<any[]>([]);
+  const [inactiveLoaded, setInactiveLoaded] = useState(false);
+  const [rosterStatus, setRosterStatus] = useState<"ACTIVE" | "INACTIVE">("ACTIVE");
+  const [rosterLoading, setRosterLoading] = useState(false);
+  const [statusActionStudent, setStatusActionStudent] = useState<any | null>(null);
+  const [statusActionBusy, setStatusActionBusy] = useState(false);
   const [activePhase, setActivePhase] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -91,29 +100,40 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
   const [selectedClassId, setSelectedClassId] = useState("ALL");
   const [selectedLetter, setSelectedLetter] = useState("ALL");
   const searchParams = useSearchParams();
-  const [successModalMessage, setSuccessModalMessage] = useState<string | null>(() => {
+  const [feedbackModal, setFeedbackModal] = useState<{
+    type: "success" | "error";
+    title: string;
+    message: string;
+    details?: string;
+  } | null>(() => {
     const whatsappStatus = searchParams?.get("whatsappStatus");
     const whatsappError = searchParams?.get("whatsappError");
+    const emailError = searchParams?.get("emailError");
+    if (emailError) {
+      return {
+        type: "error",
+        title: "Guardian email was not sent",
+        message: "The student registration completed, but the guardian email failed.",
+        details: `${emailError}\nVerify the guardian's email address and school email settings.`,
+      };
+    }
     if (searchParams?.get("saved")) {
       if (whatsappStatus === 'FAILED') {
-        return `Student registration completed, but the WhatsApp admission notification failed${whatsappError ? `: ${whatsappError}` : '.'}`;
+        return { type: "error", title: "Student registered; WhatsApp notification failed", message: "The student is saved in the active roster, but the admission notification was not sent.", details: whatsappError || undefined };
       }
       if (whatsappStatus === 'PENDING') {
-        return "Student registration completed. The WhatsApp admission notification is queued for delivery.";
+        return { type: "success", title: "Student registered", message: "The student is in the active roster. The WhatsApp admission notification is queued for delivery." };
       }
       if (whatsappStatus === 'SENT') {
-        return "Student registration completed and the WhatsApp admission notification was sent.";
+        return { type: "success", title: "Student registered", message: "The student is in the active roster and the WhatsApp admission notification was sent." };
       }
-      return "Student registration completed successfully and the learner is now enrolled in the school roster.";
+      return { type: "success", title: "Student registered", message: "The student was saved successfully and is now enrolled in the school roster." };
     }
     if (searchParams?.get("updated")) {
-      return "Student record updated successfully and the information is now reflected across the school system.";
+      return { type: "success", title: "Student updated", message: "The student record was updated successfully." };
     }
     return null;
   });
-  const [emailErrorMessage, setEmailErrorMessage] = useState<string | null>(
-    searchParams?.get("emailError") ?? null
-  );
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [profileStudent, setProfileStudent] = useState<any | null>(null);
   const [whatsAppConnected, setWhatsAppConnected] = useState<boolean | null>(null);
@@ -129,6 +149,8 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
   const [notifyChannels, setNotifyChannels] = useState<Array<'EMAIL' | 'WHATSAPP'>>(['EMAIL', 'WHATSAPP']);
   const [forceResend, setForceResend] = useState(false);
   const [isNotifying, setIsNotifying] = useState(false);
+  const [isBulkDeactivating, setIsBulkDeactivating] = useState(false);
+  const [isBulkDeactivateConfirmOpen, setIsBulkDeactivateConfirmOpen] = useState(false);
   const [notifyResult, setNotifyResult] = useState<any>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const importFileInputRef = useRef<HTMLInputElement>(null);
@@ -233,7 +255,8 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
 
   // Filter by phase, search, class, alphabet, and sort
   const filteredPupils = useMemo(() => {
-    let filtered = [...pupils];
+    const rosterPupils = rosterStatus === "ACTIVE" ? activePupils : inactivePupils;
+    let filtered = [...rosterPupils];
 
     // Filter by phase
     if (activePhase !== "ALL") {
@@ -303,7 +326,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
     });
 
     return filtered;
-  }, [pupils, activePhase, searchQuery, selectedClassId, selectedLetter, sortMode]);
+  }, [activePupils, inactivePupils, rosterStatus, activePhase, searchQuery, selectedClassId, selectedLetter, sortMode]);
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(filteredPupils.length / itemsPerPage));
@@ -315,6 +338,129 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
   const handlePageSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setItemsPerPage(Number(event.target.value));
     setCurrentPage(1);
+  };
+
+  const handleRosterStatusChange = async (nextStatus: "ACTIVE" | "INACTIVE") => {
+    setFeedbackModal(null);
+    if (nextStatus === "INACTIVE" && !inactiveLoaded) {
+      setRosterLoading(true);
+      try {
+        const response = await fetch("/api/admin/students/data?status=INACTIVE", { credentials: "include" });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || "Inactive student records could not be loaded.");
+        setInactivePupils(data.pupils || []);
+        setInactiveLoaded(true);
+      } catch (error) {
+        setFeedbackModal({
+          type: "error",
+          title: "Inactive students could not be loaded",
+          message: error instanceof Error ? error.message : "Inactive student records could not be loaded.",
+        });
+        setRosterLoading(false);
+        return;
+      }
+      setRosterLoading(false);
+    }
+    setRosterStatus(nextStatus);
+    setSelectedStudentIds(new Set());
+    setCurrentPage(1);
+    setSelectedClassId("ALL");
+    setSelectedLetter("ALL");
+  };
+
+  const confirmStatusChange = async () => {
+    if (!statusActionStudent) return;
+    const nextStatus = rosterStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+    setStatusActionBusy(true);
+    setFeedbackModal(null);
+    try {
+      const response = await fetch(`/api/admin/students/${encodeURIComponent(statusActionStudent.id)}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || `Student could not be marked ${nextStatus.toLowerCase()}.`);
+      const updatedStudent = { ...statusActionStudent, ...data, status: nextStatus, isActive: nextStatus === "ACTIVE" };
+      if (nextStatus === "INACTIVE") {
+        setActivePupils((current) => current.filter((student) => student.id !== updatedStudent.id));
+        setInactivePupils((current) => [updatedStudent, ...current.filter((student) => student.id !== updatedStudent.id)]);
+        setInactiveLoaded(true);
+        setFeedbackModal({
+          type: "success",
+          title: "Student deactivated",
+          message: `${pupilName(updatedStudent.firstName, updatedStudent.lastName, updatedStudent.middleName)} was removed from the active roster. Their record and history remain available in Inactive.`,
+        });
+      } else {
+        setInactivePupils((current) => current.filter((student) => student.id !== updatedStudent.id));
+        setActivePupils((current) => [updatedStudent, ...current.filter((student) => student.id !== updatedStudent.id)]);
+        setFeedbackModal({
+          type: "success",
+          title: "Student restored",
+          message: `${pupilName(updatedStudent.firstName, updatedStudent.lastName, updatedStudent.middleName)} was restored to the active roster.`,
+        });
+      }
+      setSelectedStudentIds((current) => {
+        const next = new Set(current);
+        next.delete(updatedStudent.id);
+        return next;
+      });
+      setStatusActionStudent(null);
+    } catch (error) {
+      setStatusActionStudent(null);
+      setFeedbackModal({
+        type: "error",
+        title: "Student status was not updated",
+        message: error instanceof Error ? error.message : "Student status could not be updated.",
+      });
+    } finally {
+      setStatusActionBusy(false);
+    }
+  };
+
+  const confirmBulkDeactivate = async () => {
+    const selectedIds = Array.from(selectedStudentIds);
+    if (selectedIds.length === 0) return;
+    setIsBulkDeactivating(true);
+    setFeedbackModal(null);
+    const outcomes = await Promise.all(selectedIds.map(async (id) => {
+      const student = activePupils.find((pupil) => pupil.id === id);
+      if (!student) return { id, student: null, sourceStudent: null, error: "Student is no longer in the active roster." };
+      try {
+        const response = await fetch(`/api/admin/students/${encodeURIComponent(id)}`, {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "INACTIVE" }),
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || "Could not deactivate this student.");
+        return { id, student: { ...student, ...result, status: "INACTIVE", isActive: false }, sourceStudent: student, error: null };
+      } catch (error) {
+        return { id, student: null, sourceStudent: student, error: error instanceof Error ? error.message : "Could not deactivate this student." };
+      }
+    }));
+
+    const deactivated = outcomes.flatMap((outcome) => outcome.student ? [outcome.student] : []);
+    const failed = outcomes.filter((outcome) => outcome.error);
+    if (deactivated.length > 0) {
+      const deactivatedIds = new Set(deactivated.map((student) => student.id));
+      setActivePupils((current) => current.filter((student) => !deactivatedIds.has(student.id)));
+      setInactivePupils((current) => [...deactivated, ...current.filter((student) => !deactivatedIds.has(student.id))]);
+      setInactiveLoaded(true);
+      setSelectedStudentIds(new Set(failed.map((outcome) => outcome.id)));
+    }
+    setIsBulkDeactivateConfirmOpen(false);
+    setIsBulkDeactivating(false);
+    setFeedbackModal({
+      type: failed.length === 0 ? "success" : "error",
+      title: failed.length === 0 ? "Students deactivated" : deactivated.length > 0 ? "Some students were not deactivated" : "Students could not be deactivated",
+      message: failed.length === 0
+        ? `${deactivated.length} student${deactivated.length === 1 ? " was" : "s were"} removed from the active roster. Their records and history are preserved in Inactive.`
+        : `${deactivated.length} deactivated; ${failed.length} failed. Failed students remain selected so you can retry after reviewing the issue.`,
+      details: failed.length > 0 ? failed.map((outcome) => `${outcome.sourceStudent ? pupilName(outcome.sourceStudent.firstName, outcome.sourceStudent.lastName, outcome.sourceStudent.middleName) : "Student"}: ${outcome.error}`).join("\n") : undefined,
+    });
   };
 
   const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -356,10 +502,11 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
   };
 
   const getPhaseStats = (phase: string) => {
+    const rosterPupils = rosterStatus === "ACTIVE" ? activePupils : inactivePupils;
     if (phase === "ALL") {
-      return pupils.length;
+      return rosterPupils.length;
     }
-    return pupils.filter((p) => p.class?.phase === phase).length;
+    return rosterPupils.filter((p) => p.class?.phase === phase).length;
   };
 
   const resetImportState = () => {
@@ -573,7 +720,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
           </div>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Students</h1>
           <p className="mt-2 text-sm leading-6 text-muted">
-            {pupils.length} active student{pupils.length !== 1 ? "s" : ""} across all phases.
+            {rosterStatus === "ACTIVE" ? activePupils.length : inactivePupils.length} {rosterStatus.toLowerCase()} student{(rosterStatus === "ACTIVE" ? activePupils.length : inactivePupils.length) !== 1 ? "s" : ""} across all phases.
           </p>
         </div>
         <div>
@@ -611,7 +758,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
               onClick={() => setIsSearchOpen((open) => !open)}
               className="h-9 w-full rounded-md border border-[#0A66C2] bg-[#0A66C2] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0858a8] sm:w-auto"
             >
-              <Search className="h-4 w-4" />
+              {isSearchOpen ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}
               {isSearchOpen ? "Close Search" : "Search Student"}
             </Button>
             <Button
@@ -630,73 +777,77 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
               <UserPlus className="h-4 w-4" />
               Register Student
             </Button>
-            {selectedStudentIds.size > 0 && (
-              <Button
-                type="button"
-                onClick={() => {
-                  playOpenTone();
-                  setNotifyResult(null);
-                  setIsNotifyModalOpen(true);
-                }}
-                className="h-9 w-full rounded-md border border-brand bg-brand px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-brand-hover sm:w-auto"
-              >
-                <Send className="h-4 w-4" />
-                Notify parents ({selectedStudentIds.size})
-              </Button>
-            )}
           </div>
         </div>
         </div>
       </header>
 
-        {successModalMessage ? (
-          <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 px-4 py-8">
-            <div className="w-full max-w-xl overflow-hidden rounded-md border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]">
-              <div className="border-b border-border bg-brand/10 px-4 py-4 sm:px-6 sm:py-5">
-              <div className="flex items-start gap-4">
-                <div className="mt-1 rounded-md bg-success/10 p-3 text-success">
-                  ✓
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-foreground">Student saved successfully</h3>
-                  <p className="mt-2 text-sm text-muted">{successModalMessage}</p>
-                </div>
-              </div>
-              </div>
-
-              <div className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:justify-end sm:px-6">
-                <Button type="button" variant="secondary" onClick={() => setSuccessModalMessage(null)}>
-                  Close
-                </Button>
-                <Button type="button" onClick={() => setSuccessModalMessage(null)}>
-                  Back to roster
-                </Button>
-              </div>
-            </div>
-          </div>
-        ) : null}
-
-        {emailErrorMessage ? (
-          <div className="border border-amber-200 bg-amber-50 p-4 text-amber-950">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold">Student registered, but guardian email failed to send.</p>
-                <p className="mt-1 text-sm text-amber-900">{emailErrorMessage}</p>
-                <p className="mt-1 text-sm text-amber-900">
-                  Please verify the guardian's email address and SMTP settings. The student record was still created.
-                </p>
-              </div>
+      <section aria-label="Enrollment status" className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
+        <div className="inline-flex border border-border bg-surface" role="tablist" aria-label="Student status">
+          {(["ACTIVE", "INACTIVE"] as const).map((status) => {
+            const selected = rosterStatus === status;
+            const count = status === "ACTIVE" ? activePupils.length : inactiveLoaded ? inactivePupils.length : null;
+            return (
               <button
+                key={status}
                 type="button"
-                onClick={() => setEmailErrorMessage(null)}
-                className="rounded-md p-1 text-amber-700 transition hover:bg-amber-100"
-                aria-label="Dismiss notification"
+                role="tab"
+                aria-selected={selected}
+                onClick={() => handleRosterStatusChange(status)}
+                disabled={rosterLoading}
+                className={`min-h-11 cursor-pointer border-r border-border px-4 text-sm font-semibold last:border-r-0 disabled:cursor-not-allowed disabled:opacity-60 ${selected ? "bg-brand text-white" : "text-muted hover:bg-background hover:text-foreground"}`}
               >
-                <X size={16} />
+                {status === "ACTIVE" ? "Active" : "Inactive"}{count === null ? "" : ` (${count})`}
               </button>
-            </div>
+            );
+          })}
+        </div>
+        <p className="text-xs text-muted">Inactive records are retained and can be restored; they are not permanently deleted.</p>
+      </section>
+
+      {rosterLoading ? <p role="status" className="py-6 text-center text-sm text-muted">Loading inactive student records…</p> : null}
+
+      <ErrorModal
+        isOpen={Boolean(feedbackModal)}
+        onClose={() => setFeedbackModal(null)}
+        title={feedbackModal?.title}
+        message={feedbackModal?.message || ""}
+        details={feedbackModal?.details}
+        type={feedbackModal?.type || "success"}
+        confirmLabel={feedbackModal?.type === "error" ? "Okay" : "Done"}
+      />
+
+      {rosterStatus === "ACTIVE" && selectedStudentIds.size > 0 ? (
+        <section aria-label="Selected student actions" className="sticky top-3 z-30 flex flex-wrap items-center justify-between gap-3 border border-brand/20 bg-surface px-4 py-3 shadow-sm">
+          <div className="flex items-center gap-2 text-sm text-foreground">
+            <CheckSquare className="h-4 w-4 text-brand" aria-hidden="true" />
+            <span className="font-semibold">{selectedStudentIds.size} selected</span>
+            <button type="button" onClick={() => setSelectedStudentIds(new Set())} className="ml-1 cursor-pointer text-xs font-semibold text-muted underline underline-offset-2 hover:text-foreground">Clear selection</button>
           </div>
-        ) : null}
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              className="h-9 cursor-pointer px-3 text-sm"
+              onClick={() => {
+                playOpenTone();
+                setNotifyResult(null);
+                setIsNotifyModalOpen(true);
+              }}
+            >
+              <Send className="h-4 w-4" aria-hidden="true" /> Notify parents
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-9 cursor-pointer border-red-200 px-3 text-sm text-red-700 hover:border-red-300 hover:bg-red-50"
+              onClick={() => setIsBulkDeactivateConfirmOpen(true)}
+            >
+              <UserMinus className="h-4 w-4" aria-hidden="true" /> Deactivate selected
+            </Button>
+          </div>
+        </section>
+      ) : null}
 
         {/* Phase tabs + filters */}
         <div className="border border-border bg-surface p-3 sm:p-4">
@@ -711,7 +862,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                 <button
                   key={phase}
                   onClick={() => handlePhaseChange(phase)}
-                  className={`px-2 py-2 text-xs font-medium transition-colors sm:px-4 sm:text-sm ${
+                  className={`cursor-pointer px-2 py-2 text-xs font-medium transition-colors sm:px-4 sm:text-sm ${
                     isActive
                       ? "border-b-2 border-primary text-primary"
                       : "border-b-2 border-transparent text-muted hover:text-foreground"
@@ -738,7 +889,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
               <select
                 value={sortMode}
                 onChange={handleSortChange}
-                className="rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+                className="cursor-pointer rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
               >
                 <option value="alphabet-asc">A–Z</option>
                 <option value="alphabet-desc">Z–A</option>
@@ -754,7 +905,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
               <select
                 value={selectedClassId}
                 onChange={handleClassChange}
-                className="rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+                className="cursor-pointer rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
               >
                 <option value="ALL">All classes</option>
                 {classOptions.map((cls) => (
@@ -770,7 +921,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
               <select
                 value={selectedLetter}
                 onChange={handleLetterChange}
-                className="rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+                className="cursor-pointer rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
               >
                 {alphabetOptions.map((letter) => (
                   <option key={letter} value={letter}>
@@ -785,7 +936,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
               <select
                 value={itemsPerPage}
                 onChange={handlePageSizeChange}
-                className="rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+                className="cursor-pointer rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
               >
                 {PAGE_SIZE_OPTIONS.map((size) => (
                   <option key={size} value={size}>
@@ -799,8 +950,9 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
               <button
                 type="button"
                 onClick={resetAdvancedFilters}
-                className="rounded-md border border-border px-2.5 py-1.5 text-sm font-medium text-foreground transition hover:bg-background"
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-sm font-medium text-foreground transition hover:bg-background"
               >
+                <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
                 Reset
               </button>
             )}
@@ -812,19 +964,19 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
       {paginatedPupils.length > 0 ? (
         <>
           {/* Desktop Table View */}
-          <div className="hidden sm:block overflow-hidden border border-border bg-surface">
-            <table className="w-full text-left text-sm">
+          <div className="hidden overflow-x-auto border border-border bg-surface sm:block">
+            <table className="w-full min-w-[1040px] text-left text-sm">
               <thead className="border-b border-border bg-background text-muted">
                 <tr>
                   <th className="w-12 px-4 py-2">
-                    <input type="checkbox" checked={allVisibleSelected} onChange={toggleVisibleSelection} aria-label="Select visible students" className="h-4 w-4 accent-brand" />
+                    {rosterStatus === "ACTIVE" ? <input type="checkbox" checked={allVisibleSelected} onChange={toggleVisibleSelection} aria-label="Select visible students" className="h-4 w-4 cursor-pointer accent-brand" /> : null}
                   </th>
                   <th className="px-4 py-2 font-medium">Photo</th>
                   <th className="px-4 py-2 font-medium">Name</th>
                   <th className="px-4 py-2 font-medium">Class</th>
                   <th className="px-4 py-2 font-medium">Admission No.</th>
                   <th className="px-4 py-2 font-medium">Parent Contact</th>
-                  <th className="px-4 py-2 font-medium">Action</th>
+                  <th className="w-28 px-4 py-2 text-right font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -835,9 +987,9 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                     : "Unassigned";
 
                   return (
-                    <tr key={p.id} className="border-t border-border hover:bg-background/50 transition-colors">
+                    <tr key={p.id} className="border-t border-border transition-colors hover:bg-background/50">
                       <td className="px-4 py-2">
-                        <input type="checkbox" checked={selectedStudentIds.has(p.id)} onChange={() => toggleStudentSelection(p.id)} aria-label={`Select ${p.firstName} ${p.lastName}`} className="h-4 w-4 accent-brand" />
+                        {rosterStatus === "ACTIVE" ? <input type="checkbox" checked={selectedStudentIds.has(p.id)} onChange={() => toggleStudentSelection(p.id)} aria-label={`Select ${p.firstName} ${p.lastName}`} className="h-4 w-4 cursor-pointer accent-brand" /> : null}
                       </td>
                       <td className="px-4 py-2">
                         {p.photoUrl ? (
@@ -866,17 +1018,32 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                       <td className="px-4 py-2 text-muted">
                         {guardian?.phone ?? "—"}
                       </td>
-                      <td className="px-4 py-2 flex flex-wrap gap-2">
+                      <td className="px-4 py-2">
+                        <div className="flex flex-nowrap items-center justify-end gap-1.5 whitespace-nowrap">
                         <button
                           type="button"
                           onClick={() => router.push(`/admin/students/${p.id}`)}
-                          className="rounded-md bg-brand px-2 py-1 text-xs font-semibold text-white transition hover:bg-brand-hover"
+                          title={`View ${pupilName(p.firstName, p.lastName, p.middleName)}`}
+                          className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md bg-brand px-3 text-xs font-semibold text-white transition hover:bg-brand-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                         >
+                          <Eye className="h-3.5 w-3.5" aria-hidden="true" />
                           View
                         </button>
-                        <Button type="button" variant="secondary" className="text-xs px-1.5 py-0.5" onClick={() => router.push(`/admin/students/${p.id}/edit`)}>
-                          Edit
-                        </Button>
+                        <details className="relative">
+                          <summary aria-label={`More actions for ${pupilName(p.firstName, p.lastName, p.middleName)}`} title="More actions" className="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-md border border-border text-muted transition hover:bg-background hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand [&::-webkit-details-marker]:hidden">
+                            <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+                          </summary>
+                          <div className="absolute right-0 top-10 z-40 w-48 border border-border bg-surface p-1 shadow-lg">
+                            <button type="button" onClick={(event) => { event.currentTarget.closest("details")?.removeAttribute("open"); router.push(`/admin/students/${p.id}/edit`); }} className="flex h-10 w-full cursor-pointer items-center gap-2 px-3 text-left text-sm font-medium text-foreground transition hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand">
+                              <Pencil className="h-4 w-4 text-muted" aria-hidden="true" /> Edit student
+                            </button>
+                            <button type="button" onClick={(event) => { event.currentTarget.closest("details")?.removeAttribute("open"); setStatusActionStudent(p); }} className={`flex h-10 w-full cursor-pointer items-center gap-2 px-3 text-left text-sm font-medium transition hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand ${rosterStatus === "ACTIVE" ? "text-red-700" : "text-emerald-700"}`}>
+                              {rosterStatus === "ACTIVE" ? <UserMinus className="h-4 w-4" aria-hidden="true" /> : <UserCheck className="h-4 w-4" aria-hidden="true" />}
+                              {rosterStatus === "ACTIVE" ? "Deactivate" : "Restore"}
+                            </button>
+                          </div>
+                        </details>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -899,7 +1066,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-3">
-                      <input type="checkbox" checked={selectedStudentIds.has(p.id)} onChange={() => toggleStudentSelection(p.id)} aria-label={`Select ${p.firstName} ${p.lastName}`} className="h-4 w-4 shrink-0 accent-brand" />
+                      {rosterStatus === "ACTIVE" ? <input type="checkbox" checked={selectedStudentIds.has(p.id)} onChange={() => toggleStudentSelection(p.id)} aria-label={`Select ${p.firstName} ${p.lastName}`} className="h-4 w-4 shrink-0 cursor-pointer accent-brand" /> : null}
                       <div className="min-w-0">
                       <p className="font-medium text-sm truncate">
                         {[p.lastName, p.firstName].filter(Boolean).join(" ")}
@@ -907,21 +1074,30 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                       <p className="text-xs text-muted mt-1">{classLabel}</p>
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5">
                       <button
                         type="button"
                         onClick={() => router.push(`/admin/students/${p.id}`)}
-                        className="rounded-md bg-brand px-2 py-1 text-xs font-semibold text-white transition hover:bg-brand-hover"
+                        title={`View ${pupilName(p.firstName, p.lastName, p.middleName)}`}
+                        className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md bg-brand px-3 text-xs font-semibold text-white transition hover:bg-brand-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                       >
+                        <Eye className="h-3.5 w-3.5" aria-hidden="true" />
                         View
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => router.push(`/admin/students/${p.id}/edit`)}
-                        className="rounded-md border border-border bg-surface px-1.5 py-0.5 text-xs font-semibold text-foreground transition hover:bg-background"
-                      >
-                        Edit
-                      </button>
+                      <details className="relative">
+                        <summary aria-label={`More actions for ${pupilName(p.firstName, p.lastName, p.middleName)}`} title="More actions" className="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-md border border-border text-muted transition hover:bg-background hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand [&::-webkit-details-marker]:hidden">
+                          <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+                        </summary>
+                        <div className="absolute right-0 top-10 z-40 w-48 border border-border bg-surface p-1 shadow-lg">
+                          <button type="button" onClick={(event) => { event.currentTarget.closest("details")?.removeAttribute("open"); router.push(`/admin/students/${p.id}/edit`); }} className="flex h-10 w-full cursor-pointer items-center gap-2 px-3 text-left text-sm font-medium text-foreground transition hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand">
+                            <Pencil className="h-4 w-4 text-muted" aria-hidden="true" /> Edit student
+                          </button>
+                          <button type="button" onClick={(event) => { event.currentTarget.closest("details")?.removeAttribute("open"); setStatusActionStudent(p); }} className={`flex h-10 w-full cursor-pointer items-center gap-2 px-3 text-left text-sm font-medium transition hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand ${rosterStatus === "ACTIVE" ? "text-red-700" : "text-emerald-700"}`}>
+                            {rosterStatus === "ACTIVE" ? <UserMinus className="h-4 w-4" aria-hidden="true" /> : <UserCheck className="h-4 w-4" aria-hidden="true" />}
+                            {rosterStatus === "ACTIVE" ? "Deactivate" : "Restore"}
+                          </button>
+                        </div>
+                      </details>
                     </div>
                   </div>
                 </div>
@@ -937,11 +1113,12 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
+                  type="button"
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="rounded px-3 py-1.5 border border-border text-sm font-medium text-foreground hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md border border-border px-3 text-sm font-medium text-foreground transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Previous
+                  <ChevronLeft className="h-4 w-4" aria-hidden="true" /> Previous
                 </button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1)
                   .filter((page) => {
@@ -958,8 +1135,10 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                         <span className="px-2 py-2 text-muted">...</span>
                       )}
                       <button
+                        type="button"
                         onClick={() => setCurrentPage(page)}
-                        className={`rounded px-2.5 py-1.5 text-sm font-medium ${
+                        aria-current={page === currentPage ? "page" : undefined}
+                        className={`h-9 min-w-9 cursor-pointer rounded-md px-2.5 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
                           page === currentPage
                             ? "bg-primary text-white"
                             : "border border-border text-foreground hover:bg-background"
@@ -970,11 +1149,12 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                     </div>
                   ))}
                 <button
+                  type="button"
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                  className="rounded px-3 py-1.5 border border-border text-sm font-medium text-foreground hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md border border-border px-3 text-sm font-medium text-foreground transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Next
+                  Next <ChevronRight className="h-4 w-4" aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -985,10 +1165,61 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
           <p className="text-muted">
             {searchQuery
               ? `No students found matching "${searchQuery}"`
-              : "No students in this phase"}
+              : rosterStatus === "INACTIVE" && activePhase === "ALL"
+                ? "No inactive student records. Students deactivated later will appear here."
+                : `No ${rosterStatus.toLowerCase()} students in this phase`}
           </p>
         </div>
       )}
+
+      {statusActionStudent ? (
+        <div className="fixed inset-0 z-[70] grid place-items-center bg-black/50 px-4 py-8" role="presentation">
+          <section role="dialog" aria-modal="true" aria-labelledby="student-status-dialog-title" className="w-full max-w-lg border border-border bg-surface shadow-xl">
+            <div className="border-b border-border px-5 py-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-muted">Student enrollment</p>
+              <h2 id="student-status-dialog-title" className="mt-1 text-xl font-semibold text-foreground">
+                {rosterStatus === "ACTIVE" ? "Deactivate student?" : "Restore student?"}
+              </h2>
+            </div>
+            <div className="space-y-3 px-5 py-4 text-sm text-muted">
+              <p className="font-semibold text-foreground">{pupilName(statusActionStudent.firstName, statusActionStudent.lastName, statusActionStudent.middleName)}</p>
+              {rosterStatus === "ACTIVE" ? (
+                <p>This removes the student from the active roster and active workflows. Their profile, academic history, attendance, and fee records are retained. You can restore the student later from the Inactive tab.</p>
+              ) : (
+                <p>This restores the student to the active roster. Their saved class assignment and student history will be kept.</p>
+              )}
+            </div>
+            <div className="flex justify-end gap-2 border-t border-border px-5 py-4">
+              <Button type="button" variant="secondary" disabled={statusActionBusy} onClick={() => setStatusActionStudent(null)} className="gap-1.5"><X className="h-4 w-4" aria-hidden="true" />Cancel</Button>
+              <Button type="button" disabled={statusActionBusy} onClick={confirmStatusChange} className={rosterStatus === "ACTIVE" ? "bg-red-700 text-white hover:bg-red-800" : ""}>
+                {rosterStatus === "ACTIVE" ? <UserMinus className="h-4 w-4" aria-hidden="true" /> : <UserCheck className="h-4 w-4" aria-hidden="true" />}
+                {statusActionBusy ? "Updating…" : rosterStatus === "ACTIVE" ? "Deactivate student" : "Restore student"}
+              </Button>
+            </div>
+          </section>
+        </div>
+      ) : null}
+
+      {isBulkDeactivateConfirmOpen ? (
+        <div className="fixed inset-0 z-[70] grid place-items-center bg-black/50 px-4 py-8" role="presentation">
+          <section role="dialog" aria-modal="true" aria-labelledby="bulk-deactivate-title" className="w-full max-w-lg border border-border bg-surface shadow-xl">
+            <div className="border-b border-border px-5 py-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-muted">Bulk enrollment action</p>
+              <h2 id="bulk-deactivate-title" className="mt-1 text-xl font-semibold text-foreground">Deactivate {selectedStudentIds.size} students?</h2>
+            </div>
+            <div className="space-y-3 px-5 py-4 text-sm text-muted">
+              <p>The selected students will leave the active roster and active workflows. Their profiles, results, attendance, and fee history are retained and can be restored from Inactive.</p>
+              <p className="font-medium text-foreground">This action applies only to the {selectedStudentIds.size} selected record{selectedStudentIds.size === 1 ? "" : "s"}.</p>
+            </div>
+            <div className="flex justify-end gap-2 border-t border-border px-5 py-4">
+              <Button type="button" variant="secondary" disabled={isBulkDeactivating} onClick={() => setIsBulkDeactivateConfirmOpen(false)} className="gap-1.5"><X className="h-4 w-4" aria-hidden="true" />Cancel</Button>
+              <Button type="button" variant="destructive" disabled={isBulkDeactivating || selectedStudentIds.size === 0} onClick={confirmBulkDeactivate} className="gap-1.5">
+                <UserMinus className="h-4 w-4" aria-hidden="true" />{isBulkDeactivating ? "Deactivating…" : `Deactivate ${selectedStudentIds.size}`}
+              </Button>
+            </div>
+          </section>
+        </div>
+      ) : null}
 
       {isNotifyModalOpen ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
@@ -1004,7 +1235,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                   <p className="mt-1 text-sm leading-6 text-muted">Send secure parent portal access details for {selectedStudentIds.size} selected student{selectedStudentIds.size === 1 ? '' : 's'}.</p>
                 </div>
               </div>
-              <button type="button" onClick={closeNotifyModal} className="flex h-8 w-8 items-center justify-center rounded-md border border-border transition-colors hover:bg-background" aria-label="Close notification dialog"><X className="h-4 w-4" /></button>
+              <button type="button" onClick={closeNotifyModal} className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-border transition-colors hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand" aria-label="Close notification dialog"><X className="h-4 w-4" /></button>
             </div>
 
             <div className="space-y-5 px-4 py-4 sm:space-y-6 sm:px-6 sm:py-6">
@@ -1018,7 +1249,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                     const checked = notifyChannels.includes(channel);
                     return (
                       <label key={channel} className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition ${checked ? 'border-brand bg-brand/5' : 'border-border bg-background'}`}>
-                        <input type="checkbox" checked={checked} onChange={() => setNotifyChannels((current) => checked ? current.filter((item) => item !== channel) : [...current, channel])} className="h-4 w-4 accent-brand" />
+                        <input type="checkbox" checked={checked} onChange={() => setNotifyChannels((current) => checked ? current.filter((item) => item !== channel) : [...current, channel])} className="h-4 w-4 cursor-pointer accent-brand" />
                         <Icon className="h-4 w-4 text-brand" />
                         <span className="text-sm font-semibold text-foreground">{label}</span>
                       </label>
@@ -1032,7 +1263,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
               </div>
 
               <label className="flex items-start gap-3 text-sm text-foreground">
-                <input type="checkbox" checked={forceResend} onChange={(event) => setForceResend(event.target.checked)} className="mt-0.5 h-4 w-4 accent-brand" />
+                <input type="checkbox" checked={forceResend} onChange={(event) => setForceResend(event.target.checked)} className="mt-0.5 h-4 w-4 cursor-pointer accent-brand" />
                 <span><span className="font-semibold">Send again even if recently sent</span><span className="mt-1 block text-muted">Use this only when a parent confirms the previous message was lost.</span></span>
               </label>
 
@@ -1040,8 +1271,8 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
               {notifyResult?.totals ? <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">Completed: {notifyResult.totals.sent} sent, {notifyResult.totals.queued} queued, {notifyResult.totals.failed} failed, {notifyResult.totals.duplicateSuppressed} duplicate{notifyResult.totals.duplicateSuppressed === 1 ? '' : 's'} suppressed.</div> : null}
 
               <div className="flex flex-col-reverse gap-3 border-t border-border pt-4 sm:flex-row sm:justify-end">
-                <button type="button" onClick={closeNotifyModal} disabled={isNotifying} className="flex-1 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-background disabled:opacity-50">Cancel</button>
-                <button type="button" disabled={isNotifying || notifyChannels.length === 0 || Boolean(notifyResult?.totals)} onClick={handleNotifyParents} className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:opacity-50">
+                <button type="button" onClick={closeNotifyModal} disabled={isNotifying} className="flex-1 cursor-pointer rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-background disabled:cursor-not-allowed disabled:opacity-50"><X className="mr-1.5 inline h-4 w-4" aria-hidden="true" />Cancel</button>
+                <button type="button" disabled={isNotifying || notifyChannels.length === 0 || Boolean(notifyResult?.totals)} onClick={handleNotifyParents} className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50">
                   <Send className="mr-2 h-4 w-4" />{isNotifying ? 'Sending...' : 'Send notifications'}
                 </button>
               </div>
@@ -1073,10 +1304,10 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                     setIsImportModalOpen(false);
                     resetImportState();
                   }}
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border hover:bg-background transition-colors"
+                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-border transition-colors hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                   aria-label="Close import dialog"
                 >
-                  ✕
+                  <X className="h-4 w-4" aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -1091,7 +1322,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                   <button
                     type="button"
                     onClick={handleDownloadImportTemplate}
-                    className="inline-flex items-center justify-center gap-2 rounded-md border border-brand bg-surface px-3 py-2 text-sm font-semibold text-brand transition hover:bg-brand-light"
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-brand bg-surface px-3 py-2 text-sm font-semibold text-brand transition hover:bg-brand-light focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                   >
                     <Download className="h-4 w-4" />
                     Download template
@@ -1125,9 +1356,9 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                       setIsImportModalOpen(false);
                       resetImportState();
                     }}
-                    className="rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground transition hover:bg-background"
+                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground transition hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                   >
-                    Cancel
+                    <X className="h-4 w-4" aria-hidden="true" /> Cancel
                   </button>
                   <Button type="submit" className="inline-flex items-center gap-2" disabled={isImporting}>
                     <Upload className="h-4 w-4" />
@@ -1158,6 +1389,7 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <h4 className="text-sm font-semibold text-foreground">Preview</h4>
                     <Button type="button" onClick={handleConfirmImport} disabled={isImporting}>
+                      <Users className="h-4 w-4" aria-hidden="true" />
                       {isImporting ? 'Importing...' : 'Import students'}
                     </Button>
                   </div>
@@ -1307,9 +1539,9 @@ export default function StudentsPageClient({ pupils, classes }: { pupils: any[];
                     <button
                       type="button"
                       onClick={closeProfileModal}
-                      className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary/90"
+                      className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                     >
-                      Close
+                      <X className="h-4 w-4" aria-hidden="true" /> Close
                     </button>
                   </div>
                 </div>
