@@ -1,11 +1,12 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { ArrowRight, BookOpen, Sparkles } from 'lucide-react'
+import { ArrowRight, BookOpen, ChevronRight, Clock3, Sparkles } from 'lucide-react'
 import { blogPosts, getBlogPostBySlug, getRelatedPosts } from '../data'
 import { ContextualAdSlot } from '@/components/login-page-ad-slot'
 
 const INTERNAL_LINKS = {
+  'schoolbase platform': '/platform',
   'best school management software': '/blog/best-school-management-software',
   'parent communication software': '/blog/parent-communication-software',
   'parent communication': '/blog/parent-communication-software',
@@ -47,6 +48,10 @@ function renderLinkedText(text: string) {
 
     return <span key={`${part}-${index}`}>{part}</span>
   })
+}
+
+function sectionId(heading: string) {
+  return heading.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
 export async function generateStaticParams() {
@@ -142,114 +147,134 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           }),
         }}
       />
-      <section className="border-b border-border bg-[#f6faff] py-20">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-brand">
-            <Sparkles className="h-4 w-4" />
-            {post.category}
+      <section className="border-b border-border bg-[#f6faff]">
+        <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 sm:py-20 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:gap-14 lg:py-24">
+          <div>
+            <Link href="/blog" className="text-sm font-semibold text-brand hover:text-brand-hover">SchoolBase Insights</Link>
+            <p className="mt-6 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.2em] text-brand">
+              <Sparkles className="h-4 w-4" /> {post.category}
+            </p>
+            <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-[1.08] tracking-tight text-foreground sm:text-6xl">
+              {post.title}
+            </h1>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-muted sm:text-xl">{post.description}</p>
+            <div className="mt-6 flex flex-wrap items-center gap-3 text-sm text-muted">
+              <span className="inline-flex items-center gap-2"><Clock3 className="h-4 w-4 text-brand" />{post.readingTime}</span>
+              <span aria-hidden="true">·</span>
+              <time>{post.publishedAt}</time>
+              {post.authorName ? <><span aria-hidden="true">·</span><span>{post.authorName}</span></> : null}
+            </div>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <a href="#article" className="inline-flex items-center gap-2 rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-hover">
+                Read the article <ArrowRight className="h-4 w-4" />
+              </a>
+              <Link href="/blog" className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-5 py-3 text-sm font-semibold text-foreground transition hover:border-brand hover:text-brand">
+                Browse all insights <ChevronRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
-          <h1 className="mt-5 max-w-4xl text-4xl font-bold leading-[1.08] tracking-tight text-foreground sm:text-6xl">
-            {post.title}
-          </h1>
-          <p className="mt-5 max-w-3xl text-lg leading-8 text-muted">{post.description}</p>
-          <div className="mt-6 flex flex-wrap gap-3 text-sm text-muted">
-            <span>{post.readingTime}</span>
-            <span>•</span>
-            <span>{post.publishedAt}</span>
-          </div>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {post.keywords.map((keyword) => (
-              <span key={keyword} className="rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted">
-                {keyword}
-              </span>
-            ))}
-          </div>
-          <div className="mt-8 max-w-xl">
-            <ContextualAdSlot path={`/blog/${post.slug}`} compact />
-          </div>
-          <div className={`mt-10 grid gap-8 ${post.image ? 'lg:grid-cols-[420px_minmax(0,1fr)]' : 'lg:grid-cols-1'}`}>
-            {post.image ? (
-                <div className="relative overflow-hidden border border-border shadow-xl">
-                <img
-                  src={post.image}
-                  alt={post.title}
-                  className="h-[420px] w-full object-cover"
-                />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent px-6 py-6 text-white">
-                  <p className="text-sm uppercase tracking-[0.24em] text-brand-light">Author</p>
-                  {post.authorName && (
-                    <p className="mt-2 text-2xl font-semibold tracking-tight text-white">{post.authorName}</p>
-                  )}
-                  {post.authorRole && (
-                    <p className="mt-2 text-sm leading-6 text-slate-200">{post.authorRole}</p>
-                  )}
-                </div>
+
+          <div className="relative">
+            <div className="absolute inset-3 border border-brand/20 bg-white shadow-[12px_12px_0_0_#dcecff] sm:inset-5" />
+            <div className="relative border border-brand/30 bg-white p-6 shadow-xl sm:p-8">
+              {post.image ? <img src={post.image} alt={post.title} className="mb-6 aspect-[16/9] w-full border border-border object-cover" /> : null}
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand">The central idea</p>
+              <p className="mt-4 text-xl font-semibold leading-8 text-foreground sm:text-2xl">{post.hero}</p>
+              <div className="mt-7 flex items-center justify-between border-t border-border pt-5 text-sm text-muted">
+                <span>{post.sections.length} sections</span>
+                <span>{post.readingTime}</span>
               </div>
-            ) : null}
-            <div className="flex min-h-[420px] items-center justify-center border border-brand/30 bg-brand-light p-10 text-center">
-              <div className="max-w-2xl">
-                <p className="text-[6rem] font-black leading-none text-brand/80">“</p>
-                <p className="mt-4 text-xl font-semibold leading-9 text-foreground">{post.hero}</p>
-                <p className="mt-4 text-[6rem] font-black leading-none text-brand/80">”</p>
-              </div>
+              {post.authorRole ? <p className="mt-4 text-sm leading-6 text-muted">{post.authorRole}</p> : null}
             </div>
           </div>
         </div>
       </section>
 
-      <section className="py-16">
-        <div className="mx-auto max-w-5xl px-6">
-          <article className="mt-10 space-y-10">
-            {post.sections.map((section) => (
-              <section key={section.heading} className="border border-border bg-white p-8">
-                <h2 className="text-2xl font-semibold text-foreground">{section.heading}</h2>
-                <div className="mt-4 space-y-4 text-base leading-8 text-muted">
-                  {section.body.map((paragraph) => (
-                    <p key={paragraph}>{renderLinkedText(paragraph)}</p>
-                  ))}
+      <section className="border-b border-border bg-white py-12">
+        <div className="mx-auto grid max-w-6xl gap-8 px-6 lg:grid-cols-[0.72fr_1.28fr]">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand">In this article</p>
+            <h2 className="mt-3 text-xl font-semibold text-foreground">A clear path through the topic.</h2>
+          </div>
+          <nav aria-label="Article contents" className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
+            {post.sections.map((section, index) => (
+              <a key={section.heading} href={`#${sectionId(section.heading)}`} className="group flex items-start gap-3 border-b border-border pb-3 text-sm text-foreground hover:text-brand">
+                <span className="font-semibold text-brand">{String(index + 1).padStart(2, '0')}</span>
+                <span className="leading-6">{section.heading}</span>
+                <ChevronRight className="ml-auto mt-0.5 h-4 w-4 shrink-0 text-muted transition group-hover:translate-x-0.5 group-hover:text-brand" />
+              </a>
+            ))}
+          </nav>
+        </div>
+      </section>
+
+      <article id="article" className="scroll-mt-8">
+        {post.sections.map((section, index) => (
+          <section key={section.heading} id={sectionId(section.heading)} className={index % 2 === 0 ? 'py-14 sm:py-20' : 'border-y border-border bg-[#f6faff] py-14 sm:py-20'}>
+            <div className="mx-auto grid max-w-6xl gap-8 px-6 lg:grid-cols-[0.42fr_1.58fr] lg:gap-14">
+              <div>
+                <p className="text-sm font-bold tracking-[0.16em] text-brand">{String(index + 1).padStart(2, '0')}</p>
+                <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted">{post.category}</p>
+              </div>
+              <div className="max-w-3xl">
+                <h2 className="text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl">{section.heading}</h2>
+                <div className="mt-6 space-y-5 text-base leading-8 text-muted sm:text-lg">
+                  {section.body.map((paragraph) => <p key={paragraph}>{renderLinkedText(paragraph)}</p>)}
                 </div>
-                {section.bullets && (
-                  <ul className="mt-6 space-y-3 text-sm leading-7 text-muted">
+                {section.bullets ? (
+                  <ul className="mt-8 grid gap-3 sm:grid-cols-2">
                     {section.bullets.map((bullet) => (
-                      <li key={bullet} className="flex gap-3">
-                        <span className="mt-1 text-brand">✓</span>
+                      <li key={bullet} className="flex items-start gap-3 border border-brand/15 bg-white p-4 text-sm leading-6 text-foreground">
+                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center bg-brand text-xs font-bold text-white">✓</span>
                         <span>{renderLinkedText(bullet)}</span>
                       </li>
                     ))}
                   </ul>
-                )}
-              </section>
-            ))}
-          </article>
-
-          <div className="mt-12 rounded-2xl border border-border bg-surface p-8">
-            <div className="flex items-center gap-2 text-sm font-medium text-brand">
-              <BookOpen className="h-4 w-4" />
-              Related reading
+                ) : null}
+              </div>
             </div>
-            <div className="mt-6 grid gap-6 md:grid-cols-2">
-              {relatedPosts.map((item) => (
-                <Link key={item.slug} href={`/blog/${item.slug}`} className="border border-border bg-background p-5 hover:border-brand/40 hover:bg-brand-light/40">
-                  <h3 className="text-lg font-semibold text-foreground">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-7 text-muted">{item.excerpt}</p>
+          </section>
+        ))}
+      </article>
+
+      <div className="py-8">
+        <div className="mx-auto max-w-6xl px-6"><ContextualAdSlot path={`/blog/${post.slug}`} compact /></div>
+      </div>
+
+      {relatedPosts.length ? (
+        <section className="border-t border-border bg-white py-14 sm:py-20">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">Keep exploring</p>
+                <h2 className="mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Related insights.</h2>
+              </div>
+              <Link href="/blog" className="hidden items-center gap-2 text-sm font-semibold text-brand hover:text-brand-hover sm:inline-flex">All articles <ArrowRight className="h-4 w-4" /></Link>
+            </div>
+            <div className="mt-8 grid gap-3 md:grid-cols-2">
+              {relatedPosts.map((item, index) => (
+                <Link key={item.slug} href={`/blog/${item.slug}`} className="group border border-border bg-background p-6 transition hover:border-brand/40 hover:bg-brand-light/20">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand">{item.category} · {String(index + 1).padStart(2, '0')}</p>
+                  <h3 className="mt-3 text-xl font-semibold leading-snug text-foreground group-hover:text-brand">{item.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-muted">{item.excerpt}</p>
+                  <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand">Read article <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" /></span>
                 </Link>
               ))}
             </div>
           </div>
+        </section>
+      ) : null}
 
-          <div className="mt-12 border border-brand/20 bg-brand-light/50 p-8 text-center">
-            <h2 className="text-2xl font-semibold text-foreground">Ready to modernize your school?</h2>
-            <p className="mt-3 text-lg text-muted">
-              Explore the full SchoolBase platform and see how it supports smarter operations, stronger communication, and better educational outcomes.
-            </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-4">
-              <Link href="/platform" className="inline-flex items-center gap-2 rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand/90">
-                Explore the platform <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link href="/contact" className="inline-flex items-center rounded-lg border border-border bg-background px-5 py-3 text-sm font-semibold text-foreground hover:bg-surface">
-                Book a demo
-              </Link>
-            </div>
+      <section className="bg-brand py-16 text-white sm:py-20">
+        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-8 px-6 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/70">A connected operating platform for schools</p>
+            <h2 className="mt-3 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">Give every part of your school a clearer place to work.</h2>
+            <p className="mt-4 max-w-2xl leading-7 text-white/80">See how SchoolBase connects administration, academics, finance, and families.</p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/platform" className="inline-flex items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-brand transition hover:bg-blue-50">Explore the platform <ArrowRight className="h-4 w-4" /></Link>
+            <Link href="/contact" className="inline-flex items-center gap-2 rounded-lg border border-white/40 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10">Book a demo <ChevronRight className="h-4 w-4" /></Link>
           </div>
         </div>
       </section>
