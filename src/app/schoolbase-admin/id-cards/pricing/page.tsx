@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BadgeDollarSign, Check, Clock3, Plus, Save } from "lucide-react";
+import { ErrorModal } from "@/components/ui/error-modal";
 
 type PricingBand = { from: number; through: number | null; unitPriceMinor: number };
 type PricingRule = {
@@ -58,32 +59,45 @@ function formatMinor(amount: number, currency: string) {
 export default function IdCardPricingPage() {
   const [versions, setVersions] = useState<PricingVersion[]>([]);
   const [rule, setRule] = useState<PricingRule | null>(null);
+  const [baselineRule, setBaselineRule] = useState<PricingRule | null>(null);
   const [reason, setReason] = useState("");
   const [effectiveAt, setEffectiveAt] = useState("");
   const [previewQuantity, setPreviewQuantity] = useState(50);
   const [previewTemplate, setPreviewTemplate] = useState("modernInstitution");
   const [preview, setPreview] = useState<PricingPreview | null>(null);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [statusModal, setStatusModal] = useState<{ open: boolean; type: "success" | "error"; title: string; message: string }>({
+    open: false,
+    type: "success",
+    title: "",
+    message: "",
+  });
 
-  const load = async () => {
+  const load = async (preserveEditor = false) => {
     const data = await requestJson<{ defaultRule: PricingRule; rules: PricingVersion[] }>("/schoolbase-admin/api/id-cards/pricing");
     setVersions(data.rules || []);
+    if (preserveEditor && rule) {
+      setBaselineRule(rule);
+      return;
+    }
     const active = data.rules.find((version) => version.isActive && version.rule && new Date(version.effectiveAt).getTime() <= Date.now())?.rule;
     const selectedRule = active || data.defaultRule;
-    setRule({
+    const nextRule = {
       ...selectedRule,
       premiumTemplateUpliftMinor: {
         ...data.defaultRule.premiumTemplateUpliftMinor,
         ...selectedRule.premiumTemplateUpliftMinor,
       },
-    });
+    };
+    setRule(nextRule);
+    setBaselineRule(nextRule);
   };
 
   useEffect(() => {
-    load().catch((loadError) => setError(loadError instanceof Error ? loadError.message : "Unable to load pricing."));
+    load().catch((loadError) => setStatusModal({ open: true, type: "error", title: "Pricing could not be loaded", message: loadError instanceof Error ? loadError.message : "Unable to load pricing." }));
   }, []);
+
+  const hasPricingChanges = Boolean(rule && baselineRule && JSON.stringify(rule) !== JSON.stringify(baselineRule));
 
   const updateBand = (index: number, update: Partial<PricingBand>) => {
     setRule((current) => current ? {
@@ -105,9 +119,15 @@ export default function IdCardPricingPage() {
 
   const saveDraft = async () => {
     if (!rule) return;
+    if (!hasPricingChanges) {
+      setStatusModal({ open: true, type: "error", title: "No pricing changes", message: "Change at least one pricing value before saving a draft." });
+      return;
+    }
+    if (reason.trim().length < 8) {
+      setStatusModal({ open: true, type: "error", title: "Add a reason for this change", message: "Enter a reason of at least 8 characters so the pricing version has a clear audit record." });
+      return;
+    }
     setBusy(true);
-    setError(null);
-    setNotice(null);
     try {
       await requestJson("/schoolbase-admin/api/id-cards/pricing", {
         method: "POST",
@@ -115,10 +135,11 @@ export default function IdCardPricingPage() {
         body: JSON.stringify({ rule, reason, effectiveAt: effectiveAt ? new Date(effectiveAt).toISOString() : undefined }),
       });
       setReason("");
-      setNotice("Pricing draft saved. A different platform administrator must approve it before it takes effect.");
-      await load();
+      setEffectiveAt("");
+      await load(true);
+      setStatusModal({ open: true, type: "success", title: "Pricing draft saved", message: "The new version is ready for review. You can approve it here; approval will apply it to new quotes while existing quotes and orders remain unchanged." });
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Unable to save pricing draft.");
+      setStatusModal({ open: true, type: "error", title: "Pricing draft was not saved", message: saveError instanceof Error ? saveError.message : "Unable to save pricing draft." });
     } finally {
       setBusy(false);
     }
@@ -127,8 +148,6 @@ export default function IdCardPricingPage() {
   const calculatePreview = async () => {
     if (!rule) return;
     setBusy(true);
-    setError(null);
-    setNotice(null);
     try {
       const data = await requestJson<{ quote: PricingPreview }>("/schoolbase-admin/api/id-cards/pricing/preview", {
         method: "POST",
@@ -138,7 +157,7 @@ export default function IdCardPricingPage() {
       setPreview(data.quote);
     } catch (previewError) {
       setPreview(null);
-      setError(previewError instanceof Error ? previewError.message : "Unable to calculate preview quote.");
+      setStatusModal({ open: true, type: "error", title: "Quote preview failed", message: previewError instanceof Error ? previewError.message : "Unable to calculate preview quote." });
     } finally {
       setBusy(false);
     }
@@ -146,18 +165,16 @@ export default function IdCardPricingPage() {
 
   const approveDraft = async (draftId: string) => {
     setBusy(true);
-    setError(null);
-    setNotice(null);
     try {
       await requestJson(`/schoolbase-admin/api/id-cards/pricing/${encodeURIComponent(draftId)}/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
       });
-      setNotice("Pricing version approved and activated for new quotes. Existing quotes and orders remain unchanged.");
+      setStatusModal({ open: true, type: "success", title: "Pricing approved", message: "This version is active for new quotes. Existing quotes and orders remain unchanged." });
       await load();
     } catch (approveError) {
-      setError(approveError instanceof Error ? approveError.message : "Unable to approve pricing draft.");
+      setStatusModal({ open: true, type: "error", title: "Pricing approval failed", message: approveError instanceof Error ? approveError.message : "Unable to approve pricing draft." });
     } finally {
       setBusy(false);
     }
@@ -170,16 +187,13 @@ export default function IdCardPricingPage() {
           <div>
             <Link href="/schoolbase-admin/id-cards" className="text-sm font-semibold text-brand hover:text-brand-hover">ID Card Studio</Link>
             <h1 className="mt-2 text-3xl font-bold text-foreground">ID Card Pricing</h1>
-            <p className="mt-2 text-muted">Create auditable price versions. A second platform administrator approves changes before new quotes use them.</p>
+            <p className="mt-2 text-muted">Create auditable price versions and approve them for new quotes. Existing quotes and orders keep their original pricing.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Link href="/schoolbase-admin/id-cards/awards" className="inline-flex items-center gap-2 border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand hover:bg-brand-light">Awards</Link>
             <Link href="/schoolbase-admin/id-cards" className="inline-flex items-center gap-2 border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand hover:bg-brand-light">Back to usage</Link>
           </div>
         </header>
-
-        {error ? <div role="alert" className="border border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}</div> : null}
-        {notice ? <div role="status" className="border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">{notice}</div> : null}
 
         {rule ? (
           <section className="border border-border bg-surface p-5 sm:p-6">
@@ -288,11 +302,13 @@ export default function IdCardPricingPage() {
                 <input type="datetime-local" value={effectiveAt} onChange={(event) => setEffectiveAt(event.target.value)} className="mt-1.5 h-11 w-full border border-border bg-background px-3 font-normal" />
               </label>
               <label className="text-sm font-semibold text-foreground">Reason for change
-                <input value={reason} onChange={(event) => setReason(event.target.value)} minLength={8} placeholder="Explain why this price version is changing" className="mt-1.5 h-11 w-full border border-border bg-background px-3 font-normal" />
+                <input value={reason} onChange={(event) => setReason(event.target.value)} aria-describedby="pricing-reason-help" placeholder="Explain why this price version is changing" className="mt-1.5 h-11 w-full border border-border bg-background px-3 font-normal" />
+                <span id="pricing-reason-help" className="mt-1 block text-xs font-normal text-muted">At least 8 characters; stored with this pricing version for audit history.</span>
               </label>
             </div>
-            <div className="mt-4 flex justify-end">
-              <button type="button" onClick={saveDraft} disabled={busy || reason.trim().length < 8 || rule.volumeBands.some((band) => band.unitPriceMinor < 0)} className="inline-flex items-center gap-2 bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-50"><Save className="h-4 w-4" /> Save pricing draft</button>
+            <div className="mt-4 flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs text-muted" aria-live="polite">{hasPricingChanges ? "Unsaved pricing changes" : "No pricing changes to save"}</p>
+              <button type="button" onClick={saveDraft} disabled={busy || !hasPricingChanges} className="inline-flex items-center justify-center gap-2 bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"><Save className="h-4 w-4" /> {busy ? "Saving…" : "Save pricing draft"}</button>
             </div>
           </section>
         ) : <p className="border border-border bg-surface p-5 text-sm text-muted">Loading pricing settings…</p>}
@@ -311,13 +327,21 @@ export default function IdCardPricingPage() {
                   <p className="mt-1 text-xs text-muted">Created by {version.createdBy}{version.approvedBy ? ` · Approved by ${version.approvedBy}` : ""}</p>
                   {version.rule ? <p className="mt-1 text-xs text-muted">{version.rule.currency} · {version.rule.volumeBands.length} volume bands · tax {(version.rule.taxRateBps / 100).toFixed(2)}%</p> : <p className="mt-1 text-xs text-red-700">Stored rule is invalid; do not approve.</p>}
                 </div>
-                {!version.isActive && version.rule ? <button type="button" onClick={() => approveDraft(version.id)} disabled={busy} className="inline-flex shrink-0 items-center justify-center gap-2 border border-border px-4 py-2 text-sm font-semibold text-brand hover:bg-brand-light disabled:opacity-50">Approve pricing</button> : null}
+                {!version.isActive && !version.approvedBy && version.rule ? <button type="button" onClick={() => approveDraft(version.id)} disabled={busy} className="inline-flex shrink-0 items-center justify-center gap-2 border border-border px-4 py-2 text-sm font-semibold text-brand hover:bg-brand-light disabled:opacity-50">{busy ? "Approving…" : "Approve pricing"}</button> : null}
               </article>
             ))}
             {versions.length === 0 ? <p className="py-4 text-sm text-muted">No pricing versions yet.</p> : null}
           </div>
         </section>
       </div>
+      <ErrorModal
+        isOpen={statusModal.open}
+        onClose={() => setStatusModal((current) => ({ ...current, open: false }))}
+        title={statusModal.title}
+        message={statusModal.message}
+        type={statusModal.type}
+        confirmLabel={statusModal.type === "success" ? "Done" : "Try again"}
+      />
     </main>
   );
 }

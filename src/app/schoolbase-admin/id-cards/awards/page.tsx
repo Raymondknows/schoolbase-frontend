@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Check, Gift, RotateCw, X } from "lucide-react";
+import { ErrorModal } from "@/components/ui/error-modal";
 
 type School = { id: string; name: string; country?: string | null };
 type Award = {
@@ -40,9 +41,15 @@ export default function IdCardAwardsPage() {
   const [reason, setReason] = useState("");
   const [terms, setTerms] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
+  const [statusModal, setStatusModal] = useState<{ open: boolean; type: "success" | "error"; title: string; message: string }>({
+    open: false,
+    type: "success",
+    title: "",
+    message: "",
+  });
+  const [revokeTarget, setRevokeTarget] = useState<Award | null>(null);
+  const [revokeReason, setRevokeReason] = useState("");
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
 
   const load = async () => {
     const [schoolData, awardData] = await Promise.all([
@@ -55,14 +62,12 @@ export default function IdCardAwardsPage() {
   };
 
   useEffect(() => {
-    load().catch((loadError) => setError(loadError instanceof Error ? loadError.message : "Unable to load awards."));
+    load().catch((loadError) => setStatusModal({ open: true, type: "error", title: "Awards could not be loaded", message: loadError instanceof Error ? loadError.message : "Unable to load awards." }));
   }, []);
 
   const createAward = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setBusy(true);
-    setError(null);
-    setNotice(null);
     try {
       const result = await requestJson<{ award: Award }>("/schoolbase-admin/api/id-cards/awards", {
         method: "POST",
@@ -80,10 +85,10 @@ export default function IdCardAwardsPage() {
         }),
       });
       setReason("");
-      setNotice(`Award ${result.award.id} created and awaiting approval by a different platform administrator.`);
+      setStatusModal({ open: true, type: "success", title: "Award created", message: `Award ${result.award.id} is pending approval. You can approve it from this page.` });
       await load();
     } catch (createError) {
-      setError(createError instanceof Error ? createError.message : "Unable to create award.");
+      setStatusModal({ open: true, type: "error", title: "Award was not created", message: createError instanceof Error ? createError.message : "Unable to create award." });
     } finally {
       setBusy(false);
     }
@@ -91,39 +96,45 @@ export default function IdCardAwardsPage() {
 
   const approve = async (awardId: string) => {
     setBusy(true);
-    setError(null);
-    setNotice(null);
     try {
       await requestJson(`/schoolbase-admin/api/id-cards/awards/${encodeURIComponent(awardId)}/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
       });
-      setNotice("Award approved. Eligible schools can use its units for a complete card batch.");
+      setStatusModal({ open: true, type: "success", title: "Award approved", message: "Eligible schools can now use these units for a complete card batch. The approval is recorded in the award ledger." });
       await load();
     } catch (approveError) {
-      setError(approveError instanceof Error ? approveError.message : "Unable to approve award.");
+      setStatusModal({ open: true, type: "error", title: "Award approval failed", message: approveError instanceof Error ? approveError.message : "Unable to approve award." });
     } finally {
       setBusy(false);
     }
   };
 
-  const revoke = async (awardId: string) => {
-    const reason = window.prompt("Reason for revoking this unused award (at least 8 characters):")?.trim();
-    if (!reason || reason.length < 8) return;
+  const revoke = async () => {
+    if (!revokeTarget) return false;
+    const trimmedReason = revokeReason.trim();
+    if (trimmedReason.length < 8) {
+      setStatusModal({ open: true, type: "error", title: "Add a revocation reason", message: "Enter at least 8 characters so the award ledger records why this unused award was revoked." });
+      return false;
+    }
     setBusy(true);
-    setError(null);
-    setNotice(null);
     try {
-      await requestJson(`/schoolbase-admin/api/id-cards/awards/${encodeURIComponent(awardId)}/revoke`, {
+      await requestJson(`/schoolbase-admin/api/id-cards/awards/${encodeURIComponent(revokeTarget.id)}/revoke`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason }),
+        body: JSON.stringify({ reason: trimmedReason }),
       });
-      setNotice("Unused award revoked and recorded in its audit ledger.");
       await load();
+      setRevokeTarget(null);
+      setRevokeReason("");
+      setStatusModal({ open: true, type: "success", title: "Award revoked", message: "Unused units were revoked, and the reason was recorded in the award ledger." });
+      return true;
     } catch (revokeError) {
-      setError(revokeError instanceof Error ? revokeError.message : "Unable to revoke award.");
+      setRevokeTarget(null);
+      setRevokeReason("");
+      setStatusModal({ open: true, type: "error", title: "Award revocation failed", message: revokeError instanceof Error ? revokeError.message : "Unable to revoke award." });
+      return true;
     } finally {
       setBusy(false);
     }
@@ -136,16 +147,13 @@ export default function IdCardAwardsPage() {
           <div>
             <Link href="/schoolbase-admin/id-cards" className="text-sm font-semibold text-brand hover:text-brand-hover">ID Card Studio</Link>
             <h1 className="mt-2 text-3xl font-bold text-foreground">Free card awards</h1>
-            <p className="mt-2 text-muted">Issue audited card-unit grants. Approval by a second platform administrator is required.</p>
+            <p className="mt-2 text-muted">Issue audited card-unit grants, then approve them for eligible schools. All actions are recorded in the award ledger.</p>
           </div>
           <div className="flex gap-2">
             <Link href="/schoolbase-admin/id-cards/pricing" className="border border-border px-4 py-2.5 text-sm font-semibold text-brand hover:bg-brand-light">Pricing</Link>
-            <button type="button" onClick={() => load().catch((loadError) => setError(loadError instanceof Error ? loadError.message : "Unable to refresh awards."))} className="inline-flex items-center gap-2 border border-border px-4 py-2.5 text-sm font-semibold text-brand hover:bg-brand-light"><RotateCw className="h-4 w-4" /> Refresh</button>
+            <button type="button" onClick={() => load().then(() => setStatusModal({ open: true, type: "success", title: "Awards refreshed", message: "The award ledger is up to date." })).catch((loadError) => setStatusModal({ open: true, type: "error", title: "Awards could not be refreshed", message: loadError instanceof Error ? loadError.message : "Unable to refresh awards." }))} disabled={busy} className="inline-flex items-center gap-2 border border-border px-4 py-2.5 text-sm font-semibold text-brand hover:bg-brand-light disabled:opacity-50"><RotateCw className="h-4 w-4" /> Refresh</button>
           </div>
         </header>
-
-        {error ? <div role="alert" className="border border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}</div> : null}
-        {notice ? <div role="status" className="border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">{notice}</div> : null}
 
         <section className="border border-border bg-surface p-5 sm:p-6">
           <div className="flex items-center gap-3 border-b border-border pb-4">
@@ -183,7 +191,7 @@ export default function IdCardAwardsPage() {
               <tbody>
                 {awards.map((award) => {
                   const available = Math.max(0, award.unitsGranted - award.unitsReserved - award.unitsRedeemed);
-                  return <tr key={award.id} className="border-b border-border last:border-0"><td className="py-3 font-semibold text-foreground">{award.schoolName}</td><td className="py-3">{award.status}</td><td className="py-3 text-muted">{award.reasonCategory}{award.reason ? ` · ${award.reason}` : ""}</td><td className="py-3">{award.unitsGranted}</td><td className="py-3">{award.unitsReserved}</td><td className="py-3">{award.unitsRedeemed}</td><td className="py-3 font-semibold text-foreground">{available}</td><td className="py-3 text-right">{award.status === "PENDING_APPROVAL" ? <button type="button" onClick={() => approve(award.id)} disabled={busy} className="inline-flex items-center gap-1.5 border border-border px-3 py-2 text-xs font-semibold text-brand hover:bg-brand-light disabled:opacity-50"><Check className="h-3.5 w-3.5" /> Approve</button> : null}{award.status === "APPROVED" && award.unitsReserved === 0 ? <button type="button" onClick={() => revoke(award.id)} disabled={busy} className="ml-2 inline-flex items-center gap-1.5 border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50"><X className="h-3.5 w-3.5" /> Revoke unused</button> : null}</td></tr>;
+                  return <tr key={award.id} className="border-b border-border last:border-0"><td className="py-3 font-semibold text-foreground">{award.schoolName}</td><td className="py-3">{award.status}</td><td className="py-3 text-muted">{award.reasonCategory}{award.reason ? ` · ${award.reason}` : ""}</td><td className="py-3">{award.unitsGranted}</td><td className="py-3">{award.unitsReserved}</td><td className="py-3">{award.unitsRedeemed}</td><td className="py-3 font-semibold text-foreground">{available}</td><td className="py-3 text-right">{award.status === "PENDING_APPROVAL" ? <button type="button" onClick={() => approve(award.id)} disabled={busy} className="inline-flex items-center gap-1.5 border border-border px-3 py-2 text-xs font-semibold text-brand hover:bg-brand-light disabled:opacity-50"><Check className="h-3.5 w-3.5" /> {busy ? "Approving…" : "Approve"}</button> : null}{award.status === "APPROVED" && award.unitsReserved === 0 ? <button type="button" onClick={() => { setRevokeTarget(award); setRevokeReason(""); }} disabled={busy} className="ml-2 inline-flex items-center gap-1.5 border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50"><X className="h-3.5 w-3.5" /> Revoke unused</button> : null}</td></tr>;
                 })}
                 {!awards.length ? <tr><td colSpan={8} className="py-6 text-center text-muted">No card awards yet.</td></tr> : null}
               </tbody>
@@ -191,6 +199,30 @@ export default function IdCardAwardsPage() {
           </div>
         </section>
       </div>
+      <ErrorModal
+        isOpen={Boolean(revokeTarget)}
+        onClose={() => { if (!busy) { setRevokeTarget(null); setRevokeReason(""); } }}
+        title="Revoke unused award?"
+        message={`Revoke ${revokeTarget?.unitsGranted ?? 0} card units for ${revokeTarget?.schoolName ?? "this school"}. This action is recorded in the award ledger.`}
+        type="error"
+        confirmLabel={busy ? "Revoking…" : "Revoke award"}
+        confirmDisabled={busy || revokeReason.trim().length < 8}
+        onConfirm={revoke}
+        onSuccessAction={() => { setRevokeTarget(null); setRevokeReason(""); }}
+      >
+        <label className="block text-sm font-semibold text-foreground">Reason for revocation
+          <textarea value={revokeReason} onChange={(event) => setRevokeReason(event.target.value)} minLength={8} rows={3} placeholder="Enter at least 8 characters for the award ledger" className="mt-2 w-full border border-border bg-background p-3 text-sm font-normal" />
+          <span className="mt-1 block text-xs font-normal text-muted">{Math.max(0, 8 - revokeReason.trim().length)} more characters required.</span>
+        </label>
+      </ErrorModal>
+      <ErrorModal
+        isOpen={statusModal.open}
+        onClose={() => setStatusModal((current) => ({ ...current, open: false }))}
+        title={statusModal.title}
+        message={statusModal.message}
+        type={statusModal.type}
+        confirmLabel={statusModal.type === "success" ? "Done" : "Try again"}
+      />
     </main>
   );
 }
