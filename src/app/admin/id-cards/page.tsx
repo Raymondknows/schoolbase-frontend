@@ -32,6 +32,7 @@ type IdCardOrder = {
   id: string;
   status: string;
   paymentStatus: string;
+  awardFunded?: boolean;
   currency: string;
   amountMinor: number;
   createdAt: string;
@@ -254,11 +255,17 @@ export default function AdminIdCardsPage() {
         const selectedDraftTemplate = templatesData.templates?.some((template) => template.id === savedDraft?.templateId)
           ? savedDraft?.templateId || defaultTemplate
           : defaultTemplate;
+        const selectedStudentIds = (savedDraft?.studentIds || []).filter((id) => studentsData.students?.some((student) => student.id === id)).slice(0, 200);
+        const templateTier = templatesData.templates?.find((template) => template.id === selectedDraftTemplate)?.tier || "STANDARD";
+        const eligibleAwards = (awardsData.awards || []).filter((award) =>
+          award.availableUnits >= Math.max(1, selectedStudentIds.length) && award.eligibleTiers.includes(templateTier),
+        );
+        const preferredAward = eligibleAwards.find((award) => award.id === savedDraft?.awardId) || eligibleAwards[0];
         setSelectedTemplate(selectedDraftTemplate);
         setOrientation(savedDraft?.orientation || templatesData.templates?.find((template) => template.id === selectedDraftTemplate)?.defaultOrientation || "PORTRAIT");
-        setSelectedIds(new Set((savedDraft?.studentIds || []).filter((id) => studentsData.students?.some((student) => student.id === id)).slice(0, 200)));
+        setSelectedIds(new Set(selectedStudentIds));
         setIncludeCardBack(Boolean(savedDraft?.includeCardBack));
-        setSelectedAwardId(savedDraft?.awardId || "");
+        setSelectedAwardId(preferredAward?.id || "");
         setDraftExpiresAt(savedDraft?.expiresAt || null);
         if (savedDraft) setDraftNotice("Saved draft restored. It is private to your account at this school and expires after 30 days.");
         setDraftLoaded(true);
@@ -389,12 +396,16 @@ export default function AdminIdCardsPage() {
     setError(null);
     setWorking(true);
     try {
+      const selectedQuoteAwardId = typeof quote.quote.awardId === "string" ? quote.quote.awardId : null;
       const { order } = await requestJson<{ order: IdCardOrder }>("/api/id-cards/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quoteId: quote.quote.id }),
+        body: JSON.stringify({ quoteId: quote.quote.id, awardId: selectedQuoteAwardId }),
       });
-      if (order.paymentStatus === "PAID") {
+      if (selectedQuoteAwardId && !order.awardFunded) {
+        throw new Error("The free-card award was not applied to this order, so payment was not started. Refresh the quote and try again.");
+      }
+      if (order.awardFunded || order.paymentStatus === "PAID") {
         window.location.assign(`/admin/id-cards/orders/${encodeURIComponent(order.id)}`);
         return;
       }
