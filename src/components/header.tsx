@@ -77,8 +77,8 @@ export default async function Header() {
               <Link href="/for-principals" className="hover:text-brand">
                 For Your Role
               </Link>
-              <Link href="/guides" className="hover:text-brand">
-                Guides
+              <Link href="/how-to-use-schoolbase" className="hover:text-brand">
+                How to use
               </Link>
               <Link href="/blog" className="hover:text-brand">
                 Blog
@@ -125,10 +125,10 @@ export default async function Header() {
                     Compare
                   </Link>
                   <Link
-                    href="/guides"
+                    href="/how-to-use-schoolbase"
                     className="px-3 py-2 hover:bg-brand-light hover:text-brand"
                   >
-                    Guides
+                    How to use SchoolBase
                   </Link>
                   <Link
                     href="/blog"

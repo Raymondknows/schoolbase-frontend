@@ -124,6 +124,22 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
+                  href={`${siteUrl}/how-to-use-schoolbase`}
+                  className="text-white/70 hover:text-white"
+                >
+                  How to use SchoolBase
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`${siteUrl}/guides`}
+                  className="text-white/70 hover:text-white"
+                >
+                  All practical guides
+                </Link>
+              </li>
+              <li>
+                <Link
                   href={`${siteUrl}/guides/school-fee-management`}
                   className="text-white/70 hover:text-white"
                 >
