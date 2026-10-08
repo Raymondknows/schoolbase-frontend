@@ -99,7 +99,6 @@ export default function SetupRemindersClient({
                   "hasStaff",
                   "hasStudents",
                   "hasFees",
-                  "hasPaymentSetup",
                   "hasAnnouncement",
                   "hasAssessment",
                   "hasSchoolLogo",

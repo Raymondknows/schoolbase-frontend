@@ -74,7 +74,6 @@ function isRequiredSetupComplete(setupItems?: Record<string, boolean> | null): b
     setupItems.hasStaff &&
     setupItems.hasStudents &&
     setupItems.hasFees &&
-    setupItems.hasPaymentSetup &&
     setupItems.hasAnnouncement &&
     setupItems.hasAssessment &&
     setupItems.hasSchoolLogo &&
@@ -107,7 +106,6 @@ function buildSteps(
     hasPrincipalInfo: Boolean(schoolConfig?.name),
     hasPrincipalSignature: Boolean(schoolConfig?.principalSignatureUrl || schoolConfig?.stampUrl),
     hasSchoolStamp: Boolean(schoolConfig?.stampUrl),
-    hasPaymentSetup: false,
     hasAnnouncement: counts.announcementCount > 0,
     hasAssessment: counts.assessmentCount > 0,
   };
@@ -208,14 +206,6 @@ function buildSteps(
       complete: Boolean(setupItems.hasFees),
       icon: DollarSign,
       hint: "Cash flow",
-    },
-    {
-      title: "Set up payment collection",
-      description: "Connect your preferred payment method or manual collection details so fees can be processed smoothly.",
-      href: "/admin/settings",
-      complete: Boolean(setupItems.hasPaymentSetup),
-      icon: DollarSign,
-      hint: "Payments",
     },
     {
       title: "Send your first announcement",
@@ -334,7 +324,6 @@ export default function GettingStartedPage() {
           hasPrincipalInfo: Boolean(schoolConfig?.principalName || schoolConfig?.principalComment),
           hasPrincipalSignature: Boolean(schoolConfig?.principalSignatureUrl),
           hasSchoolStamp: Boolean(schoolConfig?.stampUrl),
-          hasPaymentSetup: false,
           hasAnnouncement: counts.announcementCount > 0,
           hasAssessment: counts.assessmentCount > 0,
         };
@@ -384,7 +373,6 @@ export default function GettingStartedPage() {
     "hasStaff",
     "hasStudents",
     "hasFees",
-    "hasPaymentSetup",
     "hasAnnouncement",
     "hasAssessment",
     "hasSchoolLogo",
