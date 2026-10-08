@@ -95,6 +95,9 @@ export default async function HomePage() {
     if (staffSession.role === "TEACHER") {
       redirect("/teacher");
     }
+    if (staffSession.role === "STUDENT") {
+      redirect("/competition");
+    }
     redirect("/admin");
   }
 
