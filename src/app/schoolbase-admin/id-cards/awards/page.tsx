@@ -62,7 +62,13 @@ export default function IdCardAwardsPage() {
   };
 
   useEffect(() => {
-    load().catch((loadError) => setStatusModal({ open: true, type: "error", title: "Awards could not be loaded", message: loadError instanceof Error ? loadError.message : "Unable to load awards." }));
+    void (async () => {
+      try {
+        await load();
+      } catch (loadError) {
+        setStatusModal({ open: true, type: "error", title: "Awards could not be loaded", message: loadError instanceof Error ? loadError.message : "Unable to load awards." });
+      }
+    })();
   }, []);
 
   const createAward = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -142,14 +148,14 @@ export default function IdCardAwardsPage() {
 
   return (
     <main className="min-h-screen pb-12">
-      <div className="mx-auto max-w-7xl space-y-6 px-2 py-6 sm:px-8 sm:py-8 lg:px-12">
+      <div className="mx-auto w-full max-w-7xl space-y-6 overflow-hidden px-2 py-6 sm:px-8 sm:py-8 lg:px-12">
         <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <div>
+          <div className="min-w-0">
             <Link href="/schoolbase-admin/id-cards" className="text-sm font-semibold text-brand hover:text-brand-hover">ID Card Studio</Link>
             <h1 className="mt-2 text-3xl font-bold text-foreground">Free card awards</h1>
             <p className="mt-2 text-muted">Issue audited card-unit grants, then approve them for eligible schools. All actions are recorded in the award ledger.</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Link href="/schoolbase-admin/id-cards/pricing" className="border border-border px-4 py-2.5 text-sm font-semibold text-brand hover:bg-brand-light">Pricing</Link>
             <button type="button" onClick={() => load().then(() => setStatusModal({ open: true, type: "success", title: "Awards refreshed", message: "The award ledger is up to date." })).catch((loadError) => setStatusModal({ open: true, type: "error", title: "Awards could not be refreshed", message: loadError instanceof Error ? loadError.message : "Unable to refresh awards." }))} disabled={busy} className="inline-flex items-center gap-2 border border-border px-4 py-2.5 text-sm font-semibold text-brand hover:bg-brand-light disabled:opacity-50"><RotateCw className="h-4 w-4" /> Refresh</button>
           </div>

@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { BadgeDollarSign, CreditCard, Download, FileText, Layers3, Search, ShieldCheck, Sparkles, TrendingUp, WalletCards } from "lucide-react";
 
-function formatMinorCurrency(amount: number, currency = "NGN") {
-  const safeCurrency = /^[A-Z]{3}$/.test(currency) ? currency : "NGN";
+function formatMinorCurrency(amount: number, currency?: string | null) {
+  const safeCurrency = /^[A-Z]{3}$/.test(currency ?? "") ? currency ?? "NGN" : "NGN";
   return new Intl.NumberFormat("en-NG", {
     style: "currency",
     currency: safeCurrency,
@@ -21,9 +21,50 @@ function formatDate(value?: string | null) {
   return date.toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" });
 }
 
+type OrderSummary = {
+  id: string;
+  schoolName?: string | null;
+  schoolId?: string | null;
+  status: string;
+  paymentStatus?: string | null;
+  quantity: number;
+  amountMinor: number;
+  currency?: string | null;
+  createdAt?: string | null;
+  templateId?: string | null;
+  templateTier?: string | null;
+};
+
+type AwardSummary = {
+  id: string;
+  schoolName?: string | null;
+  schoolId?: string | null;
+  status: string;
+  awardType: string;
+  reasonCategory: string;
+  unitsGranted?: number | null;
+  valueMinor?: number | null;
+  currency?: string | null;
+};
+
+type OverviewMetrics = {
+  orders?: number;
+  awaitingPayment?: number;
+  paid?: number;
+  ready?: number;
+  freeAwardUnitsGranted?: number;
+  revenueByCurrency?: Record<string, number>;
+};
+
+type OverviewData = {
+  metrics?: OverviewMetrics;
+  rangeDays?: number;
+  orders?: OrderSummary[];
+};
+
 export default function SchoolbaseAdminIdCardsPage() {
-  const [overview, setOverview] = useState<any>(null);
-  const [awards, setAwards] = useState<any[]>([]);
+  const [overview, setOverview] = useState<OverviewData | null>(null);
+  const [awards, setAwards] = useState<AwardSummary[]>([]);
   const [rangeDays, setRangeDays] = useState(30);
   const [schoolSearch, setSchoolSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -83,7 +124,7 @@ export default function SchoolbaseAdminIdCardsPage() {
     ];
   }, [overview, rangeDays]);
 
-  const orders: any[] = overview?.orders || [];
+  const orders: OrderSummary[] = overview?.orders || [];
   const filteredOrders = orders.filter((order) => {
     const matchesSchool = !schoolSearch.trim() || String(order.schoolName || order.schoolId).toLowerCase().includes(schoolSearch.trim().toLowerCase());
     const matchesStatus = !statusFilter || order.status === statusFilter || order.paymentStatus === statusFilter;
@@ -104,14 +145,14 @@ export default function SchoolbaseAdminIdCardsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-2 py-6 sm:px-8 sm:py-8 lg:px-12 [&_button:not(:disabled)]:cursor-pointer [&_a]:cursor-pointer">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-        <div>
+    <div className="mx-auto w-full max-w-7xl space-y-6 overflow-hidden px-2 py-6 sm:px-8 sm:py-8 lg:px-12 [&_button:not(:disabled)]:cursor-pointer [&_a]:cursor-pointer">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div className="min-w-0">
           <h1 className="text-3xl font-bold text-foreground">ID Card Studio</h1>
           <p className="mt-2 text-muted">Track usage, payments, revenue, and free awards across schools.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-2 text-sm font-medium text-muted">Range
+          <label className="flex min-w-0 items-center gap-2 text-sm font-medium text-muted">Range
             <select value={rangeDays} onChange={(event) => { setLoading(true); setRangeDays(Number(event.target.value)); }} className="h-10 border border-border bg-surface px-2 text-foreground">
               <option value={7}>7 days</option><option value={30}>30 days</option><option value={90}>90 days</option><option value={365}>365 days</option>
             </select>
@@ -149,19 +190,19 @@ export default function SchoolbaseAdminIdCardsPage() {
         ))}
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <section className="border border-border bg-surface p-5">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <section className="min-w-0 overflow-hidden border border-border bg-surface p-5">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 items-center gap-2">
               <Layers3 className="h-5 w-5 text-brand" />
               <h2 className="text-lg font-semibold text-foreground">Recent orders</h2>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <label className="flex h-9 items-center gap-2 border border-border px-2">
+            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+              <label className="flex h-9 min-w-0 flex-1 items-center gap-2 border border-border px-2 sm:flex-none">
                 <Search className="h-4 w-4 text-muted" />
-                <input value={schoolSearch} onChange={(event) => setSchoolSearch(event.target.value)} aria-label="Filter orders by school" placeholder="Filter schools" className="w-32 bg-transparent text-sm outline-none" />
+                <input value={schoolSearch} onChange={(event) => setSchoolSearch(event.target.value)} aria-label="Filter orders by school" placeholder="Filter schools" className="w-full min-w-0 bg-transparent text-sm outline-none sm:w-32" />
               </label>
-              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} aria-label="Filter orders by status" className="h-9 border border-border bg-background px-2 text-sm text-foreground">
+              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} aria-label="Filter orders by status" className="h-9 min-w-[150px] border border-border bg-background px-2 text-sm text-foreground">
                 <option value="">All states</option><option value="PAYMENT_PENDING">Payment pending</option><option value="PAID">Paid</option><option value="GENERATING">Generating</option><option value="READY">Ready</option><option value="GENERATION_FAILED">Generation failed</option>
               </select>
               <button type="button" onClick={exportOrders} disabled={!filteredOrders.length} className="inline-flex h-9 items-center gap-2 border border-border px-3 text-sm font-semibold text-brand hover:bg-brand-light disabled:opacity-50"><Download className="h-4 w-4" /> CSV</button>
@@ -172,19 +213,19 @@ export default function SchoolbaseAdminIdCardsPage() {
             <div className="space-y-3">{[1, 2, 3].map((item) => <div key={item} className="h-14 animate-pulse bg-muted/10" />)}</div>
           ) : filteredOrders.length ? (
             <div className="overflow-x-auto">
-              <table className="min-w-full text-left text-sm">
+              <table className="min-w-[620px] w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-border text-muted">
                     <th className="px-3 py-2 font-medium">School</th><th className="px-3 py-2 font-medium">Status</th><th className="px-3 py-2 font-medium">Cards</th><th className="px-3 py-2 font-medium">Amount</th><th className="px-3 py-2 font-medium">Date</th><th className="px-3 py-2 font-medium">Details</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredOrders.slice(0, 250).map((order: any) => (
+                  {filteredOrders.slice(0, 250).map((order) => (
                     <tr key={order.id} className="border-b border-border last:border-b-0">
                       <td className="px-3 py-3 font-medium text-foreground">{order.schoolName || order.schoolId}</td>
                       <td className="px-3 py-3"><span className="rounded-full bg-brand/10 px-2 py-1 text-xs font-medium text-brand">{order.status}</span></td>
                       <td className="px-3 py-3 text-muted">{order.quantity}</td>
-                      <td className="px-3 py-3 text-muted">{formatMinorCurrency(order.amountMinor, order.currency)}</td>
+                      <td className="px-3 py-3 text-muted">{formatMinorCurrency(order.amountMinor, order.currency ?? "NGN")}</td>
                       <td className="px-3 py-3 text-muted">{formatDate(order.createdAt)}</td>
                       <td className="px-3 py-3"><Link href={`/schoolbase-admin/id-cards/orders/${encodeURIComponent(order.id)}`} className="font-semibold text-brand hover:underline">Timeline</Link></td>
                     </tr>
@@ -196,7 +237,7 @@ export default function SchoolbaseAdminIdCardsPage() {
           ) : <p className="text-sm text-muted">{orders.length ? "No orders match these filters." : "No card orders have been tracked yet."}</p>}
         </section>
 
-        <section className="border border-border bg-surface p-5">
+        <section className="min-w-0 overflow-hidden border border-border bg-surface p-5">
             <div className="mb-4 flex items-center gap-2">
               <WalletCards className="h-5 w-5 text-brand" />
               <h2 className="text-lg font-semibold text-foreground">Free awards</h2>
@@ -204,14 +245,14 @@ export default function SchoolbaseAdminIdCardsPage() {
 
             {awards.length ? (
               <div className="divide-y divide-border">
-                {awards.slice(0, 5).map((award: any) => (
-                  <div key={award.id} className="py-3 first:pt-0 last:pb-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="font-semibold text-foreground">{award.schoolName || award.schoolId}</p>
-                      <span className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">{award.status}</span>
+                {awards.slice(0, 5).map((award) => (
+                  <div key={award.id} className="min-w-0 py-3 first:pt-0 last:pb-0">
+                    <div className="flex min-w-0 items-center justify-between gap-2">
+                      <p className="min-w-0 break-words font-semibold text-foreground">{award.schoolName || award.schoolId}</p>
+                      <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">{award.status}</span>
                     </div>
-                    <p className="mt-2 text-xs text-muted">{award.awardType} · {award.reasonCategory}</p>
-                    <p className="mt-1 text-sm font-medium text-brand">{award.unitsGranted || award.valueMinor ? `${award.unitsGranted || formatMinorCurrency(award.valueMinor, award.currency)} ${award.awardType === "UNITS" ? "cards" : "credit"}` : "No balance"}</p>
+                    <p className="mt-2 break-words text-xs text-muted">{award.awardType} · {award.reasonCategory}</p>
+                    <p className="mt-1 break-words text-sm font-medium text-brand">{award.unitsGranted ?? award.valueMinor ?? 0 ? `${award.unitsGranted ?? formatMinorCurrency(award.valueMinor ?? 0, award.currency ?? "NGN")} ${award.awardType === "UNITS" ? "cards" : "credit"}` : "No balance"}</p>
                   </div>
                 ))}
               </div>

@@ -54,7 +54,7 @@ export default function SchoolbaseAdminIdCardOrderPage() {
 
   return (
     <main className="min-h-screen pb-12">
-      <div className="mx-auto max-w-5xl space-y-6 px-2 py-6 sm:px-8 sm:py-8 lg:px-12">
+      <div className="mx-auto w-full max-w-5xl space-y-6 overflow-hidden px-2 py-6 sm:px-8 sm:py-8 lg:px-12">
         <Link href="/schoolbase-admin/id-cards" className="inline-flex items-center gap-2 text-sm font-semibold text-brand hover:underline"><ArrowLeft className="h-4 w-4" /> ID Card operations</Link>
         {error ? <div role="alert" className="border border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}</div> : null}
         {order ? <>

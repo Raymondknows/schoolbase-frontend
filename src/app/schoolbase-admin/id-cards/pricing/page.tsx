@@ -94,8 +94,16 @@ export default function IdCardPricingPage() {
   };
 
   useEffect(() => {
-    load().catch((loadError) => setStatusModal({ open: true, type: "error", title: "Pricing could not be loaded", message: loadError instanceof Error ? loadError.message : "Unable to load pricing." }));
+    void (async () => {
+      try {
+        await load();
+      } catch (loadError) {
+        setStatusModal({ open: true, type: "error", title: "Pricing could not be loaded", message: loadError instanceof Error ? loadError.message : "Unable to load pricing." });
+      }
+    })();
   }, []);
+
+  const nowMs = new Date().getTime();
 
   const hasPricingChanges = Boolean(rule && baselineRule && JSON.stringify(rule) !== JSON.stringify(baselineRule));
 
@@ -184,7 +192,7 @@ export default function IdCardPricingPage() {
     <main className="min-h-screen pb-12">
       <div className="mx-auto max-w-7xl space-y-6 px-2 py-6 sm:px-8 sm:py-8 lg:px-12">
         <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <div>
+          <div className="min-w-0">
             <Link href="/schoolbase-admin/id-cards" className="text-sm font-semibold text-brand hover:text-brand-hover">ID Card Studio</Link>
             <h1 className="mt-2 text-3xl font-bold text-foreground">ID Card Pricing</h1>
             <p className="mt-2 text-muted">Create auditable price versions and approve them for new quotes. Existing quotes and orders keep their original pricing.</p>
@@ -267,7 +275,7 @@ export default function IdCardPricingPage() {
             <div className="mt-5 border-t border-border pt-4">
               <h3 className="text-sm font-semibold text-foreground">Quote simulator</h3>
               <p className="mt-1 text-xs text-muted">Test this draft rule without saving it or changing school quotes.</p>
-              <div className="mt-3 grid gap-3 sm:grid-cols-[140px_1fr_auto] sm:items-end">
+              <div className="mt-3 grid gap-3 md:grid-cols-[140px_1fr_auto] md:items-end">
                 <label className="text-xs font-semibold text-foreground">Card quantity
                   <input type="number" min="1" max="1000" value={previewQuantity} onChange={(event) => setPreviewQuantity(Number(event.target.value))} className="mt-1 h-10 w-full border border-border bg-background px-3 text-sm font-normal" />
                 </label>
@@ -282,7 +290,7 @@ export default function IdCardPricingPage() {
                     <option value="signatureCollection">Signature Collection · Premium</option>
                   </select>
                 </label>
-                <button type="button" onClick={calculatePreview} disabled={busy} className="inline-flex h-10 items-center justify-center border border-border px-3 text-sm font-semibold text-brand hover:bg-brand-light disabled:opacity-50">Calculate quote</button>
+                <button type="button" onClick={calculatePreview} disabled={busy} className="inline-flex h-10 items-center justify-center border border-border px-3 text-sm font-semibold text-brand hover:bg-brand-light disabled:opacity-50 md:w-auto">Calculate quote</button>
               </div>
               {preview ? (
                 <div className="mt-4 border-l-2 border-brand pl-4">
@@ -321,7 +329,7 @@ export default function IdCardPricingPage() {
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="font-semibold text-foreground">Version {version.version}</h3>
-                    {version.isActive && new Date(version.effectiveAt).getTime() <= Date.now() ? <span className="inline-flex items-center gap-1 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-800"><Check className="h-3 w-3" /> Approved</span> : version.isActive ? <span className="inline-flex items-center gap-1 bg-sky-50 px-2 py-1 text-xs font-semibold text-sky-800"><Clock3 className="h-3 w-3" /> Scheduled</span> : <span className="inline-flex items-center gap-1 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800"><Clock3 className="h-3 w-3" /> Draft</span>}
+                    {version.isActive && new Date(version.effectiveAt).getTime() <= nowMs ? <span className="inline-flex items-center gap-1 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-800"><Check className="h-3 w-3" /> Approved</span> : version.isActive ? <span className="inline-flex items-center gap-1 bg-sky-50 px-2 py-1 text-xs font-semibold text-sky-800"><Clock3 className="h-3 w-3" /> Scheduled</span> : <span className="inline-flex items-center gap-1 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800"><Clock3 className="h-3 w-3" /> Draft</span>}
                   </div>
                   <p className="mt-1 text-sm text-muted">{version.reason} · Effective {new Date(version.effectiveAt).toLocaleString()}</p>
                   <p className="mt-1 text-xs text-muted">Created by {version.createdBy}{version.approvedBy ? ` · Approved by ${version.approvedBy}` : ""}</p>

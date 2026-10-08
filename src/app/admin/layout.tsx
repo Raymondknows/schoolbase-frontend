@@ -216,7 +216,7 @@ export default function AdminLayout({
     );
   }
 
-  const navItems = baseNav.filter((item) => item.href !== '/admin/getting-started' || showGettingStarted);
+  const navItems = baseNav;
 
   return (
     <>

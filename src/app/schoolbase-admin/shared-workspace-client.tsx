@@ -41,7 +41,7 @@ export default function SharedWorkspaceClient({ mode = "floating" }: Props) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [open, setOpen] = useState(mode === "page");
-  const [enabled, setEnabled] = useState(mode === "page");
+  const [enabled, setEnabled] = useState(() => mode === "page" || (typeof window !== "undefined" && window.localStorage.getItem(enabledKey) === "true"));
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [assignee, setAssignee] = useState("");
@@ -81,32 +81,37 @@ export default function SharedWorkspaceClient({ mode = "floating" }: Props) {
   };
 
   useEffect(() => {
-    void loadData();
-    if (mode === "floating") {
-      setEnabled(window.localStorage.getItem(enabledKey) === "true");
-      try {
-        const stored = window.localStorage.getItem(positionKey);
-        if (stored) {
-          const saved = JSON.parse(stored);
-          const width = Math.min(window.innerWidth * 0.94, 520);
-          setPosition({
-            x: Math.max(12, Math.min(window.innerWidth - width - 12, Number(saved.x) || 12)),
-            y: Math.max(12, Math.min(window.innerHeight - 64, Number(saved.y) || 96)),
-          });
-        } else {
+    const initialize = async () => {
+      await loadData();
+      if (mode === "floating") {
+        setEnabled(window.localStorage.getItem(enabledKey) === "true");
+        try {
+          const stored = window.localStorage.getItem(positionKey);
+          if (stored) {
+            const saved = JSON.parse(stored);
+            const width = Math.min(window.innerWidth * 0.94, 520);
+            setPosition({
+              x: Math.max(12, Math.min(window.innerWidth - width - 12, Number(saved.x) || 12)),
+              y: Math.max(12, Math.min(window.innerHeight - 64, Number(saved.y) || 96)),
+            });
+          } else {
+            const width = Math.min(window.innerWidth * 0.94, 520);
+            setPosition({ x: Math.max(12, window.innerWidth - width - 12), y: 96 });
+          }
+        } catch {
           const width = Math.min(window.innerWidth * 0.94, 520);
           setPosition({ x: Math.max(12, window.innerWidth - width - 12), y: 96 });
         }
-      } catch {
-        const width = Math.min(window.innerWidth * 0.94, 520);
-        setPosition({ x: Math.max(12, window.innerWidth - width - 12), y: 96 });
       }
-    }
+    };
+
+    void initialize();
+
     const handleEnabledChange = () => {
       setEnabled(window.localStorage.getItem(enabledKey) === "true");
     };
     window.addEventListener(enabledEvent, handleEnabledChange);
-    const intervalId = window.setInterval(() => void loadData(), 15000);
+    const intervalId = window.setInterval(() => { void loadData(); }, 15000);
     return () => {
       window.clearInterval(intervalId);
       window.removeEventListener(enabledEvent, handleEnabledChange);
@@ -377,20 +382,22 @@ export default function SharedWorkspaceClient({ mode = "floating" }: Props) {
   if (mode === "page")
     return (
       <div className="space-y-6">
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="grid gap-3 sm:grid-cols-2">
           {metrics.map(({ icon: MetricIcon, label, value, detail }) => {
             return (
               <div
                 key={label}
-                className="border border-border bg-surface p-5"
+                className="min-w-0 border border-border bg-surface p-5 transition"
               >
-                <div className="mb-4 flex items-center gap-2 text-brand">
-                  <MetricIcon className="h-4 w-4" />
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center bg-brand/10 text-brand">
+                    <MetricIcon className="h-4 w-4" />
+                  </div>
                   <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">
                     {label}
                   </span>
                 </div>
-                <div className="text-3xl font-semibold text-foreground">
+                <div className="mt-4 text-3xl font-bold text-foreground">
                   {value}
                 </div>
                 <div className="mt-1 text-xs text-muted">{detail}</div>
@@ -398,51 +405,61 @@ export default function SharedWorkspaceClient({ mode = "floating" }: Props) {
             );
           })}
         </section>
-        <section className="flex flex-col justify-between gap-4 border-b border-border pb-5 sm:flex-row sm:items-center">
-          <div className="flex flex-1 flex-col gap-3 sm:flex-row">
-            <div className="relative flex-1">
-              <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted" />
-              <input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search tasks, owners, or details"
-                className="w-full border border-border bg-surface py-2.5 pl-9 pr-3 text-sm outline-none focus:border-brand"
-              />
+
+        <div className="grid min-w-0 gap-6 xl:grid-cols-[1.25fr_0.75fr]">
+          <section className="border border-border bg-surface p-4 sm:p-5">
+            <div className="flex flex-col justify-between gap-4 pb-4 sm:flex-row sm:items-center">
+              <div className="flex flex-1 flex-col gap-3 sm:flex-row">
+                <div className="relative flex-1">
+                  <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted" />
+                  <input
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    placeholder="Search tasks, owners, or details"
+                    className="w-full rounded-lg border border-border bg-background py-2.5 pl-9 pr-3 text-sm outline-none transition focus:border-brand"
+                  />
+                </div>
+                <div className="relative">
+                  <Filter className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted" />
+                  <select
+                    value={statusFilter}
+                    onChange={(event) => setStatusFilter(event.target.value)}
+                    className="w-full rounded-lg border border-border bg-background py-2.5 pl-9 pr-8 text-sm outline-none transition focus:border-brand sm:w-40"
+                  >
+                    <option value="ALL">All statuses</option>
+                    <option value="OPEN">Open</option>
+                    <option value="DONE">Completed</option>
+                  </select>
+                </div>
+              </div>
             </div>
-            <div className="relative">
-              <Filter className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted" />
-              <select
-                value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value)}
-                className="w-full border border-border bg-surface py-2.5 pl-9 pr-8 text-sm outline-none sm:w-40"
-              >
-                <option value="ALL">All statuses</option>
-                <option value="OPEN">Open</option>
-                <option value="DONE">Completed</option>
-              </select>
+
+            <div className="overflow-hidden border border-border bg-background">
+              <div className="hidden grid-cols-[minmax(0,1fr)_180px_140px_120px] gap-3 border-b border-border bg-surface px-4 py-3 text-[10px] font-bold uppercase tracking-[.12em] text-muted sm:grid">
+                <span>Task</span>
+                <span>Owner</span>
+                <span>Due</span>
+                <span>Priority</span>
+              </div>
+              {filteredTasks.map(taskRow)}
+              {filteredTasks.length === 0 ? (
+                <div className="p-10 text-center text-sm text-muted">
+                  No tasks match the current view.
+                </div>
+              ) : null}
             </div>
-          </div>
-        </section>
-        <section className="overflow-hidden border border-border bg-surface">
-          <div className="hidden grid-cols-[minmax(0,1fr)_180px_140px_120px] gap-3 border-b border-border bg-background px-4 py-3 text-[10px] font-bold uppercase tracking-[.12em] text-muted sm:grid">
-            <span>Task</span>
-            <span>Owner</span>
-            <span>Due</span>
-            <span>Priority</span>
-          </div>
-          {filteredTasks.map(taskRow)}
-          {filteredTasks.length === 0 ? (
-            <div className="p-10 text-center text-sm text-muted">
-              No tasks match the current view.
+          </section>
+
+          <section className="border border-border bg-surface p-5">
+            <div className="mb-3 flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center bg-brand/10 text-brand">
+                <Plus className="h-4 w-4" />
+              </div>
+              <p className="text-sm font-semibold text-foreground">Add shared task</p>
             </div>
-          ) : null}
-        </section>
-        <section className="border-t border-border pt-5">
-          <p className="mb-3 text-sm font-semibold text-foreground">
-            Add shared task
-          </p>
-          {form}
-        </section>
+            {form}
+          </section>
+        </div>
       </div>
     );
 

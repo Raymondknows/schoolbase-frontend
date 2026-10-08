@@ -25,6 +25,7 @@ import {
   Layers,
   HelpCircle,
   Check,
+  CheckCircle2,
   MessageSquare,
   PenTool,
   Building2,
@@ -139,6 +140,7 @@ export default function Sidebar({
           : "School admin";
   const schoolContext = [session?.name ?? "Staff", school?.city ?? school?.country].filter(Boolean).join(" · ");
   const normalizedProgress = typeof setupProgress === "number" ? Math.max(0, Math.min(100, setupProgress)) : 0;
+  const isSetupComplete = normalizedProgress >= 100;
   const progressCircumference = 2 * Math.PI * 10;
   const navItemsWithSectionVisibility = navItems.map((item, index) => ({
     ...item,
@@ -188,6 +190,7 @@ export default function Sidebar({
         {navItemsWithSectionVisibility.map(({ href, label, icon, sectionLabel, showSection, badge }) => {
           const isActive = pathname === href || pathname.startsWith(`${href}/`);
           const IconComponent = typeof icon === "string" ? icons[icon] : icon;
+          const progressRingColor = isSetupComplete ? "text-emerald-500" : isActive ? "text-brand" : "text-muted/70";
 
           return (
             <div key={href}>
@@ -208,22 +211,22 @@ export default function Sidebar({
               >
                 {href === "/admin/getting-started" ? (
                   <div className="relative flex h-5 w-5 shrink-0 items-center justify-center">
-                    <svg viewBox="0 0 24 24" className={`h-5 w-5 -rotate-90 ${isActive ? "text-brand" : "text-muted/70"}`}>
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.22" />
+                    <svg viewBox="0 0 24 24" className={`h-5 w-5 -rotate-90 ${progressRingColor}`}>
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" fill="none" opacity="0.22" />
                       <circle
                         cx="12"
                         cy="12"
                         r="10"
                         stroke="currentColor"
-                        strokeWidth="2"
+                        strokeWidth="3"
                         fill="none"
                         strokeLinecap="round"
                         strokeDasharray={progressCircumference}
                         strokeDashoffset={progressCircumference - (progressCircumference * normalizedProgress) / 100}
                       />
                     </svg>
-                    {normalizedProgress >= 100 ? (
-                      <Check className="absolute h-3.5 w-3.5 text-brand" />
+                    {isSetupComplete ? (
+                      <CheckCircle2 className="absolute h-3.5 w-3.5 text-emerald-500" />
                     ) : (
                       <Sparkles className="absolute h-3 w-3 text-brand" />
                     )}

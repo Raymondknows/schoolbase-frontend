@@ -8,7 +8,7 @@ type ChatAttachment = { id: string; originalName: string; mimeType: string; size
 type ChatMessage = { id: string; senderRole: string; senderName: string; body: string; createdAt: string; readAt?: string | null; attachments?: ChatAttachment[] };
 type Conversation = { id: string; subject: string; status: string; lastMessageAt: string; unreadCount: number; messages: ChatMessage[] };
 
-const topics = ["Student Records", "Fees & Payments", "Results", "Attendance", "Parents & Portal", "WhatsApp", "Account & Subscription", "Other"];
+const topics = ["Student Records", "Fees & Payments", "Results", "Attendance", "Parents & Portal", "ID Card", "WhatsApp", "Account & Subscription", "Other"];
 const allowedFiles = ".jpg,.jpeg,.png,.webp,.pdf";
 const whatsappHref = "https://wa.me/2349032250338";
 

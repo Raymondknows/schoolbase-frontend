@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import {
   ArrowRight,
   BookOpen,
+  CheckCircle2,
   Compass,
   DollarSign,
   GraduationCap,
@@ -403,8 +404,8 @@ export default function GettingStartedPage() {
           <div className="absolute right-0 top-0 h-full w-1/3 bg-brand-light/40 [clip-path:polygon(35%_0,100%_0,100%_100%,0_100%)]" />
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-3">
-              <div className="inline-flex w-fit items-center gap-2 border border-brand/20 bg-brand/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-brand">
-                <Sparkles className="h-4 w-4" />
+              <div className="inline-flex w-fit items-center gap-2 border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                <CheckCircle2 className="h-4 w-4" />
                 Setup complete
               </div>
               <div>

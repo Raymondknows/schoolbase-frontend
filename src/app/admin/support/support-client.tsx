@@ -813,7 +813,7 @@ export default function SupportClient({
                   value={subject}
                   onChange={(event) => setSubject(event.target.value)}
                   className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
-                  placeholder="Example: Payment setup issue"
+                  placeholder="Example: School setup issue"
                 />
               </div>
               <div>
