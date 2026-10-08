@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { HelpCircle, MailPlus, MessageCircle, PlusCircle, X } from "lucide-react";
 import { getBackendUrl } from "@/lib/backend-url";
+import { playCloseTone, playOpenTone } from "@/lib/sounds";
 import SupportRequestsClient from "./support-requests-client";
 import PlatformSupportChatClient from "./platform-support-chat-client";
 
@@ -105,7 +106,7 @@ export default function SupportPage() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <Link href="/schoolbase-admin/email-center" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"><MailPlus className="h-4 w-4" /> Email center</Link>
-            <button type="button" onClick={() => setShowNewTicketModal(true)} className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"><PlusCircle className="h-4 w-4" /> Create school ticket</button>
+            <button type="button" onClick={() => { setShowNewTicketModal(true); playOpenTone(); }} className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"><PlusCircle className="h-4 w-4" /> Create school ticket</button>
           </div>
         </div>
       </header>
@@ -116,7 +117,7 @@ export default function SupportPage() {
       </div>
 
       {showNewTicketModal ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4" onClick={() => setShowNewTicketModal(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4" onClick={() => { setShowNewTicketModal(false); playCloseTone(); }}>
           <div className="w-full max-w-xl overflow-hidden border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]" onClick={(event) => event.stopPropagation()}>
             <div className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-4 py-4 sm:px-6 sm:py-5">
               <div>
@@ -124,7 +125,7 @@ export default function SupportPage() {
                 <h2 className="mt-2 text-2xl font-bold text-foreground">Create a school support ticket</h2>
                 <p className="mt-1 text-sm text-muted">This creates a real support case for the selected school in the current support system.</p>
               </div>
-              <button type="button" onClick={() => setShowNewTicketModal(false)} className="flex h-8 w-8 items-center justify-center rounded-md border border-border transition-colors hover:bg-background" aria-label="Close ticket dialog"><X className="h-4 w-4" /></button>
+              <button type="button" onClick={() => { setShowNewTicketModal(false); playCloseTone(); }} className="flex h-8 w-8 items-center justify-center rounded-md border border-border transition-colors hover:bg-background" aria-label="Close ticket dialog"><X className="h-4 w-4" /></button>
             </div>
 
             <div className="space-y-4 p-4 sm:p-6">
@@ -140,7 +141,7 @@ export default function SupportPage() {
 
               <div>
                 <label className="mb-1 block text-sm font-medium text-foreground">Title</label>
-                <input value={newTicketTitle} onChange={(event) => setNewTicketTitle(event.target.value)} placeholder="e.g. SMS gateway failing on new admissions" className="w-full border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-brand" />
+                <input value={newTicketTitle} onChange={(event) => setNewTicketTitle(event.target.value)} placeholder="e.g. Parent portal not loading for new admissions" className="w-full border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-brand" />
               </div>
 
               <div>
@@ -161,8 +162,8 @@ export default function SupportPage() {
               {newTicketError ? <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{newTicketError}</div> : null}
 
               <div className="flex flex-col-reverse gap-3 border-t border-border pt-4 sm:flex-row sm:justify-end">
-                <button type="button" onClick={() => setShowNewTicketModal(false)} className="rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-foreground">Cancel</button>
-                <button type="button" disabled={newTicketBusy || !selectedSchoolId || !newTicketTitle.trim() || !newTicketDescription.trim()} onClick={() => void handleCreateTicket()} className="rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{newTicketBusy ? "Creating..." : "Create ticket"}</button>
+                <button type="button" onClick={() => { setShowNewTicketModal(false); playCloseTone(); }} className="border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-foreground">Cancel</button>
+                <button type="button" disabled={newTicketBusy || !selectedSchoolId || !newTicketTitle.trim() || !newTicketDescription.trim()} onClick={() => { playOpenTone(); void handleCreateTicket(); }} className="bg-brand px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{newTicketBusy ? "Creating..." : "Create ticket"}</button>
               </div>
             </div>
           </div>

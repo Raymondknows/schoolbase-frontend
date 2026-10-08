@@ -16,18 +16,55 @@ type Summary = {
   ctr: number;
 };
 
+type Placement = {
+  id: string;
+  name: string;
+  type?: string | null;
+  path?: string | null;
+  label?: string | null;
+};
+
+type Campaign = {
+  id: string;
+  title: string;
+  status: string;
+  advertiser?: Advertiser | null;
+  placements?: Array<{ placementId?: string; placement?: Placement | null }>;
+  summary?: string | null;
+  headline?: string | null;
+  landingUrl?: string | null;
+  budget?: number | null;
+  currency?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  approvalLogs?: Array<{ notes?: string | null }>;
+};
+
+type Advertiser = {
+  id: string;
+  companyName: string;
+  contactName?: string | null;
+  email?: string | null;
+  category?: string | null;
+  verificationStatus?: string | null;
+  campaigns?: Campaign[];
+  phone?: string | null;
+  website?: string | null;
+  notes?: string | null;
+};
+
 type ReviewTarget = {
   type: "advertiser" | "campaign";
-  advertiser?: any;
-  campaign?: any;
+  advertiser?: Advertiser | null;
+  campaign?: Campaign | null;
 };
 
 export default function PlatformAdsPage() {
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("Overview");
   const [summary, setSummary] = useState<Summary | null>(null);
-  const [advertisers, setAdvertisers] = useState<any[]>([]);
-  const [campaigns, setCampaigns] = useState<any[]>([]);
-  const [placements, setPlacements] = useState<any[]>([]);
+  const [advertisers, setAdvertisers] = useState<Advertiser[]>([]);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [placements, setPlacements] = useState<Placement[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialog, setDialog] = useState<"advertiser" | "campaign" | null>(null);
   const [reviewTarget, setReviewTarget] = useState<ReviewTarget | null>(null);
@@ -68,7 +105,13 @@ export default function PlatformAdsPage() {
   }
 
   useEffect(() => {
-    void loadData();
+    const timer = window.setTimeout(() => {
+      void loadData();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
   }, []);
 
   useEffect(() => {
@@ -211,23 +254,27 @@ export default function PlatformAdsPage() {
   ], [summary]);
 
   const reviewCampaign = reviewTarget?.campaign ?? reviewTarget?.advertiser?.campaigns?.[0] ?? null;
+  const activeReviewCampaign = reviewTarget?.type === "campaign" ? reviewTarget.campaign : null;
+  const activeReviewAdvertiser = reviewTarget?.type === "advertiser" ? reviewTarget.advertiser : null;
 
   return (
     <main className="ads-page min-h-screen bg-background px-2 py-4 text-foreground sm:px-8 sm:py-6 lg:px-12">
-      <style>{`.ads-page button:not(:disabled), .ads-page input[type="checkbox"], .ads-page select, .ads-page label { cursor: pointer; } .ads-page button:disabled { cursor: not-allowed; }`}</style>
+      <style>{`@keyframes support-page-pulse { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgb(10 102 194 / .4) } 50% { opacity: .55; box-shadow: 0 0 0 7px rgb(10 102 194 / 0) } } @keyframes support-page-scan { from { transform: translateX(-100%) } to { transform: translateX(100%) } } .support-page-hero { position: relative; overflow: hidden; } .support-page-scan { position: absolute; inset: 0 auto 0 0; width: 33%; background: linear-gradient(to right, transparent, rgb(10 102 194 / .10), transparent); animation: support-page-scan 3.2s linear infinite; pointer-events: none; } .support-page-pulse { animation: support-page-pulse 0.9s ease-in-out infinite; } .ads-page button:not(:disabled), .ads-page input[type="checkbox"], .ads-page select, .ads-page label { cursor: pointer; } .ads-page button:disabled { cursor: not-allowed; }`}</style>
       <div className="mx-auto max-w-7xl space-y-6">
-        <header className="border border-border bg-surface p-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <header className="support-page-hero relative overflow-hidden border border-border bg-surface px-6 pb-8 pt-8 sm:px-8 sm:pb-10 sm:pt-10">
+          <div className="support-page-scan" />
+          <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
             <div>
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-brand">
-                <Megaphone className="h-4 w-4" /> Ads & Marketplace
+                <span className="support-page-pulse h-2.5 w-2.5 rounded-full bg-brand" />
+                Ads & Marketplace
               </div>
-              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">Platform ad foundation</h1>
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Platform ad foundation</h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Premium education-focused placements with manual approval, campaign oversight, and safe public delivery.</p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <button type="button" onClick={() => openDialog("advertiser")} className="rounded-md border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground">New Advertiser</button>
-              <button type="button" onClick={() => openDialog("campaign")} className="rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-hover">New Campaign</button>
+              <button type="button" onClick={() => openDialog("advertiser")} className="rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light">New Advertiser</button>
+              <button type="button" onClick={() => openDialog("campaign")} className="rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover">New Campaign</button>
             </div>
           </div>
         </header>
@@ -289,7 +336,7 @@ export default function PlatformAdsPage() {
                               <p className="font-medium text-foreground">{campaign.title}</p>
                               <p className="text-xs text-muted">{campaign.status}</p>
                             </div>
-                            <span className="rounded-full border border-border px-2 py-1 text-[10px] font-bold uppercase tracking-[.1em] text-muted">{campaign.advertiser?.companyName}</span>
+                            <span className="rounded-full border border-border px-2 py-1 text-[10px] font-bold uppercase tracking-[.1em] text-muted">{campaign.advertiser?.companyName ?? "Unassigned"}</span>
                           </div>
                         ))}
                       </div>
@@ -349,11 +396,11 @@ export default function PlatformAdsPage() {
                           <td className="px-4 py-3 font-medium text-foreground">{campaign.title}</td>
                           <td className="px-4 py-3 text-muted">{campaign.advertiser?.companyName}</td>
                           <td className="px-4 py-3"><span className="rounded-full border border-brand/30 bg-brand/10 px-2 py-1 text-[10px] font-bold uppercase tracking-[.1em] text-brand">{campaign.status}</span></td>
-                          <td className="px-4 py-3 text-muted">{campaign.placements?.map((item: any) => item.placement?.name).join(", ") || "Unassigned"}</td>
+                          <td className="px-4 py-3 text-muted">{campaign.placements?.map((item: { placement?: Placement | null }) => item.placement?.name).filter((name): name is string => Boolean(name)).join(", ") || "Unassigned"}</td>
                           <td className="px-4 py-3">
                             <div className="flex flex-wrap gap-2">
                               <button type="button" onClick={() => openReviewModal({ type: "campaign", campaign })} className="rounded-md border border-brand/30 bg-brand/10 px-2 py-1 text-xs font-semibold text-brand inline-flex items-center gap-1"><Eye className="h-3.5 w-3.5" /> View</button>
-                              <button type="button" disabled={saving} onClick={() => setPlacementEditor({ campaignId: campaign.id, selected: campaign.placements?.map((item: any) => item.placementId || item.placement?.id).filter(Boolean) || [] })} className="rounded-md border border-border bg-background px-2 py-1 text-xs font-semibold text-foreground">Change placement</button>
+                              <button type="button" disabled={saving} onClick={() => setPlacementEditor({ campaignId: campaign.id, selected: campaign.placements?.map((item: { placementId?: string; placement?: Placement | null }) => item.placementId || item.placement?.id).filter((id): id is string => Boolean(id)) || [] })} className="rounded-md border border-border bg-background px-2 py-1 text-xs font-semibold text-foreground">Change placement</button>
                               {campaign.status === "DRAFT" && <button type="button" disabled={saving} onClick={() => void updateCampaign(campaign.id, "submit")} className="rounded-md border border-brand/30 bg-brand/10 px-2 py-1 text-xs font-semibold text-brand">Mark submitted</button>}
                               {campaign.status === "APPROVED" && <button type="button" disabled={saving} onClick={() => void updateCampaign(campaign.id, "live")} className="rounded-md bg-brand px-2 py-1 text-xs font-semibold text-white">Go live</button>}
                               {campaign.status === "LIVE" && <button type="button" disabled={saving} onClick={() => void updateCampaign(campaign.id, "pause")} className="rounded-md border border-brand/30 bg-brand/10 px-2 py-1 text-xs font-semibold text-brand">Pause</button>}
@@ -670,7 +717,7 @@ export default function PlatformAdsPage() {
                     <p className="text-[10px] font-bold uppercase tracking-[.12em] text-muted">Placement & notes</p>
                     <div className="mt-4 rounded-lg bg-background p-4 text-sm leading-6 text-foreground">
                       <p className="font-medium text-foreground">Requested placements</p>
-                      <p className="mt-2">{reviewCampaign?.placements?.map((item: any) => item.placement?.name).join(", ") || "Not specified"}</p>
+                      <p className="mt-2">{reviewCampaign?.placements?.map((item: { placement?: Placement | null }) => item.placement?.name).filter((name): name is string => Boolean(name)).join(", ") || "Not specified"}</p>
                     </div>
                   </section>
 
@@ -708,33 +755,33 @@ export default function PlatformAdsPage() {
             <div className="sticky bottom-0 border-t border-border bg-background/95 px-5 py-4 backdrop-blur sm:px-6">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex flex-wrap gap-2">
-                  {reviewTarget.type === "campaign" && reviewTarget.campaign && (
+                  {activeReviewCampaign && (
                     <>
                       <button type="button" disabled={saving} onClick={() => {
                         setReviewTarget(null);
                         setPlacementEditor({
-                          campaignId: reviewTarget.campaign.id,
-                          selected: reviewTarget.campaign.placements?.map((item: any) => item.placementId || item.placement?.id).filter(Boolean) || [],
+                          campaignId: activeReviewCampaign.id,
+                          selected: activeReviewCampaign.placements?.map((item: { placementId?: string; placement?: Placement | null }) => item.placementId || item.placement?.id).filter((id): id is string => Boolean(id)) || [],
                         });
                       }} className="rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface">Change placement</button>
 
-                      {reviewTarget.campaign.status === "DRAFT" ? (
-                        <button type="button" disabled={saving} onClick={() => { void updateCampaign(reviewTarget.campaign.id, "submit"); setReviewTarget(null); }} className="rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover">Mark submitted</button>
-                      ) : reviewTarget.campaign.status === "PAUSED" ? (
-                        <button type="button" disabled={saving} onClick={() => { void updateCampaign(reviewTarget.campaign.id, "resume"); setReviewTarget(null); }} className="rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover">Resume ad</button>
+                      {activeReviewCampaign.status === "DRAFT" ? (
+                        <button type="button" disabled={saving} onClick={() => { void updateCampaign(activeReviewCampaign.id, "submit"); setReviewTarget(null); }} className="rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover">Mark submitted</button>
+                      ) : activeReviewCampaign.status === "PAUSED" ? (
+                        <button type="button" disabled={saving} onClick={() => { void updateCampaign(activeReviewCampaign.id, "resume"); setReviewTarget(null); }} className="rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover">Resume ad</button>
                       ) : (
                         <>
-                          <button type="button" disabled={saving} onClick={() => { void updateCampaign(reviewTarget.campaign.id, "reject"); setReviewTarget(null); }} className="rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface">Reject</button>
-                          <button type="button" disabled={saving} onClick={() => { void updateCampaign(reviewTarget.campaign.id, "approve"); setReviewTarget(null); }} className="rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover">Approve</button>
+                          <button type="button" disabled={saving} onClick={() => { void updateCampaign(activeReviewCampaign.id, "reject"); setReviewTarget(null); }} className="rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface">Reject</button>
+                          <button type="button" disabled={saving} onClick={() => { void updateCampaign(activeReviewCampaign.id, "approve"); setReviewTarget(null); }} className="rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover">Approve</button>
                         </>
                       )}
                     </>
                   )}
 
-                  {reviewTarget.type === "advertiser" && reviewTarget.advertiser && (
+                  {activeReviewAdvertiser && (
                     <>
-                      {reviewTarget.advertiser.verificationStatus !== "VERIFIED" && <button type="button" disabled={saving} onClick={() => { void updateAdvertiser(reviewTarget.advertiser.id, "verify"); setReviewTarget(null); }} className="rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover">Verify</button>}
-                      {reviewTarget.advertiser.verificationStatus !== "REJECTED" && <button type="button" disabled={saving} onClick={() => { void updateAdvertiser(reviewTarget.advertiser.id, "reject"); setReviewTarget(null); }} className="rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface">Reject</button>}
+                      {activeReviewAdvertiser.verificationStatus !== "VERIFIED" && <button type="button" disabled={saving} onClick={() => { void updateAdvertiser(activeReviewAdvertiser.id, "verify"); setReviewTarget(null); }} className="rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover">Verify</button>}
+                      {activeReviewAdvertiser.verificationStatus !== "REJECTED" && <button type="button" disabled={saving} onClick={() => { void updateAdvertiser(activeReviewAdvertiser.id, "reject"); setReviewTarget(null); }} className="rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface">Reject</button>}
                     </>
                   )}
                 </div>

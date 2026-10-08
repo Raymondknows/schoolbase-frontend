@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { resolveSchoolAssetUrl } from "@/lib/asset-urls";
 import { playCloseTone, playOpenTone } from "@/lib/sounds";
+import Image from "next/image";
 import { Bell, CalendarPlus, CheckSquare, Download, MoreVertical, Pause, Play, X } from "lucide-react";
 
 export type SchoolRow = {
@@ -83,12 +84,12 @@ export function ActionMenu({
       <button
         ref={btnRef}
         type="button"
-        className={`cursor-pointer inline-flex items-center justify-center gap-2 rounded-lg border border-brand bg-white text-brand transition ${compact ? "px-2.5 py-2" : "px-3 py-2.5 text-xs font-semibold"}`}
+        className={`cursor-pointer inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#0A66C2]/20 bg-white text-[#0A66C2] transition hover:bg-[#0A66C2]/5 ${compact ? "h-10 px-3 text-[11px]" : "h-10 px-3.5 text-xs font-semibold"}`}
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-label="Open school actions"
       >
-        <MoreVertical className="h-4 w-4" />
+        <MoreVertical className="h-3.5 w-3.5" />
         <span className={`${compact ? "sr-only sm:not-sr-only" : ""}`}>Actions</span>
       </button>
 
@@ -160,22 +161,17 @@ export function SchoolTable({
   filterControls?: ReactNode;
   onOpenDetails?: (school: SchoolRow) => void;
 }) {
-  const [displaySchools, setDisplaySchools] = useState<SchoolRow[]>(schools);
+  const [displaySchools, setDisplaySchools] = useState<SchoolRow[]>(() => schools);
   const [editingExpiryId, setEditingExpiryId] = useState<string | null>(null);
   const [editingExpiryValue, setEditingExpiryValue] = useState<string | null>(null);
   const [savingExpiry, setSavingExpiry] = useState(false);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const pageSize = 10;
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [quickFilter, setQuickFilter] = useState<"NONE" | "TRIAL_ENDING" | "UNVERIFIED" | "SUSPENDED">("NONE");
   const [selectedSchoolIds, setSelectedSchoolIds] = useState<Set<string>>(new Set());
   const selectAllCheckboxRef = useRef<HTMLInputElement | null>(null);
-
-  useEffect(() => {
-    setDisplaySchools(schools);
-    setPage(1);
-  }, [schools]);
 
   function toInputDate(value?: string | null) {
     if (!value) return "";
@@ -336,7 +332,7 @@ export function SchoolTable({
       setMessage(`Bulk action completed for ${ids.length} school${ids.length === 1 ? "" : "s"}.`);
       setDisplaySchools((current) =>
         current.map((school) => {
-          const updated = results.find((result: any) => result?.school?.id === school.id);
+          const updated = results.find((result: { school?: SchoolRow } | undefined) => result?.school?.id === school.id);
           return updated?.school ? { ...school, ...updated.school } : school;
         }),
       );
@@ -422,7 +418,7 @@ export function SchoolTable({
         return response.json();
       }));
 
-      const successCount = results.filter((result: any) => result?.success || !result?.message).length;
+      const successCount = results.filter((result: { success?: boolean; message?: string } | undefined) => result?.success || !result?.message).length;
       setMessage(`Sent reminders to ${successCount} of ${ids.length} selected schools.`);
       clearSelection();
     } catch (error) {
@@ -484,34 +480,34 @@ export function SchoolTable({
 
   return (
     <div className="border border-border bg-surface p-5">
-      <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-        <div className="mb-4 w-full">
+      <div className="mb-6 grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
+        <div className="min-w-0">
           {filterControls ?? (
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                className={`rounded-md px-3 py-2 text-sm font-semibold transition ${quickFilter === "NONE" ? "bg-brand text-white" : "bg-background text-foreground border border-border"}`}
+                className={`h-9 rounded-lg border px-3 text-xs font-semibold transition ${quickFilter === "NONE" ? "border-brand bg-brand text-white" : "border-border bg-background text-foreground hover:bg-surface"}`}
                 onClick={() => setQuickFilter("NONE")}
               >
                 All
               </button>
               <button
                 type="button"
-                className={`rounded-md px-3 py-2 text-sm font-semibold transition ${quickFilter === "TRIAL_ENDING" ? "bg-brand text-white" : "bg-background text-foreground border border-border"}`}
+                className={`h-9 rounded-lg border px-3 text-xs font-semibold transition ${quickFilter === "TRIAL_ENDING" ? "border-brand bg-brand text-white" : "border-border bg-background text-foreground hover:bg-surface"}`}
                 onClick={() => setQuickFilter("TRIAL_ENDING")}
               >
                 Trials ending soon
               </button>
               <button
                 type="button"
-                className={`rounded-md px-3 py-2 text-sm font-semibold transition ${quickFilter === "UNVERIFIED" ? "bg-brand text-white" : "bg-background text-foreground border border-border"}`}
+                className={`h-9 rounded-lg border px-3 text-xs font-semibold transition ${quickFilter === "UNVERIFIED" ? "border-brand bg-brand text-white" : "border-border bg-background text-foreground hover:bg-surface"}`}
                 onClick={() => setQuickFilter("UNVERIFIED")}
               >
                 Unverified
               </button>
               <button
                 type="button"
-                className={`rounded-md px-3 py-2 text-sm font-semibold transition ${quickFilter === "SUSPENDED" ? "bg-brand text-white" : "bg-background text-foreground border border-border"}`}
+                className={`h-9 rounded-lg border px-3 text-xs font-semibold transition ${quickFilter === "SUSPENDED" ? "border-brand bg-brand text-white" : "border-border bg-background text-foreground hover:bg-surface"}`}
                 onClick={() => setQuickFilter("SUSPENDED")}
               >
                 Suspended
@@ -520,84 +516,84 @@ export function SchoolTable({
           )}
         </div>
 
-        <div className="flex flex-row flex-nowrap flex-1 min-w-0 items-center justify-end gap-1 overflow-x-auto pb-2 whitespace-nowrap sm:overflow-visible sm:pb-0">
+        <div className="flex flex-wrap items-center justify-end gap-1.5 self-start xl:max-w-[520px]">
           <button
             type="button"
             title={selectedCount > 0 ? `Export ${selectedCount} selected schools` : "Export all schools"}
             aria-label={selectedCount > 0 ? `Export ${selectedCount} selected schools` : "Export all schools"}
-            className="cursor-pointer inline-flex h-9 min-w-[36px] items-center justify-center rounded-xl border border-[#0A66C2] bg-[#0A66C2] px-2 text-white shadow-sm transition hover:bg-[#0952a4] hover:border-[#0952a4] sm:h-11 sm:min-w-[44px] sm:px-3"
+            className="inline-flex h-10 min-w-[42px] items-center justify-center rounded-xl border border-[#0A66C2] bg-[#0A66C2] px-3 text-white transition hover:bg-[#0952a4] disabled:cursor-not-allowed disabled:opacity-50"
             onClick={exportSelectedCsv}
           >
-            <Download className="h-5 w-5" />
+            <Download className="h-4 w-4" />
           </button>
           <button
             type="button"
             title="Select all filtered schools"
             aria-label="Select all filtered schools"
-            className="cursor-pointer inline-flex h-9 min-w-[36px] items-center justify-center rounded-xl border border-[#0A66C2] bg-[#0A66C2] px-2 text-white shadow-sm transition hover:bg-[#0952a4] hover:border-[#0952a4] sm:h-11 sm:min-w-[44px] sm:px-3"
+            className="inline-flex h-10 min-w-[42px] items-center justify-center rounded-xl border border-[#0A66C2] bg-[#0A66C2] px-3 text-white transition hover:bg-[#0952a4]"
             onClick={selectAllFiltered}
           >
-            <CheckSquare className="h-5 w-5" />
+            <CheckSquare className="h-4 w-4" />
           </button>
           <button
             type="button"
             title="Clear selection"
             aria-label="Clear selection"
-            className="cursor-pointer inline-flex h-9 min-w-[36px] items-center justify-center rounded-xl border border-[#0A66C2] bg-[#0A66C2] px-2 text-white shadow-sm transition hover:bg-[#0952a4] hover:border-[#0952a4] disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:min-w-[44px] sm:px-3"
+            className="inline-flex h-10 min-w-[42px] items-center justify-center rounded-xl border border-[#0A66C2] bg-[#0A66C2] px-3 text-white transition hover:bg-[#0952a4] disabled:cursor-not-allowed disabled:opacity-50"
             onClick={clearSelection}
             disabled={selectedCount === 0}
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
           <button
             type="button"
             title="Send reminder to selected schools"
             aria-label="Send reminder to selected schools"
-            className="cursor-pointer inline-flex h-9 min-w-[36px] items-center justify-center rounded-xl border border-[#0A66C2] bg-[#0A66C2] px-2 text-white shadow-sm transition hover:bg-[#0952a4] hover:border-[#0952a4] disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:min-w-[44px] sm:px-3"
+            className="inline-flex h-10 min-w-[42px] items-center justify-center rounded-xl border border-[#0A66C2] bg-[#0A66C2] px-3 text-white transition hover:bg-[#0952a4] disabled:cursor-not-allowed disabled:opacity-50"
             onClick={sendBulkReminders}
             disabled={selectedCount === 0 || busy}
           >
-            <Bell className="h-5 w-5" />
+            <Bell className="h-4 w-4" />
           </button>
           <button
             type="button"
             title="Send reminders to all incomplete schools"
             aria-label="Send reminders to all incomplete schools"
-            className="cursor-pointer inline-flex h-9 min-w-[36px] items-center justify-center rounded-xl border border-[#0A66C2] bg-[#0A66C2] px-2 text-white shadow-sm transition hover:bg-[#0952a4] hover:border-[#0952a4] disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:min-w-[44px] sm:px-3"
+            className="inline-flex h-10 min-w-[42px] items-center justify-center rounded-xl border border-[#0A66C2] bg-[#0A66C2] px-3 text-white transition hover:bg-[#0952a4] disabled:cursor-not-allowed disabled:opacity-50"
             onClick={sendReminderToIncompleteSchools}
             disabled={busy}
           >
-            <CalendarPlus className="h-5 w-5" />
+            <CalendarPlus className="h-4 w-4" />
           </button>
           <button
             type="button"
             title="Suspend selected schools"
             aria-label="Suspend selected schools"
-            className="cursor-pointer inline-flex h-9 min-w-[36px] items-center justify-center rounded-xl border border-[#0A66C2] bg-[#0A66C2] px-2 text-white shadow-sm transition hover:bg-[#0952a4] hover:border-[#0952a4] disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:min-w-[44px] sm:px-3"
+            className="inline-flex h-10 min-w-[42px] items-center justify-center rounded-xl border border-[#0A66C2] bg-[#0A66C2] px-3 text-white transition hover:bg-[#0952a4] disabled:cursor-not-allowed disabled:opacity-50"
             onClick={() => performBulkAction("suspend")}
             disabled={selectedCount === 0 || busy}
           >
-            <Pause className="h-5 w-5" />
+            <Pause className="h-4 w-4" />
           </button>
           <button
             type="button"
             title="Activate selected schools"
             aria-label="Activate selected schools"
-            className="cursor-pointer cursor-pointer inline-flex h-9 min-w-[36px] items-center justify-center rounded-xl border border-[#0A66C2] bg-[#0A66C2] px-2 text-white shadow-sm transition hover:bg-[#0952a4] hover:border-[#0952a4] disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:min-w-[44px] sm:px-3"
+            className="inline-flex h-10 min-w-[42px] items-center justify-center rounded-xl border border-[#0A66C2] bg-[#0A66C2] px-3 text-white transition hover:bg-[#0952a4] disabled:cursor-not-allowed disabled:opacity-50"
             onClick={() => performBulkAction("activate")}
             disabled={selectedCount === 0 || busy}
           >
-            <Play className="h-5 w-5" />
+            <Play className="h-4 w-4" />
           </button>
           <button
             type="button"
             title="Extend trial by 30 days for selected schools"
             aria-label="Extend trial by 30 days for selected schools"
-            className="cursor-pointer inline-flex h-9 min-w-[36px] items-center justify-center rounded-xl border border-[#0A66C2] bg-[#0A66C2] px-2 text-white shadow-sm transition hover:bg-[#0952a4] hover:border-[#0952a4] disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:min-w-[44px] sm:px-3"
+            className="inline-flex h-10 min-w-[42px] items-center justify-center rounded-xl border border-[#0A66C2] bg-[#0A66C2] px-3 text-white transition hover:bg-[#0952a4] disabled:cursor-not-allowed disabled:opacity-50"
             onClick={() => performBulkAction("extendTrial", { days: 30 })}
             disabled={selectedCount === 0 || busy}
           >
-            <CalendarPlus className="h-5 w-5" />
+            <CalendarPlus className="h-4 w-4" />
           </button>
         </div>
       </div>
@@ -658,9 +654,12 @@ export function SchoolTable({
                   >
                     <div className="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-2xl bg-brand/10 text-sm font-semibold text-brand">
                       {school.logoUrl ? (
-                        <img
-                          src={resolveSchoolAssetUrl(school.logoUrl) || school.logoUrl}
+                        <Image
+                          src={resolveSchoolAssetUrl(school.logoUrl) || school.logoUrl || ""}
                           alt={`${school.name} logo`}
+                          width={40}
+                          height={40}
+                          unoptimized
                           className="h-full w-full object-cover"
                         />
                       ) : (
@@ -737,7 +736,7 @@ export function SchoolTable({
             @keyframes schools_expiry_modal_enter { from { transform: translateY(24px) scale(.98); opacity: 0 } to { transform: translateY(0) scale(1); opacity: 1 } }
           `}</style>
           <div
-            className="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
+            className="w-full max-w-lg overflow-hidden border border-slate-200 bg-white shadow-none rounded-none"
             style={{ animation: `schools_expiry_modal_enter 260ms cubic-bezier(.2,.9,.2,1)` }}
           >
             <div className="border-b border-slate-100 px-6 py-5" style={{ background: "linear-gradient(90deg, rgba(10,102,194,0.12), rgba(10,102,194,0.04))" }}>
@@ -749,7 +748,7 @@ export function SchoolTable({
                 <button
                   type="button"
                   onClick={closeExpiryModal}
-                  className="cursor-pointer flex h-10 w-10 items-center justify-center rounded-lg border border-border hover:bg-background transition-colors"
+                  className="cursor-pointer flex h-10 w-10 items-center justify-center rounded-none border border-border hover:bg-background transition-colors"
                   aria-label="Close expiry modal"
                 >
                   <X className="h-4 w-4" />
@@ -763,7 +762,7 @@ export function SchoolTable({
                 type="date"
                 value={editingExpiryValue ?? ""}
                 onChange={(e) => setEditingExpiryValue(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand"
+                className="w-full rounded-none border border-border bg-background px-4 py-3 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
 
@@ -772,12 +771,13 @@ export function SchoolTable({
                 type="button"
                 onClick={closeExpiryModal}
                 disabled={savingExpiry}
-                className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-foreground hover:bg-slate-100 disabled:opacity-50"
+                className="rounded-none border border-slate-300 px-4 py-2.5 text-sm font-medium text-foreground hover:bg-slate-100 disabled:opacity-50"
               >
                 Cancel
               </button>
               <Button
                 type="button"
+                className="rounded-none"
                 onClick={async () => {
                   if (!editingExpiryId) return;
                   const expiresAt = editingExpiryValue;

@@ -2,11 +2,8 @@
 
 import { useMemo, useState, useEffect, useTransition, useRef } from "react";
 import { createPortal } from "react-dom";
-import { useRouter } from "next/navigation";
 import { setSchoolPlanAction, approveSchoolSubscriptionAction, rejectSchoolSubscriptionAction } from "../actions";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
 import { getBackendUrl } from "@/lib/backend-url";
 import { resolveSchoolAssetUrl } from "@/lib/asset-urls";
 import { playCloseTone, playOpenTone } from "@/lib/sounds";
@@ -24,13 +21,6 @@ const DEFAULT_PLAN_OPTIONS = [
   { value: "STARTER", label: "Starter" },
   { value: "GROWTH", label: "Growth" },
 ];
-
-const STATUS_CONFIG = {
-  TRIAL: { label: "Trial", color: "bg-info/10 text-info" },
-  ACTIVE: { label: "Active", color: "bg-success/10 text-success" },
-  SUSPENDED: { label: "Suspended", color: "bg-warning/10 text-warning" },
-  CANCELLED: { label: "Cancelled", color: "bg-error/10 text-error" },
-};
 
 const ITEMS_PER_PAGE = 15;
 const PAYMENTS_PER_PAGE = 10;
@@ -74,7 +64,7 @@ export default function SubscriptionsPageClient({
   payments: SubscriptionPaymentRecord[];
 }) {
   const [schools, setSchools] = useState<School[]>(initialSchools);
-  const [payments, setPayments] = useState<SubscriptionPaymentRecord[]>(initialPayments);
+  const [payments] = useState<SubscriptionPaymentRecord[]>(initialPayments);
   const [activeTab, setActiveTab] = useState<"overview" | "payments">("overview");
   const [paymentPage, setPaymentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -87,7 +77,6 @@ export default function SubscriptionsPageClient({
   const [savingExpiry, setSavingExpiry] = useState(false);
   const [planOptions, setPlanOptions] = useState(DEFAULT_PLAN_OPTIONS);
   const [isPending, startTransition] = useTransition();
-  const router = useRouter();
 
   useEffect(() => {
     let mounted = true;
@@ -207,35 +196,10 @@ export default function SubscriptionsPageClient({
     });
   };
 
-  useEffect(() => {
-    setPayments(initialPayments);
-    setPaymentPage(1);
-  }, [initialPayments]);
-
-  useEffect(() => {
-    setSelectedPlans((prev) => {
-      const next = { ...prev };
-      let changed = false;
-
-      for (const school of schools) {
-        if (school.status === "PENDING" && !next[school.id]) {
-          next[school.id] = "STARTER";
-          changed = true;
-        }
-      }
-
-      return changed ? next : prev;
-    });
-  }, [schools]);
-
   // Get pending schools
   const pendingSchools = useMemo(() => {
     return schools.filter((s) => s.status === "PENDING");
   }, [schools]);
-
-  // Only show tabs for All, Free, Growth
-  const PLAN_TAB_ORDER = ["ALL", "FREE", "GROWTH"];
-  const STATUS_TAB_ORDER = ["ALL", "TRIAL", "ACTIVE"];
 
   // Filter schools
   const filteredSchools = useMemo(() => {
@@ -264,16 +228,6 @@ export default function SubscriptionsPageClient({
     }
     return filtered;
   }, [schools, searchQuery, planFilter, statusFilter]);
-
-  const getPlanStats = (plan: string) => {
-    if (plan === "ALL") return schools.length;
-    return schools.filter((s) => s.plan === plan).length;
-  };
-
-  const getStatusStats = (status: string) => {
-    if (status === "ALL") return schools.length;
-    return schools.filter((s) => s.status === status).length;
-  };
 
   const totalPages = Math.ceil(filteredSchools.length / ITEMS_PER_PAGE);
   const paginatedSchools = filteredSchools.slice(
@@ -355,8 +309,11 @@ export default function SubscriptionsPageClient({
 
   return (
     <div className="w-full space-y-6">
-      <div className="border-b border-border pb-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <style>{`@keyframes support-page-pulse { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgb(10 102 194 / .4) } 50% { opacity: .55; box-shadow: 0 0 0 7px rgb(10 102 194 / 0) } } @keyframes support-page-scan { from { transform: translateX(-100%) } to { transform: translateX(100%) } } .support-page-hero { position: relative; overflow: hidden; } .support-page-scan { position: absolute; inset: 0 auto 0 0; width: 33%; background: linear-gradient(to right, transparent, rgb(10 102 194 / .10), transparent); animation: support-page-scan 3.2s linear infinite; pointer-events: none; } .support-page-pulse { animation: support-page-pulse 0.9s ease-in-out infinite; }`}</style>
+
+      <div className="support-page-hero relative overflow-hidden border border-border bg-surface px-4 pb-5 pt-5 sm:px-6">
+        <div className="support-page-scan" />
+        <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
@@ -854,61 +811,64 @@ export default function SubscriptionsPageClient({
       )}
 
       {editingExpiryId && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/45 p-4">
           <style>{`
             @keyframes subscriptions_expiry_modal_enter { from { transform: translateY(24px) scale(.98); opacity: 0 } to { transform: translateY(0) scale(1); opacity: 1 } }
           `}</style>
           <div
-            className="w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-surface shadow-sm"
+            className="w-full max-w-lg overflow-hidden border border-border bg-surface shadow-none rounded-none"
             style={{ animation: `subscriptions_expiry_modal_enter 260ms cubic-bezier(.2,.9,.2,1)` }}
           >
-            <div className="border-b border-border px-6 py-5 bg-background/40">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground">Edit expiry date</h2>
-                  <p className="mt-1 text-sm text-muted">Update the subscription expiry date for this school.</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={closeExpiryModal}
-                  className="flex h-10 w-10 items-center justify-center rounded-lg border border-border hover:bg-background transition-colors"
-                  aria-label="Close expiry modal"
-                >
-                  ✕
-                </button>
+            <div className="flex items-start justify-between gap-4 border-b border-border/70 bg-brand/10 px-4 py-4 sm:px-6 sm:py-5">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.12em] text-brand">Edit expiry date</div>
+                <h2 className="mt-2 text-2xl font-bold text-foreground">Update school subscription</h2>
+                <p className="mt-1 text-sm text-muted">Adjust the expiry date for this school without changing the rest of the account setup.</p>
+              </div>
+              <button
+                type="button"
+                onClick={closeExpiryModal}
+                className="flex h-8 w-8 items-center justify-center border border-border transition-colors hover:bg-background rounded-none"
+                aria-label="Close expiry modal"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4 p-4 sm:p-6">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-foreground">Expiry date</label>
+                <input
+                  type="date"
+                  value={editingExpiryValue}
+                  onChange={(e) => setEditingExpiryValue(e.target.value)}
+                  className="w-full appearance-none rounded-none border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-brand"
+                />
               </div>
             </div>
 
-            <div className="px-6 py-6">
-              <label className="block text-sm font-medium text-foreground mb-2">Expiry date</label>
-              <input
-                type="date"
-                value={editingExpiryValue}
-                onChange={(e) => setEditingExpiryValue(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand"
-              />
-            </div>
-
-            <div className="flex flex-col gap-3 border-t border-border bg-background px-6 py-4 sm:flex-row sm:justify-end">
+            <div className="flex flex-col-reverse gap-3 border-t border-border bg-background px-4 py-4 sm:flex-row sm:justify-end sm:px-6">
               <button
                 type="button"
                 onClick={closeExpiryModal}
                 disabled={savingExpiry}
-                className="rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-background disabled:opacity-50"
+                className="rounded-none border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-foreground disabled:opacity-50"
               >
                 Cancel
               </button>
-              <Button
+              <button
                 type="button"
                 onClick={async () => {
                   if (!editingExpiryId || !editingExpiryValue) return;
+                  playOpenTone();
                   await handleSetExpiry(editingExpiryId, editingExpiryValue);
                   closeExpiryModal();
                 }}
                 disabled={savingExpiry || !editingExpiryValue}
+                className="rounded-none bg-brand px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
               >
                 {savingExpiry ? "Saving..." : "Save changes"}
-              </Button>
+              </button>
             </div>
           </div>
         </div>

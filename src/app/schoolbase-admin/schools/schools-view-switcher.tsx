@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState, useEffect } from "react";
 import AdminSkeleton from "@/components/ui/skeleton";
 import Link from "next/link";
@@ -38,24 +39,31 @@ function formatDate(date?: string | Date | null) {
   return value.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
+type SchoolDetailsRow = SchoolRow & {
+  tagline?: string | null;
+  address?: string | null;
+  country?: string | null;
+  principalName?: string | null;
+  principalComment?: string | null;
+  stampUrl?: string | null;
+  principalSignatureUrl?: string | null;
+};
+
 export default function SchoolsViewSwitcher({
   initialSchools,
   viewMode,
-  setViewMode,
 }: {
   initialSchools: SchoolRow[];
   viewMode: "list" | "grid";
-  setViewMode: (next: "list" | "grid") => void;
 }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [verificationFilter, setVerificationFilter] = useState("ALL");
   const [countryFilter, setCountryFilter] = useState("ALL");
   const [sortBy, setSortBy] = useState<"NAME_ASC" | "REGISTERED_DESC" | "PLAN_ASC" | "STATUS_ASC" | "TRIAL_END_ASC" | "STUDENTS_DESC">("REGISTERED_DESC");
   const [schools, setSchools] = useState<SchoolRow[]>(initialSchools);
   const [loading, setLoading] = useState(true);
-  const [selectedSchool, setSelectedSchool] = useState<any | null>(null);
-  const [schoolDetails, setSchoolDetails] = useState<any | null>(null);
+  const [selectedSchool, setSelectedSchool] = useState<SchoolRow | null>(null);
+  const [schoolDetails, setSchoolDetails] = useState<SchoolDetailsRow | null>(null);
   const [schoolDetailsLoading, setSchoolDetailsLoading] = useState(false);
 
   useEffect(() => {
@@ -119,18 +127,10 @@ export default function SchoolsViewSwitcher({
     return summary;
   }, [schools]);
 
-  const isExpiringSoon = (school: SchoolRow) => {
-    if (!school.trialEndsAt) return false;
-    const endDate = new Date(school.trialEndsAt);
-    const now = new Date();
-    const diffDays = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    return diffDays >= 0 && diffDays <= 14;
-  };
-
   const filteredSchools = useMemo(() => {
     const searchValue = search.toLowerCase();
 
-    const filtered = schools.filter((school: any) => {
+    const filtered = schools.filter((school: SchoolRow) => {
       const matchesSearch = [
         school.name,
         school.country,
@@ -144,14 +144,17 @@ export default function SchoolsViewSwitcher({
         .toLowerCase()
         .includes(searchValue);
 
-      const matchesStatus = statusFilter === "ALL" || school.status === statusFilter;
-      const matchesVerification =
-        verificationFilter === "ALL" ||
-        (verificationFilter === "VERIFIED" && school.isVerified) ||
-        (verificationFilter === "UNVERIFIED" && !school.isVerified);
+      const matchesStatus =
+        statusFilter === "ALL"
+          ? true
+          : statusFilter === "VERIFIED_ONLY"
+          ? Boolean(school.isVerified)
+          : statusFilter === "UNVERIFIED_ONLY"
+          ? !school.isVerified
+          : school.status === statusFilter;
       const matchesCountry = countryFilter === "ALL" || school.country === countryFilter;
 
-      return matchesSearch && matchesStatus && matchesVerification && matchesCountry;
+      return matchesSearch && matchesStatus && matchesCountry;
     });
 
     return filtered.sort((a, b) => {
@@ -173,7 +176,7 @@ export default function SchoolsViewSwitcher({
           return 0;
       }
     });
-  }, [schools, search, statusFilter, verificationFilter, countryFilter, sortBy]);
+  }, [schools, search, statusFilter, countryFilter, sortBy]);
 
   const [busy, setBusy] = useState(false);
 
@@ -308,28 +311,30 @@ export default function SchoolsViewSwitcher({
   }
 
   const filterControls = (
-    <div className="mb-4 flex flex-wrap items-center gap-1">
+    <div className="mb-4 flex flex-wrap items-center gap-2">
       <input
         value={search}
         onChange={(event) => setSearch(event.target.value)}
         placeholder="Search schools..."
-        className="max-w-[180px] rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+        className="h-9 min-w-[180px] flex-1 rounded-lg border border-border bg-background px-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20 sm:max-w-[220px]"
       />
       <select
         value={statusFilter}
         onChange={(event) => setStatusFilter(event.target.value)}
-        className="max-w-[140px] rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+        className="h-9 min-w-[150px] flex-1 rounded-lg border border-border bg-background px-3 text-sm outline-none transition focus:border-brand sm:max-w-[180px]"
       >
-        <option value="ALL">All statuses</option>
+        <option value="ALL">All schools</option>
         <option value="TRIAL">Trial</option>
         <option value="ACTIVE">Active</option>
         <option value="SUSPENDED">Suspended</option>
         <option value="CANCELLED">Cancelled</option>
+        <option value="VERIFIED_ONLY">Verified</option>
+        <option value="UNVERIFIED_ONLY">Unverified</option>
       </select>
       <select
         value={countryFilter}
         onChange={(event) => setCountryFilter(event.target.value)}
-        className="w-full max-w-[140px] rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+        className="h-9 min-w-[130px] flex-1 rounded-lg border border-border bg-background px-3 text-sm outline-none transition focus:border-brand sm:max-w-[170px]"
       >
         <option value="ALL">All countries</option>
         {countries.map((country) => (
@@ -337,18 +342,9 @@ export default function SchoolsViewSwitcher({
         ))}
       </select>
       <select
-        value={verificationFilter}
-        onChange={(event) => setVerificationFilter(event.target.value)}
-        className="w-full max-w-[140px] rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
-      >
-        <option value="ALL">All verifications</option>
-        <option value="VERIFIED">Verified only</option>
-        <option value="UNVERIFIED">Unverified only</option>
-      </select>
-      <select
         value={sortBy}
-        onChange={(event) => setSortBy(event.target.value as any)}
-        className="w-full max-w-[140px] rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+        onChange={(event) => setSortBy(event.target.value as typeof sortBy)}
+        className="h-9 min-w-[170px] flex-1 rounded-lg border border-border bg-background px-3 text-sm outline-none transition focus:border-brand sm:max-w-[200px]"
       >
         <option value="REGISTERED_DESC">Newest registered</option>
         <option value="NAME_ASC">Name</option>
@@ -362,7 +358,7 @@ export default function SchoolsViewSwitcher({
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {[
           {
             label: "Total schools",
@@ -431,17 +427,17 @@ export default function SchoolsViewSwitcher({
         ].map((card) => {
           const Icon = card.icon;
           return (
-            <Link key={card.label} href={card.href} className="group cursor-pointer border border-border bg-surface p-5 transition hover:border-brand/50 hover:bg-brand/5">
+            <Link key={card.label} href={card.href} className="group cursor-pointer border border-border bg-surface p-4 transition hover:border-brand/50 hover:bg-brand/5">
               <div className="flex items-start gap-3">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${card.iconClass}`}>
-                  <Icon className="h-5 w-5" />
+                <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${card.iconClass}`}>
+                  <Icon className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">{card.label}</p>
-                  <p className="mt-3 text-3xl font-semibold text-foreground">{card.value}</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">{card.label}</p>
+                  <p className="mt-2 text-2xl font-semibold text-foreground">{card.value}</p>
                 </div>
               </div>
-              <p className="mt-4 text-xs text-muted">{card.sub}</p>
+              <p className="mt-3 text-[11px] text-muted">{card.sub}</p>
             </Link>
           );
         })}
@@ -450,13 +446,13 @@ export default function SchoolsViewSwitcher({
       {viewMode === "list" ? (
         <SchoolTable schools={filteredSchools} filterControls={filterControls} onOpenDetails={openSchoolDetails} />
       ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {filteredSchools.length === 0 ? (
             <div className="col-span-2 text-center py-12">
               <p className="text-muted">No schools found</p>
             </div>
           ) : (
-            filteredSchools.map((school: any) => {
+            filteredSchools.map((school: SchoolRow) => {
               const planLimit = school.planLimit ?? getPlanStudentLimit(school.plan);
               const studentCount = school.pupilCount ?? 0;
               const isTrialPlan = school.status === "TRIAL" || school.plan === "TRIAL";
@@ -497,15 +493,18 @@ export default function SchoolsViewSwitcher({
                       openSchoolDetails(school);
                     }
                   }}
-                      className="group cursor-pointer border border-border bg-surface p-5 transition-colors hover:border-brand/40 hover:bg-brand/5"
+                      className="group cursor-pointer border border-border bg-surface p-4 transition-colors hover:border-brand/40 hover:bg-brand/5"
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex min-w-0 cursor-pointer items-center gap-3">
-                          <div className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-brand/10 text-brand">
+                          <div className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-brand/10 text-brand">
                         {school.logoUrl ? (
-                          <img
-                            src={resolveSchoolAssetUrl(school.logoUrl) || school.logoUrl}
+                          <Image
+                            src={resolveSchoolAssetUrl(school.logoUrl) || school.logoUrl || ""}
                             alt={`${school.name} logo`}
+                            width={40}
+                            height={40}
+                            unoptimized
                             className="h-full w-full object-cover"
                           />
                         ) : (
@@ -535,24 +534,24 @@ export default function SchoolsViewSwitcher({
                     </div>
                   </div>
 
-                  <div className="mt-4 space-y-2 text-sm text-muted">
-                    <p className="text-sm text-muted">
+                  <div className="mt-4 space-y-1.5 text-xs text-muted">
+                    <p className="text-muted">
                       {school.plan} plan • {school.country || "Unknown country"} • {studentCount.toLocaleString()} students
                     </p>
                     {school.trialEndsAt ? (
-                      <p className="text-sm text-muted">Trial ends {formatDate(school.trialEndsAt)}</p>
+                      <p className="text-muted">Trial ends {formatDate(school.trialEndsAt)}</p>
                     ) : null}
                   </div>
 
-                  <div className="mt-4 border-t border-border pt-4">
-                    <div className="flex items-center justify-between gap-3 text-sm">
+                  <div className="mt-4 border-t border-border pt-3">
+                    <div className="flex items-center justify-between gap-3 text-xs">
                       <div>
-                        <p className="text-xs uppercase tracking-[0.18em] text-muted">Capacity</p>
+                        <p className="text-[10px] uppercase tracking-[0.18em] text-muted">Capacity</p>
                         <p className="mt-1 text-sm font-semibold text-foreground">{planLimit ? `${studentCount} / ${planLimit}` : planLimitLabel}</p>
                       </div>
-                          <span className="rounded-md bg-background px-2.5 py-1 text-xs text-muted">{usageStatus}</span>
+                          <span className="rounded-md bg-background px-2 py-1 text-[11px] text-muted">{usageStatus}</span>
                     </div>
-                    <div className="mt-3 h-2 rounded-full bg-slate-200">
+                    <div className="mt-2 h-2 rounded-full bg-slate-200">
                       <div
                         className={`${usageColor} h-full rounded-full transition-all duration-300`}
                         style={{ width: `${planLimit ? usageRatio * 100 : 100}%` }}
@@ -592,7 +591,7 @@ export default function SchoolsViewSwitcher({
                 <div className="space-y-8">
                   <div className="flex items-start gap-4 border-b border-border pb-6">
                     <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-brand/10 text-xl font-semibold text-brand">
-                      {schoolDetails?.logoUrl ? <img src={resolveSchoolAssetUrl(schoolDetails.logoUrl) || schoolDetails.logoUrl} alt={`${schoolDetails.name} logo`} className="h-full w-full object-cover" /> : getInitials(schoolDetails?.name || selectedSchool.name)}
+                      {schoolDetails?.logoUrl ? <Image src={resolveSchoolAssetUrl(schoolDetails.logoUrl) || schoolDetails.logoUrl || ""} alt={`${schoolDetails.name} logo`} width={64} height={64} unoptimized className="h-full w-full object-cover" /> : getInitials(schoolDetails?.name || selectedSchool.name)}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap gap-2">

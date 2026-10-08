@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { BellRing, ClipboardList, FileText, LifeBuoy, Mail, Send, Users2 } from "lucide-react";
 import { ErrorModal } from "@/components/ui/error-modal";
 import { Pagination } from "@/components/ui/pagination";
@@ -74,7 +74,7 @@ export default function CampaignPage() {
   const validRecipients = useMemo(() => recipients.filter(isValidEmail), [recipients]);
   const invalidRecipients = useMemo(() => recipients.filter((email) => !isValidEmail(email)), [recipients]);
 
-  const fetchCampaignLogs = async (page = logPage, pageSize = logPageSize) => {
+  const fetchCampaignLogs = useCallback(async (page = logPage, pageSize = logPageSize) => {
     try {
       const response = await fetch(`/schoolbase-admin/api/email-logs?page=${page}&limit=${pageSize}&campaignOnly=true`, { credentials: "include" });
       const data = await response.json();
@@ -87,11 +87,11 @@ export default function CampaignPage() {
       setCampaignLogs([]);
       setLogTotal(0);
     }
-  };
+  }, [logPage, logPageSize]);
 
   useEffect(() => {
-    fetchCampaignLogs(logPage, logPageSize);
-  }, [logPage, logPageSize]);
+    void fetchCampaignLogs(logPage, logPageSize);
+  }, [fetchCampaignLogs, logPage, logPageSize]);
 
   const chooseTemplate = (key: string) => {
     const template = TEMPLATES[key];
@@ -158,18 +158,26 @@ export default function CampaignPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-2 py-6 sm:px-8 sm:py-8 lg:px-12">
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-        <div>
-          <div className="flex items-center gap-2 text-sm font-medium text-brand"><Send size={17} /> Campaign operations</div>
-          <h1 className="mt-2 text-3xl font-bold text-foreground">Campaign</h1>
-          <p className="mt-1 text-muted">Send a SchoolBase campaign to contacts without saving them as school records</p>
+      <style>{`@keyframes support-page-pulse { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgb(10 102 194 / .4) } 50% { opacity: .55; box-shadow: 0 0 0 7px rgb(10 102 194 / 0) } } @keyframes support-page-scan { from { transform: translateX(-100%) } to { transform: translateX(100%) } } .support-page-hero { position: relative; overflow: hidden; } .support-page-scan { position: absolute; inset: 0 auto 0 0; width: 33%; background: linear-gradient(to right, transparent, rgb(10 102 194 / .10), transparent); animation: support-page-scan 3.2s linear infinite; pointer-events: none; } .support-page-pulse { animation: support-page-pulse 0.9s ease-in-out infinite; }`}</style>
+
+      <header className="support-page-hero relative overflow-hidden border border-border bg-surface px-6 pb-8 pt-8 sm:px-8 sm:pb-10 sm:pt-10">
+        <div className="support-page-scan" />
+        <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-brand">
+              <span className="support-page-pulse h-2.5 w-2.5 rounded-full bg-brand" />
+              Campaign operations
+            </div>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Campaign</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Send a SchoolBase campaign to contacts without saving them as school records.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href="/schoolbase-admin/setup-reminders" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"><BellRing className="h-4 w-4" /> Setup reminders</Link>
+            <Link href="/schoolbase-admin/support" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"><LifeBuoy className="h-4 w-4" /> Support inbox</Link>
+            <button type="button" onClick={openComposer} className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"><Send className="h-4 w-4" /> Compose campaign</button>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <Link href="/schoolbase-admin/setup-reminders" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"><BellRing className="h-4 w-4" /> Setup reminders</Link>
-          <Link href="/schoolbase-admin/support" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"><LifeBuoy className="h-4 w-4" /> Support inbox</Link>
-          <button type="button" onClick={openComposer} className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"><Send className="h-4 w-4" /> Compose campaign</button>
-        </div>
-      </div>
+      </header>
       <div className="space-y-6">
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <CampaignStat icon={<Users2 size={18} />} label="Valid recipients" value={String(validRecipients.length)} detail={`of ${MAX_RECIPIENTS} maximum`} />
@@ -419,7 +427,10 @@ function CampaignStat({ icon, label, value, detail }: { icon: React.ReactNode; l
 
 function playOpenTone() {
   try {
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const AudioCtor = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtor) return;
+
+    const ctx = new AudioCtor();
     const now = ctx.currentTime;
     const playTone = (freq: number, duration: number, gain: number, delay = 0) => {
       const osc = ctx.createOscillator();
@@ -445,7 +456,10 @@ function playOpenTone() {
 
 function playCloseTone() {
   try {
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const AudioCtor = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtor) return;
+
+    const ctx = new AudioCtor();
     const o = ctx.createOscillator();
     const g = ctx.createGain();
     o.type = "sine";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Bell, CheckCircle, ClipboardCheck, Clock3, Mail, Search, Send, ShieldCheck, UserCheck, X } from "lucide-react";
 import { playCloseTone, playOpenTone } from "@/lib/sounds";
 import { ErrorModal } from "@/components/ui/error-modal";
@@ -20,7 +20,7 @@ export default function PendingSignupsPage() {
   const [error, setError] = useState("");
   const [statusModal, setStatusModal] = useState<{ open: boolean; type: "success" | "error"; title: string; message: string }>({ open: false, type: "success", title: "", message: "" });
 
-  async function loadSignups() {
+  const loadSignups = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch("/schoolbase-admin/api/signups/pending", { credentials: "include" });
@@ -31,9 +31,9 @@ export default function PendingSignupsPage() {
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Failed to load pending signups");
     } finally { setLoading(false); }
-  }
+  }, []);
 
-  useEffect(() => { loadSignups(); }, []);
+  useEffect(() => { void loadSignups(); }, [loadSignups]);
 
   const visibleSignups = useMemo(() => {
     const text = query.trim().toLowerCase();
@@ -76,9 +76,24 @@ export default function PendingSignupsPage() {
   return (
     <main className="min-h-screen pb-12">
       <div className="mx-auto max-w-7xl space-y-6 px-2 py-6 sm:px-8 sm:py-8 lg:px-12">
-        <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <div><div className="flex items-center gap-2 text-sm font-medium text-brand"><ClipboardCheck size={17} /> Platform operations</div><h1 className="mt-2 text-3xl font-bold text-foreground">Pending signups</h1><p className="mt-1 text-muted">Follow up with schools that started registration but have not verified their email.</p></div>
-          <div className="flex flex-wrap gap-3"><button onClick={() => { setPreviewTarget(previewTarget || signups[0] || null); playOpenTone(); }} disabled={!signups.length} className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand hover:bg-brand-light disabled:opacity-50"><Mail size={16} /> Email preview</button><button onClick={() => sendReminder()} disabled={sendingAll || !signups.length} className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-50"><Send size={16} /> {sendingAll ? "Sending..." : "Remind all"}</button></div>
+        <style>{`@keyframes support-page-pulse { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgb(10 102 194 / .4) } 50% { opacity: .55; box-shadow: 0 0 0 7px rgb(10 102 194 / 0) } } @keyframes support-page-scan { from { transform: translateX(-100%) } to { transform: translateX(100%) } } .support-page-hero { position: relative; overflow: hidden; } .support-page-scan { position: absolute; inset: 0 auto 0 0; width: 33%; background: linear-gradient(to right, transparent, rgb(10 102 194 / .10), transparent); animation: support-page-scan 3.2s linear infinite; pointer-events: none; } .support-page-pulse { animation: support-page-pulse 0.9s ease-in-out infinite; }`}</style>
+
+        <header className="support-page-hero relative overflow-hidden border border-border bg-surface px-6 pb-8 pt-8 sm:px-8 sm:pb-10 sm:pt-10">
+          <div className="support-page-scan" />
+          <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-brand">
+                <span className="support-page-pulse h-2.5 w-2.5 rounded-full bg-brand" />
+                Platform operations
+              </div>
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Pending signups</h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Follow up with schools that started registration but have not verified their email.</p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <button onClick={() => { setPreviewTarget(previewTarget || signups[0] || null); playOpenTone(); }} disabled={!signups.length} className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand hover:bg-brand-light disabled:opacity-50"><Mail size={16} /> Email preview</button>
+              <button onClick={() => sendReminder()} disabled={sendingAll || !signups.length} className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-50"><Send size={16} /> {sendingAll ? "Sending..." : "Remind all"}</button>
+            </div>
+          </div>
         </header>
         {error && <div className="rounded-lg border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-[#a61b29]">{error}</div>}
         <Stats signups={signups} />
@@ -100,20 +115,26 @@ export default function PendingSignupsPage() {
 }
 
 function Stats({ signups }: { signups: Signup[] }) {
-  const oldest = signups.length ? Math.max(0, Math.floor((Date.now() - new Date(signups[signups.length - 1].createdAt).getTime()) / 86400000)) : 0;
-  const stats = [[<ClipboardCheck size={18} />, "Pending signups", signups.length, "Awaiting verification"], [<ShieldCheck size={18} />, "Still active", signups.filter((item) => !item.isExpired).length, "Code can be refreshed"], [<Clock3 size={18} />, "Expired codes", signups.filter((item) => item.isExpired).length, "Need a new code"], [<UserCheck size={18} />, "Oldest request", `${oldest}d`, "Time since signup started"]];
-  return <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{stats.map(([icon, label, value, detail]) => <div key={String(label)} className="border border-border bg-surface p-5"><div className="mb-4 flex items-center gap-2 text-brand">{icon}<span className="text-xs font-bold uppercase tracking-[.12em] text-muted">{label}</span></div><div className="text-3xl font-semibold text-foreground">{value}</div><div className="mt-1 text-xs text-muted">{detail}</div></div>)}</section>;
+  const oldest = useMemo(() => signups.length ? Math.max(0, Math.floor((Date.now() - new Date(signups[signups.length - 1].createdAt).getTime()) / 86400000)) : 0, [signups]);
+  const stats = [
+    { icon: <ClipboardCheck size={18} />, label: "Pending signups", value: signups.length, detail: "Awaiting verification" },
+    { icon: <ShieldCheck size={18} />, label: "Still active", value: signups.filter((item) => !item.isExpired).length, detail: "Code can be refreshed" },
+    { icon: <Clock3 size={18} />, label: "Expired codes", value: signups.filter((item) => item.isExpired).length, detail: "Need a new code" },
+    { icon: <UserCheck size={18} />, label: "Oldest request", value: `${oldest}d`, detail: "Time since signup started" },
+  ];
+
+  return <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{stats.map((item) => <div key={item.label} className="border border-border bg-surface p-5"><div className="mb-4 flex items-center gap-2 text-brand">{item.icon}<span className="text-xs font-bold uppercase tracking-[.12em] text-muted">{item.label}</span></div><div className="text-3xl font-semibold text-foreground">{item.value}</div><div className="mt-1 text-xs text-muted">{item.detail}</div></div>)}</section>;
 }
 
 function Toolbar({ query, setQuery, filter, setFilter, count, total }: { query: string; setQuery: (value: string) => void; filter: Filter; setFilter: (value: Filter) => void; count: number; total: number }) { return <section className="flex flex-col justify-between gap-4 border-b border-border pb-5 lg:flex-row lg:items-center"><div className="flex flex-wrap items-center gap-3"><div className="relative"><Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search school, admin or email" className="w-full rounded-lg border border-border bg-surface py-2.5 pl-9 pr-3 text-sm outline-none focus:border-brand sm:w-72" /></div><div className="flex rounded-lg border border-border bg-surface p-1 text-sm">{(["all", "active", "expired"] as Filter[]).map((item) => <button key={item} onClick={() => setFilter(item)} className={`rounded-md px-3 py-1.5 font-semibold capitalize ${filter === item ? "bg-brand text-white" : "text-muted"}`}>{item}</button>)}</div></div><span className="text-sm text-muted">Showing {count} of {total} requests</span></section>; }
 
 function Workspace({ signups, busyId, sendingAll, onPreview, onRemind, onApprove }: { signups: Signup[]; busyId: string | null; sendingAll: boolean; onPreview: (signup: Signup) => void; onRemind: (email: string) => void; onApprove: (signup: Signup) => void }) { return <section className="overflow-hidden rounded-lg border border-border bg-surface shadow-sm"><div className="hidden overflow-x-auto md:block"><table className="w-full min-w-[980px]"><thead className="bg-background text-left text-xs font-bold uppercase tracking-[.1em] text-muted"><tr><th className="px-5 py-4">School</th><th className="px-5 py-4">Contact</th><th className="px-5 py-4">Requested</th><th className="px-5 py-4">Verification</th><th className="px-5 py-4">Actions</th></tr></thead><tbody>{signups.map((signup) => <Row key={signup.id} signup={signup} busy={busyId === signup.email} sending={sendingAll} onPreview={onPreview} onRemind={onRemind} onApprove={onApprove} />)}</tbody></table></div><div className="divide-y divide-border md:hidden">{signups.map((signup) => <Card key={signup.id} signup={signup} busy={busyId === signup.email} sending={sendingAll} onPreview={onPreview} onRemind={onRemind} onApprove={onApprove} />)}</div></section>; }
 
-function Actions({ signup, busy, sending, onPreview, onRemind, onApprove }: { signup: Signup; busy: boolean; sending: boolean; onPreview: () => void; onRemind: () => void; onApprove: () => void }) { return <div className="flex flex-wrap gap-2"><button onClick={onPreview} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-brand hover:bg-brand-light"><Mail size={14} /> Preview</button><button onClick={onRemind} disabled={busy || sending} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-brand hover:bg-brand-light disabled:opacity-50"><Bell size={14} /> Remind</button><button onClick={onApprove} className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-xs font-semibold text-white hover:bg-brand-hover"><CheckCircle size={14} /> Approve</button></div>; }
+function Actions({ busy, sending, onPreview, onRemind, onApprove }: { busy: boolean; sending: boolean; onPreview: () => void; onRemind: () => void; onApprove: () => void }) { return <div className="flex flex-wrap gap-2"><button onClick={onPreview} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-brand hover:bg-brand-light"><Mail size={14} /> Preview</button><button onClick={onRemind} disabled={busy || sending} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-brand hover:bg-brand-light disabled:opacity-50"><Bell size={14} /> Remind</button><button onClick={onApprove} className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-xs font-semibold text-white hover:bg-brand-hover"><CheckCircle size={14} /> Approve</button></div>; }
 
-function Row({ signup, busy, sending, onPreview, onRemind, onApprove }: { signup: Signup; busy: boolean; sending: boolean; onPreview: (signup: Signup) => void; onRemind: (email: string) => void; onApprove: (signup: Signup) => void }) { return <tr className={`border-t border-border ${signup.isExpired ? "bg-error/5" : "hover:bg-background"}`}><td className="px-5 py-4"><div className="font-semibold text-foreground">{signup.schoolName}</div><div className="mt-1 text-xs text-muted">{signup.slug} · {signup.country}</div></td><td className="px-5 py-4"><div className="font-medium text-foreground">{signup.adminName}</div><div className="mt-1 text-sm text-muted">{signup.email}</div><div className="mt-1 text-sm text-muted">{signup.phone || "Phone not provided"}</div></td><td className="px-5 py-4 text-sm text-muted">{new Date(signup.createdAt).toLocaleDateString()}</td><td className="px-5 py-4"><Status signup={signup} /></td><td className="px-5 py-4"><Actions signup={signup} busy={busy} sending={sending} onPreview={() => onPreview(signup)} onRemind={() => onRemind(signup.email)} onApprove={() => onApprove(signup)} /></td></tr>; }
+function Row({ signup, busy, sending, onPreview, onRemind, onApprove }: { signup: Signup; busy: boolean; sending: boolean; onPreview: (signup: Signup) => void; onRemind: (email: string) => void; onApprove: (signup: Signup) => void }) { return <tr className={`border-t border-border ${signup.isExpired ? "bg-error/5" : "hover:bg-background"}`}><td className="px-5 py-4"><div className="font-semibold text-foreground">{signup.schoolName}</div><div className="mt-1 text-xs text-muted">{signup.slug} · {signup.country}</div></td><td className="px-5 py-4"><div className="font-medium text-foreground">{signup.adminName}</div><div className="mt-1 text-sm text-muted">{signup.email}</div><div className="mt-1 text-sm text-muted">{signup.phone || "Phone not provided"}</div></td><td className="px-5 py-4 text-sm text-muted">{new Date(signup.createdAt).toLocaleDateString()}</td><td className="px-5 py-4"><Status signup={signup} /></td><td className="px-5 py-4"><Actions busy={busy} sending={sending} onPreview={() => onPreview(signup)} onRemind={() => onRemind(signup.email)} onApprove={() => onApprove(signup)} /></td></tr>; }
 
-function Card({ signup, busy, sending, onPreview, onRemind, onApprove }: { signup: Signup; busy: boolean; sending: boolean; onPreview: (signup: Signup) => void; onRemind: (email: string) => void; onApprove: (signup: Signup) => void }) { return <article className={`p-5 ${signup.isExpired ? "bg-error/5" : "bg-surface"}`}><div className="flex items-start justify-between gap-3"><div><h2 className="font-semibold text-foreground">{signup.schoolName}</h2><p className="mt-1 text-xs text-muted">{signup.adminName} · {signup.country}</p></div><Status signup={signup} compact /></div><p className="mt-4 break-all text-sm text-foreground">{signup.email}</p><p className="mt-2 break-all text-sm text-muted">{signup.phone || "Phone not provided"}</p><p className="mt-2 text-xs text-muted">Requested {new Date(signup.createdAt).toLocaleDateString()} · {signup.attempts} attempts</p><div className="mt-5"><Actions signup={signup} busy={busy} sending={sending} onPreview={() => onPreview(signup)} onRemind={() => onRemind(signup.email)} onApprove={() => onApprove(signup)} /></div></article>; }
+function Card({ signup, busy, sending, onPreview, onRemind, onApprove }: { signup: Signup; busy: boolean; sending: boolean; onPreview: (signup: Signup) => void; onRemind: (email: string) => void; onApprove: (signup: Signup) => void }) { return <article className={`p-5 ${signup.isExpired ? "bg-error/5" : "bg-surface"}`}><div className="flex items-start justify-between gap-3"><div><h2 className="font-semibold text-foreground">{signup.schoolName}</h2><p className="mt-1 text-xs text-muted">{signup.adminName} · {signup.country}</p></div><Status signup={signup} compact /></div><p className="mt-4 break-all text-sm text-foreground">{signup.email}</p><p className="mt-2 break-all text-sm text-muted">{signup.phone || "Phone not provided"}</p><p className="mt-2 text-xs text-muted">Requested {new Date(signup.createdAt).toLocaleDateString()} · {signup.attempts} attempts</p><div className="mt-5"><Actions busy={busy} sending={sending} onPreview={() => onPreview(signup)} onRemind={() => onRemind(signup.email)} onApprove={() => onApprove(signup)} /></div></article>; }
 
 function Status({ signup, compact = false }: { signup: Signup; compact?: boolean }) { return <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${signup.isExpired ? "bg-error/10 text-error" : "bg-warning/10 text-warning"}`}><span className="h-1.5 w-1.5 rounded-full bg-current" />{signup.isExpired ? "Code expired" : "Awaiting code"}{!compact && <span className="ml-1 font-normal opacity-80">· {signup.attempts} attempts</span>}</span>; }
 function EmptyState() { return <div className="rounded-lg border border-dashed border-brand/30 bg-brand/5 p-14 text-center"><ClipboardCheck className="mx-auto text-brand" size={34} /><h2 className="mt-4 text-xl font-semibold text-foreground">No pending signups in this view</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">New signup requests will appear here when a school starts registration.</p></div>; }
