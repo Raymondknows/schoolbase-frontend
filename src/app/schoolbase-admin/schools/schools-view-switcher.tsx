@@ -62,43 +62,59 @@ export default function SchoolsViewSwitcher({
   const [sortBy, setSortBy] = useState<"NAME_ASC" | "REGISTERED_DESC" | "PLAN_ASC" | "STATUS_ASC" | "TRIAL_END_ASC" | "STUDENTS_DESC">("REGISTERED_DESC");
   const [schools, setSchools] = useState<SchoolRow[]>(initialSchools);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
   const [selectedSchool, setSelectedSchool] = useState<SchoolRow | null>(null);
   const [schoolDetails, setSchoolDetails] = useState<SchoolDetailsRow | null>(null);
   const [schoolDetailsLoading, setSchoolDetailsLoading] = useState(false);
 
   useEffect(() => {
+    let active = true;
+
     async function loadSchools() {
+      setLoading(true);
+      setLoadError(null);
       try {
         let allSchools: SchoolRow[] = [];
         let page = 1;
-        let hasMore = true;
 
-        while (hasMore) {
+        while (true) {
           const res = await fetch(`/schoolbase-admin/api/schools?page=${page}&limit=100`, {
             credentials: "include",
             headers: { "Content-Type": "application/json" },
           });
 
-          const data = await res.json();
-          allSchools = [...allSchools, ...(data.schools || [])];
-          
-          if (data.pagination && data.pagination.page >= data.pagination.pages) {
-            hasMore = false;
-          } else {
-            page++;
+          if (!res.ok) {
+            throw new Error(`Could not load schools (request failed with status ${res.status}).`);
           }
+
+          const data = await res.json();
+          if (!Array.isArray(data.schools) || !data.pagination) {
+            throw new Error("The schools response was incomplete. Please try again.");
+          }
+
+          allSchools = [...allSchools, ...data.schools];
+          const currentPage = Number(data.pagination.page);
+          const totalPages = Number(data.pagination.pages);
+          if (!Number.isFinite(currentPage) || !Number.isFinite(totalPages) || currentPage < page) {
+            throw new Error("The schools response had invalid pagination data. Please try again.");
+          }
+          if (data.schools.length === 0 || currentPage >= totalPages) break;
+          page = currentPage + 1;
         }
 
-        setSchools(allSchools);
-        setLoading(false);
+        if (active) setSchools(allSchools);
       } catch (err) {
         console.error("Error loading schools:", err);
-        setLoading(false);
+        if (active) setLoadError(err instanceof Error ? err.message : "Could not load schools. Please try again.");
+      } finally {
+        if (active) setLoading(false);
       }
     }
 
-    loadSchools();
-  }, []);
+    void loadSchools();
+    return () => { active = false; };
+  }, [reloadToken]);
 
   const countries = useMemo(() => {
     return Array.from(new Set(schools.map((school) => school.country).filter(Boolean))).sort();
@@ -358,6 +374,14 @@ export default function SchoolsViewSwitcher({
 
   return (
     <div className="space-y-6">
+      {loadError ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800" role="alert">
+          <span>{loadError}</span>
+          <button type="button" onClick={() => setReloadToken((value) => value + 1)} className="font-semibold underline underline-offset-2">
+            Retry loading schools
+          </button>
+        </div>
+      ) : null}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {[
           {

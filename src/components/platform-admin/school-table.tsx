@@ -161,7 +161,11 @@ export function SchoolTable({
   filterControls?: ReactNode;
   onOpenDetails?: (school: SchoolRow) => void;
 }) {
-  const [displaySchools, setDisplaySchools] = useState<SchoolRow[]>(() => schools);
+  const [schoolOverrides, setSchoolOverrides] = useState<Record<string, Partial<SchoolRow>>>({});
+  const displaySchools = useMemo(
+    () => schools.map((school) => ({ ...school, ...schoolOverrides[school.id] })),
+    [schools, schoolOverrides],
+  );
   const [editingExpiryId, setEditingExpiryId] = useState<string | null>(null);
   const [editingExpiryValue, setEditingExpiryValue] = useState<string | null>(null);
   const [savingExpiry, setSavingExpiry] = useState(false);
@@ -199,18 +203,19 @@ export function SchoolTable({
     });
   }, [displaySchools, quickFilter]);
 
-  const paginated = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return filteredSchools.slice(start, start + pageSize);
-  }, [filteredSchools, page, pageSize]);
-
   const totalPages = Math.max(1, Math.ceil(filteredSchools.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredSchools.slice(start, start + pageSize);
+  }, [filteredSchools, currentPage, pageSize]);
+
   const pageItems = useMemo<(number | "ellipsis")[]>(() => {
     if (totalPages <= 5) return Array.from({ length: totalPages }, (_, index) => index + 1);
 
     const items: (number | "ellipsis")[] = [1];
-    const start = Math.max(2, page - 1);
-    const end = Math.min(totalPages - 1, page + 1);
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
 
     if (start > 2) items.push("ellipsis");
     for (let pageNumber = start; pageNumber <= end; pageNumber += 1) items.push(pageNumber);
@@ -218,7 +223,7 @@ export function SchoolTable({
     items.push(totalPages);
 
     return items;
-  }, [page, totalPages]);
+  }, [currentPage, totalPages]);
 
   const currentPageIds = useMemo(
     () => paginated.map((school) => school.id),
@@ -330,12 +335,14 @@ export function SchoolTable({
       }));
 
       setMessage(`Bulk action completed for ${ids.length} school${ids.length === 1 ? "" : "s"}.`);
-      setDisplaySchools((current) =>
-        current.map((school) => {
+      setSchoolOverrides((current) => {
+        const next = { ...current };
+        displaySchools.forEach((school) => {
           const updated = results.find((result: { school?: SchoolRow } | undefined) => result?.school?.id === school.id);
-          return updated?.school ? { ...school, ...updated.school } : school;
-        }),
-      );
+          if (updated?.school) next[school.id] = { ...next[school.id], ...updated.school };
+        });
+        return next;
+      });
       clearSelection();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Bulk action failed.");
@@ -363,9 +370,10 @@ export function SchoolTable({
         setMessage(result.message || "Action failed.");
       } else {
         setMessage(result.message || "Action completed.");
-        setDisplaySchools((current) =>
-          current.map((school) => (school.id === schoolId ? { ...school, ...result.school } : school)),
-        );
+        setSchoolOverrides((current) => ({
+          ...current,
+          [schoolId]: { ...current[schoolId], ...result.school },
+        }));
       }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Action failed.");
@@ -811,8 +819,8 @@ export function SchoolTable({
             type="button"
             variant="outline"
             className="px-3 py-2 text-xs"
-            disabled={page === 1}
-            onClick={() => setPage((value) => Math.max(1, value - 1))}
+            disabled={currentPage === 1}
+            onClick={() => setPage(currentPage - 1)}
           >
             Prev
           </Button>
@@ -826,7 +834,7 @@ export function SchoolTable({
                 <button
                   key={pageItem}
                   onClick={() => setPage(pageItem)}
-                  className={`inline-flex items-center justify-center rounded px-3 py-2 text-xs font-semibold ${page === pageItem ? "bg-brand text-white" : "border border-border bg-background text-foreground"}`}
+                  className={`inline-flex items-center justify-center rounded px-3 py-2 text-xs font-semibold ${currentPage === pageItem ? "bg-brand text-white" : "border border-border bg-background text-foreground"}`}
                 >
                   {pageItem}
                 </button>
@@ -837,8 +845,8 @@ export function SchoolTable({
             type="button"
             variant="outline"
             className="px-3 py-2 text-xs"
-            disabled={page * pageSize >= filteredSchools.length}
-            onClick={() => setPage((value) => value + 1)}
+            disabled={currentPage >= totalPages}
+            onClick={() => setPage(currentPage + 1)}
           >
             Next
           </Button>
