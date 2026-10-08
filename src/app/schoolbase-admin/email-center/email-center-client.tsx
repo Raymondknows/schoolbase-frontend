@@ -650,7 +650,7 @@ export default function EmailCenterClient({
           `}</style>
 
           <div
-            className="max-h-[82vh] w-full max-w-3xl overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
+            className="max-h-[82vh] w-full max-w-3xl overflow-hidden rounded-none border border-border bg-surface shadow-none"
             style={{ animation: "email_modal_enter 300ms cubic-bezier(.2,.9,.2,1)" }}
           >
             <div className="border-b border-border/70 bg-brand/10 px-4 py-3 sm:px-5 sm:py-4">
@@ -664,7 +664,7 @@ export default function EmailCenterClient({
                 <button
                   type="button"
                   onClick={closeComposer}
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-background text-foreground transition hover:bg-surface"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-none border border-border bg-background text-foreground transition hover:bg-surface"
                 >
                   ✕
                 </button>
@@ -679,7 +679,7 @@ export default function EmailCenterClient({
                     <select
                       value={selectedEmailType}
                       onChange={(event) => setSelectedEmailType(event.target.value)}
-                      className="w-full rounded-lg border border-border/80 bg-background px-2.5 py-2 text-xs text-foreground outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"
+                      className="w-full rounded-none border border-border/80 bg-background px-2.5 py-2 text-xs text-foreground outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"
                     >
                       {EMAIL_TYPES.map((option) => (
                         <option key={option.value} value={option.value}>{option.label}</option>
@@ -689,8 +689,8 @@ export default function EmailCenterClient({
 
                   <div className="space-y-1">
                     <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Send to</label>
-                    <div className="grid grid-cols-1 gap-2 rounded-xl bg-background p-1.5 sm:grid-cols-2">
-                      <label className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs cursor-pointer transition hover:bg-slate-50">
+                    <div className="grid grid-cols-1 gap-2 rounded-none bg-background p-1.5 sm:grid-cols-2">
+                      <label className="flex items-center gap-2 rounded-none px-2 py-1.5 text-xs cursor-pointer transition hover:bg-slate-50">
                         <input
                           type="radio"
                           name="target"
@@ -701,7 +701,7 @@ export default function EmailCenterClient({
                         />
                         Single school
                       </label>
-                      <label className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs cursor-pointer transition hover:bg-slate-50">
+                      <label className="flex items-center gap-2 rounded-none px-2 py-1.5 text-xs cursor-pointer transition hover:bg-slate-50">
                         <input
                           type="radio"
                           name="target"
@@ -721,7 +721,7 @@ export default function EmailCenterClient({
                       <select
                         value={selectedSchoolId}
                         onChange={(event) => setSelectedSchoolId(event.target.value)}
-                        className="w-full rounded-lg border border-border/80 bg-background px-2.5 py-2 text-xs outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"
+                        className="w-full rounded-none border border-border/80 bg-background px-2.5 py-2 text-xs outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"
                       >
                         {initialSchools.map((school) => (
                           <option key={school.id} value={school.id}>{school.name}</option>
@@ -734,7 +734,7 @@ export default function EmailCenterClient({
                       <select
                         value={selectedSegment}
                         onChange={(event) => setSelectedSegment(event.target.value)}
-                        className="w-full rounded-lg border border-border/80 bg-background px-2.5 py-2 text-xs outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"
+                        className="w-full rounded-none border border-border/80 bg-background px-2.5 py-2 text-xs outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"
                       >
                         {SEGMENTS.map((option) => (
                           <option key={option.value} value={option.value}>{option.label}</option>
@@ -750,12 +750,12 @@ export default function EmailCenterClient({
                       value={subject}
                       onChange={(event) => setSubject(event.target.value)}
                       placeholder={defaultSubject}
-                      className="w-full rounded-lg border border-border/80 bg-background px-2.5 py-2 text-xs outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"
+                      className="w-full rounded-none border border-border/80 bg-background px-2.5 py-2 text-xs outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"
                     />
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-border bg-background p-3">
+                <div className="rounded-none border border-border bg-background p-3">
                   <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Quick notes</h3>
                   <ul className="mt-2 space-y-1 text-[11px] text-muted">
                     <li>• Keep the subject short and clear.</li>
@@ -773,7 +773,7 @@ export default function EmailCenterClient({
                   onChange={(event) => setBody(event.target.value)}
                   rows={10}
                   placeholder={`Write your ${emailTypeLabel.toLowerCase()} message here.`}
-                  className="w-full rounded-lg border border-border/80 bg-background px-2.5 py-2 text-xs leading-5 outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"
+                  className="w-full rounded-none border border-border/80 bg-background px-2.5 py-2 text-xs leading-5 outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"
                 />
               </div>
 
@@ -781,14 +781,14 @@ export default function EmailCenterClient({
                 <button
                   type="button"
                   onClick={closeComposer}
-                  className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface"
+                  className="inline-flex items-center justify-center rounded-none border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface"
                 >
                   Close
                 </button>
                 <button
                   type="submit"
                   disabled={sending}
-                  className="inline-flex items-center justify-center rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center justify-center rounded-none bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {sending ? "Sending…" : "Send email"}
                 </button>

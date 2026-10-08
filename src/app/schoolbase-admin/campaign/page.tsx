@@ -277,7 +277,7 @@ export default function CampaignPage() {
           `}</style>
 
           <div
-            className="max-h-[82vh] w-full max-w-3xl overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_16px_50px_rgba(10,102,194,0.16)]"
+            className="max-h-[82vh] w-full max-w-3xl overflow-hidden rounded-none border border-border bg-surface shadow-none"
             style={{ animation: "campaign_modal_enter 300ms cubic-bezier(.2,.9,.2,1)" }}
           >
             <div className="border-b border-border/70 bg-brand/10 px-4 py-3 sm:px-5 sm:py-4">
@@ -291,7 +291,7 @@ export default function CampaignPage() {
                 <button
                   type="button"
                   onClick={closeComposer}
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-background text-foreground transition hover:bg-surface"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-none border border-border bg-background text-foreground transition hover:bg-surface"
                 >
                   ✕
                 </button>
@@ -303,7 +303,7 @@ export default function CampaignPage() {
                 <div className="space-y-2.5">
                   <div className="space-y-1">
                     <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted" htmlFor="campaign-recipients">Recipients</label>
-                    <textarea id="campaign-recipients" value={recipientsText} onChange={(event) => setRecipientsText(event.target.value)} rows={4} placeholder="contact-one@example.com, contact-two@example.com" className="w-full rounded-lg border border-border/80 bg-background px-2.5 py-2 text-xs outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10" />
+                    <textarea id="campaign-recipients" value={recipientsText} onChange={(event) => setRecipientsText(event.target.value)} rows={4} placeholder="contact-one@example.com, contact-two@example.com" className="w-full rounded-none border border-border/80 bg-background px-2.5 py-2 text-xs outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10" />
                     <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted">
                       <span>{validRecipients.length} valid</span><span>{invalidRecipients.length} invalid</span><span>{recipients.length}/{MAX_RECIPIENTS} total</span>
                     </div>
@@ -311,18 +311,18 @@ export default function CampaignPage() {
 
                   <div className="space-y-1">
                     <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted" htmlFor="campaign-template">Template</label>
-                    <select id="campaign-template" value={templateKey} onChange={(event) => chooseTemplate(event.target.value)} className="w-full rounded-lg border border-border/80 bg-background px-2.5 py-2 text-xs outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10">
+                    <select id="campaign-template" value={templateKey} onChange={(event) => chooseTemplate(event.target.value)} className="w-full rounded-none border border-border/80 bg-background px-2.5 py-2 text-xs outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10">
                       {Object.entries(TEMPLATES).map(([key, template]) => <option key={key} value={key}>{template.label}</option>)}
                     </select>
                   </div>
 
                   <div className="space-y-1">
                     <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted" htmlFor="campaign-subject">Subject</label>
-                    <input id="campaign-subject" value={subject} onChange={(event) => setSubject(event.target.value)} className="w-full rounded-lg border border-border/80 bg-background px-2.5 py-2 text-xs outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10" />
+                    <input id="campaign-subject" value={subject} onChange={(event) => setSubject(event.target.value)} className="w-full rounded-none border border-border/80 bg-background px-2.5 py-2 text-xs outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10" />
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-border bg-background p-3">
+                <div className="rounded-none border border-border bg-background p-3">
                   <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Quick notes</h3>
                   <ul className="mt-2 space-y-1 text-[11px] text-muted">
                     <li>• Keep subject lines crisp and direct.</li>
@@ -335,20 +335,20 @@ export default function CampaignPage() {
 
               <div className="space-y-1">
                 <label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted" htmlFor="campaign-message">Message</label>
-                <textarea id="campaign-message" value={body} onChange={(event) => setBody(event.target.value)} rows={10} className="w-full rounded-lg border border-border/80 bg-background px-2.5 py-2 text-xs leading-5 outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10" />
+                <textarea id="campaign-message" value={body} onChange={(event) => setBody(event.target.value)} rows={10} className="w-full rounded-none border border-border/80 bg-background px-2.5 py-2 text-xs leading-5 outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10" />
               </div>
 
-              {notice && <div className={`rounded-lg border px-2.5 py-2 text-xs ${notice.type === "success" ? "border-green-200 bg-green-50 text-green-800" : "border-red-200 bg-red-50 text-red-800"}`}>{notice.text}</div>}
+              {notice && <div className={`rounded-none border px-2.5 py-2 text-xs ${notice.type === "success" ? "border-green-200 bg-green-50 text-green-800" : "border-red-200 bg-red-50 text-red-800"}`}>{notice.text}</div>}
 
               <div className="flex flex-col-reverse gap-2 border-t border-border pt-3 sm:flex-row sm:justify-end">
                 <button
                   type="button"
                   onClick={closeComposer}
-                  className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-surface"
+                  className="inline-flex items-center justify-center rounded-none border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-surface"
                 >
                   Close
                 </button>
-                <button type="submit" disabled={sending} className="inline-flex items-center justify-center rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60">
+                <button type="submit" disabled={sending} className="inline-flex items-center justify-center rounded-none bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60">
                   {sending ? "Sending campaign…" : "Send campaign"}
                 </button>
               </div>
