@@ -20,6 +20,17 @@ const nav = [
   { href: "/schoolbase-admin/videos", label: "Video Library", icon: "FileText" },
   { href: "/schoolbase-admin/id-cards", label: "ID Cards", icon: "WalletCards" },
   { href: "/schoolbase-admin/subscriptions", label: "Subscriptions", icon: "CreditCard" },
+  {
+    href: "/schoolbase-admin/competition",
+    label: "Competition (Preview)",
+    icon: "Award",
+    children: [
+      { href: "/schoolbase-admin/competition/questions", label: "Competition Questions", icon: "BookOpen" },
+      { href: "/schoolbase-admin/competition/challenges", label: "Competition Challenges", icon: "ClipboardCheck" },
+      { href: "/schoolbase-admin/competition/tournaments", label: "Competition Tournaments", icon: "Award" },
+      { href: "/schoolbase-admin/competition/sponsors", label: "Competition Sponsors", icon: "Megaphone" },
+    ],
+  },
   { href: "/schoolbase-admin/settings", label: "Settings", icon: "Settings" },
   { href: "/schoolbase-admin/operations", label: "Operations", icon: "Activity" },
 ];

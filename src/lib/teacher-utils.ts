@@ -91,6 +91,13 @@ export async function getTeacherDashboardMetrics(classes: Array<{ id: string }>)
   const backendUrl = getBackendUrl();
   const today = new Date().toISOString().split('T')[0];
 
+  type AssessmentRecord = {
+    studentCount?: number | string;
+    entryCount?: number | string;
+    isLocked?: boolean;
+    canEdit?: boolean;
+  };
+
   const [assessmentsResult, announcementsResult] = await Promise.allSettled([
     fetch(`${backendUrl}/api/teacher/assessments`, {
       credentials: 'include',
@@ -109,9 +116,9 @@ export async function getTeacherDashboardMetrics(classes: Array<{ id: string }>)
   let pendingResultAssessments = 0;
   if (assessmentsResult.status === 'fulfilled' && assessmentsResult.value.ok) {
     const payload = await assessmentsResult.value.json();
-    const assessments = Array.isArray(payload?.assessments) ? payload.assessments : [];
+    const assessments = Array.isArray(payload?.assessments) ? (payload.assessments as AssessmentRecord[]) : [];
 
-    pendingResultAssessments = assessments.filter((assessment: any) => {
+    pendingResultAssessments = assessments.filter((assessment: AssessmentRecord) => {
       const studentCount = Number(assessment.studentCount ?? 0);
       const entryCount = Number(assessment.entryCount ?? 0);
       const isLocked = Boolean(assessment.isLocked);
@@ -192,7 +199,8 @@ export async function getTeacherProfile(): Promise<TeacherProfile> {
  * Detect school phase based on school data
  * For now, returns PRIMARY as default (backend can enhance this)
  */
-export function detectSchoolPhase(schoolData?: any): SchoolPhase {
+export function detectSchoolPhase(schoolData?: unknown): SchoolPhase {
+  void schoolData;
   // TODO: Enhance backend to return school phase
   // For now, default to PRIMARY
   // In future: check school.phases or school.schoolPhases
@@ -208,6 +216,7 @@ export function getTeacherNavigation(phase: SchoolPhase) {
     { href: '/teacher/students', label: 'Students', icon: 'Users' },
     { href: '/teacher/subjects', label: 'Subjects', icon: 'BookOpen' },
     { href: '/teacher/attendance', label: 'Attendance', icon: 'ClipboardList' },
+    { href: '/teacher/competition', label: 'Competition', icon: 'Award' },
     { href: '/teacher/timetable', label: 'Timetable', icon: 'CalendarDays' },
     { href: '/teacher/announcements', label: 'Announcements', icon: 'Megaphone' },
     { href: '/teacher/profile', label: 'Profile', icon: 'UserCircle' },

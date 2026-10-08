@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, type ComponentType, type ChangeEvent, type MouseEvent as ReactMouseEvent, type TouchEvent as ReactTouchEvent, useEffect, useRef, useState } from "react";
 import Sidebar from "@/components/sidebar";
 import { usePathname } from "next/navigation";
 import { Menu, X, Music, Play, Pause, ChevronDown, ChevronLeft, ChevronRight, Volume2, Loader2, Equal, Delete, RefreshCcw, Plus } from "lucide-react";
@@ -17,8 +17,10 @@ import SupportChatWidget from "@/components/support-chat-widget";
 export type NavItem = {
   href: string;
   label: string;
-  icon: React.ComponentType<any> | string;
+  icon: ComponentType<{ className?: string }> | string;
   section?: string;
+  badge?: string;
+  children?: NavItem[];
 };
 
 export default function SharedLayout({
@@ -42,12 +44,10 @@ export default function SharedLayout({
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [noteModalPosition, setNoteModalPosition] = useState({ top: 120, left: 80 });
   const [isDraggingNotes, setIsDraggingNotes] = useState(false);
-  const [adminSessionNotes, setAdminSessionNotes] = useState("");
   const [audioFileUrl, setAudioFileUrl] = useState<string | null>(null);
   const [audioFileName, setAudioFileName] = useState<string | null>(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [pendingAutoPlay, setPendingAutoPlay] = useState(false);
-  const [playerCollapsed, setPlayerCollapsed] = useState(false);
   const [audioQueue, setAudioQueue] = useState<Array<{ name: string; src: string }>>([]);
   const [currentAudioIndex, setCurrentAudioIndex] = useState<number | null>(null);
   const [audioProgress, setAudioProgress] = useState(0);
@@ -58,7 +58,7 @@ export default function SharedLayout({
   const [isVolumePopoverOpen, setIsVolumePopoverOpen] = useState(false);
   const [isAudioPlayerOpen, setIsAudioPlayerOpen] = useState(false);
   const [isAudioBuffering, setIsAudioBuffering] = useState(false);
-  const [themeMode, setThemeMode] = useState<ThemeMode>("system");
+  const [themeMode, setThemeMode] = useState<ThemeMode>(() => resolveStoredTheme());
   const [isToolsOpen, setIsToolsOpen] = useState(false);
   const [toolPanelPosition, setToolPanelPosition] = useState({ x: 680, y: 120 });
   const [audioPanelPosition, setAudioPanelPosition] = useState({ x: 24, y: 200 });
@@ -76,7 +76,7 @@ export default function SharedLayout({
   const [timerRunning, setTimerRunning] = useState(false);
   const timerIntervalRef = useRef<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const resizeStartRef = useRef<any>({ startX: 0, width: 720, startLeft: 0, startY: 0, height: 480, side: "right" });
+  const resizeStartRef = useRef<{ startX?: number; width?: number; startLeft?: number; startY?: number; startTop?: number; height?: number; side: "right" | "left" | "bottom" | "top" }>({ startX: 0, width: 720, startLeft: 0, startY: 0, startTop: 0, height: 480, side: "right" });
   const volumeButtonRef = useRef<HTMLButtonElement | null>(null);
   const volumePopoverRef = useRef<HTMLDivElement | null>(null);
   const dragOffsetRef = useRef({ x: 0, y: 0 });
@@ -102,14 +102,18 @@ export default function SharedLayout({
   const pathname = usePathname();
   const hideSidebar = pathname?.startsWith("/login");
 
-  useEffect(() => {
-    setAdminSessionNotes(window.sessionStorage.getItem("schoolbase-admin-session-notes") || "");
-    setPlayerCollapsed(window.localStorage.getItem("admin-notes-player-collapsed") === "true");
+  const [adminSessionNotes, setAdminSessionNotes] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return window.sessionStorage.getItem("schoolbase-admin-session-notes") || "";
+  });
+  const [playerCollapsed, setPlayerCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("admin-notes-player-collapsed") === "true";
+  });
 
-    const stored = resolveStoredTheme();
-    setThemeMode(stored);
-    applyTheme(stored);
-  }, []);
+  useEffect(() => {
+    applyTheme(themeMode === "system" ? detectSystemTheme() : themeMode);
+  }, [themeMode]);
 
   useEffect(() => {
     if (themeMode !== "system") return;
@@ -154,10 +158,10 @@ export default function SharedLayout({
     if (!isDraggingNotes) return;
 
     const handleMouseMove = (event: MouseEvent) => {
-      setNoteModalPosition((current) => ({
+      setNoteModalPosition({
         top: Math.max(16, event.clientY - dragOffsetRef.current.y),
         left: Math.max(16, event.clientX - dragOffsetRef.current.x),
-      }));
+      });
     };
 
     const handleMouseUp = () => {
@@ -177,46 +181,52 @@ export default function SharedLayout({
     if (!isResizingNotes) return;
 
     const handleResizeMove = (event: MouseEvent) => {
-      const side = resizeStartRef.current.side || "right";
+      const initial = resizeStartRef.current;
+      const startX = initial.startX ?? 0;
+      const startY = initial.startY ?? 0;
+      const startLeft = initial.startLeft ?? noteModalPosition.left;
+      const startTop = initial.startTop ?? noteModalPosition.top;
+      const width = initial.width ?? noteModalWidth;
+      const height = initial.height ?? noteModalHeight;
+      const side = initial.side || "right";
       const minWidth = 480;
       const maxWidth = 1024;
 
       if (side === "right") {
-        const deltaX = event.clientX - resizeStartRef.current.startX;
-        const newWidth = Math.min(Math.max(resizeStartRef.current.width + deltaX, minWidth), maxWidth);
+        const deltaX = event.clientX - startX;
+        const newWidth = Math.min(Math.max(width + deltaX, minWidth), maxWidth);
         setNoteModalWidth(newWidth);
       } else if (side === "left") {
-        const deltaX = event.clientX - resizeStartRef.current.startX;
-        let proposedLeft = Math.max(16, resizeStartRef.current.startLeft + deltaX);
-        // width should shrink/grow opposite the left movement
-        let newWidth = resizeStartRef.current.width - (proposedLeft - resizeStartRef.current.startLeft);
+        const deltaX = event.clientX - startX;
+        let proposedLeft = Math.max(16, startLeft + deltaX);
+        let newWidth = width - (proposedLeft - startLeft);
         if (newWidth < minWidth) {
           newWidth = minWidth;
-          proposedLeft = resizeStartRef.current.startLeft + (resizeStartRef.current.width - minWidth);
+          proposedLeft = startLeft + (width - minWidth);
         } else if (newWidth > maxWidth) {
           newWidth = maxWidth;
-          proposedLeft = resizeStartRef.current.startLeft + (resizeStartRef.current.width - maxWidth);
+          proposedLeft = startLeft + (width - maxWidth);
         }
         setNoteModalWidth(newWidth);
         setNoteModalPosition((current) => ({ ...current, left: Math.max(16, proposedLeft) }));
       } else if (side === "bottom") {
-        const deltaY = event.clientY - resizeStartRef.current.startY;
+        const deltaY = event.clientY - startY;
         const minH = 240;
         const maxH = 1200;
-        const newHeight = Math.min(Math.max(resizeStartRef.current.height + deltaY, minH), maxH);
+        const newHeight = Math.min(Math.max(height + deltaY, minH), maxH);
         setNoteModalHeight(newHeight);
       } else if (side === "top") {
-        const deltaY = event.clientY - resizeStartRef.current.startY;
-        let proposedTop = Math.max(16, resizeStartRef.current.startTop + deltaY);
-        let newHeight = resizeStartRef.current.height - (proposedTop - resizeStartRef.current.startTop);
+        const deltaY = event.clientY - startY;
+        let proposedTop = Math.max(16, startTop + deltaY);
+        let newHeight = height - (proposedTop - startTop);
         const minH = 240;
         const maxH = 1200;
         if (newHeight < minH) {
           newHeight = minH;
-          proposedTop = resizeStartRef.current.startTop + (resizeStartRef.current.height - minH);
+          proposedTop = startTop + (height - minH);
         } else if (newHeight > maxH) {
           newHeight = maxH;
-          proposedTop = resizeStartRef.current.startTop + (resizeStartRef.current.height - maxH);
+          proposedTop = startTop + (height - maxH);
         }
         setNoteModalHeight(newHeight);
         setNoteModalPosition((current) => ({ ...current, top: Math.max(16, proposedTop) }));
@@ -234,7 +244,7 @@ export default function SharedLayout({
       window.removeEventListener("mousemove", handleResizeMove);
       window.removeEventListener("mouseup", handleResizeUp);
     };
-  }, [isResizingNotes]);
+  }, [isResizingNotes, noteModalHeight, noteModalPosition.left, noteModalPosition.top, noteModalWidth]);
 
   useEffect(() => {
     if (!isVolumePopoverOpen) return;
@@ -253,18 +263,14 @@ export default function SharedLayout({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isVolumePopoverOpen]);
 
-  useEffect(() => {
-    if (!isToolPanelOpen) return;
-
+  const ensureToolPanelInViewport = () => {
     const panelWidth = activeTool === "reminders" ? 440 : 320;
-    setToolPanelPosition((current) => clampToViewport(current, panelWidth, 520));
-  }, [activeTool, isToolPanelOpen]);
+    setToolPanelPosition((position) => clampToViewport(position, panelWidth, 520));
+  };
 
-  useEffect(() => {
-    if (!isAudioPlayerOpen) return;
-
-    setAudioPanelPosition((current) => clampPanelToViewport(current, 440, 520));
-  }, [isAudioPlayerOpen]);
+  const ensureAudioPanelInViewport = () => {
+    setAudioPanelPosition((position) => clampPanelToViewport(position, 440, 520));
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -377,6 +383,7 @@ export default function SharedLayout({
       const panelWidth = tool === "reminders" ? 440 : 320;
       const panelHeight = 520;
       setToolPanelPosition((current) => clampToViewport(current, panelWidth, panelHeight));
+      ensureToolPanelInViewport();
       setIsToolPanelOpen(true);
     }
   };
@@ -486,7 +493,7 @@ export default function SharedLayout({
     };
   }, []);
 
-  const handleNotesMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+  const handleNotesMouseDown = (event: ReactMouseEvent<HTMLDivElement>) => {
     setIsDraggingNotes(true);
     dragOffsetRef.current = {
       x: event.clientX - noteModalPosition.left,
@@ -494,7 +501,7 @@ export default function SharedLayout({
     };
   };
 
-  const handleToolPanelMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+  const handleToolPanelMouseDown = (event: ReactMouseEvent<HTMLDivElement>) => {
     if ((event.target as HTMLElement).closest("button")) return;
     event.preventDefault();
     setIsDraggingToolPanel(true);
@@ -504,7 +511,7 @@ export default function SharedLayout({
     };
   };
 
-  const handleAudioPanelTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+  const handleAudioPanelTouchStart = (event: ReactTouchEvent<HTMLDivElement>) => {
     if (event.touches.length !== 1) return;
     const touch = event.touches[0];
     audioTouchMovedRef.current = false;
@@ -515,7 +522,7 @@ export default function SharedLayout({
     };
   };
 
-  const handleAudioPanelMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+  const handleAudioPanelMouseDown = (event: ReactMouseEvent<HTMLDivElement>) => {
     if ((event.target as HTMLElement).closest("button")) return;
     event.preventDefault();
     setIsDraggingAudioPanel(true);
@@ -532,9 +539,9 @@ export default function SharedLayout({
     const modalH = Math.min(noteModalHeight, (typeof window !== 'undefined' ? window.innerHeight - 32 : noteModalHeight));
     const maxLeft = (typeof window !== 'undefined') ? Math.max(16, window.innerWidth - modalW - 16) : noteModalPosition.left;
     const maxTop = (typeof window !== 'undefined') ? Math.max(16, window.innerHeight - modalH - 16) : noteModalPosition.top;
-    setNoteModalPosition((current) => ({
-      top: Math.min(current.top, maxTop),
-      left: Math.min(current.left, maxLeft),
+    setNoteModalPosition(() => ({
+      top: Math.min(noteModalPosition.top, maxTop),
+      left: Math.min(noteModalPosition.left, maxLeft),
     }));
     setIsNotesOpen(true);
   };
@@ -557,7 +564,7 @@ export default function SharedLayout({
   };
 
   const toggleAudioPlayer = () => {
-    setAudioPanelPosition((current) => clampPanelToViewport(current, 440, 520));
+    ensureAudioPanelInViewport();
     setIsAudioPlayerOpen((current) => {
       const next = !current;
       if (next) {
@@ -573,7 +580,7 @@ export default function SharedLayout({
     setAdminSessionNotes("");
   };
 
-  const handleAudioFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAudioFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     if (files.length === 0) return;
 
@@ -695,7 +702,7 @@ export default function SharedLayout({
     setAudioProgress(current / duration);
   };
 
-  const handleAudioVolumeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAudioVolumeChange = (event: ChangeEvent<HTMLInputElement>) => {
     const volume = Number(event.target.value);
     setPlayerVolume(volume);
     if (audioRef.current) {
@@ -703,12 +710,9 @@ export default function SharedLayout({
     }
   };
 
-  const handlePlayerCollapseToggle = () => {
-    setPlayerCollapsed((current) => !current);
-  };
-
   useEffect(() => {
-    if (!audioRef.current) return;
+    const element = audioRef.current;
+    if (!element) return;
 
     const handleEnded = () => {
       // play next track in queue if available
@@ -731,16 +735,16 @@ export default function SharedLayout({
     const handleCanPlay = () => setIsAudioBuffering(false);
     const handlePlaying = () => setIsAudioBuffering(false);
 
-    audioRef.current.addEventListener("ended", handleEnded);
-    audioRef.current.addEventListener("waiting", handleWaiting);
-    audioRef.current.addEventListener("canplay", handleCanPlay);
-    audioRef.current.addEventListener("playing", handlePlaying);
+    element.addEventListener("ended", handleEnded);
+    element.addEventListener("waiting", handleWaiting);
+    element.addEventListener("canplay", handleCanPlay);
+    element.addEventListener("playing", handlePlaying);
 
     return () => {
-      audioRef.current?.removeEventListener("ended", handleEnded);
-      audioRef.current?.removeEventListener("waiting", handleWaiting);
-      audioRef.current?.removeEventListener("canplay", handleCanPlay);
-      audioRef.current?.removeEventListener("playing", handlePlaying);
+      element.removeEventListener("ended", handleEnded);
+      element.removeEventListener("waiting", handleWaiting);
+      element.removeEventListener("canplay", handleCanPlay);
+      element.removeEventListener("playing", handlePlaying);
     };
   }, [audioFileUrl, audioQueue, currentAudioIndex]);
 
@@ -1123,6 +1127,7 @@ export default function SharedLayout({
                       width: noteModalWidth,
                       startLeft: noteModalPosition.left,
                       startY: noteModalPosition.top,
+                      startTop: noteModalPosition.top,
                       height: noteModalHeight,
                       side: "left",
                     };
@@ -1140,6 +1145,7 @@ export default function SharedLayout({
                       width: noteModalWidth,
                       startLeft: noteModalPosition.left,
                       startY: noteModalPosition.top,
+                      startTop: noteModalPosition.top,
                       height: noteModalHeight,
                       side: "right",
                     };
@@ -1153,6 +1159,8 @@ export default function SharedLayout({
                     event.stopPropagation();
                     setIsResizingNotes(true);
                     resizeStartRef.current = {
+                      startX: noteModalPosition.left,
+                      width: noteModalWidth,
                       startY: event.clientY,
                       height: noteModalHeight,
                       startTop: noteModalPosition.top,
@@ -1169,6 +1177,8 @@ export default function SharedLayout({
                     event.stopPropagation();
                     setIsResizingNotes(true);
                     resizeStartRef.current = {
+                      startX: noteModalPosition.left,
+                      width: noteModalWidth,
                       startY: event.clientY,
                       height: noteModalHeight,
                       startTop: noteModalPosition.top,

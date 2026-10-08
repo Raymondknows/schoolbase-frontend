@@ -45,6 +45,26 @@ interface AuditLog {
   school?: { name?: string | null } | null;
 }
 
+const competitionFeatureOptions = [
+  { key: "competition.enabled", label: "Competition module", description: "Master switch. All Competition capabilities remain unavailable while this is off." },
+  { key: "competition.dailyChallenge.enabled", label: "Daily challenges", description: "Student vs System challenge access." },
+  { key: "competition.questionBank.enabled", label: "Question bank", description: "Competition question authoring and review workflows." },
+  { key: "competition.leaderboard.enabled", label: "Leaderboards", description: "Private or explicitly approved competition rankings." },
+  { key: "competition.gamification.enabled", label: "XP and achievements", description: "Competition-only XP, badges, and achievements." },
+  { key: "competition.studentVsStudent.enabled", label: "Student challenges", description: "Student-to-student asynchronous challenges." },
+  { key: "competition.classCompetition.enabled", label: "Class competitions", description: "Class-level participation and ranking." },
+  { key: "competition.schoolTournament.enabled", label: "School tournaments", description: "School registration and tournament operations." },
+  { key: "competition.publicTournament.enabled", label: "Public tournament pages", description: "Public-facing tournament information and approved results." },
+  { key: "competition.sponsors.enabled", label: "Sponsors", description: "Competition sponsor management and approved placements." },
+  { key: "competition.prizes.enabled", label: "Prizes", description: "Prize assignment and fulfillment workflows." },
+  { key: "competition.certificates.enabled", label: "Certificates", description: "Certificate issuance and public verification." },
+  { key: "competition.regional.enabled", label: "Regional competitions", description: "Regional tournament scopes and rankings." },
+  { key: "competition.national.enabled", label: "National competitions", description: "National tournament scopes and rankings." },
+  { key: "competition.international.enabled", label: "International competitions", description: "Cross-country competition scopes and rankings." },
+] as const;
+
+type CompetitionFeatureKey = typeof competitionFeatureOptions[number]["key"];
+
 interface PlatformSettingsState {
   maintenanceMode: boolean;
   allowSignup: boolean;
@@ -53,6 +73,7 @@ interface PlatformSettingsState {
   supportEmail: string;
   signupNotificationRecipients: string[];
   supportNotificationRecipients: string[];
+  competitionFeatures: Record<CompetitionFeatureKey, boolean>;
   paymentPlans: {
     STARTER: { label: string; priceLabel: string; amountMinor: number; studentLimit: number | null };
     GROWTH: { label: string; priceLabel: string; amountMinor: number; studentLimit: number | null };
@@ -68,6 +89,7 @@ const defaultSettings: PlatformSettingsState = {
   supportEmail: "support@schoolbase.live",
   signupNotificationRecipients: [],
   supportNotificationRecipients: [],
+  competitionFeatures: Object.fromEntries(competitionFeatureOptions.map(({ key }) => [key, false])) as Record<CompetitionFeatureKey, boolean>,
   paymentPlans: {
     STARTER: { label: "", priceLabel: "", amountMinor: 0, studentLimit: null },
     GROWTH: { label: "", priceLabel: "", amountMinor: 0, studentLimit: null },
@@ -148,6 +170,7 @@ export default function SettingsClient() {
       if (settingsRes.ok) {
         const settingsData = await settingsRes.json();
         const loadedPlans = settingsData?.settings?.paymentPlans ?? {};
+        const loadedCompetitionFeatures = settingsData?.settings?.competitionFeatures ?? settingsData?.defaults?.competitionFeatures ?? {};
         const nextSettings: PlatformSettingsState = {
           maintenanceMode: Boolean(settingsData?.settings?.maintenanceMode ?? settingsData?.defaults?.maintenanceMode ?? false),
           allowSignup: Boolean(settingsData?.settings?.allowSignup ?? settingsData?.defaults?.allowSignup ?? true),
@@ -156,6 +179,7 @@ export default function SettingsClient() {
           supportEmail: String(settingsData?.settings?.supportEmail ?? settingsData?.defaults?.supportEmail ?? defaultSettings.supportEmail),
           signupNotificationRecipients: Array.isArray(settingsData?.settings?.signupNotificationRecipients) ? settingsData.settings.signupNotificationRecipients : defaultSettings.signupNotificationRecipients,
           supportNotificationRecipients: Array.isArray(settingsData?.settings?.supportNotificationRecipients) ? settingsData.settings.supportNotificationRecipients : defaultSettings.supportNotificationRecipients,
+          competitionFeatures: Object.fromEntries(competitionFeatureOptions.map(({ key }) => [key, loadedCompetitionFeatures[key] === true])) as Record<CompetitionFeatureKey, boolean>,
           paymentPlans: {
             STARTER: { ...defaultSettings.paymentPlans.STARTER, ...(loadedPlans.STARTER ?? {}) },
             GROWTH: { ...defaultSettings.paymentPlans.GROWTH, ...(loadedPlans.GROWTH ?? {}) },
@@ -188,6 +212,19 @@ export default function SettingsClient() {
 
   function handleSettingToggle(key: keyof PlatformSettingsState) {
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
+  }
+
+  function handleCompetitionFeatureToggle(key: CompetitionFeatureKey) {
+    setSettings((prev) => {
+      const enabled = !prev.competitionFeatures[key];
+      if (key === "competition.enabled" && !enabled) {
+        return {
+          ...prev,
+          competitionFeatures: Object.fromEntries(competitionFeatureOptions.map((option) => [option.key, false])) as Record<CompetitionFeatureKey, boolean>,
+        };
+      }
+      return { ...prev, competitionFeatures: { ...prev.competitionFeatures, [key]: enabled } };
+    });
   }
 
   function handleSettingInputChange(e: ChangeEvent<HTMLInputElement>) {
@@ -558,6 +595,36 @@ export default function SettingsClient() {
                 </table>
               </div>
               </div>}
+            </div>
+
+            <div className="border-t border-border pt-5">
+              <h3 className="text-sm font-semibold text-foreground">Competition feature controls</h3>
+              <p className="mt-1 text-xs text-muted">No Competition workflows are active yet. Keep these off until each feature is implemented and reviewed. Server access also requires the master switch and user permissions.</p>
+              <div className="mt-3 divide-y divide-border border border-border bg-background px-3">
+                {competitionFeatureOptions.map(({ key, label, description }) => {
+                  const enabled = settings.competitionFeatures[key];
+                  const parentDisabled = key !== "competition.enabled" && !settings.competitionFeatures["competition.enabled"];
+                  return (
+                    <div key={key} className="flex items-center justify-between gap-4 py-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground">{label}</p>
+                        <p className="text-xs text-muted">{description}</p>
+                      </div>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={enabled}
+                        aria-label={label}
+                        disabled={parentDisabled}
+                        onClick={() => handleCompetitionFeatureToggle(key)}
+                        className={`shrink-0 border px-3 py-1 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ${enabled ? "border-brand bg-brand text-white" : "border-border bg-surface text-muted"}`}
+                      >
+                        {enabled ? "On" : "Off"}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             <button

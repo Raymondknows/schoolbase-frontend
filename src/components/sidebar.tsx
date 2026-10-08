@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { createElement, type ComponentType } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -24,7 +25,6 @@ import {
   Globe,
   Layers,
   HelpCircle,
-  Check,
   CheckCircle2,
   MessageSquare,
   PenTool,
@@ -55,6 +55,7 @@ type NavItem = {
   icon: string | ComponentType<{ className?: string }>;
   section?: string;
   badge?: string;
+  children?: NavItem[];
 };
 
 type WorkspaceTool = "notes" | "calculator" | "reminders" | "timer";
@@ -173,7 +174,7 @@ export default function Sidebar({
         <Link href={logoHref} className="group flex items-center gap-3 px-1 py-1 transition-colors">
           {schoolLogo ? (
             <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-white shadow-sm">
-              <img src={schoolLogo} alt={schoolName} className="h-full w-full object-contain p-1" />
+              <Image src={schoolLogo} alt={schoolName} width={40} height={40} className="h-full w-full object-contain p-1" unoptimized />
             </div>
           ) : (
             <AppLogo size="md" showText={false} href={null} />
@@ -187,10 +188,12 @@ export default function Sidebar({
       </div>
 
       <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 py-4">
-        {navItemsWithSectionVisibility.map(({ href, label, icon, sectionLabel, showSection, badge }) => {
+        {navItemsWithSectionVisibility.map(({ href, label, icon, sectionLabel, showSection, badge, children }) => {
           const isActive = pathname === href || pathname.startsWith(`${href}/`);
+          const childActive = Array.isArray(children) && children.some((child) => pathname === child.href || pathname.startsWith(`${child.href}/`));
+          const isParentActive = isActive || childActive;
           const IconComponent = typeof icon === "string" ? icons[icon] : icon;
-          const progressRingColor = isSetupComplete ? "text-emerald-500" : isActive ? "text-brand" : "text-muted/70";
+          const progressRingColor = isSetupComplete ? "text-emerald-500" : isParentActive ? "text-brand" : "text-muted/70";
 
           return (
             <div key={href}>
@@ -199,42 +202,68 @@ export default function Sidebar({
                   {sectionLabel}
                 </div>
               ) : null}
-              <Link
-                href={href}
-                onClick={handleNavClick}
-                aria-current={isActive ? "page" : undefined}
-                className={`group relative flex cursor-pointer items-center gap-3 border-l-2 px-3 py-2.5 text-sm font-medium transition-colors ${
-                  isActive
-                    ? "border-brand bg-brand-light font-semibold text-brand"
-                    : "border-transparent text-muted hover:border-brand/30 hover:bg-brand-light hover:text-brand"
-                }`}
-              >
-                {href === "/admin/getting-started" ? (
-                  <div className="relative flex h-5 w-5 shrink-0 items-center justify-center">
-                    <svg viewBox="0 0 24 24" className={`h-5 w-5 -rotate-90 ${progressRingColor}`}>
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" fill="none" opacity="0.22" />
-                      <circle
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeDasharray={progressCircumference}
-                        strokeDashoffset={progressCircumference - (progressCircumference * normalizedProgress) / 100}
-                      />
-                    </svg>
-                    {isSetupComplete ? (
-                      <CheckCircle2 className="absolute h-3.5 w-3.5 text-emerald-500" />
-                    ) : (
-                      <Sparkles className="absolute h-3 w-3 text-brand" />
-                    )}
+              <div>
+                <Link
+                  href={href}
+                  onClick={handleNavClick}
+                  aria-current={isParentActive ? "page" : undefined}
+                  className={`group relative flex cursor-pointer items-center gap-3 border-l-2 px-3 py-2.5 text-sm font-medium transition-colors ${
+                    isParentActive
+                      ? "border-brand bg-brand-light font-semibold text-brand"
+                      : "border-transparent text-muted hover:border-brand/30 hover:bg-brand-light hover:text-brand"
+                  }`}
+                >
+                  {href === "/admin/getting-started" ? (
+                    <div className="relative flex h-5 w-5 shrink-0 items-center justify-center">
+                      <svg viewBox="0 0 24 24" className={`h-5 w-5 -rotate-90 ${progressRingColor}`}>
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" fill="none" opacity="0.22" />
+                        <circle
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeDasharray={progressCircumference}
+                          strokeDashoffset={progressCircumference - (progressCircumference * normalizedProgress) / 100}
+                        />
+                      </svg>
+                      {isSetupComplete ? (
+                        <CheckCircle2 className="absolute h-3.5 w-3.5 text-emerald-500" />
+                      ) : (
+                        <Sparkles className="absolute h-3 w-3 text-brand" />
+                      )}
+                    </div>
+                  ) : IconComponent ? createElement(IconComponent, { className: "h-4 w-4" }) : null}
+                  <span className="min-w-0 flex-1 truncate">{label}</span>
+                  {badge ? <span className="shrink-0 border border-brand/25 bg-brand/10 px-1.5 py-0.5 text-[9px] font-bold uppercase leading-none tracking-wide text-brand">{badge}</span> : null}
+                </Link>
+
+                {Array.isArray(children) && children.length > 0 && (isParentActive || pathname.startsWith(`${href}/`)) ? (
+                  <div className="ml-5 space-y-1 border-l border-border pl-3 pt-1 pb-1">
+                    {children.map((child) => {
+                      const childActive = pathname === child.href || pathname.startsWith(`${child.href}/`);
+                      return (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          onClick={handleNavClick}
+                          aria-current={childActive ? "page" : undefined}
+                          className={`flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                            childActive
+                              ? "bg-brand-light text-brand"
+                              : "text-muted hover:bg-background hover:text-foreground"
+                          }`}
+                        >
+                          <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
+                          {child.label}
+                        </Link>
+                      );
+                    })}
                   </div>
-                ) : IconComponent ? createElement(IconComponent, { className: "h-4 w-4" }) : null}
-                <span className="min-w-0 flex-1 truncate">{label}</span>
-                {badge ? <span className="shrink-0 border border-brand/25 bg-brand/10 px-1.5 py-0.5 text-[9px] font-bold uppercase leading-none tracking-wide text-brand">{badge}</span> : null}
-              </Link>
+                ) : null}
+              </div>
             </div>
           );
         })}

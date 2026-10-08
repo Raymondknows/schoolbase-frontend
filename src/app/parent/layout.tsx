@@ -15,6 +15,7 @@ const nav = [
   { href: "/parent/invoices", label: "Invoices", icon: "FileText" },
   { href: "/parent/payments", label: "Payments", icon: "CreditCard" },
   { href: "/parent/publications", label: "Publications", icon: "BookOpen" },
+  { href: "/parent/competition", label: "Competition", icon: "Award" },
   { href: "/parent/school", label: "School Info", icon: "Globe" },
 ];
 
@@ -26,8 +27,10 @@ export default function ParentLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [loading, setLoading] = useState(false);
-  const [session, setSession] = useState<any>(null);
-  const [school, setSchool] = useState<any>(null);
+  type ParentSessionState = { id?: string; name?: string; phone?: string };
+  type ParentSchoolState = { name?: string; [key: string]: unknown } | null;
+  const [session, setSession] = useState<ParentSessionState | null>(null);
+  const [school, setSchool] = useState<ParentSchoolState>(null);
 
   useEffect(() => {
     // Skip verification for login page

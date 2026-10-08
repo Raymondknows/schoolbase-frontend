@@ -16,6 +16,14 @@ const baseNav = [
   { href: "/admin/staff", label: "Staff", icon: "Users" },
   { href: "/admin/subjects", label: "Subjects", icon: "BookOpen" },
   { href: "/admin/results", label: "Results", icon: "GraduationCap" },
+  {
+    href: "/admin/competition",
+    label: "Competition",
+    icon: "Award",
+    children: [
+      { href: "/admin/competition/students", label: "Competition Accounts", icon: "UserCircle" },
+    ],
+  },
   { href: "/admin/admissions", label: "Admissions", icon: "GraduationCap" },
   { href: "/admin/promotions", label: "Promotions", icon: "TrendingUp" },
   { href: "/admin/analytics", label: "Analytics", icon: "BarChart3" },
@@ -229,6 +237,7 @@ export default function AdminLayout({
         logoutRedirectUrl="/login"
       >
         <PendingSchoolModal schoolStatus={school.status} schoolName={school.name} />
+        {showGettingStarted && <PendingSchoolModal schoolStatus={school.status} schoolName={school.name} />}
         {children}
       </SharedLayout>
     </>
