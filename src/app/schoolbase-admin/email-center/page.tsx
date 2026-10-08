@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { BellRing, LifeBuoy, Mail } from "lucide-react";
 import { getBackendUrl } from "@/lib/backend-url";
+import { playOpenTone } from "@/lib/sounds";
 import EmailCenterClient from "./email-center-client";
 
 interface School {
@@ -53,13 +54,22 @@ export default function EmailCenterPage() {
               <span className="support-page-pulse h-2.5 w-2.5 rounded-full bg-brand" />
               Communication operations
             </div>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Email Center</h1>
+            <h1 className="mt-3 text-4xl font-bold tracking-tight text-foreground sm:text-5xl">Email Center</h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Send professional updates, reminders, and announcements to schools.</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <Link href="/schoolbase-admin/setup-reminders" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"><BellRing className="h-4 w-4" /> Setup reminders</Link>
-            <Link href="/schoolbase-admin/support" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand transition hover:bg-brand-light"><LifeBuoy className="h-4 w-4" /> Support inbox</Link>
-            <button type="button" onClick={() => setComposeOpen(true)} className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"><Mail className="h-4 w-4" /> Compose email</button>
+            <Link href="/schoolbase-admin/setup-reminders" className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#0A66C2]/20 bg-white px-4 text-sm font-semibold text-[#0A66C2] transition hover:border-[#0A66C2]/40 hover:bg-[#0A66C2]/5"><BellRing className="h-4 w-4" /> Setup reminders</Link>
+            <Link href="/schoolbase-admin/support" className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#0A66C2]/20 bg-white px-4 text-sm font-semibold text-[#0A66C2] transition hover:border-[#0A66C2]/40 hover:bg-[#0A66C2]/5"><LifeBuoy className="h-4 w-4" /> Support inbox</Link>
+            <button
+              type="button"
+              onClick={() => {
+                playOpenTone();
+                setComposeOpen(true);
+              }}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#0A66C2] px-4 text-sm font-semibold text-white transition hover:bg-[#0952a4]"
+            >
+              <Mail className="h-4 w-4" /> Compose email
+            </button>
           </div>
         </div>
       </header>
