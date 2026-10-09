@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Check, Plus, RefreshCw } from "lucide-react";
 import { ErrorModal } from "@/components/ui/error-modal";
+import CompetitionHero from "@/components/competition/competition-hero";
 
 type Category = { id: string; code: string; name: string };
 type QuestionSet = { id: string; name: string; gradeLabel: string | null; topic: string | null; status: string; _count?: { questions: number } };
@@ -100,10 +101,7 @@ export default function CompetitionQuestionsPage() {
 
   return (
     <main className="mx-auto max-w-7xl space-y-6 px-2 py-6 sm:px-8 sm:py-8 lg:px-12">
-      <header className="flex flex-col justify-between gap-4 border border-border bg-surface p-6 sm:flex-row sm:items-end sm:p-8">
-        <div><p className="text-xs font-bold uppercase tracking-[.16em] text-brand">Competition administration</p><h1 className="competition-heading-light mt-2 text-3xl font-semibold text-foreground">Question bank</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Create versioned content, review answer keys, and approve questions before any challenge can use them.</p></div>
-        <button type="button" onClick={() => void load()} disabled={busy} className="inline-flex h-10 items-center gap-2 border border-border px-3 text-sm font-semibold text-brand hover:bg-brand-light disabled:opacity-50"><RefreshCw className="h-4 w-4" /> Refresh</button>
-      </header>
+      <CompetitionHero compact eyebrow="Competition administration · Content" title="Question bank" description="Create versioned content, review answer keys, and approve questions before any challenge can use them."><button type="button" onClick={() => void load()} disabled={busy} className="inline-flex h-10 items-center gap-2 border border-white/60 bg-white/10 px-4 text-sm font-semibold text-white hover:bg-white/20 disabled:opacity-50"><RefreshCw className="h-4 w-4" /> Refresh</button></CompetitionHero>
       <section className="grid gap-5 xl:grid-cols-2">
         <form onSubmit={(event) => void submit(event, "/admin/categories", { code: categoryCode, name: categoryName }, () => { setCategoryCode(""); setCategoryName(""); })} className="space-y-4 border border-border bg-surface p-5">
           <div><h2 className="font-semibold text-foreground">Create category</h2><p className="mt-1 text-xs text-muted">Use existing school subjects where they fit; category codes must be unique.</p></div>

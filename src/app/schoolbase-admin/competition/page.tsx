@@ -6,7 +6,6 @@ import { ErrorModal } from "@/components/ui/error-modal";
 import {
   Activity,
   ArrowRight,
-  Award,
   CheckCircle2,
   Circle,
   Database,
@@ -17,6 +16,7 @@ import {
   Sparkles,
   Trophy,
 } from "lucide-react";
+import CompetitionHero from "@/components/competition/competition-hero";
 
 const featureKeys = [
   ["competition.enabled", "Competition master switch"],
@@ -130,30 +130,20 @@ export default function CompetitionFoundationPage() {
     { label: "School consent, recovery, and support procedures are approved", complete: false },
     { label: "Production migrations and recovery plan are verified", complete: false },
   ];
-  const pilotInvitation = "SchoolBase is inviting a small group of schools to help pilot Competition, our school-linked academic challenge experience. Students can practise through timed challenges, with access connected to their existing SchoolBase guardian relationship. The pilot is limited while we validate the experience with schools. Participation is optional. Contact your SchoolBase representative to register interest.";
+  const pilotInvitation = "SchoolBase is inviting a small group of schools to help pilot Competition, our school-linked academic challenge experience. Students can practise through timed academic challenges, with access connected to their existing SchoolBase guardian relationship. The pilot is limited while we validate the experience with schools, and participation is optional. Read about the pilot at https://schoolbase.live/competition-pilot or contact us at https://schoolbase.live/contact.";
 
   return (
     <main className="mx-auto max-w-7xl space-y-6 px-2 py-6 sm:px-8 sm:py-8 lg:px-12">
-      <header className="relative overflow-hidden border border-border bg-surface px-6 pb-8 pt-8 sm:px-8 sm:pb-10 sm:pt-10">
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-brand/10 to-transparent" />
-        <div className="relative flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-          <div>
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-brand">
-              <Award className="h-4 w-4" /> Competition command center
-            </div>
-            <h1 className="competition-heading-light mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">SchoolBase Competition</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Operational overview for the Competition platform, including the active server feature set and the current content pipeline.</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Link href="/schoolbase-admin/settings" className="inline-flex items-center gap-2 border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-brand hover:bg-brand-light">
-              Feature controls <ExternalLink className="h-4 w-4" />
-            </Link>
-            <button type="button" onClick={() => void loadDashboard()} disabled={loading} className="inline-flex items-center gap-2 border border-brand bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-60">
-              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh
-            </button>
-          </div>
+      <CompetitionHero eyebrow="Competition command center" title="SchoolBase Competition" description="A place for students to practise, build confidence, and celebrate academic progress through SchoolBase-linked challenges.">
+        <div className="flex flex-wrap gap-2">
+          <Link href="/schoolbase-admin/settings" className="inline-flex items-center gap-2 border border-white/60 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/20">
+            Feature controls <ExternalLink className="h-4 w-4" />
+          </Link>
+          <button type="button" onClick={() => void loadDashboard()} disabled={loading} className="inline-flex items-center gap-2 border border-white bg-white px-4 py-2.5 text-sm font-semibold text-[#102943] hover:bg-[#e6f1f8] disabled:opacity-60">
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh
+          </button>
         </div>
-      </header>
+      </CompetitionHero>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
         {[
@@ -250,12 +240,15 @@ export default function CompetitionFoundationPage() {
         <div className="space-y-3">
           <div>
             <h2 className="text-lg font-semibold text-foreground">School pilot invitation</h2>
-            <p className="mt-1 text-sm leading-6 text-muted">Copy for direct outreach. Update the contact route before sending.</p>
+            <p className="mt-1 text-sm leading-6 text-muted">Copy for direct outreach to the limited school pilot.</p>
           </div>
           <textarea readOnly value={pilotInvitation} rows={6} aria-label="School pilot invitation copy" className="w-full resize-y border border-border bg-background p-3 text-sm leading-6 text-foreground" />
+          <div className="flex flex-wrap gap-2">
           <button type="button" onClick={() => { void navigator.clipboard.writeText(pilotInvitation); }} className="inline-flex h-10 items-center gap-2 border border-brand px-4 text-sm font-semibold text-brand hover:bg-brand-light">
             Copy invitation
           </button>
+          <Link href="/competition-pilot" className="inline-flex h-10 items-center gap-2 border border-border px-4 text-sm font-semibold text-foreground hover:border-brand hover:text-brand">Preview pilot page</Link>
+          </div>
         </div>
       </section>
 

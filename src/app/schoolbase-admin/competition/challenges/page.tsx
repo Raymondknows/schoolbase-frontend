@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Play, Plus, RefreshCw } from "lucide-react";
 import { ErrorModal } from "@/components/ui/error-modal";
+import CompetitionHero from "@/components/competition/competition-hero";
 
 type Category = { id: string; name: string };
 type QuestionSet = { id: string; name: string; status: string; _count?: { questions: number } };
@@ -111,7 +112,7 @@ export default function CompetitionChallengesPage() {
 
   return (
     <main className="mx-auto max-w-7xl space-y-6 px-2 py-6 sm:px-8 sm:py-8 lg:px-12">
-      <header className="flex flex-col justify-between gap-4 border border-border bg-surface p-6 sm:flex-row sm:items-end sm:p-8"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-brand">Competition administration</p><h1 className="competition-heading-light mt-2 text-3xl font-semibold text-foreground">Challenges & scoring</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Configure versioned scoring and challenge definitions. New challenges start in draft; activation checks approved question coverage.</p></div><button type="button" onClick={() => void load()} disabled={busy} className="inline-flex h-10 items-center gap-2 border border-border px-3 text-sm font-semibold text-brand hover:bg-brand-light disabled:opacity-50"><RefreshCw className="h-4 w-4" /> Refresh</button></header>
+      <CompetitionHero compact eyebrow="Competition administration · Challenge setup" title="Challenges & scoring" description="Configure versioned scoring and challenge definitions. New challenges start in draft; activation checks approved question coverage."><button type="button" onClick={() => void load()} disabled={busy} className="inline-flex h-10 items-center gap-2 border border-white/60 bg-white/10 px-4 text-sm font-semibold text-white hover:bg-white/20 disabled:opacity-50"><RefreshCw className="h-4 w-4" /> Refresh</button></CompetitionHero>
       <section className="grid gap-5 xl:grid-cols-[.8fr_1.2fr]">
         <form onSubmit={(event) => void createPolicy(event)} className="space-y-4 border border-border bg-surface p-5"><div><h2 className="font-semibold text-foreground">Scoring policy</h2><p className="mt-1 text-xs text-muted">Stored as a versioned snapshot. Don’t edit a policy after live attempts use it.</p></div><label className="block text-xs font-semibold text-muted">Policy name<input required value={policyName} onChange={(event) => setPolicyName(event.target.value)} className="mt-1 h-10 w-full border border-border bg-background px-3 text-sm text-foreground" /></label><button disabled={busy} className="inline-flex h-10 items-center gap-2 border border-brand px-4 text-sm font-semibold text-brand hover:bg-brand-light disabled:opacity-50"><Plus className="h-4 w-4" /> Create v1 scoring policy</button><label className="block text-xs font-semibold text-muted">Selected policy<select value={scoringPolicyId} onChange={(event) => setScoringPolicyId(event.target.value)} className="mt-1 h-10 w-full border border-border bg-background px-3 text-sm text-foreground"><option value="">Choose policy</option>{policies.map((policy) => <option key={policy.id} value={policy.id}>{policy.name} · v{policy.version}</option>)}</select></label></form>
 

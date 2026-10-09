@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { CalendarDays, RefreshCw } from "lucide-react";
 import { ErrorModal } from "@/components/ui/error-modal";
+import CompetitionHero from "@/components/competition/competition-hero";
 
 type Tournament = {
   id: string;
@@ -43,16 +44,7 @@ export default function CompetitionTournamentsPage() {
 
   return (
     <main className="mx-auto max-w-7xl space-y-6 px-2 py-6 sm:px-8 sm:py-8 lg:px-12">
-      <header className="flex items-end justify-between gap-3 border border-border bg-surface p-6 sm:p-8">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[.16em] text-brand">Competition administration</p>
-          <h1 className="competition-heading-light mt-2 text-3xl font-semibold text-foreground">Tournaments</h1>
-          <p className="mt-2 text-sm text-muted">School registrations, rounds, matches, and qualification operations.</p>
-        </div>
-        <button type="button" onClick={() => void load()} disabled={loading} className="inline-flex h-10 items-center gap-2 border border-border px-3 text-sm font-semibold text-brand hover:bg-brand-light disabled:opacity-50">
-          <RefreshCw className="h-4 w-4" /> Refresh
-        </button>
-      </header>
+      <CompetitionHero compact eyebrow="Competition administration · Events" title="Tournaments" description="School registrations, rounds, matches, and qualification operations."><button type="button" onClick={() => void load()} disabled={loading} className="inline-flex h-10 items-center gap-2 border border-white/60 bg-white/10 px-4 text-sm font-semibold text-white hover:bg-white/20 disabled:opacity-50"><RefreshCw className="h-4 w-4" /> Refresh</button></CompetitionHero>
 
       <section className="border border-border bg-surface">
         <div className="grid grid-cols-[1.4fr_.8fr_.7fr_.7fr] gap-3 border-b border-border bg-background px-4 py-3 text-xs font-bold uppercase tracking-wide text-muted">

@@ -15,8 +15,15 @@ const nav = [
   { href: "/parent/invoices", label: "Invoices", icon: "FileText" },
   { href: "/parent/payments", label: "Payments", icon: "CreditCard" },
   { href: "/parent/publications", label: "Publications", icon: "BookOpen" },
-  { href: "/parent/competition", label: "Competition", icon: "Award" },
-  { href: "/competition", label: "Student Challenges", icon: "Award", section: "Competition" },
+  {
+    href: "/parent/competition",
+    label: "Competition",
+    icon: "Award",
+    children: [
+      { href: "/parent/competition", label: "Achievements", icon: "Sparkles" },
+      { href: "/competition", label: "Student Challenges", icon: "Award" },
+    ],
+  },
   { href: "/parent/school", label: "School Info", icon: "Globe" },
 ];
 
