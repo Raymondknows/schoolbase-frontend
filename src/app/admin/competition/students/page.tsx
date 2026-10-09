@@ -14,6 +14,7 @@ export default function CompetitionStudentAccountsPage() {
   const [links, setLinks] = useState<LinkRow[]>([]);
   const [pupilId, setPupilId] = useState("");
   const [guardianId, setGuardianId] = useState("");
+  const [pendingRevokeLinkId, setPendingRevokeLinkId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [feedbackModal, setFeedbackModal] = useState<{
@@ -79,7 +80,11 @@ export default function CompetitionStudentAccountsPage() {
   }
 
   async function revokeLink(linkId: string) {
-    if (!window.confirm("Revoke this saved guardian-to-student Competition link? This does not change the guardian's SchoolBase parent portal access.")) return;
+    setFeedbackModal(null);
+    setPendingRevokeLinkId(linkId);
+  }
+
+  async function confirmRevokeLink(linkId: string) {
     setBusy(true);
     setFeedbackModal(null);
     try {
@@ -90,7 +95,10 @@ export default function CompetitionStudentAccountsPage() {
         : { type: "success", title: "Competition link revoked", message: "The saved guardian-to-student Competition link has been revoked. The SchoolBase parent portal relationship is unchanged." });
     } catch (revokeError) {
       setFeedbackModal({ type: "error", title: "Guardian link could not be revoked", message: revokeError instanceof Error ? revokeError.message : "Unable to revoke guardian link." });
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+      setPendingRevokeLinkId(null);
+    }
   }
 
   const availablePupils = pupils.filter((pupil) => !pupil.competitionAccount);
@@ -104,6 +112,20 @@ export default function CompetitionStudentAccountsPage() {
       <section className="space-y-4 border border-border bg-surface p-5"><div><h2 className="font-semibold text-foreground">Connect a student’s guardian to Competition</h2><p className="mt-1 text-xs leading-5 text-muted">Choose a student, then choose one of the guardians already connected to that student in SchoolBase. This records the relationship; parent sign-in to Competition remains a separate pending step.</p></div><div className="grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end"><label className="text-xs font-semibold text-muted">Active student<select value={pupilId} onChange={(event) => { const nextPupilId = event.target.value; const nextPupil = pupils.find((pupil) => pupil.id === nextPupilId); setPupilId(nextPupilId); setGuardianId(nextPupil?.guardians?.[0]?.guardian?.id || ""); }} className="mt-1 h-10 w-full border border-border bg-background px-3 text-sm text-foreground"><option value="">Choose student</option>{availablePupils.map((pupil) => <option key={pupil.id} value={pupil.id}>{pupil.firstName} {pupil.lastName} · {pupil.admissionNo || "No admission no."} · {pupil.class?.name || "Unassigned"}</option>)}</select></label><label className="text-xs font-semibold text-muted">Guardian already linked to this student<select value={guardianId} onChange={(event) => setGuardianId(event.target.value)} disabled={!selectedPupil || availableGuardians.length === 0} className="mt-1 h-10 w-full border border-border bg-background px-3 text-sm text-foreground disabled:opacity-60"><option value="">{selectedPupil ? "Choose linked guardian" : "Choose a student first"}</option>{availableGuardians.map(({ relation, guardian }) => guardian ? <option key={guardian.id} value={guardian.id}>{guardian.firstName} {guardian.lastName} · {relation || "Guardian"}{guardian.phone ? ` · ${guardian.phone}` : ""}</option> : null)}</select></label><button type="button" onClick={() => void createLink()} disabled={busy || loading || !pupilId || !guardianId} className="inline-flex h-10 items-center justify-center gap-2 bg-brand px-4 text-sm font-semibold text-white hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"><Link2 className="h-4 w-4" /> Connect guardian</button></div>{selectedPupil && availableGuardians.length === 0 ? <p className="text-sm text-amber-800">This student has no guardian relationship in SchoolBase yet. Add the guardian to the student record first.</p> : null}<p className="text-xs text-muted">Available: {availablePupils.length} students with {pupils.filter((pupil) => !pupil.competitionAccount && pupil.guardians?.some((link) => link.guardian)).length} existing guardian relationships</p></section>
 
       <section className="border border-border bg-surface"><div className="flex items-center justify-between border-b border-border px-5 py-4"><div><h2 className="font-semibold text-foreground">Linked Competition identities</h2><p className="mt-1 text-xs text-muted">These records link SchoolBase guardians to pupils; guardian sign-in to Competition is still pending.</p></div><span className="text-sm tabular-nums text-muted">{links.length} links</span></div><div className="divide-y divide-border">{links.map((link) => <article key={link.id} className="flex flex-col justify-between gap-3 px-5 py-4 sm:flex-row sm:items-center"><div><p className="font-semibold text-foreground">{link.pupil.firstName} {link.pupil.lastName} <span className="font-normal text-muted">↔</span> {link.guardian ? `${link.guardian.firstName} ${link.guardian.lastName}` : link.user?.name || "Legacy user link"}</p><p className="mt-1 text-xs text-muted">{link.pupil.admissionNo || "No admission number"} · {link.pupil.class?.name || "Unassigned"} · Linked {new Date(link.linkedAt).toLocaleDateString()}</p></div><div className="flex items-center gap-3"><span className={`border px-2 py-1 text-xs font-semibold ${link.status === "ACTIVE" ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-border bg-background text-muted"}`}>{link.status}</span>{link.status === "ACTIVE" ? <button type="button" disabled={busy} onClick={() => void revokeLink(link.id)} className="inline-flex h-9 items-center gap-2 border border-border px-3 text-xs font-semibold text-rose-700 hover:bg-rose-50 disabled:opacity-50"><Unlink className="h-3.5 w-3.5" /> Revoke</button> : null}</div></article>)}{!loading && links.length === 0 ? <div className="p-10 text-center text-sm text-muted">No guardian-linked pupil accounts have been created yet.</div> : null}</div></section>
+      <ErrorModal
+        isOpen={Boolean(pendingRevokeLinkId)}
+        onClose={() => setPendingRevokeLinkId(null)}
+        title="Revoke Competition link?"
+        message="Revoke this saved guardian-to-student Competition link? This does not change the guardian's SchoolBase parent portal access."
+        type="error"
+        confirmLabel="Revoke link"
+        confirmDisabled={busy}
+        onConfirm={async () => {
+          if (pendingRevokeLinkId) await confirmRevokeLink(pendingRevokeLinkId);
+          return false;
+        }}
+        action={{ label: "Keep link", onClick: () => setPendingRevokeLinkId(null) }}
+      />
       <ErrorModal isOpen={Boolean(feedbackModal)} onClose={() => setFeedbackModal(null)} title={feedbackModal?.title} message={feedbackModal?.message || ""} details={feedbackModal?.details} type={feedbackModal?.type || "error"} confirmLabel={feedbackModal?.type === "success" ? "Done" : "Okay"} />
     </main>
   );
