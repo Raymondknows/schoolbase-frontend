@@ -123,6 +123,15 @@ export default function CompetitionFoundationPage() {
     { label: "Sponsors", href: "/schoolbase-admin/competition/sponsors", icon: Sparkles, enabled: features["competition.sponsors.enabled"] },
   ];
 
+  const pilotChecklist = [
+    { label: "Competition master switch is off", complete: !features["competition.enabled"] },
+    { label: "Daily challenges are off until pilot checks pass", complete: !features["competition.dailyChallenge.enabled"] },
+    { label: "School, teacher, guardian, and multi-child flows have been end-to-end tested", complete: false },
+    { label: "School consent, recovery, and support procedures are approved", complete: false },
+    { label: "Production migrations and recovery plan are verified", complete: false },
+  ];
+  const pilotInvitation = "SchoolBase is inviting a small group of schools to help pilot Competition, our school-linked academic challenge experience. Students can practise through timed challenges, with access connected to their existing SchoolBase guardian relationship. The pilot is limited while we validate the experience with schools. Participation is optional. Contact your SchoolBase representative to register interest.";
+
   return (
     <main className="mx-auto max-w-7xl space-y-6 px-2 py-6 sm:px-8 sm:py-8 lg:px-12">
       <header className="relative overflow-hidden border border-border bg-surface px-6 pb-8 pt-8 sm:px-8 sm:pb-10 sm:pt-10">
@@ -218,6 +227,35 @@ export default function CompetitionFoundationPage() {
               </Link>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="grid gap-5 border-t border-border pt-6 lg:grid-cols-[.9fr_1.1fr]">
+        <div className="space-y-3">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">Pilot readiness</h2>
+            <p className="mt-1 text-sm leading-6 text-muted">Keep production features disabled until every release gate is verified.</p>
+          </div>
+          <div className="divide-y divide-border border-y border-border">
+            {pilotChecklist.map((item) => (
+              <div key={item.label} className="flex items-center gap-3 py-3">
+                <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${item.complete ? "bg-emerald-600" : "bg-amber-500"}`} aria-hidden="true" />
+                <span className="text-sm text-foreground">{item.label}</span>
+                <span className="ml-auto text-xs font-semibold text-muted">{item.complete ? "Ready" : "Pending"}</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs leading-5 text-muted">The first pilot should be a small, invited group. Do not describe tournaments or championships as available until those workflows have been rehearsed and approved.</p>
+        </div>
+        <div className="space-y-3">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">School pilot invitation</h2>
+            <p className="mt-1 text-sm leading-6 text-muted">Copy for direct outreach. Update the contact route before sending.</p>
+          </div>
+          <textarea readOnly value={pilotInvitation} rows={6} aria-label="School pilot invitation copy" className="w-full resize-y border border-border bg-background p-3 text-sm leading-6 text-foreground" />
+          <button type="button" onClick={() => { void navigator.clipboard.writeText(pilotInvitation); }} className="inline-flex h-10 items-center gap-2 border border-brand px-4 text-sm font-semibold text-brand hover:bg-brand-light">
+            Copy invitation
+          </button>
         </div>
       </section>
 
