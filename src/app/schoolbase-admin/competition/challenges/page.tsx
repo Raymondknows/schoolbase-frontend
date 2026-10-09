@@ -1,7 +1,8 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { CircleAlert, Play, Plus, RefreshCw } from "lucide-react";
+import { Play, Plus, RefreshCw } from "lucide-react";
+import { ErrorModal } from "@/components/ui/error-modal";
 
 type Category = { id: string; name: string };
 type QuestionSet = { id: string; name: string; status: string; _count?: { questions: number } };
@@ -23,8 +24,12 @@ export default function CompetitionChallengesPage() {
   const [minutes, setMinutes] = useState(10);
   const [attemptLimit, setAttemptLimit] = useState(1);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+  const [feedbackModal, setFeedbackModal] = useState<{
+    type: "success" | "error";
+    title: string;
+    message: string;
+    details?: string;
+  } | null>(null);
 
   async function request(path: string, init?: RequestInit) {
     const response = await fetch(`/schoolbase-admin/api/competition${path}`, { credentials: "include", ...init, headers: { "Content-Type": "application/json", ...(init?.headers || {}) } });
@@ -33,8 +38,7 @@ export default function CompetitionChallengesPage() {
     return data;
   }
 
-  async function load() {
-    setError("");
+  async function load(): Promise<string | null> {
     try {
       const [categoryData, setData, policyData, challengeData] = await Promise.all([
         request("/admin/categories"),
@@ -49,8 +53,11 @@ export default function CompetitionChallengesPage() {
       if (!categoryId && categoryData.categories?.[0]) setCategoryId(categoryData.categories[0].id);
       if (!questionSetId && setData.questionSets?.[0]) setQuestionSetId(setData.questionSets[0].id);
       if (!scoringPolicyId && policyData.policies?.[0]) setScoringPolicyId(policyData.policies[0].id);
+      return null;
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Unable to load challenge configuration.");
+      const message = loadError instanceof Error ? loadError.message : "Unable to load challenge configuration.";
+      setFeedbackModal({ type: "error", title: "Challenge configuration could not be loaded", message });
+      return message;
     }
   }
 
@@ -60,48 +67,51 @@ export default function CompetitionChallengesPage() {
   async function createPolicy(event: FormEvent) {
     event.preventDefault();
     setBusy(true);
-    setError("");
+    setFeedbackModal(null);
     try {
       const data = await request("/admin/scoring-policies", { method: "POST", body: JSON.stringify({ name: policyName, version: 1, policy: { basePoints: 100, difficultyMultipliers: { EASY: 1, MEDIUM: 1.25, HARD: 1.5, EXPERT: 2 }, speedBonusEnabled: false, streakBonusEnabled: false } }) });
       setScoringPolicyId(data.scoringPolicy.id);
-      setMessage("Scoring policy created. Used policy versions are immutable.");
-      await load();
+      const refreshError = await load();
+      setFeedbackModal(refreshError
+        ? { type: "error", title: "Policy created; refresh failed", message: "The scoring policy was created, but the configuration could not be refreshed.", details: refreshError }
+        : { type: "success", title: "Scoring policy created", message: "The policy was created. Versions already used by attempts remain immutable." });
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Could not create scoring policy.");
+      setFeedbackModal({ type: "error", title: "Scoring policy could not be created", message: saveError instanceof Error ? saveError.message : "Could not create scoring policy." });
     } finally { setBusy(false); }
   }
 
   async function createChallenge(event: FormEvent) {
     event.preventDefault();
     setBusy(true);
-    setError("");
-    setMessage("");
+    setFeedbackModal(null);
     try {
       await request("/admin/challenges", { method: "POST", body: JSON.stringify({ title: name, categoryId, questionSetId, scoringPolicyId, gradeLabel, questionCount, durationSeconds: minutes * 60, attemptLimit, difficultyMix: { EASY: 5, MEDIUM: 3, HARD: 2 } }) });
-      setMessage("Challenge saved as draft. Activate it only after the question set has enough approved questions and pilot checks are complete.");
-      await load();
+      const refreshError = await load();
+      setFeedbackModal(refreshError
+        ? { type: "error", title: "Challenge saved; refresh failed", message: "The challenge draft was saved, but the schedule could not be refreshed.", details: refreshError }
+        : { type: "success", title: "Challenge saved as draft", message: "Activate it only after its question set has enough approved questions and pilot checks are complete." });
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Could not create challenge.");
+      setFeedbackModal({ type: "error", title: "Challenge could not be created", message: saveError instanceof Error ? saveError.message : "Could not create challenge." });
     } finally { setBusy(false); }
   }
 
   async function setChallengeStatus(challengeId: string, status: "ACTIVE" | "PAUSED") {
     setBusy(true);
-    setError("");
+    setFeedbackModal(null);
     try {
       await request(`/admin/challenges/${challengeId}/status`, { method: "PATCH", body: JSON.stringify({ status }) });
-      await load();
+      const refreshError = await load();
+      setFeedbackModal(refreshError
+        ? { type: "error", title: "Challenge updated; refresh failed", message: "The challenge status was updated, but the schedule could not be refreshed.", details: refreshError }
+        : { type: "success", title: `Challenge ${status === "ACTIVE" ? "activated" : "paused"}`, message: `The challenge is now ${status.toLowerCase()}.` });
     } catch (statusError) {
-      setError(statusError instanceof Error ? statusError.message : "Could not update challenge.");
+      setFeedbackModal({ type: "error", title: "Challenge status could not be updated", message: statusError instanceof Error ? statusError.message : "Could not update challenge." });
     } finally { setBusy(false); }
   }
 
   return (
     <main className="mx-auto max-w-7xl space-y-6 px-2 py-6 sm:px-8 sm:py-8 lg:px-12">
-      <header className="flex flex-col justify-between gap-4 border border-border bg-surface p-6 sm:flex-row sm:items-end sm:p-8"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-brand">Competition administration</p><h1 className="mt-2 text-3xl font-semibold text-foreground">Challenges & scoring</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Configure versioned scoring and challenge definitions. New challenges start in draft; activation checks approved question coverage.</p></div><button type="button" onClick={() => void load()} disabled={busy} className="inline-flex h-10 items-center gap-2 border border-border px-3 text-sm font-semibold text-brand hover:bg-brand-light disabled:opacity-50"><RefreshCw className="h-4 w-4" /> Refresh</button></header>
-      {error ? <div className="flex items-start gap-2 border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800" role="alert"><CircleAlert className="mt-0.5 h-4 w-4" />{error}</div> : null}
-      {message ? <div className="border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800" role="status">{message}</div> : null}
-
+      <header className="flex flex-col justify-between gap-4 border border-border bg-surface p-6 sm:flex-row sm:items-end sm:p-8"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-brand">Competition administration</p><h1 className="competition-heading-light mt-2 text-3xl font-semibold text-foreground">Challenges & scoring</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Configure versioned scoring and challenge definitions. New challenges start in draft; activation checks approved question coverage.</p></div><button type="button" onClick={() => void load()} disabled={busy} className="inline-flex h-10 items-center gap-2 border border-border px-3 text-sm font-semibold text-brand hover:bg-brand-light disabled:opacity-50"><RefreshCw className="h-4 w-4" /> Refresh</button></header>
       <section className="grid gap-5 xl:grid-cols-[.8fr_1.2fr]">
         <form onSubmit={(event) => void createPolicy(event)} className="space-y-4 border border-border bg-surface p-5"><div><h2 className="font-semibold text-foreground">Scoring policy</h2><p className="mt-1 text-xs text-muted">Stored as a versioned snapshot. Don’t edit a policy after live attempts use it.</p></div><label className="block text-xs font-semibold text-muted">Policy name<input required value={policyName} onChange={(event) => setPolicyName(event.target.value)} className="mt-1 h-10 w-full border border-border bg-background px-3 text-sm text-foreground" /></label><button disabled={busy} className="inline-flex h-10 items-center gap-2 border border-brand px-4 text-sm font-semibold text-brand hover:bg-brand-light disabled:opacity-50"><Plus className="h-4 w-4" /> Create v1 scoring policy</button><label className="block text-xs font-semibold text-muted">Selected policy<select value={scoringPolicyId} onChange={(event) => setScoringPolicyId(event.target.value)} className="mt-1 h-10 w-full border border-border bg-background px-3 text-sm text-foreground"><option value="">Choose policy</option>{policies.map((policy) => <option key={policy.id} value={policy.id}>{policy.name} · v{policy.version}</option>)}</select></label></form>
 
@@ -109,6 +119,7 @@ export default function CompetitionChallengesPage() {
       </section>
 
       <section className="border border-border bg-surface p-5"><h2 className="font-semibold text-foreground">Challenge schedule</h2><div className="mt-4 divide-y divide-border border-y border-border">{challenges.map((challenge) => <article key={challenge.id} className="flex flex-col justify-between gap-3 py-4 sm:flex-row sm:items-center"><div><div className="flex flex-wrap items-center gap-2"><p className="font-medium text-foreground">{challenge.title}</p><span className="border border-border bg-background px-2 py-0.5 text-[11px] font-bold uppercase text-muted">{challenge.status}</span></div><p className="mt-1 text-xs text-muted">{challenge.category.name} · {challenge.questionCount} questions · {Math.ceil(challenge.durationSeconds / 60)} min · {challenge._count.attempts} attempts</p></div><div className="flex gap-2">{challenge.status === "ACTIVE" ? <button type="button" disabled={busy} onClick={() => void setChallengeStatus(challenge.id, "PAUSED")} className="h-9 border border-border px-3 text-xs font-semibold text-muted disabled:opacity-50">Pause</button> : challenge.status !== "ARCHIVED" && challenge.status !== "COMPLETED" ? <button type="button" disabled={busy} onClick={() => void setChallengeStatus(challenge.id, "ACTIVE")} className="inline-flex h-9 items-center gap-1 border border-brand px-3 text-xs font-semibold text-brand hover:bg-brand-light disabled:opacity-50"><Play className="h-3.5 w-3.5" /> Activate</button> : null}</div></article>)}</div></section>
+      <ErrorModal isOpen={Boolean(feedbackModal)} onClose={() => setFeedbackModal(null)} title={feedbackModal?.title} message={feedbackModal?.message || ""} details={feedbackModal?.details} type={feedbackModal?.type || "error"} confirmLabel={feedbackModal?.type === "success" ? "Done" : "Okay"} />
     </main>
   );
 }

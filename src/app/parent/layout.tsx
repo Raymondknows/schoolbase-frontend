@@ -16,6 +16,7 @@ const nav = [
   { href: "/parent/payments", label: "Payments", icon: "CreditCard" },
   { href: "/parent/publications", label: "Publications", icon: "BookOpen" },
   { href: "/parent/competition", label: "Competition", icon: "Award" },
+  { href: "/competition", label: "Student Challenges", icon: "Award", section: "Competition" },
   { href: "/parent/school", label: "School Info", icon: "Globe" },
 ];
 

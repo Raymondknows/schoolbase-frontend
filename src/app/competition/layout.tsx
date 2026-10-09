@@ -1,22 +1,28 @@
 import { redirect } from "next/navigation";
 import SharedLayout from "@/components/shared-layout";
-import { getStaffSession } from "@/lib/auth";
+import { getParentSession, getStaffSession } from "@/lib/auth";
 
-const studentNav = [
-  { href: "/competition", label: "My Competition", icon: "Award", section: "Student Workspace" },
+const competitionNav = [
+  { href: "/competition", label: "My Competition", icon: "Award", section: "Parent-linked Competition" },
 ];
 
 export default async function CompetitionLayout({ children }: { children: React.ReactNode }) {
-  const session = await getStaffSession();
-  if (!session || session.role !== "STUDENT") redirect("/login");
+  const staffSession = await getStaffSession();
+  const parentSession = staffSession?.userId ? null : await getParentSession();
+  const session = staffSession?.userId && ["STUDENT", "PARENT"].includes(staffSession.role)
+    ? staffSession
+    : parentSession?.guardianId
+      ? { userId: parentSession.guardianId, email: parentSession.email || "", name: parentSession.name || "Parent", role: "PARENT" as const }
+      : null;
+  if (!session) redirect(parentSession ? "/parent/login" : "/login");
 
   return (
     <SharedLayout
-      navItems={studentNav}
-      school={{ name: "Student Competition", city: "SchoolBase", country: "" }}
+      navItems={competitionNav}
+      school={{ name: "SchoolBase Competition", city: "SchoolBase", country: "" }}
       session={session}
       logoHref="/competition"
-      logoutRedirectUrl="/login"
+      logoutRedirectUrl={session.role === "PARENT" ? "/parent/login" : "/login"}
     >
       {children}
     </SharedLayout>

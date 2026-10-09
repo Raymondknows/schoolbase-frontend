@@ -1,7 +1,8 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { Check, CircleAlert, Plus, RefreshCw } from "lucide-react";
+import { Check, Plus, RefreshCw } from "lucide-react";
+import { ErrorModal } from "@/components/ui/error-modal";
 
 type Category = { id: string; code: string; name: string };
 type QuestionSet = { id: string; name: string; gradeLabel: string | null; topic: string | null; status: string; _count?: { questions: number } };
@@ -22,8 +23,12 @@ export default function CompetitionQuestionsPage() {
   const [options, setOptions] = useState(["", "", "", ""]);
   const [correctOption, setCorrectOption] = useState(0);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const [feedbackModal, setFeedbackModal] = useState<{
+    type: "success" | "error";
+    title: string;
+    message: string;
+    details?: string;
+  } | null>(null);
 
   async function request(path: string, init?: RequestInit) {
     const response = await fetch(`/schoolbase-admin/api/competition${path}`, { credentials: "include", ...init, headers: { "Content-Type": "application/json", ...(init?.headers || {}) } });
@@ -32,8 +37,7 @@ export default function CompetitionQuestionsPage() {
     return data;
   }
 
-  async function load() {
-    setError("");
+  async function load(): Promise<string | null> {
     try {
       const [categoryData, setData, questionData] = await Promise.all([
         request("/admin/categories"),
@@ -45,8 +49,11 @@ export default function CompetitionQuestionsPage() {
       setSets(setData.questionSets || []);
       setQuestions(questionData.questions || []);
       if (!selectedSet && setData.questionSets?.[0]) setSelectedSet(setData.questionSets[0].id);
+      return null;
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Unable to load question bank.");
+      const message = loadError instanceof Error ? loadError.message : "Unable to load question bank.";
+      setFeedbackModal({ type: "error", title: "Question bank could not be loaded", message });
+      return message;
     }
   }
 
@@ -56,15 +63,21 @@ export default function CompetitionQuestionsPage() {
   async function submit(event: FormEvent, path: string, body: unknown, reset: () => void) {
     event.preventDefault();
     setBusy(true);
-    setError("");
-    setNotice("");
+    setFeedbackModal(null);
     try {
       await request(path, { method: "POST", body: JSON.stringify(body) });
       reset();
-      setNotice("Saved. New questions remain in draft until reviewed and approved.");
-      await load();
+      const refreshError = await load();
+      const success = path === "/admin/categories"
+        ? { title: "Category created", message: "The Competition category has been created." }
+        : path === "/admin/question-sets"
+          ? { title: "Question set created", message: "The question set was saved as a draft." }
+          : { title: "Question saved as draft", message: "The question is saved as a draft and must be reviewed and approved before a challenge can use it." };
+      setFeedbackModal(refreshError
+        ? { type: "error", title: "Saved, but question bank refresh failed", message: "Your change was saved, but the updated question bank could not be loaded.", details: refreshError }
+        : { type: "success", ...success });
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Unable to save.");
+      setFeedbackModal({ type: "error", title: "Competition item could not be saved", message: submitError instanceof Error ? submitError.message : "Unable to save." });
     } finally {
       setBusy(false);
     }
@@ -72,24 +85,25 @@ export default function CompetitionQuestionsPage() {
 
   async function review(questionId: string, action: "APPROVE" | "REJECT" | "REQUEST_CHANGES") {
     setBusy(true);
-    setError("");
+    setFeedbackModal(null);
     try {
       await request(`/admin/questions/${questionId}/review`, { method: "POST", body: JSON.stringify({ action }) });
-      await load();
+      const refreshError = await load();
+      const actionText = action === "APPROVE" ? "approved" : action === "REJECT" ? "rejected" : "sent back for changes";
+      setFeedbackModal(refreshError
+        ? { type: "error", title: `Question ${actionText}; refresh failed`, message: `The question was ${actionText}, but the review queue could not be refreshed.`, details: refreshError }
+        : { type: "success", title: `Question ${actionText}`, message: `The question has been ${actionText}.` });
     } catch (reviewError) {
-      setError(reviewError instanceof Error ? reviewError.message : "Review action failed.");
+      setFeedbackModal({ type: "error", title: "Question review failed", message: reviewError instanceof Error ? reviewError.message : "Review action failed." });
     } finally { setBusy(false); }
   }
 
   return (
     <main className="mx-auto max-w-7xl space-y-6 px-2 py-6 sm:px-8 sm:py-8 lg:px-12">
       <header className="flex flex-col justify-between gap-4 border border-border bg-surface p-6 sm:flex-row sm:items-end sm:p-8">
-        <div><p className="text-xs font-bold uppercase tracking-[.16em] text-brand">Competition administration</p><h1 className="mt-2 text-3xl font-semibold text-foreground">Question bank</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Create versioned content, review answer keys, and approve questions before any challenge can use them.</p></div>
+        <div><p className="text-xs font-bold uppercase tracking-[.16em] text-brand">Competition administration</p><h1 className="competition-heading-light mt-2 text-3xl font-semibold text-foreground">Question bank</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Create versioned content, review answer keys, and approve questions before any challenge can use them.</p></div>
         <button type="button" onClick={() => void load()} disabled={busy} className="inline-flex h-10 items-center gap-2 border border-border px-3 text-sm font-semibold text-brand hover:bg-brand-light disabled:opacity-50"><RefreshCw className="h-4 w-4" /> Refresh</button>
       </header>
-      {error ? <div role="alert" className="flex items-start gap-2 border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800"><CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />{error}</div> : null}
-      {notice ? <div role="status" className="border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{notice}</div> : null}
-
       <section className="grid gap-5 xl:grid-cols-2">
         <form onSubmit={(event) => void submit(event, "/admin/categories", { code: categoryCode, name: categoryName }, () => { setCategoryCode(""); setCategoryName(""); })} className="space-y-4 border border-border bg-surface p-5">
           <div><h2 className="font-semibold text-foreground">Create category</h2><p className="mt-1 text-xs text-muted">Use existing school subjects where they fit; category codes must be unique.</p></div>
@@ -117,6 +131,7 @@ export default function CompetitionQuestionsPage() {
       </section>
 
       <section className="border border-border bg-surface p-5"><div><h2 className="font-semibold text-foreground">Review queue</h2><p className="mt-1 text-xs text-muted">Questions in draft can’t appear in live challenges.</p></div><div className="mt-4 divide-y divide-border border-y border-border">{questions.map((question) => <article key={question.id} className="grid gap-3 py-4 lg:grid-cols-[1fr_auto] lg:items-start"><div><div className="flex flex-wrap items-center gap-2"><span className="border border-border bg-background px-2 py-1 text-[11px] font-bold uppercase text-muted">{question.status}</span><span className="text-xs text-muted">{question.questionSet.name} · {question.difficulty}</span></div><p className="mt-2 text-sm font-medium text-foreground">{question.prompt}</p><ul className="mt-2 grid gap-1 sm:grid-cols-2">{question.options.map((option) => <li key={option.id} className={`border px-2 py-1 text-xs ${option.isCorrect ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-border text-muted"}`}>{option.content}{option.isCorrect ? " · Answer key" : ""}</li>)}</ul></div>{question.status !== "APPROVED" ? <div className="flex gap-2"><button type="button" disabled={busy} onClick={() => void review(question.id, "APPROVE")} className="inline-flex h-9 items-center gap-1 border border-emerald-300 px-3 text-xs font-semibold text-emerald-800 hover:bg-emerald-50 disabled:opacity-50"><Check className="h-3.5 w-3.5" /> Approve</button><button type="button" disabled={busy} onClick={() => void review(question.id, "REJECT")} className="h-9 border border-border px-3 text-xs font-semibold text-muted hover:bg-background disabled:opacity-50">Reject</button></div> : null}</article>)}</div></section>
+      <ErrorModal isOpen={Boolean(feedbackModal)} onClose={() => setFeedbackModal(null)} title={feedbackModal?.title} message={feedbackModal?.message || ""} details={feedbackModal?.details} type={feedbackModal?.type || "error"} confirmLabel={feedbackModal?.type === "success" ? "Done" : "Okay"} />
     </main>
   );
 }

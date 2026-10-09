@@ -22,7 +22,7 @@ const nav = [
   { href: "/schoolbase-admin/subscriptions", label: "Subscriptions", icon: "CreditCard" },
   {
     href: "/schoolbase-admin/competition",
-    label: "Competition (Preview)",
+    label: "Competition",
     icon: "Award",
     children: [
       { href: "/schoolbase-admin/competition/questions", label: "Competition Questions", icon: "BookOpen" },

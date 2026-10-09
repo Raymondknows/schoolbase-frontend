@@ -38,6 +38,34 @@ body {
   font-family: var(--font-inter), system-ui, sans-serif;
 }
 
+@keyframes competition-heading-light-sweep {
+  from { transform: translateX(-140%); }
+  to { transform: translateX(360%); }
+}
+
+.competition-heading-light {
+  position: relative;
+  display: inline-block;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.competition-heading-light::after {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 34%;
+  content: "";
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgb(10 102 194 / 18%), transparent);
+  animation: competition-heading-light-sweep 3.2s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .competition-heading-light::after {
+    animation: none;
+  }
+}
+
 /* Keep the legacy Solutions family on the same surface and visual rhythm as the public product center. */
 .solutions-public-surface {
   background: var(--background);
