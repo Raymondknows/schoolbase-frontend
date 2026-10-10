@@ -4,21 +4,27 @@ import { buildApiUrl } from '@/lib/api-client';
 const SESSION_COOKIE_NAME = 'schoolbase_session';
 const LEGACY_SESSION_COOKIE_NAMES = ['schoolbase_staff', 'schoolbase_parent'];
 
-function serializeSessionCookie(name: string, value: string, includeDomain: boolean, maxAge: number) {
+function getSessionCookieOptions() {
   const isProduction = process.env.NODE_ENV === 'production';
-  const attributes = [
-    `${name}=${encodeURIComponent(value)}`,
+  return {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' as const : 'lax' as const,
+    path: '/',
+    ...(isProduction ? { domain: '.schoolbase.live' } : {}),
+  };
+}
+
+function expireHostCookie(name: string, isProduction: boolean) {
+  return [
+    `${name}=`,
     'Path=/',
-    `Max-Age=${maxAge}`,
+    'Max-Age=0',
+    'Expires=Thu, 01 Jan 1970 00:00:00 GMT',
     'HttpOnly',
     `SameSite=${isProduction ? 'None' : 'Lax'}`,
-  ];
-
-  if (isProduction) attributes.push('Secure');
-  if (isProduction && includeDomain) attributes.push('Domain=.schoolbase.live');
-  if (maxAge === 0) attributes.push('Expires=Thu, 01 Jan 1970 00:00:00 GMT');
-
-  return attributes.join('; ');
+    ...(isProduction ? ['Secure'] : []),
+  ].join('; ');
 }
 
 export async function POST(request: Request) {
@@ -44,13 +50,12 @@ export async function POST(request: Request) {
 
     if (response.ok && data?.token) {
       for (const cookieName of [SESSION_COOKIE_NAME, ...LEGACY_SESSION_COOKIE_NAMES]) {
-        json.headers.append('Set-Cookie', serializeSessionCookie(cookieName, '', false, 0));
-        json.headers.append('Set-Cookie', serializeSessionCookie(cookieName, '', true, 0));
+        json.headers.append('Set-Cookie', expireHostCookie(cookieName, process.env.NODE_ENV === 'production'));
       }
-      json.headers.append(
-        'Set-Cookie',
-        serializeSessionCookie(SESSION_COOKIE_NAME, data.token, true, 7 * 24 * 60 * 60),
-      );
+      json.cookies.set(SESSION_COOKIE_NAME, data.token, {
+        ...getSessionCookieOptions(),
+        maxAge: 7 * 24 * 60 * 60,
+      });
     }
 
     return json;
