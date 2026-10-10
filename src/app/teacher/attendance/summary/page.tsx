@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Calendar, Download, ChevronLeft, ChevronRight, AlertCircle, Loader2, BarChart2, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { Calendar, Download, ChevronLeft, ChevronRight, AlertCircle, BarChart2, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { getBackendUrl } from '@/lib/backend-url';
 import AdminSkeleton from '@/components/ui/skeleton';
+import TeacherPageHeader from '@/components/teacher-page-header';
 
 interface AttendanceData {
   date: string;
@@ -214,255 +215,147 @@ export default function AttendanceSummaryPage() {
     return <AdminSkeleton />;
   }
 
+  const statCards = [
+    { label: 'Present', value: stats.present, detail: `${stats.total > 0 ? ((stats.present / stats.total) * 100).toFixed(0) : 0}% attendance`, icon: CheckCircle2, tone: 'text-emerald-700', bg: 'bg-emerald-50' },
+    { label: 'Absent', value: stats.absent, detail: `${stats.total > 0 ? ((stats.absent / stats.total) * 100).toFixed(0) : 0}% rate`, icon: XCircle, tone: 'text-red-700', bg: 'bg-red-50' },
+    { label: 'Late', value: stats.late, detail: `${stats.total > 0 ? ((stats.late / stats.total) * 100).toFixed(0) : 0}% rate`, icon: Clock, tone: 'text-amber-700', bg: 'bg-amber-50' },
+    { label: 'Excused', value: stats.excused, detail: 'Justified absences', icon: CheckCircle2, tone: 'text-sky-700', bg: 'bg-sky-50' },
+    { label: 'Unmarked', value: stats.unmarked, detail: 'Not recorded', icon: BarChart2, tone: 'text-muted', bg: 'bg-background' },
+  ];
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Attendance Summary</h1>
-        <p className="mt-2 text-sm text-muted">View and analyze attendance patterns by date</p>
-      </div>
-
-      {/* Error */}
-      {error && (
-        <div className="rounded-lg border border-error bg-error/10 p-4 flex gap-3">
-          <AlertCircle className="h-5 w-5 text-error flex-shrink-0 mt-0.5" />
-          <div>
-            <h3 className="font-semibold text-error">Error</h3>
-            <p className="text-sm text-error/80">{error}</p>
-          </div>
-        </div>
-      )}
-
-      {/* Controls */}
-      <div className="grid gap-4 sm:grid-cols-4">
-        <div>
-          <label className="text-xs font-semibold text-muted uppercase tracking-wider">Class</label>
-          <select
-            className="w-full mt-2 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none"
-            value={selectedClass}
-            onChange={(e) => setSelectedClass(e.target.value)}
-          >
-            <option value="">Select a class</option>
-            {classes.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name} ({c.phase})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="text-xs font-semibold text-muted uppercase tracking-wider">Start Date</label>
-          <input
-            type="date"
-            className="w-full mt-2 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
-        </div>
-
-        <div>
-          <label className="text-xs font-semibold text-muted uppercase tracking-wider">End Date</label>
-          <input
-            type="date"
-            className="w-full mt-2 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-          />
-        </div>
-
-        <div className="flex items-end gap-2">
-          <button
-            onClick={handlePreviousWeek}
-            className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-surface transition"
-          >
-            <ChevronLeft className="h-4 w-4 mx-auto" />
-          </button>
-          <button
-            onClick={handleNextWeek}
-            className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-surface transition"
-          >
-            <ChevronRight className="h-4 w-4 mx-auto" />
-          </button>
-        </div>
-      </div>
-
-      {/* Stats */}
-      {/* Desktop Stats */}
-      <div className="hidden sm:grid grid-cols-5 gap-4">
-        <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50 flex flex-col">
-          <div className="flex items-start gap-3">
-            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-green-100 shadow-sm">
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs text-muted">Present</p>
-              <p className="mt-1 text-lg font-bold text-foreground">{stats.present}</p>
-            </div>
-          </div>
-          <p className="mt-2 text-[11px] text-muted">{stats.total > 0 ? ((stats.present / stats.total) * 100).toFixed(0) : 0}% attendance</p>
-        </div>
-
-        <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50 flex flex-col">
-          <div className="flex items-start gap-3">
-            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-red-100 shadow-sm">
-              <XCircle className="h-4 w-4 text-red-600" />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs text-muted">Absent</p>
-              <p className="mt-1 text-lg font-bold text-foreground">{stats.absent}</p>
-            </div>
-          </div>
-          <p className="mt-2 text-[11px] text-muted">{stats.total > 0 ? ((stats.absent / stats.total) * 100).toFixed(0) : 0}% rate</p>
-        </div>
-
-        <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50 flex flex-col">
-          <div className="flex items-start gap-3">
-            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-amber-100 shadow-sm">
-              <Clock className="h-4 w-4 text-amber-600" />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs text-muted">Late</p>
-              <p className="mt-1 text-lg font-bold text-foreground">{stats.late}</p>
-            </div>
-          </div>
-          <p className="mt-2 text-[11px] text-muted">{stats.total > 0 ? ((stats.late / stats.total) * 100).toFixed(0) : 0}% rate</p>
-        </div>
-
-        <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50 flex flex-col">
-          <div className="flex items-start gap-3">
-            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 shadow-sm">
-              <CheckCircle2 className="h-4 w-4 text-blue-600" />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs text-muted">Excused</p>
-              <p className="mt-1 text-lg font-bold text-foreground">{stats.excused}</p>
-            </div>
-          </div>
-          <p className="mt-2 text-[11px] text-muted">Justified absences</p>
-        </div>
-
-        <div className="group rounded-lg border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50 flex flex-col">
-          <div className="flex items-start gap-3">
-            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 shadow-sm">
-              <BarChart2 className="h-4 w-4 text-gray-600" />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs text-muted">Unmarked</p>
-              <p className="mt-1 text-lg font-bold text-foreground">{stats.unmarked}</p>
-            </div>
-          </div>
-          <p className="mt-2 text-[11px] text-muted">Not recorded</p>
-        </div>
-      </div>
-
-      {/* Mobile Stats */}
-      <div className="sm:hidden space-y-3">
-        <div className="group rounded-lg border border-border bg-surface p-5 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50 flex items-start gap-4">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-green-100 shadow-sm">
-            <CheckCircle2 className="h-5 w-5 text-green-600" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm text-muted font-medium">Present</p>
-            <p className="mt-1.5 text-xl font-bold text-foreground">{stats.present}</p>
-            <p className="mt-1 text-xs text-muted">{stats.total > 0 ? ((stats.present / stats.total) * 100).toFixed(0) : 0}% attendance</p>
-          </div>
-        </div>
-
-        <div className="group rounded-lg border border-border bg-surface p-5 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50 flex items-start gap-4">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-red-100 shadow-sm">
-            <XCircle className="h-5 w-5 text-red-600" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm text-muted font-medium">Absent</p>
-            <p className="mt-1.5 text-xl font-bold text-foreground">{stats.absent}</p>
-            <p className="mt-1 text-xs text-muted">{stats.total > 0 ? ((stats.absent / stats.total) * 100).toFixed(0) : 0}% rate</p>
-          </div>
-        </div>
-
-        <div className="group rounded-lg border border-border bg-surface p-5 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50 flex items-start gap-4">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-amber-100 shadow-sm">
-            <Clock className="h-5 w-5 text-amber-600" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm text-muted font-medium">Late</p>
-            <p className="mt-1.5 text-xl font-bold text-foreground">{stats.late}</p>
-            <p className="mt-1 text-xs text-muted">{stats.total > 0 ? ((stats.late / stats.total) * 100).toFixed(0) : 0}% rate</p>
-          </div>
-        </div>
-
-        <div className="group rounded-lg border border-border bg-surface p-5 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50 flex items-start gap-4">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 shadow-sm">
-            <CheckCircle2 className="h-5 w-5 text-blue-600" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm text-muted font-medium">Excused</p>
-            <p className="mt-1.5 text-xl font-bold text-foreground">{stats.excused}</p>
-            <p className="mt-1 text-xs text-muted">Justified absences</p>
-          </div>
-        </div>
-
-        <div className="group rounded-lg border border-border bg-surface p-5 shadow-sm transition-shadow hover:shadow-md cursor-pointer hover:border-brand/50 flex items-start gap-4">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 shadow-sm">
-            <BarChart2 className="h-5 w-5 text-gray-600" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm text-muted font-medium">Unmarked</p>
-            <p className="mt-1.5 text-xl font-bold text-foreground">{stats.unmarked}</p>
-            <p className="mt-1 text-xs text-muted">Not recorded</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Excel-like Grid */}
-      {students.length > 0 ? (
-        <>
-          {/* Export Button */}
-          <div className="flex justify-end">
-            <button
-              onClick={exportToCSV}
-              className="flex items-center gap-2 rounded-lg bg-brand text-white px-4 py-2 text-sm font-medium hover:bg-brand/90 transition"
-            >
-              <Download className="h-4 w-4" />
-              Export CSV
+    <main className="min-h-screen pb-12">
+      <div className="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-8 lg:px-12">
+        <TeacherPageHeader
+          icon={BarChart2}
+          title="Attendance summary"
+          description="Review attendance patterns for a class across a selected date range."
+          count={`${students.length} students`}
+          actionLabel="Attendance"
+          actionHref="/teacher/attendance"
+        >
+          {students.length > 0 ? (
+            <button type="button" onClick={exportToCSV} className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:border-brand hover:text-brand">
+              <Download className="h-4 w-4" /> Export CSV
             </button>
+          ) : null}
+        </TeacherPageHeader>
+
+        {error ? (
+          <div className="flex items-start gap-3 border border-red-200 bg-red-50 px-4 py-3" role="alert">
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-red-800">Unable to load attendance summary</p>
+              <p className="mt-1 text-sm text-red-700">{error}</p>
+            </div>
+          </div>
+        ) : null}
+
+        <section className="border border-border bg-surface p-4 sm:p-5">
+          <div className="mb-4 flex flex-col gap-1 border-b border-border pb-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand">Report filters</p>
+              <h2 className="mt-1 text-lg font-semibold text-foreground">Choose class and dates</h2>
+            </div>
+            <p className="text-xs text-muted">Use the arrows to move one week at a time.</p>
           </div>
 
-          {/* Table */}
-          <div className="rounded-lg border border-border overflow-hidden bg-surface">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-[1.2fr_1fr_1fr_auto] xl:items-end">
+            <label className="block text-sm font-semibold text-foreground">
+              Class
+              <select
+                className="mt-1.5 h-11 w-full border border-border bg-background px-3 text-sm font-normal text-foreground outline-none transition focus:border-brand"
+                value={selectedClass}
+                onChange={(event) => setSelectedClass(event.target.value)}
+              >
+                <option value="">Select a class</option>
+                {classes.map((teacherClass) => (
+                  <option key={teacherClass.id} value={teacherClass.id}>{teacherClass.name} ({teacherClass.phase})</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="block text-sm font-semibold text-foreground">
+              Start date
+              <input
+                type="date"
+                className="mt-1.5 h-11 w-full border border-border bg-background px-3 text-sm font-normal text-foreground outline-none transition focus:border-brand"
+                value={startDate}
+                onChange={(event) => setStartDate(event.target.value)}
+              />
+            </label>
+
+            <label className="block text-sm font-semibold text-foreground">
+              End date
+              <input
+                type="date"
+                className="mt-1.5 h-11 w-full border border-border bg-background px-3 text-sm font-normal text-foreground outline-none transition focus:border-brand"
+                value={endDate}
+                onChange={(event) => setEndDate(event.target.value)}
+              />
+            </label>
+
+            <div className="flex items-end gap-2">
+              <button type="button" onClick={handlePreviousWeek} aria-label="Previous week" title="Previous week" className="inline-flex h-11 w-11 items-center justify-center border border-border bg-background text-foreground transition hover:border-brand hover:text-brand">
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button type="button" onClick={handleNextWeek} aria-label="Next week" title="Next week" className="inline-flex h-11 w-11 items-center justify-center border border-border bg-background text-foreground transition hover:border-brand hover:text-brand">
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
+          {statCards.map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <article key={stat.label} className="border border-border bg-surface p-4">
+                <div className="flex items-start gap-3">
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center ${stat.bg}`}>
+                    <Icon className={`h-5 w-5 ${stat.tone}`} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">{stat.label}</p>
+                    <p className="mt-1 text-2xl font-semibold text-foreground">{stat.value}</p>
+                  </div>
+                </div>
+                <p className="mt-3 text-xs text-muted">{stat.detail}</p>
+              </article>
+            );
+          })}
+        </section>
+
+        <section className="overflow-hidden border border-border bg-surface">
+          <div className="flex flex-col gap-3 border-b border-border px-5 py-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[.14em] text-brand">Attendance register</p>
+              <h2 className="mt-1 text-lg font-semibold text-foreground">Student-by-day summary</h2>
+              <p className="mt-1 text-sm text-muted">
+                {dateRange.length > 0 ? `${dateRange[0].toLocaleDateString('en-GB')} – ${dateRange[dateRange.length - 1].toLocaleDateString('en-GB')}` : 'Select a date range'}
+              </p>
+            </div>
+            <span className="text-xs font-semibold text-muted">{students.length} student{students.length === 1 ? '' : 's'} · {dateRange.length} days</span>
+          </div>
+
+          {students.length > 0 ? (
             <div className="overflow-x-auto">
-              <table className="w-full text-xs">
+              <table className="w-full min-w-max text-xs">
                 <thead>
                   <tr className="border-b border-border bg-background">
-                    <th className="px-4 py-2 text-left font-semibold text-foreground sticky left-0 bg-background z-10 w-32">
-                      Student
-                    </th>
-                    <th className="px-4 py-2 text-left font-semibold text-foreground w-24">
-                      Adm. No
-                    </th>
+                    <th className="sticky left-0 z-10 w-48 bg-background px-4 py-3 text-left font-semibold text-foreground">Student</th>
+                    <th className="w-28 px-4 py-3 text-left font-semibold text-foreground">Admission no.</th>
                     {dateRange.map((date) => (
-                      <th
-                        key={date.toISOString()}
-                        className="px-2 py-2 text-center font-semibold text-foreground w-12"
-                        title={date.toLocaleDateString()}
-                      >
+                      <th key={date.toISOString()} className="w-16 px-2 py-3 text-center font-semibold text-foreground" title={date.toLocaleDateString()}>
                         {date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' })}
                       </th>
                     ))}
-                    <th className="px-4 py-2 text-center font-semibold text-foreground w-16">
-                      Summary
-                    </th>
+                    <th className="w-28 px-4 py-3 text-center font-semibold text-foreground">Summary</th>
                   </tr>
                 </thead>
                 <tbody>
                   {students.map((student) => {
-                    const studentStats = {
-                      present: 0,
-                      absent: 0,
-                      late: 0,
-                      excused: 0,
-                    };
-
+                    const studentStats = { present: 0, absent: 0, late: 0, excused: 0 };
                     dateRange.forEach((date) => {
                       const dateStr = date.toISOString().split('T')[0];
                       const status = student.attendance[dateStr]?.status;
@@ -473,43 +366,25 @@ export default function AttendanceSummaryPage() {
                     });
 
                     return (
-                      <tr key={student.id} className="border-t border-border hover:bg-background/50 transition-colors">
-                        <td className="px-4 py-2 font-medium text-foreground sticky left-0 bg-surface hover:bg-background/50 z-10 truncate">
-                          {`${student.firstName} ${student.lastName}`}
-                        </td>
-                        <td className="px-4 py-2 text-muted">{student.admissionNo || '—'}</td>
+                      <tr key={student.id} className="border-b border-border last:border-b-0 hover:bg-background/60">
+                        <td className="sticky left-0 bg-surface px-4 py-2.5 font-semibold text-foreground">{`${student.firstName} ${student.lastName}`}</td>
+                        <td className="px-4 py-2.5 text-muted">{student.admissionNo || '—'}</td>
                         {dateRange.map((date) => {
                           const dateStr = date.toISOString().split('T')[0];
                           const status = student.attendance[dateStr]?.status;
                           const config = STATUS_CONFIG[status || 'undefined'];
                           return (
                             <td key={dateStr} className="px-2 py-2 text-center">
-                              <span
-                                className={`inline-flex items-center justify-center w-8 h-8 rounded font-semibold ${config.color}`}
-                                title={config.fullLabel}
-                              >
-                                {config.label}
-                              </span>
+                              <span className={`inline-flex h-8 w-8 items-center justify-center font-semibold ${config.color}`} title={config.fullLabel}>{config.label}</span>
                             </td>
                           );
                         })}
-                        <td className="px-4 py-2 text-center text-xs">
-                          <div className="flex gap-1 justify-center flex-wrap">
-                            {studentStats.present > 0 && (
-                              <span className="px-2 py-1 rounded-full bg-green-100 text-green-700 font-semibold">
-                                {studentStats.present}P
-                              </span>
-                            )}
-                            {studentStats.absent > 0 && (
-                              <span className="px-2 py-1 rounded-full bg-red-100 text-red-700 font-semibold">
-                                {studentStats.absent}A
-                              </span>
-                            )}
-                            {studentStats.late > 0 && (
-                              <span className="px-2 py-1 rounded-full bg-amber-100 text-amber-700 font-semibold">
-                                {studentStats.late}L
-                              </span>
-                            )}
+                        <td className="px-4 py-2.5 text-center text-xs">
+                          <div className="flex flex-wrap justify-center gap-1">
+                            {studentStats.present > 0 ? <span className="bg-emerald-50 px-2 py-1 font-semibold text-emerald-800">{studentStats.present}P</span> : null}
+                            {studentStats.absent > 0 ? <span className="bg-red-50 px-2 py-1 font-semibold text-red-800">{studentStats.absent}A</span> : null}
+                            {studentStats.late > 0 ? <span className="bg-amber-50 px-2 py-1 font-semibold text-amber-800">{studentStats.late}L</span> : null}
+                            {studentStats.excused > 0 ? <span className="bg-sky-50 px-2 py-1 font-semibold text-sky-800">{studentStats.excused}E</span> : null}
                           </div>
                         </td>
                       </tr>
@@ -518,45 +393,30 @@ export default function AttendanceSummaryPage() {
                 </tbody>
               </table>
             </div>
-          </div>
-
-          {/* Legend */}
-          <div className="rounded-lg border border-border bg-surface p-4">
-            <p className="text-xs font-semibold text-muted mb-3">Legend:</p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-green-100 text-green-800 text-xs font-semibold">
-                  P
-                </span>
-                <span className="text-xs text-foreground">Present</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-red-100 text-red-800 text-xs font-semibold">
-                  A
-                </span>
-                <span className="text-xs text-foreground">Absent</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-amber-100 text-amber-800 text-xs font-semibold">
-                  L
-                </span>
-                <span className="text-xs text-foreground">Late</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-blue-100 text-blue-800 text-xs font-semibold">
-                  E
-                </span>
-                <span className="text-xs text-foreground">Excused</span>
-              </div>
+          ) : (
+            <div className="px-6 py-12 text-center">
+              <Calendar className="mx-auto h-10 w-10 text-muted/40" />
+              <p className="mt-3 text-sm font-semibold text-foreground">No attendance data available</p>
+              <p className="mt-1 text-sm text-muted">Try another class or date range.</p>
             </div>
+          )}
+
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border bg-background/50 px-5 py-3">
+            <span className="text-[11px] font-bold uppercase tracking-[.14em] text-muted">Legend</span>
+            {[
+              ['P', 'Present', 'bg-emerald-100 text-emerald-800'],
+              ['A', 'Absent', 'bg-red-100 text-red-800'],
+              ['L', 'Late', 'bg-amber-100 text-amber-800'],
+              ['E', 'Excused', 'bg-sky-100 text-sky-800'],
+              ['—', 'Not marked', 'bg-background text-muted'],
+            ].map(([label, name, color]) => (
+              <span key={name} className="inline-flex items-center gap-2 text-xs text-muted">
+                <span className={`inline-flex h-6 w-6 items-center justify-center font-semibold ${color}`}>{label}</span>{name}
+              </span>
+            ))}
           </div>
-        </>
-      ) : (
-        <div className="rounded-lg border border-border bg-surface px-6 py-12 text-center">
-          <Calendar className="h-12 w-12 text-muted/30 mx-auto mb-4" />
-          <p className="text-muted">No attendance data available for the selected period</p>
-        </div>
-      )}
-    </div>
+        </section>
+      </div>
+    </main>
   );
 }
