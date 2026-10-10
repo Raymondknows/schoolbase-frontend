@@ -49,13 +49,13 @@ export async function POST(request: Request) {
     const json = NextResponse.json(data, { status: response.status });
 
     if (response.ok && data?.token) {
-      for (const cookieName of [SESSION_COOKIE_NAME, ...LEGACY_SESSION_COOKIE_NAMES]) {
-        json.headers.append('Set-Cookie', expireHostCookie(cookieName, process.env.NODE_ENV === 'production'));
-      }
       json.cookies.set(SESSION_COOKIE_NAME, data.token, {
         ...getSessionCookieOptions(),
         maxAge: 7 * 24 * 60 * 60,
       });
+      for (const cookieName of [SESSION_COOKIE_NAME, ...LEGACY_SESSION_COOKIE_NAMES]) {
+        json.headers.append('Set-Cookie', expireHostCookie(cookieName, process.env.NODE_ENV === 'production'));
+      }
     }
 
     return json;
