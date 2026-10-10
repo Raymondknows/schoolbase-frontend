@@ -88,11 +88,13 @@ export default function AdminLayout({
   useEffect(() => {
     async function loadData() {
       try {
+        let impersonationSessionToken: string | null = null;
         if (typeof window !== 'undefined') {
           const url = new URL(window.location.href);
           const impersonationToken = url.searchParams.get('impersonate');
           if (impersonationToken) {
-            await exchangeImpersonationToken(impersonationToken);
+            const exchange = await exchangeImpersonationToken(impersonationToken);
+            impersonationSessionToken = typeof exchange.token === 'string' ? exchange.token : null;
             url.searchParams.delete('impersonate');
             window.history.replaceState({}, '', url.toString());
           }
@@ -102,7 +104,10 @@ export default function AdminLayout({
         const sessionRes = await fetch('/api/admin/verify', {
           method: 'POST',
           credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(impersonationSessionToken ? { 'x-schoolbase-session': impersonationSessionToken } : {}),
+          },
         });
         const sessionData = await sessionRes.json();
         
@@ -144,7 +149,10 @@ export default function AdminLayout({
         // Fetch school
         const schoolRes = await fetch(`/api/admin/school/${encodeURIComponent(schoolId)}`, {
           credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(impersonationSessionToken ? { 'x-schoolbase-session': impersonationSessionToken } : {}),
+          },
         });
         
         if (!schoolRes.ok) {
@@ -166,7 +174,10 @@ export default function AdminLayout({
         try {
           const setupStatusRes = await fetch(`/api/admin/school/${encodeURIComponent(schoolId)}/setup-status`, {
             credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              ...(impersonationSessionToken ? { 'x-schoolbase-session': impersonationSessionToken } : {}),
+            },
           });
           if (setupStatusRes.ok) {
             const setupStatusData = await setupStatusRes.json().catch(() => null);

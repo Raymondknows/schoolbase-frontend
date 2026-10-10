@@ -65,9 +65,9 @@ async function getBackendSession(token: string): Promise<StaffSession | null> {
   }
 }
 
-export async function getStaffSession(): Promise<StaffSession | null> {
+export async function getStaffSession(tokenOverride?: string): Promise<StaffSession | null> {
   const jar = await cookies();
-  const token = getSessionTokenFromJar(jar);
+  const token = tokenOverride || getSessionTokenFromJar(jar);
   if (!token) return null;
 
   const backendSession = await getBackendSession(token);

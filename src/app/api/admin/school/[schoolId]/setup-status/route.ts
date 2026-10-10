@@ -16,11 +16,11 @@ export async function GET(
     }
 
     const cookieStore = await cookies();
-    const sessionToken =
+    const sessionToken = request.headers.get('x-schoolbase-session') ||
       cookieStore.get(SESSION_COOKIE_NAME)?.value ||
       cookieStore.get('schoolbase_staff')?.value ||
       cookieStore.get('staff_session')?.value;
-    const session = await getStaffSession();
+    const session = await getStaffSession(sessionToken);
     if (!session || (session.role !== 'PLATFORM_ADMIN' && (!session.schoolId || session.schoolId !== schoolId))) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }

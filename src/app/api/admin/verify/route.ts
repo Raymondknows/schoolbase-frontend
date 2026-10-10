@@ -5,14 +5,17 @@ async function proxyVerify(request: NextRequest, method: string) {
   try {
     const backendUrl = buildApiUrl('/admin/verify');
     const body = method === 'GET' ? undefined : await request.text();
+    const sessionToken = request.headers.get('x-schoolbase-session');
 
     const resp = await fetch(backendUrl, {
       method,
       headers: {
         'Content-Type': 'application/json',
-        ...(request.headers.get('cookie') && {
-          cookie: request.headers.get('cookie') || '',
-        }),
+        ...(sessionToken
+          ? { cookie: `schoolbase_session=${sessionToken}` }
+          : request.headers.get('cookie')
+            ? { cookie: request.headers.get('cookie') || '' }
+            : {}),
       },
       ...(body && { body }),
     });
