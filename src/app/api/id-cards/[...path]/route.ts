@@ -40,7 +40,11 @@ async function forwardRequest(
     if (!["GET", "HEAD"].includes(request.method)) {
       const origin = request.headers.get("origin");
       const fetchSite = request.headers.get("sec-fetch-site");
-      if (origin !== request.nextUrl.origin || fetchSite === "cross-site") {
+      const forwardedProtocol = request.headers.get("x-forwarded-proto")?.split(",")[0].trim();
+      const protocol = forwardedProtocol ? `${forwardedProtocol.replace(/:$/, "")}:` : request.nextUrl.protocol;
+      const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
+      const expectedOrigin = host ? `${protocol}//${host}` : request.nextUrl.origin;
+      if (origin !== expectedOrigin || fetchSite === "cross-site") {
         return NextResponse.json({ error: "Cross-origin requests are not allowed." }, { status: 403 });
       }
     }
