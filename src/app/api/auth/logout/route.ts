@@ -21,8 +21,9 @@ export async function POST(request: Request) {
     ? requestedRedirect
     : '/login';
   const isProduction = process.env.NODE_ENV === 'production';
+  const publicOrigin = isProduction ? 'https://www.schoolbase.live' : url.origin;
 
-  const response = NextResponse.redirect(new URL(redirectUrl, request.url), {
+  const response = NextResponse.redirect(new URL(redirectUrl, publicOrigin), {
     status: 302,
   });
 
