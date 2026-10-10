@@ -6,7 +6,6 @@ import PublicShellGate from "@/components/public-shell-gate";
 import OfflineStatus from "@/components/offline-status";
 import PwaInstallPrompt from "@/components/pwa-install-prompt";
 import PublicWhatsAppContact from "@/components/public-whatsapp-contact";
-import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
   title: "SchoolBase — Everything your school needs in one simple platform",
@@ -131,7 +130,6 @@ export default function RootLayout({
         </PublicShellGate>
         <OfflineStatus />
         <PwaInstallPrompt />
-        <Analytics />
       </body>
     </html>
   );

@@ -1,5 +1,8 @@
 import { buildApiUrl } from '@/lib/api-client';
 import { getStaffSession } from '@/lib/auth';
+import { cookies } from 'next/headers';
+
+const SESSION_COOKIE_NAME = 'schoolbase_session';
 
 export async function GET(
   request: Request,
@@ -12,6 +15,11 @@ export async function GET(
       return Response.json({ error: 'School ID is required' }, { status: 400 });
     }
 
+    const cookieStore = await cookies();
+    const sessionToken =
+      cookieStore.get(SESSION_COOKIE_NAME)?.value ||
+      cookieStore.get('schoolbase_staff')?.value ||
+      cookieStore.get('staff_session')?.value;
     const session = await getStaffSession();
     if (!session || (session.role !== 'PLATFORM_ADMIN' && (!session.schoolId || session.schoolId !== schoolId))) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -24,7 +32,7 @@ export async function GET(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        cookie: request.headers.get('cookie') || '',
+        ...(sessionToken ? { cookie: `${SESSION_COOKIE_NAME}=${sessionToken}` } : {}),
       },
     });
 
