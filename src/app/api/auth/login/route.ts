@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const BACKEND_URL = getBackendUrl();
     const host = request.headers.get('host') || '';
-    const isSchoolbaseHost = host.includes('schoolbase.live') || host.includes('vercel.app');
+    const isSchoolbaseHost = host.includes('schoolbase.live');
     const isLocalHost = host.includes('localhost') || host.includes('127.0.0.1');
     const isSecureCookie = !isLocalHost;
 

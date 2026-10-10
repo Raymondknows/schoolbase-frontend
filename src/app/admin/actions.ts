@@ -4,7 +4,6 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getBackendUrl } from "@/lib/backend-url";
 
-// Server actions removed for Vercel compatibility
 // All backend operations must use API routes (e.g., POST /api/admin/...)
 // This file is kept for build compatibility but contains no functional code
 

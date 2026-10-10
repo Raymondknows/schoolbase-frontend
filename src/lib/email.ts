@@ -1,5 +1,4 @@
-// Email sending removed for Vercel compatibility
-// All email operations must use backend API routes
+// All email operations use backend API routes.
 // This file is intentionally empty to prevent nodemailer imports
 
 export function buildSignupVerificationEmail() {

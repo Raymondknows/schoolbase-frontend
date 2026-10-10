@@ -58,7 +58,6 @@ async function getCountryConfig() {
   const cookieHeader = headersList.get("cookie");
   const acceptLanguage = headersList.get("accept-language");
   const geoCountry =
-    headersList.get("x-vercel-ip-country") ||
     headersList.get("cf-ipcountry") ||
     headersList.get("x-appengine-country") ||
     headersList.get("x-country") ||

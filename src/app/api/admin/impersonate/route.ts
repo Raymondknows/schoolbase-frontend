@@ -9,33 +9,10 @@ function getSessionCookieOptions() {
   return {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? 'none' as const : 'lax' as const,
+    sameSite: isProduction ? 'none' : 'lax',
     path: '/',
     ...(isProduction ? { domain: '.schoolbase.live' } : {}),
-  };
-}
-
-function expireHostCookie(name: string, isProduction: boolean) {
-  return [
-    `${name}=`,
-    'Path=/',
-    'Max-Age=0',
-    'Expires=Thu, 01 Jan 1970 00:00:00 GMT',
-    'HttpOnly',
-    `SameSite=${isProduction ? 'None' : 'Lax'}`,
-    ...(isProduction ? ['Secure'] : []),
-  ].join('; ');
-}
-
-function setHostSessionCookie(token: string, isProduction: boolean) {
-  return [
-    `${SESSION_COOKIE_NAME}=${encodeURIComponent(token)}`,
-    'Path=/',
-    `Max-Age=${7 * 24 * 60 * 60}`,
-    'HttpOnly',
-    `SameSite=${isProduction ? 'None' : 'Lax'}`,
-    ...(isProduction ? ['Secure'] : []),
-  ].join('; ');
+  } as const;
 }
 
 export async function POST(request: Request) {
@@ -60,15 +37,24 @@ export async function POST(request: Request) {
     const json = NextResponse.json(data, { status: response.status });
 
     if (response.ok && data?.token) {
-      const isProduction = process.env.NODE_ENV === 'production';
+      const cookieOptions = getSessionCookieOptions();
+
+      // Clear any stale session cookies first so the browser does not keep conflicting copies.
+      json.cookies.set(SESSION_COOKIE_NAME, '', {
+        ...cookieOptions,
+        maxAge: 0,
+      });
+      for (const legacyCookieName of LEGACY_SESSION_COOKIE_NAMES) {
+        json.cookies.set(legacyCookieName, '', {
+          ...cookieOptions,
+          maxAge: 0,
+        });
+      }
+
       json.cookies.set(SESSION_COOKIE_NAME, data.token, {
-        ...getSessionCookieOptions(),
+        ...cookieOptions,
         maxAge: 7 * 24 * 60 * 60,
       });
-      for (const cookieName of [SESSION_COOKIE_NAME, ...LEGACY_SESSION_COOKIE_NAMES]) {
-        json.headers.append('Set-Cookie', expireHostCookie(cookieName, isProduction));
-      }
-      json.headers.append('Set-Cookie', setHostSessionCookie(data.token, isProduction));
     }
 
     return json;

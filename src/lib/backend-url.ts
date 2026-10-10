@@ -63,9 +63,6 @@ export function getBackendUrl(): string {
       return 'https://api.schoolbase.live';
     }
 
-    if (host.includes('vercel.app')) {
-      return 'https://api.schoolbase.live';
-    }
   }
 
   // Server-side or fallback: use NODE_ENV-based default

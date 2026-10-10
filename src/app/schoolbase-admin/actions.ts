@@ -17,7 +17,7 @@ export async function buildPlatformAdminHeaders(sessionCookie?: string | null) {
   return headers;
 }
 
-// Server actions for Vercel compatibility - use API routes
+// Use API routes for backend operations.
 
 export async function platformAdminLogoutAction(formData?: FormData): Promise<any> {
   try {

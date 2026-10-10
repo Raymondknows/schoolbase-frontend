@@ -89,7 +89,6 @@ export async function getCountryFromRequest(req: Request) {
     const cookieHeader = req.headers.get("cookie");
     const acceptLanguage = req.headers.get("accept-language");
     const geoCountry =
-      req.headers.get("x-vercel-ip-country") ||
       req.headers.get("cf-ipcountry") ||
       req.headers.get("x-appengine-country") ||
       req.headers.get("x-country") ||
